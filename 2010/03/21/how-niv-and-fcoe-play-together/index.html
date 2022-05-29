@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>How NIV and FCoE Play Together - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="How NIV and FCoE Play Together - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="How NIV and FCoE Play Together - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/03/21/how-niv-and-fcoe-play-together/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">How NIV and FCoE Play Together</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;675 words (estimated 4 minutes to read)</span>
+  <p>Last year, I wrote a piece about <a href="/2009/08/11/why-no-multi-hop-fcoe/">multi-hop Fibre Channel over Ethernet (FCoE)</a> and some of the various reasons why&mdash;at the time&mdash;multi-hop FCoE was not a practical reality. Some things have changed since I last discussed multi-hop FCoE, and today I&rsquo;d like to take a quick look at the interaction between network interface virtualization (NIV) and FCoE and see how this plays into multi-hop FCoE.</p>
+<p>If you haven&rsquo;t already read my recent article on <a href="/2010/03/16/understanding-network-interface-virtualization/">understanding NIV</a>, go read it now. Likewise, if you haven&rsquo;t read the <a href="/2009/08/11/why-no-multi-hop-fcoe/">multi-hop FCoE article</a>, you should go read it now too.  Believe me, the rest of this article will make a lot more sense if you do.</p>
+<p>Done now? Good. Let&rsquo;s get started.</p>
+<p>From my article on multi-hop FCoE, I identified two key roadblocks to multi-hop FCoE support:</p>
+<ol>
+<li>
+<p>First, there was a lack of widespread support for FCoE Initialization Protocol (FIP). FIP allows an FCoE initiator to be separated from a Fibre Channel forwarder (FCF) by one or more IEEE DCB-capable switches. This has since been addressed by updates to NX-OS (the code that runs on Cisco&rsquo;s Nexus 5000 switches) and by Generation 2 converged network adapters (CNAs); both of these components now have FIP support included.</p>
+</li>
+<li>
+<p>Second, there was no defined standard for creating the FCoE equivalent of trunking E_ports (which I believe are referred to as VE_ports). VE_ports are necessary to link multiple FCFs together, much in the same way you would use an inter-switch link (ISL) in traditional Fibre Channel storage area networks (SANs). To my knowledge, this issue has not yet been addressed.</p>
+</li>
+</ol>
+<p>At first glance, NIV doesn&rsquo;t seem to help with either of these roadblocks. When you take a deeper look, though, you&rsquo;ll see that NIV can actually serve as a workaround for both problems. Here&rsquo;s how.</p>
+<p>In NIV, recall that you have both an interface virtualization (IV)-capable bridge (or switch) as well as one or more interface virtualizers (IVs). (Remember that IVs are also referred to as fabric extenders.) Network interface cards (NICs) connect to ports on the IVs, and the IVs uplink to the IV-capable bridge. Even though the IV-capable bridge and the IVs are physically separate devices, they <em>appear as a single device.</em> Even though there is a connection&mdash;typically an Ethernet connection&mdash;between the IVs and the IV-capable bridge, it appears and functions as a single device.</p>
+<p>With this in mind, then, I&rsquo;ll ask this question: what <em>is</em> a multi-hop topology? If a multi-hop topology is multiple physical devices connected over an Ethernet uplink, then multi-hop FCoE is possible today with an FCoE-enabled IV-capable bridge and one or more FCoE-enabled IVs. In fact, this is the topology that Cisco uses in its Unified Computing System (UCS): a pair of FCoE-enabled IV-capable bridges (the UCS 6100XP fabric interconnects) connected to one or more FCoE-enabled IVs (the I/O Modules in the back of the chassis).</p>
+<p>Applying this line of thinking to our roadblocks above, we see that the use of NIV allows for greater port densities; greater port density is one of the primary reasons why users would want FCoE initiators separated from an FCF by an IEEE DCB-capable switch. In addition to leveraging FIP (and eventually leveraging the IEEE DCB standards once they are finalized), you can build the same sort of topology using an IV-capable bridge and one or more IVs.</p>
+<p>Similarly, using NIV as a way of connecting multiple devices together eliminates the need to chain multiple FCFs together; this, in turn, eliminates the need for the FCoE equivalent of ISLs and the need to create VE_ports between the FCFs. So NIV helps to address the second roadblock as well.</p>
+<p>Of course, NIV isn&rsquo;t the only way the industry is going to address the need for multi-hop FCoE. Further&mdash;to my knowledge, at least&mdash;NIV is a Cisco-only approach. As FCoE continues to mature and the IEEE DCB standards are finalized and ratified, then organizations can leverage a standards-based approach to building more complex FCoE topologies than are currently possible today.</p>
+<p>Courteous comments, corrections, and thoughts (with full vendor disclosure, please) are welcome below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/03/17/a-quick-and-simple-guide-to-building-an-openbsd-vm/">A Quick and Simple Guide to Building an OpenBSD VM</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/03/24/virtualization-short-take-37/">Virtualization Short Take #37</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f21%2fhow-niv-and-fcoe-play-together%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f21%2fhow-niv-and-fcoe-play-together%2f&text=How%20NIV%20and%20FCoE%20Play%20Together" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f21%2fhow-niv-and-fcoe-play-together%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/10/23/cutting-yourself-on-the-double-edged-sword/">Cutting Yourself on the Double-Edged Sword</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2009/10/22/io-virtualization-and-the-double-edged-sword/">I/O Virtualization and the Double-Edged Sword</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

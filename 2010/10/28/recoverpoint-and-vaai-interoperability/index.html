@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>RecoverPoint and VAAI Interoperability - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="RecoverPoint and VAAI Interoperability - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="RecoverPoint and VAAI Interoperability - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/10/28/recoverpoint-and-vaai-interoperability/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">RecoverPoint and VAAI Interoperability</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;983 words (estimated 5 minutes to read)</span>
+  <p>As most of you probably already know, the addition of the vStorage APIs for Array Integration (VAAI) was a major new feature of VMware vSphere 4.1. For those of you not familiar with VAAI, the short story is that these APIs enable VMware ESX/ESXi to offload certain types of storage operations to VAAI-compliant storage arrays in order to increase efficiency.</p>
+<p>This new functionality is supported on EMC&rsquo;s midrange Unified arrays with the release of FLARE 30 some time ago. VAAI support will come to the Symmetrix VMAX arrays later in the year with the next release of Enginuity. Similarly, EMC is extending VAAI support across the range of products, including EMC&rsquo;s heterogeneous storage replication product: EMC RecoverPoint.</p>
+<p>While EMC is working to bring VAAI support to RecoverPoint&mdash;which is a larger task than it might seem, as I&rsquo;ll explain shortly&mdash;today that support isn&rsquo;t completely implemented. In this article, I&rsquo;m going to describe in a bit more detail the interoperability between VAAI and RecoverPoint.</p>
+<p>First, though, some basics. It&rsquo;s entirely possible that a fair number of readers might not be familiar with RecoverPoint, so I&rsquo;ll discuss some RecoverPoint basics first. RecoverPoint leverages the idea of <em>splitters</em> to enable continuous data protection (CDP), continuous remote replication (CRR), and concurrent local and remote replication (CLR). CDP is like &ldquo;the Tivo of storage&rdquo;, allowing users to create local replicas and rollback to virtually any point in time. CRR is similar, but with a remote array and enabling users to rollback to significant points in time. CLR, of course, combines the two. All of this is made possible by the splitters. RecoverPoint leverages either fabric-based splitters (such as Cisco SANTap), host-based splitters, or array-based splitters. These splitters take writes to protected LUNs and split them off to the appropriate local or remote replicas (or both).</p>
+<p>I&rsquo;m explaining all of this because RecoverPoint&rsquo;s support for VAAI varies based on the type of splitter that is in use. The following bullets provide more details on the interoperability between RecoverPoint and VAAI based on the splitter in use:</p>
+<ul>
+<li>
+<p>If you are using an array-based splitter (EMC&rsquo;s Unified and CLARiiON arrays have an integrated RecoverPoint splitter), RecoverPoint <strong><em>will support</em></strong> hardware-assisted locking via the Compare and Swap (CAS) SCSI command. Hardware-assisted locking is also sometimes referred to as &ldquo;Atomic Test and Set&rdquo; (ATS), and it&rsquo;s the ability for VMware ESX/ESXi hosts to perform locking at a block level instead of a LUN level.</p>
+</li>
+<li>
+<p>All other VAAI commands (like hardware-assisted copy) <strong><em>are ignored</em></strong> (not rejected) by the CX splitter.</p>
+</li>
+<li>
+<p>With a fabric-based splitter, all VAAI commands <strong><em>are ignored</em></strong> (not rejected).</p>
+</li>
+</ul>
+<p>The fact that the VAAI commands are ignored instead of rejected is significant. When VMware ESX/ESXi attempts a VAAI command on a non-VAAI-capable array, the commands are typically rejected as not implemented. This tells VMware ESX/ESXi to &ldquo;fall back&rdquo; to pre-VAAI behavior&mdash;in other words, go back to the old way of doing things. In this case, the splitter is simply ignoring the command, not rejecting it. This means that the host doesn&rsquo;t know it should &ldquo;fall back&rdquo; and keeps issuing VAAI commands, and those commands aren&rsquo;t picked up by the splitter. The end result? Replicas that are corrupt and unusable, because some of the commands applied to the source were not captured and handled (but rather ignored) by the splitter. Clearly, this is not ideal behavior.</p>
+<p>In this instance, the workaround is to actually disable the hardware-accelerated copy and hardware-accelerated zero VAAI commands at the VMware ESX/ESXi host level. These options are found in the Advanced Settings for a host:</p>
+<ul>
+<li>
+<p><code>DataMover.HardwareAcceleratedMove</code> controls the hardware-accelerated copy functionality; set the value to 0 to disable hardware-accelerated copy</p>
+</li>
+<li>
+<p><code>DataMover.HardwareAcceleratedInit</code> controls the VAAI Write Same/Write Zero functionality; set the value to 0 to disable the feature</p>
+</li>
+</ul>
+<p>Because this value is host-wide, this has the unfortunate side effect of blocking VAAI functionality for all arrays to which the host is connected. (I&rsquo;m currently looking for a way to disable VAAI functionality on a per-array or per-LUN basis, and I&rsquo;ll post more information here should I discover anything.) For now, though, this appears to be the only way to disable VAAI functionality, and you must disable this VAAI functionality or run the very likely risk of data corruption.</p>
+<p>The good news is that future versions of RecoverPoint will improve in two ways. First, prior to full VAAI support, RecoverPoint will start rejecting the VAAI commands as not implemented. This will force VMware ESX/ESXi hosts to fall back to pre-VAAI behavior, and will allow the use of VAAI on other arrays that are not protected by RecoverPoint. This is actually more challenging than it appears because the EMC RecoverPoint developers must work closely with Cisco and Brocade so that their intelligent fabric splitters reject the commands as well. At some point in the future, EMC will work to bring full VAAI support to both array-based as well as fabric-based splitters. Again, this will require close development with Cisco and Brocade to bring VAAI support into the intelligent fabric splitters.</p>
+<p>In summary:</p>
+<ol>
+<li>
+<p>The current version of RecoverPoint only supports hardware-assisted locking, and then only with the integrated array-based splitter in the Unified/CLARiiON arrays. The other VAAI commands are ignored.</p>
+</li>
+<li>
+<p>Fabric-based splitters ignore all VAAI commands.</p>
+</li>
+<li>
+<p>VAAI functionality that is ignored by RecoverPoint must be disabled on all applicable VMware ESX/ESXi hosts in order to avoid data corruption.</p>
+</li>
+<li>
+<p>Future versions will properly reject VAAI commands as not implemented, instead of ignoring the commands.</p>
+</li>
+</ol>
+<p>As you can see, the current situation isn&rsquo;t the greatest in the world, but we are working to improve it. In the spirit of openness and transparency, I felt that readers need to know about this interoperability and how to properly use RecoverPoint in VMware vSphere 4.1 environments.</p>
+<p>Please feel free to post any questions or clarifications in the comments below. Thanks!</p>
+<p><strong>UPDATE:</strong> RecoverPoint product management has clarified the behavior of the current release; see <a href="/2010/11/01/recoverpoint-and-vaai-update/">my update post</a> for full details.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/10/27/need-some-help-with-subnetting/">Need Some Help With Subnetting?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/10/29/disabling-vaai-using-the-cli/">Disabling VAAI Using the CLI</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f28%2frecoverpoint-and-vaai-interoperability%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f28%2frecoverpoint-and-vaai-interoperability%2f&text=RecoverPoint%20and%20VAAI%20Interoperability" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f28%2frecoverpoint-and-vaai-interoperability%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/10/09/technology-short-take-5/">Technology Short Take #5</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2010/09/28/technology-short-take-4/">Technology Short Take #4</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

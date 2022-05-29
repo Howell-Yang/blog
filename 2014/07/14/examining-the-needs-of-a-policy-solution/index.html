@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Examining the Needs of a Policy Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Examining the Needs of a Policy Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Examining the Needs of a Policy Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/07/14/examining-the-needs-of-a-policy-solution/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Examining the Needs of a Policy Solution</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 149 May 141414 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;292 words (estimated 2 minutes to read)</span>
+  <p>In April of this year, we started a series of articles at <a href="http://networkheresy.com">Network Heresy</a> on the topic of policy in the data center. The first of these articles, which I mentioned <a href="/2014/04/22/kicking-the-policy-discussion-into-high-gear/">in this post</a>, focused on the problem of policy in the data center. This was a great introduction to the need for policy and the challenges with the current ways of addressing policy in the data center.</p>
+<p>A short while ago, we published the second of our series on policy, titled <a href="http://networkheresy.com/2014/06/19/on-policy-in-the-data-center-the-solution-space/">&ldquo;On Policy in the Data Center: The solution space&rdquo;</a>. This post describes the key features/functionality that a policy system must have to address the challenges identified in part 1 of the series. In a nutshell (I <em>highly recommend</em> you go read the full article), these key areas include:</p>
+<ul>
+<li>
+<p>The sources from which policy is derived</p>
+</li>
+<li>
+<p>The language(s) used to express policy</p>
+</li>
+<li>
+<p>The way policy systems interact with data center services</p>
+</li>
+<li>
+<p>The actions a policy system can take</p>
+</li>
+</ul>
+<p>I really liked this statement from the article (this is in reference to how a policy system interacts with other services in the data center):</p>
+<blockquote>
+<p>A policy system by itself is useless; to have value, the policy system must interact and integrate with other data center or cloud services.</p>
+</blockquote>
+<p>The relationship between a policy system and the ecosystem of data center services with which it interacts is so critical. Having a policy system is great, but if the policy system can&rsquo;t be integrated with other data center or cloud services, then it&rsquo;s not very useful, is it?</p>
+<p>Go have a look at <a href="http://networkheresy.com/2014/06/19/on-policy-in-the-data-center-the-solution-space/">the second post in the series on policy in the data center</a> and feel free to join in the conversation. You can leave comments here or at the Network Heresy site.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cloud">Cloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/policy">Policy</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/06/20/learning-nsx-part-14-using-logical-routing/">Learning NSX, Part 14: Using Logical Routing</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/07/16/learning-nsx-part-15-nsx-gateways-gateway-services-and-logical-routers/">Learning NSX, Part 15: NSX Gateways, Gateway Services, and Logical Routers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f14%2fexamining-the-needs-of-a-policy-solution%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f14%2fexamining-the-needs-of-a-policy-solution%2f&text=Examining%20the%20Needs%20of%20a%20Policy%20Solution" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f14%2fexamining-the-needs-of-a-policy-solution%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/04/22/kicking-the-policy-discussion-into-high-gear/">Kicking the Policy Discussion Into High Gear</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

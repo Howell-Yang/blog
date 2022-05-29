@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>When an OS is not an OS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="When an OS is not an OS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="When an OS is not an OS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/10/21/when-an-os-is-not-an-os/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">When an OS is not an OS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;872 words (estimated 5 minutes to read)</span>
+  <p>I&rsquo;m not really sure how to respond to this article titled <a href="http://blogs.msdn.com/volkerw/archive/2007/08/14/an-os-is-an-os-is-an-os.aspx">&ldquo;An OS is an OS is an OS&rdquo;</a>. The author argues that <a href="http://www.vmware.com/products/vi/esx/">VMware ESX Server</a> <em>is</em> an operating system; therefore, their (VMware&rsquo;s) claims about bringing about the end of the OS is a bit hypocritical. My initial (admittedly knee-jerk) reaction was to exclaim, &ldquo;No it&rsquo;s not!&rdquo; and write something to that effect here.</p>
+<p>Fortunately, I subdued the knee-jerk reaction, did some more thinking and reading, and have finally arrived at a point where I can see the author&rsquo;s point and agree with him&mdash;to a certain extent.</p>
+<p>The strict definition of an &ldquo;operating system&rdquo; has dramatically changed over the years, and from that perspective VMware <em>does</em> have a right to distinguish ESX Server from the typical OS. The critical question here is, &ldquo;What exactly comprises an operating system?&rdquo; <a href="http://en.wikipedia.org/wiki/Operating_system">This Wikipedia article</a> (to which the original article&rsquo;s author linked) states that:</p>
+<blockquote>
+<p>&ldquo;Operating Systems themselves have no user interfaces; the user of an OS is an application, not a person.&rdquo;</p>
+</blockquote>
+<p>The heart of ESX Server is the vmkernel, which has no user interface and can&rsquo;t be observed or interacted with. By the strict definition of an OS according to Wikipedia, then you&rsquo;re right&mdash;the vmkernel is an operating system, and VMware provides the Service Console as the &ldquo;application&rdquo; by which users can interact with the vmkernel&rsquo;s managed resources. In this case, then the original author&rsquo;s complaint against VMware is valid&mdash;you can&rsquo;t say that you&rsquo;re going to eliminate operating systems by pushing your own operating system. An OS is an OS is an OS, even if those OSes are very different in design and purpose.</p>
+<p>Over time, though, the perception of an &ldquo;operating system&rdquo; has grown to mean more than perhaps the strict Wikipedia definition really entails. If an operating system has no user interface, then how do we classify <a href="http://www.microsoft.com/windows/">Microsoft Windows</a>? Or <a href="http://www.apple.com/macosx/">Mac OS X</a>? In this strict context, Windows would be defined as an application that runs on top of &ldquo;something else&rdquo; (the Mach kernel and kernel-mode subsystems, I suppose; it&rsquo;s been ages since I took a hard look at the Windows internals) to provide access to managed resources. Back in the Windows 3.1 days, Microsoft got seriously torqued when people referred to Windows as &ldquo;an MS-DOS application,&rdquo; but that&rsquo;s an accurate definition in the strict technical sense of the term. Today, I&rsquo;m sure that calling Windows &ldquo;an application&rdquo; would get Microsoft equally torqued. (Note that Linux is not so plagued by this problem, since the X Window System is clearly an application that runs on top of the OS, as is the text-mode shell.)</p>
+<p>Further complicating the matter is the announcement of <a href="http://www.vmware.com/products/vi/esx/esx3i.html">ESX Server  3i</a>, a slimmed down version of the hypervisor that can be embedded in server firmware. Is the argument still the same? Is the vmkernel still an OS then? If so, what is &ldquo;the application&rdquo; by which users will interact with the vmkernel? If we have broadened the definition of an OS to include the operating environment in which a user works (this would be the GUI in Windows, or the Aqua layer in Mac OS X), then the vmkernel no longer has that component. It has no significant user interface. Is it still an operating system?</p>
+<p>&lt;aside&gt;It&rsquo;s true that persistent beta users have discovered the presence of a command-line interface on ESX Server 3i, but it&rsquo;s unclear at this time how pervasive the support for that CLI truly is.&lt;/aside&gt;</p>
+<p>I suppose this all sounds like a pretty trivial discussion, but at a deeper level this goes back to some thoughts I had (along with others) about <a href="/2006/12/05/the-future-of-the-os/">the future of the OS</a>. In that article, I stated (sorry I&rsquo;m quoting myself here):</p>
+<blockquote>
+<p>If you&rsquo;re an operating system guy, you&rsquo;ll say that the OS has a bright future, and point to developments such as built-in paravirtualization and bundled hypervisors to prove your point. If you&rsquo;re a virtualization guy, you&rsquo;ll say that the OS is dead, and you&rsquo;ll point to developments such as third-party paravirtualization and independent hypervisors to prove your point.</p>
+</blockquote>
+<p>See, Microsoft <em>has</em> to make the claim that ESX Server is an operating system, so that it can level the playing field&mdash;at least with regards to perception&mdash;between VMware&rsquo;s virtualization solution and Microsoft&rsquo;s own virtualization solution. After all, if you&rsquo;re VMware and you&rsquo;re saying that your solution runs &ldquo;on the bare metal, beneath the OS,&rdquo; then this sounds somehow <em>better</em> than Microsoft&rsquo;s hypervisor, which is &ldquo;bundled with the OS.&rdquo; See the difference? If Microsoft allows the perception that ESX Server is not an OS to grow, then it undermines their solution.</p>
+<p>Likewise, VMware <em>has</em> to distinguish their solution from the &ldquo;traditional OS&rdquo; because if they don&rsquo;t, then <em>they</em> begin to lose the perception advantage against other virtualization solutions such as Xen or Windows Server Virtualization. You can see this trend even now on the VMware web site, where you&rsquo;ll find statements like this about ESX Server 3i:</p>
+<blockquote>
+<p>ESX Server 3i is the only hypervisor that does not incorporate or rely on a general-purpose operating system (OS), eliminating many common reliability issues and security vulnerabilities.</p>
+</blockquote>
+<p>Is ESX Server an &ldquo;operating system&rdquo;? What about ESX Server 3i? As with so many other things in life, I guess that truly depends upon your perspective.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/10/21/apparently-im-ahead-too/">Apparently, I&#39;m Ahead Too</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/10/23/virtualization-security-guidelines/">Virtualization Security Guidelines</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f21%2fwhen-an-os-is-not-an-os%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f21%2fwhen-an-os-is-not-an-os%2f&text=When%20an%20OS%20is%20not%20an%20OS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f21%2fwhen-an-os-is-not-an-os%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/10/06/various-odds-and-ends/">Various Odds and Ends</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2007/05/23/windows-server-2008-beta-3-on-esx-server/">Windows Server 2008 Beta 3 on ESX Server</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2007/02/27/return-of-the-old-microsoft/">Return of the Old Microsoft</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

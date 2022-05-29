@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Few More Quick Thoughts on Fusion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Few More Quick Thoughts on Fusion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Few More Quick Thoughts on Fusion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/08/07/a-few-more-quick-thoughts-on-fusion/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Few More Quick Thoughts on Fusion</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;438 words (estimated 3 minutes to read)</span>
+  <p>The release of <a href="http://www.vmware.com/products/fusion/">VMware Fusion</a> today (there was a launch event hosted this afternoon for various bloggers, including yours truly) marked the official entry of VMware into the Mac virtualization space, taking on current market leader <a href="http://www.parallels.com/">Parallels</a>.</p>
+<p>Overall, the product is very polished and the user interface (which VMware is <em>very</em> proud of) is superb. They&rsquo;ve done a great job of making the product a well-behaved Mac &ldquo;citizen,&rdquo; something that many Mac users are very particular about. One of the most significant improvements since Beta 4 surrounds Unity, VMware Fusion&rsquo;s answer to Parallels&rsquo; Coherence mode. Unity takes your Windows applications and runs them seamlessly on the Mac desktop. In previous builds where I had tried this functionality, the Windows desktop background would show up when I minimized a window in Unity mode. Now, the operation is truly seamless. Only the different window controls really set things apart.</p>
+<p>Speed appears to have improved as well; resuming a suspended VM seems especially faster than in previous builds. The responsiveness of the VMs seems improved as well, and without undue stress on the laptop&rsquo;s resources. In particular, while chasing down a nasty rumor that Fusion had been limited to 2 VMs running concurrently (there is no such limit), I had three VMs&mdash;a VM with Windows XP Professional SP2, a VM with Windows Server 2003 R2 x64, and a VM with Solaris 10 11/06&ndash;all running at the same time. The host seemed not to be getting hammered too bad, which is pretty impressive in my eyes.</p>
+<p>If I had one request for Fusion, it would be to continue to expand the functionality of the product to include more of <a href="http://www.vmware.com/products/ws/">VMware Workstation&rsquo;s</a> functionality. During the launch conference call today, I inquired about power user functionality vs. the &ldquo;consumer&rdquo; orientation of the product. It&rsquo;s been a while since I&rsquo;ve used Workstation (so I could be mistaken about functionality), but Fusion doesn&rsquo;t support multiple snapshots, linked clones, VM teams, or things like that. <em>Those</em> are the kind of power user functionality I was inquiring about, and right now that functionality just doesn&rsquo;t exist on the Mac platform. As soon as VMware can make Fusion look and act more like Workstation (perhaps even phasing out the Fusion product line altogether and folding it into Workstation), the better off they&rsquo;ll be, in my opinion.</p>
+<p>Despite the lack of Workstation-level functionality, Fusion is a good &ldquo;first release&rdquo; for VMware on the Mac platform. However, their competitor has quite a head start on them and isn&rsquo;t sitting still. VMware and the Fusion development team are going to need to really stay on top of things to take on Parallels.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/08/06/fusion-released/">Fusion Released</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/08/07/strange-vcb-error/">Strange VCB Error</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f07%2fa-few-more-quick-thoughts-on-fusion%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f07%2fa-few-more-quick-thoughts-on-fusion%2f&text=A%20Few%20More%20Quick%20Thoughts%20on%20Fusion" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f07%2fa-few-more-quick-thoughts-on-fusion%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/08/06/fusion-released/">Fusion Released</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2007/08/02/fusion-ship-date-announced/">Fusion Ship Date Announced</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2007/06/08/unity-definitely-real/">Unity: Definitely Real!</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

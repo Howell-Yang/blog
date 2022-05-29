@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing XCP-XAPI on Ubuntu Server 12.04 LTS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing XCP-XAPI on Ubuntu Server 12.04 LTS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing XCP-XAPI on Ubuntu Server 12.04 LTS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/06/28/installing-xcp-xapi-on-ubuntu-server-12-04-lts/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing XCP-XAPI on Ubuntu Server 12.04 LTS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;698 words (estimated 4 minutes to read)</span>
+  <p>As part of my 2012 projects (see <a href="/2012/01/02/some-projects-for-2012/">here</a> plus an update <a href="/2012/06/25/mid-year-project-update/">here</a>), I&rsquo;ve been familiarizing myself with the Xen hypervisor. To that end, I&rsquo;ve been working to get XCP (Xen Cloud Platform, the open source version of XenServer) running on a test system in my home office. It&rsquo;s been a bit of a struggle, but I think I&rsquo;ve finally got it, and I wanted to share the information here.</p>
+<p>Here are the steps that I followed to install XCP-XAPI on a system running Ubuntu Server 12.04 LTS. Much of the credit goes to <a href="http://wiki.xen.org/wiki/Project_Kronos">Project Kronos</a> and this page in particular on <a href="http://wiki.xen.org/wiki/XCP_toolstack_on_a_Debian-based_distribution">the XCP toolstack on a Debian-based installation</a>. While the XCP toolstack page is quite helpful, I found that the instructions were confusing (for me, at least). Hence, I&rsquo;m writing up my steps in the hopes that they will prove useful to someone else.</p>
+<h2 id="before-installing-xcp-xapi">Before Installing XCP-XAPI</h2>
+<p>Before I started the installation of the XCP-XAPI packages, I first made sure that all the various networking interfaces were configured correctly and working as expected. For my particular system (a Dell Latitude E6400), this meant installing some proprietary Broadcom wireless firmware (using the <code>firmware-b43-lpphy-installer</code> package) and configuring <code>/etc/network/interfaces</code>. I also ran <code>apt-get update</code> and <code>apt-get upgrade</code> to install the latest versions of all packages. Credit goes to <a href="http://www.linuxhomenetworking.com/wiki/index.php/Quick_HOWTO_:_Ch13_:_Linux_Wireless_Networking#Debian_.2F_Ubuntu">this page</a> for instructions on how to configure the wireless NIC from the CLI, with one small correction. In the <code>/etc/network/interfaces</code> file, I had to use this as the pre-up parameter (the example on the page above used &ldquo;-Bw&rdquo; instead of &ldquo;-B&rdquo;):</p>
+<pre><code>pre-up wpa_supplicant -B -Dwext -iwlan0  
+ -c/etc/wpa_supplicant/wpa_supplicant.conf
+</code></pre>
+<p>(Naturally you&rsquo;d write that all as one line; it&rsquo;s broken here for readability.)</p>
+<h2 id="installing-xcp-xapi">Installing XCP-XAPI</h2>
+<p>First, I edited <code>/etc/apt/sources.list</code> to add repositories for the XCP-XAPI packages. Although Ubuntu 12.04 LTS provides XCP-XAPI packages, the Project Kronos page indicated that there were dependency issues, so I went with these packages instead. If anyone has any experience with the Ubuntu-provided XCP-XAPI packages, please let me know.</p>
+<p>I added these lines:</p>
+<pre><code>deb http://ppa.launchpad.net/ubuntu-xen-org/xcp-unstable/ubuntu precise main  
+deb-src http://ppa.launchpad.net/ubuntu-xen-org/xcp-unstable/ubuntu precise main
+</code></pre>
+<p>Then I ran this command:</p>
+<pre><code>apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9273A937
+</code></pre>
+<p>That was followed by:</p>
+<pre><code>apt-get update
+apt-get install xcp-xapi
+</code></pre>
+<p>From there, <code>apt-get</code> started fetching and installing the necessary packages (and there are quite a few). When prompted, I selected to use OpenvSwitch as the networking backend (instead of standard Linux bridging).</p>
+<p>Before rebooting&mdash;which you&rsquo;ll need to do in order to boot into the Xen kernel&mdash;I also performed the following steps.</p>
+<ol>
+<li>
+<p>I edited the <code>/etc/init.d/xend</code> file to prevent xend from starting up. I did this using two <code>sed</code> commands. First, I ran <code>sed -i -e 's/xend_start$/#xend_start/' /etc/init.d/xend</code>; that command was followed by <code>sed -i -e 's/xend_stop$/#xend_stop/' /etc/init.d/xend</code>. Finally, I ran <code>update-rc.d xendomains disable</code>.</p>
+</li>
+<li>
+<p>I set the XAPI toolstack as the default by editing <code>/etc/default/xen</code> and changing the line <code>TOOLSTACK=&quot;&quot;</code> to <code>TOOLSTACK=&quot;xapi&quot;</code>.</p>
+</li>
+<li>
+<p>I made the Xen kernel the default grub entry by editing <code>/etc/default/grub</code> and setting <code>GRUB_DEFAULT=&quot;Xen 4.1-amd64&quot;</code>. Then I ran <code>update-grub</code>.</p>
+</li>
+<li>
+<p>I added a symbolic link from <code>/usr/share/qemu-linaro/keymaps</code> to <code>/usr/share/qemu/keymaps</code>.</p>
+</li>
+</ol>
+<p>At this point, the system is ready for a reboot.</p>
+<h2 id="verifying-that-xcp-xapi-works">Verifying that XCP-XAPI Works</h2>
+<p>I&rsquo;m still working on a more comprehensive set of tests, but some basic tests should tell you whether the system is working or not:</p>
+<ol>
+<li>
+<p>Run <code>xe host-list</code>. It should return a single host, which is the system you just built.</p>
+</li>
+<li>
+<p>Run <code>xe vm-list</code>. The information returned should list a single VM described as the control domain on the host.</p>
+</li>
+<li>
+<p>Run <code>xe network-list</code>. You should get back a network for each network interface, plus another network for XenAPI communications.</p>
+</li>
+<li>
+<p>Run <code>xe sr-list</code>. You should get back a single SR (storage repository) used for XenServer Tools ISOs.</p>
+</li>
+</ol>
+<p>(By the way, note that <code>xe</code> requires a username and password, even if you&rsquo;re running it against the local host. I found it easiest to create a password file and then create an alias for <code>xe</code> that included the <code>-pwf</code> parameter.)</p>
+<p>I have future posts planned that will talk more about networking and SRs with this Ubuntu-based XCP-XAPI system, so stay tuned for those. Also, if you have any tips or tricks for making this process easier (or if I&rsquo;ve stated something incorrectly), please speak up in the comments. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/06/26/thoughts-on-a-vmworld-unconference/">Thoughts on a VMworld Unconference</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/07/02/presentation-from-south-florida-vmug/">Presentation from South Florida VMUG</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f28%2finstalling-xcp-xapi-on-ubuntu-server-12-04-lts%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f28%2finstalling-xcp-xapi-on-ubuntu-server-12-04-lts%2f&text=Installing%20XCP-XAPI%20on%20Ubuntu%20Server%2012.04%20LTS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f28%2finstalling-xcp-xapi-on-ubuntu-server-12-04-lts%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/06/12/technology-short-take-23/">Technology Short Take #23</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2010/04/22/setting-up-a-ccna-study-environment-with-gns3-and-vmware/">Setting up a CCNA Study Environment with GNS3 and VMware</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

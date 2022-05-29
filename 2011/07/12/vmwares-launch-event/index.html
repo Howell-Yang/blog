@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware&#39;s Launch Event - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware&#39;s Launch Event - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware&#39;s Launch Event - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/12/vmwares-launch-event/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware&#39;s Launch Event</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1055 words (estimated 5 minutes to read)</span>
+  <p>Today was a big day for VMware. I&rsquo;m going to provide some summary coverage of the products launched today, but only a quick recap; I&rsquo;ll have more in-depth analysis and information on the products and their key features and improvements in future blog posts. No doubt there is going to be plenty of other coverage on the launch as well, and I&rsquo;ll likely produce a special &ldquo;Short Takes&rdquo; episode with a summary of some of the related links, so look for that as well.</p>
+<p>Now, on to the product announcements!</p>
+<h2 id="vsphere-5">vSphere 5</h2>
+<p>As fully expected, VMware today announced VMware vSphere 5, the next generation of their virtualization suite. VMware continues to drive virtualization &ldquo;higher&rdquo; in the data center as they target even the most mission critical applications, so vSphere 5 offers support for massive VMs (up to 32 vCPUs and 1 TB of RAM per VM). With vSphere 4, there were only a few instances where a mission critical application couldn&rsquo;t be supported because of resource constraints. That already-slim window shrinks even more now with vSphere 5.</p>
+<p>Also in the vSphere 5 release, VMware has added a lot of features to help simplify and automate the virtualization layer. This is fully expected and a natural part of vSphere&rsquo;s continued maturation. Some of the features that VMware packed into this release for improved administration and management include:</p>
+<ul>
+<li>
+<p>vSphere Auto Deploy: VMware now offers a fully supported PXE boot solution that offers completely stateless ESXi hosts. Need to deploy a new ESXi host? No problem, with Auto Deploy it can be done in minutes. Need to deploy a new ESXi image? Change a few rules in the Auto Deploy engine and reboot your host&mdash;and you&rsquo;re done. It&rsquo;s pretty powerful stuff, in my opinion.</p>
+</li>
+<li>
+<p>Storage DRS: vSphere DRS is the darling of many data centers, transparently moving VMs around to keep cluster workloads balanced. vSphere 5 introduces the same concept for storage, called Storage DRS. (Just as a side note, I&rsquo;m not clear if the &ldquo;DRS&rdquo; in &ldquo;Storage DRS&rdquo; still stands for &ldquo;Distributed Resource Scheduler,&rdquo; since that&rsquo;s not really applicable to storage. Anyone know?) Using information on storage capacity usage and (optionally) I/O response times, Storage DRS can shift virtual disks for VMs from datastore to datastore&mdash;using the concept of a datastore cluster&mdash;to keep storage utilization balanced. Like vSphere DRS, Storage DRS also performs initial placement, simplifying the VM storage provisioning process. This is something that has been in the works for <em>years</em> (I first heard about it from VMware in 2008), and it&rsquo;s great to see it finally make it&rsquo;s appearance.</p>
+</li>
+<li>
+<p>Profile-Driven Storage: This is another killer feature. Building on the vSphere Storage APIs for Storage Awareness (more popularly known as VASA), profile-driven storage allows administrators to define VM storage profiles that describe the features or attributes that storage must possess in order to satisfy the requirements of the VM (RAID type, disk type, capacity, protection level, replication, snapshots, etc.). Then, based on VM storage profiles, when you create a new VM, perform a Storage vMotion, or clone a VM or template, vSphere will use the VM storage profile to show you which datastores are compatible (compliant with the profile) or incompatible (noncompliant with the profile). This provides a huge benefit to the vSphere administrator in ensuring that VMs are stored on the right storage with the right support.</p>
+</li>
+</ul>
+<p>Of course, that&rsquo;s not all that vSphere 5 has to offer; there&rsquo;s also a laundry list of other new features:</p>
+<ul>
+<li>
+<p>VAAI v2, which includes hardware offloads for NFS and new thin provisioning awareness</p>
+</li>
+<li>
+<p>All-new framework for vSphere HA, which eliminates the primary/secondary model and provides significant new features</p>
+</li>
+<li>
+<p>A new vSphere Storage Appliance, to turn local (DAS) storage into shared storage in environments where a dedicated SAN isn&rsquo;t possible and performance is not the key consideration</p>
+</li>
+<li>
+<p>A new version of VMFS that offers datastores up to 64TB in size without the use of extents</p>
+</li>
+<li>
+<p>Significant performance enhancements for Storage vMotion, and the ability to relocate snapshots</p>
+</li>
+<li>
+<p>Improvements in NFS to support scale-out NAS</p>
+</li>
+<li>
+<p>Software FCoE initiator (only supported on Intel X520 NICs at initial release). I have a couple of the Intel X520 NICs that I&rsquo;ll be doing some additional testing with against vSphere 5, so look for those results on this site soon.</p>
+</li>
+</ul>
+<p>As you can see, it&rsquo;s quite a significant release. But wait, there&rsquo;s more&hellip;</p>
+<h2 id="vcloud-director-15">vCloud Director 1.5</h2>
+<p>VMware also announced vCloud Director 1.5, which offers a number of new features:</p>
+<ul>
+<li>
+<p>New APIs: vCloud Director will offer broadened &ldquo;southbound&rdquo; APIs, so that solutions like vCO, UIM, and others can provide further automation in highly virtualized environments</p>
+</li>
+<li>
+<p>Linked Clone support: vCD 1.5 will support linked clones, so that deploying new workloads will happen faster and with less storage consumption.</p>
+</li>
+</ul>
+<h2 id="site-recovery-manager-5">Site Recovery Manager 5</h2>
+<p>In addition to vSphere 5 and vCD 1.5, VMware also unveiled SRM 5, with new features like:</p>
+<ul>
+<li>
+<p>Built-in automated failback: While vendors such as EMC provided failback plugins, those plugins didn&rsquo;t provide the full functionality of SRM when performing a failback. SRM 5 now provides full failback support, a key feature that many organizations have been requesting.</p>
+</li>
+<li>
+<p>Workload mobility workflows: SRM starts adding support for workload mobility workflows, to move workloads cold between sites. (Hmmm&hellip;think about VPLEX plus SRM workload mobility workflows&hellip;give you any ideas?)</p>
+</li>
+<li>
+<p>vSphere host-based replication: vSphere 5 can now offer replication on a host-based level, for environments where array-based replication isn&rsquo;t possible due to constraints (budgetary or otherwise). Naturally, there&rsquo;s a trade-off in using host-based replication versus array-based replication, but it&rsquo;s a nice feature to add for lower-end customers.</p>
+</li>
+</ul>
+<h2 id="vshield-5">vShield 5</h2>
+<p>Last, but not least, VMware announced vShield 5. vShield 5 brings improved management to the table as well as some new features:</p>
+<ul>
+<li>
+<p>Static routing functionality in vShield Edge: This provides vSphere and vCloud Director administrators greater flexibility in modeling network topologies.</p>
+</li>
+<li>
+<p>New product offering in the form of vShield Data Security: This is an integration of technology from RSA DLP (Data Loss Prevention), that offers administrators the ability to discover and report sensitive data in virtual machines.</p>
+</li>
+</ul>
+<p>All in all, VMware unveiled a lot of new functionality today that is targeted at driving the further adoption of virtualization and addressing concerns over virtualizing mission critical applications.</p>
+<p>As I mentioned earlier, look for more in-depth articles on some of the new features and functionality in the coming days and weeks. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/07/12/brkcom-3002-network-redundancy-and-load-balancing-designs-for-ucs-blade-servers/">BRKCOM-3002: Network Redundancy and Load Balancing Designs for UCS Blade Servers</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/12/brkdct-2081-cisco-fabricpath-technology-and-design/">BRKDCT-2081: Cisco FabricPath Technology and Design</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fvmwares-launch-event%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fvmwares-launch-event%2f&text=VMware%27s%20Launch%20Event" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fvmwares-launch-event%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/11/29/technology-short-take-7/">Technology Short Take #7</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2010/10/09/technology-short-take-5/">Technology Short Take #5</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2011/06/16/using-vaai-to-maintain-control/">Using VAAI to Maintain Control?</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

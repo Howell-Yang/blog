@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+	<meta name="generator" content="Hugo 0.99.1" />
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Scott&#39;s Weblog - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Scott&#39;s Weblog - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Scott&#39;s Weblog - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://www.howellyang.com/feed.xml" title="Scott's Weblog" />
+    <link rel="feed" type="application/rss+xml" href="https://www.howellyang.com/feed.xml" title="Scott's Weblog" />
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+
+
+
+<div class="posts">
+  
+    <div class="post">
+      <h1 class="post-title"><a href="https://www.howellyang.com/2022/05/27/git-difftool-and-meld-as-a-flatpak/">Git Difftool and Meld as a Flatpak</a></h1>
+      <span class="post-date">279 May 272727</span>
+      <p>I&rsquo;ve recently started migrating many of the applications on my <a href="https://getfedora.org/">Fedora</a> 36 laptop to their <a href="https://www.flatpak.org/">Flatpak</a> versions. For the most part, this has been pretty straightforward, although there isn&rsquo;t really any method for migrating configuration and data. Today I ran into a problem with <a href="https://meldmerge.org/">Meld</a>, a graphical diff utility, and using it with the <code>git difftool</code> command. Below I&rsquo;ll share how I worked around this problem.</p>
+<p>Normally, the integration between Git and Meld&mdash;which is what enables you to run <code>git difftool</code> and have the results show up in Meld&mdash;would look something like this (this is from <code>~/.gitconfig</code>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">merge</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">diff</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prompt</span> = <span style="color:#a6e22e">no</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">mergetool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span></code></pre></div><p>However, when Meld is installed as a Flatpak, <code>/usr/bin/meld</code> doesn&rsquo;t exist. In order to continue using Meld with the <code>git difftool</code> command, you must change the Git configuration to look like this instead:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">merge</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">diff</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prompt</span> = <span style="color:#a6e22e">no</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#a6e22e">flatpak</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">org</span>.<span style="color:#a6e22e">gnome</span>.<span style="color:#a6e22e">Meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">mergetool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#a6e22e">flatpak</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">org</span>.<span style="color:#a6e22e">gnome</span>.<span style="color:#a6e22e">Meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span></code></pre></div><p>After you make these changes, using Meld with <code>git difftool</code> should work as expected again.</p>
+<p>This is a pretty straightforward change, but hopefully documenting it here will prove helpful to someone. If you have any questions, feel free to contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Thanks!</p>
+    </div>
+  
+    <div class="post">
+      <h1 class="post-title"><a href="https://www.howellyang.com/2022/05/27/technology-short-take-155/">Technology Short Take 155</a></h1>
+      <span class="post-date">279 May 272727</span>
+      <p>Welcome to Technology Short Take #155, just in time for the 2022 Memorial Day holiday weekend! (Here in the US, at least.) I mean, don&rsquo;t you want to spend this weekend catching up on some technology-related articles instead of cooking on the grill and gathering with friends and family? I certainly hope not! Still, for those who need a little technology fix over the weekend, hopefully I&rsquo;ve included something useful in the list of articles below. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Isovalent&mdash;the company behind the Cilium project&mdash;has been talking a lot about how the use of eBPF will transform things, including the architecture of a service mesh. Along those lines, one of their latest articles discusses <a href="https://isovalent.com/blog/post/2022-05-03-servicemesh-security">how to achieve identity-based mutual authentication leveraging eBPF</a>. If I&rsquo;m understanding the article correctly (and feel free to correct me if I am mistaken) it looks as if Cilium Service Mesh will leverage/does leverage a combination of certificate-based mTLS for identity at the workload level and node-based transport encryption (via WireGuard) for data confidentiality. Even though I know that the underlying mechanisms are different, subjectively this <em>feels</em> a lot like using tunnels to connect workloads on different compute nodes (i.e., network virtualization). Is the relationship between network virtualization and service mesh closer than some folks might wish to admit?</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Researchers have uncovered a potential security flaw in Apple Silicon CPUs; more details in <a href="https://9to5mac.com/2022/05/02/augury-apple-silicon-vulnerability/">this 9to5Mac article</a>. I&rsquo;m not sure how I feel about security researchers calling this flaw &ldquo;not that bad.&rdquo;</li>
+<li>Colin Percival shares some benchmarks using <a href="http://www.daemonology.net/blog/2022-05-23-FreeBSD-Graviton-3.html">FreeBSD on the Graviton 3</a>.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>An earlier security vulnerability that exposed APC Smart-UPS devices (see details <a href="https://www.helpnetsecurity.com/2022/03/08/ups-devices-vulnerabilities/">here</a>&mdash;attackers could even <em>destroy</em> the UPS!) now has <a href="https://www.helpnetsecurity.com/2022/05/03/tlstorm-2-0/">a follow-up exploit</a> that exposes Aruba and Avaya network switches to remote code execution. In both cases, it&rsquo;s a problem with the TLS implementation in a library called NanoSSL.</li>
+<li>Steven J. Vaughan-Nichols writes about <a href="https://thenewstack.io/first-malware-running-on-aws-lambda-discovered/">the first malware discovered running on AWS Lambda</a>.</li>
+<li>Attacks that <a href="https://threatpost.com/iphones-attack-turned-off/179641/">can affect iPhones when they&rsquo;re turned off</a>? Yikes. Fortunately, such an attack vector isn&rsquo;t very straightforward.</li>
+<li><a href="https://medium.com/cloud-security/zoom-rce-time-to-patch-f9ad802e0e5e">Via Teri Radichel</a>, I saw this article from Google Project Zero about <a href="https://googleprojectzero.blogspot.com/2022/01/zooming-in-on-zero-click-exploits.html">zero-click security vulnerabilities in Zoom</a>. Fortunately, it looks like these vulnerabilities have been patched, so be sure to update your Zoom client. I know it&rsquo;s a pain, but it&rsquo;s one of those things you just need to do.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Kubernetes 1.24 marks the first release of the open source container orchestration platform that is signed using Sigstore (more details <a href="https://blog.sigstore.dev/kubernetes-signals-massive-adoption-of-sigstore-for-protecting-open-source-ecosystem-73a6757da73">here</a>). As I understand it, this is the culmination of an effort launched about a year ago <a href="https://security.googleblog.com/2021/05/making-internet-more-secure-one-signed.html">when Google started signing the &ldquo;distroless&rdquo; images</a>.</li>
+<li>Kat Cosgrove provides <a href="https://kubernetes.io/blog/2022/05/03/dockershim-historical-context/">some historical context</a> for the removal of dockershim in Kubernetes 1.24.</li>
+<li>Although a bit older (from June 2021), this article on <a href="https://log.martinatkins.me/2021/06/14/terraform-plan-unknown-values/">unknown values in Terraform</a> feels like a direct response to the rise of tools leveraging general purpose programming languages for declarative infrastructure management (think tools like Pulumi, AWS CDK, etc.).</li>
+<li>Manoj Bhagwat provides <a href="https://manoj-bhagwat60.medium.com/kiali-manage-visualize-validate-and-troubleshoot-your-service-mesh-5f9c68ea8ced">a high-level overview of Kiali and how to install it</a>.</li>
+<li>Lee Briggs <a href="https://leebriggs.co.uk/blog/2022/05/09/learning-to-love-yaml">talks about the YAML</a> (he&rsquo;s discussing the recent addition of YAML support in Pulumi).</li>
+<li>Viktor van den Berg shares his <a href="https://www.viktorious.nl/2022/05/09/ckad-exam-experience-and-some-tips-on-how-to-prepare/">CKAD exam experience and some tips on how to prepare</a>.</li>
+<li>Here&rsquo;s <a href="https://prefetch.net/blog/2022/05/01/understanding-cloud-spend-in-your-terraform-workflows/">a user&rsquo;s perspective</a> on using <code>infracost</code> to bring cloud spend into your Terraform worfklows.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>The new utility <code>zq</code> claims to be <a href="https://www.brimdata.io/blog/introducing-zq/">an easier and faster alternative to <code>jq</code></a>.</li>
+</ul>
+<h2 id="programming">Programming</h2>
+<ul>
+<li><a href="https://slsa.dev/blog/2022/05/slsa-sbom">This article</a> helped me better understand the relationship(s) between SLSA and SBOMs.</li>
+<li>Bashayr Alabdullah provides an example of <a href="https://bshayr29.medium.com/build-your-own-admission-controllers-in-kubernetes-using-go-bef8ba38d595">building your own admission controllers in Kubernetes using Go</a>.</li>
+<li>John Breen&rsquo;s article on <a href="https://breen.tech/post/but-await-theres-more/">patterns with promises and asynchronous programming in JavaScript</a> provides some practical advice on understanding these concepts. (Hat tip to Corey Quinn for sharing this article via Twitter.)</li>
+<li>Alex Edwards&rsquo; post on <a href="https://www.alexedwards.net/blog/interfaces-explained">Golang interfaces explained</a> was helpful.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>For relevant storage news, I&rsquo;d recommend having a look at J Metz&rsquo; <a href="https://jmetz.com/2022/05/storage-short-take-42/">Storage Short Take 42</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>The state of virtualization on Apple Silicon hardware has seen a few developments in recent days and weeks. One project that caught my attention was <a href="https://github.com/cirruslabs/tart">Tart</a>, a CLI-driven tool that leverages the virtualization support present in macOS to run virtual macOS instances. This will become even more useful, in my opinion, when Linux support is added. (The possibility of a Vagrant provider just seals the deal, in my opinion.)</li>
+<li>The world of virtualization&mdash;nay, more than just virtualization&mdash;will be forever changed with <a href="https://www.theverge.com/2022/5/26/23142653/broadcom-vmware-acquisition-deal-software">the announcement of Broadcom&rsquo;s acquisition of VMware</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Mike McQuaid shares some details on <a href="https://mikemcquaid.com/2021/07/21/how-i-get-things-done/">how he gets things done</a>.</li>
+<li>Ashley Janssen discusses <a href="https://ashleyjanssen.com/time-blocking-and-imagining-your-ideal-week/">how time-blocking may help improve productivity</a>. This is not a technique I&rsquo;ve generally used, so I&rsquo;d be curious to hear from readers who may have used or are currently using techniques like this.</li>
+<li>Here&rsquo;s <a href="https://www.readysetcloud.io/blog/allen.helton/how-to-build-your-first-architecture-diagram/">some advice</a> on &ldquo;starting your diagramming career&rdquo; (let&rsquo;s be real, many IT folk need to create diagrams on a regular basis, so tips on creating diagrams might prove really useful).</li>
+</ul>
+<h2 id="other">Other</h2>
+<ul>
+<li>I&rsquo;ve seen a <em>lot</em> of work-from-home desk setups, but <a href="https://bdarfler.medium.com/the-best-starter-desk-setup-for-2022-7586cf603581">this one</a> stood out as actually having some budget-conscious selections (which is often not the case). The use of 3M Command strips to affix stuff under the desk is also so blindingly obvious that I&rsquo;m surprised I hadn&rsquo;t thought of it already.</li>
+</ul>
+<p>It&rsquo;s time to wrap up. I hope you all have a wonderful weekend! Feel free to reach out to me if you have questions, comments, suggestions for improvement, or if you just want to say hi. The easiest way to contact me is <a href="https://twitter.com/scott_lowe">via Twitter</a>. Thanks for reading!</p>
+    </div>
+  
+    <div class="post">
+      <h1 class="post-title"><a href="https://www.howellyang.com/2022/05/12/fine-tuning-control-plane-access-with-cluster-api/">Fine-Tuning Control Plane Access with Cluster API</a></h1>
+      <span class="post-date">129 May 121212</span>
+      <p>When <a href="https://cluster-api.sigs.k8s.io">Cluster API</a> creates a workload cluster, it also creates a load balancing solution to handle traffic to the workload cluster&rsquo;s control plane. This is necessary so that the control plane endpoint is decoupled from the underlying control plane nodes (which facilitates scaling the control plane, among other things). On AWS, this mean creating an ELB and a set of security groups. For flexibility, Cluster API provides a limited ability to customize this control plane load balancer. In this post, I&rsquo;ll show you how to use this functionality to fine-tune access to a workload cluster&rsquo;s control plane when using Cluster API with AWS.</p>
+<p>If you&rsquo;re not familiar with Cluster API (hereafter just referred to as &ldquo;CAPI&rdquo;), then <a href="/2019/08/26/an-introduction-to-kubernetes-cluster-api/">my introduction to CAPI article</a> may be useful. Keep in mind that article was written in 2019, while the project was still in its early stages. The high-level concepts are correct, but some of the details may have shifted slightly over the last three years as the project progressed from <code>v1alpha1</code> APIs to the now-current <code>v1beta1</code> APIs.</p>
+<p>The key here is the <code>controlPlaneLoadBalancer</code> object, which is part of the <code>AWSCluster</code> object (see details <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/master/api/v1beta1/awscluster_types.go#L55-L57">here in the code</a> or <a href="https://pkg.go.dev/sigs.k8s.io/cluster-api-provider-aws/api/v1beta1#AWSClusterSpec">here via <code>pkg.go.dev</code></a>). With regard to access to a workload cluster&rsquo;s control plane via its control plane load balancer, two fields are of particular interest:</p>
+<ol>
+<li>The <code>additionalSecurityGroups</code> field allows you to list any additional security groups&mdash;referenced by security group ID&mdash;that the control plane load balancer should use (this is in addition to the standard set of security groups created by CAPI). This is an optional field.</li>
+<li>The <code>scheme</code> field allows you to specify whether the load balancer should be externally-accessible from the Internet (specified with the value &ldquo;internet-facing&rdquo;, which is the default value) or not (specified with the value &ldquo;internal&rdquo;). If you specify &ldquo;internal&rdquo; as the scheme, then the load balancer won&rsquo;t get a public IP address and won&rsquo;t be reachable via the Internet. This would be a great way to restrict access to only those connections coming via a VPN (or similar) into the VPC.</li>
+</ol>
+<p>Personally, I would <em>at least</em> switch the scheme on the control plane load balancer; otherwise, the API server of your newly-created workload cluster is publicly accessible via the Internet. You can then leverage any additional security groups as needed.</p>
+<p>One note to keep in mind: the default security group created by the AWS provider for CAPI (referred to as CAPA) allows access from <code>0.0.0.0/0</code> to the control plane load balancer. If you need to <em>restrict</em> access to something more fine-grained than that, using the <code>additionalSecurityGroups</code> field is not the way. As outlined <a href="https://cluster-api-aws.sigs.k8s.io/topics/bring-your-own-aws-infrastructure.html#security-groups">here</a>, you&rsquo;ll instead want to use the <code>securityGroupOverrides</code> field (which is found at <code>spec.network.securityGroupOverrides</code>).</p>
+<p>I hope this information is useful. Feel free to reach out to me if you have any questions (or corrections, in the event I explained/presented something incorrectly). You can find me on <a href="https://kubernetes.slack.com">the Kubernetes Slack</a> (as well as a number of other Slack communities) as well as <a href="https://twitter.com/scott_lowe">on Twitter</a>.</p>
+    </div>
+  
+    <div class="post">
+      <h1 class="post-title"><a href="https://www.howellyang.com/2022/04/29/technology-short-take-154/">Technology Short Take 154</a></h1>
+      <span class="post-date">299 May 292929</span>
+      <p>Welcome to Technology Short Take #154! My link of links and articles from around the Internet is a bit light on networking and virtualization this time around, but heftier in the security, cloud, and OS/application sections. I hope that I&rsquo;ve managed to include something that you&rsquo;ll find useful. Enjoy the content!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Lucas Pardue and Christopher Wood share <a href="https://blog.cloudflare.com/a-primer-on-proxies/">a primer on proxies</a>. (Hat tip to Matt Oswalt for putting this on my Twitter timeline.)</li>
+<li>Ivan Pepelnjak talks about the 1.2.1 release of netsim-tools in <a href="https://blog.ipspace.net/2022/04/netsim-tools-release-1.2.1.html">this blog post</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>It seems like silicon photonics is something the industry has been talking about for years, but something that never seems to come to fruition. The Next Platform recently chatted with Andy Bechtolsheim about it; you can read the results of that discussion <a href="https://www.nextplatform.com/2022/03/10/talking-silicon-photonics-signal-and-noise-with-andy-bechtolsheim/">here</a>.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Daniel Holback <a href="https://fluxcd.io/blog/2022/02/security-more-confidence-through-fuzzing/">talks about the addition of fuzzing to the Flux controllers</a>, to improve the security posture of the Flux project.</li>
+<li>Wojciech Reguła <a href="https://wojciechregula.blog/post/macos-red-teaming-bypass-tcc-with-old-apps/">shares</a> a trick for bypassing the macOS TCC protection using older applications.</li>
+<li>It appears that <a href="https://www.crowdstrike.com/blog/lemonduck-botnet-targets-docker-for-cryptomining-operations/">a well-known cryptomining botnet has started targeting Docker</a>. (Hat tip to Teri Radichel for sharing this and making it appear on my Twitter timeline.)</li>
+<li>GitHub recently shared details on <a href="https://github.blog/2022-04-12-git-security-vulnerability-announced/">a Git security vulnerability</a>.</li>
+<li>The idea of a software bill of materials (SBOM) is gaining traction; <a href="https://anchore.com/sbom/how-to-generate-an-sbom-with-free-open-source-tools/">here&rsquo;s an article</a> on a tool by Anchore that claims to be able to help.</li>
+<li>Liam Galvin shows <a href="https://lia.mg/posts/malicious-rego/">a couple of ways</a> that Rego (the language behind Open Policy Agent) can be used maliciously.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Richard Seroter shares some data <a href="https://seroter.com/2022/04/18/measuring-container-size-and-startup-latency-for-serverless-apps-written-in-c-node-js-go-and-java/">comparing container size and startup latency for serverless apps</a> written in various programming languages.</li>
+<li>I came across <a href="https://www.praetorian.com/blog/introducing-snowcat/">this post announcing Snowcat</a>, a security scanner for Istio. I suspect that as service meshes continue to proliferate, I suspect we&rsquo;ll see more tools like this emerge.</li>
+<li>Here&rsquo;s <a href="https://www.vxav.fr/2022-04-23-fluxcd-in-tanzu-community-edition-0.12/">a walkthrough of FluxCD on Tanzu Community Edition</a>. Most of this, if not all of this, is also possible on non-Tanzu Kubernetes clusters; obviously the Tanzu CLI commands and the use of <code>kapp</code> (from Carvel) may be different, but the basic concepts are all the same.</li>
+<li>Vladislav Supalov <a href="https://vsupalov.com/pulumi-learnings/">shares some things he wished he&rsquo;d known earlier about Pulumi</a>. Nothing bad here, in my opinion, just things that come from using a general-purpose programming language instead of a more constrained domain-specific language.</li>
+<li>Also on the topic of Pulumi: Martin Thwaites discusses <a href="https://martinjt.me/2021/03/04/pulumi-multiple-projects-with-custom-backends/">using multiple Pulumi projects with custom backends</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Scott Hanselman insists that <a href="https://www.hanselman.com/blog/one-email-rule-have-a-separate-inbox-and-an-inbox-cc-to-reduce-email-stress-guaranteed">this one e-mail rule</a> will change your life.</li>
+<li>Julia Ferraioli <a href="https://www.juliaferraioli.com/blog/2022/your-git-email-matters/">reminds</a> readers that the e-mail address you use in a Git repository does, in fact, matter.</li>
+<li>In the event you need to understand <a href="https://platformers.dev/log/2022/latest-literally-kills-puppies/">why you should avoid <code>:latest</code> when working with Docker images</a>, David Norton has you covered. I don&rsquo;t know about it killing puppies, but it&rsquo;s definitely <em>not</em> a good idea.</li>
+<li>Jorge Castro encourages folks to <a href="https://www.ypsidanger.com/lets-just-kill-the-silly-myths/">just kill the silly myths</a> (regarding desktop Linux).</li>
+<li>Web views in macOS? See <a href="https://blog.jim-nielsen.com/2022/inspecting-web-views-in-macos/">here</a> for details on how to inspect them.</li>
+<li>Katarina Brookfield shares details with readers on <a href="http://advecti.io/2022/13-automating-hugo-k8s-deployment-with-gitlab-cicd/">automating updates to her Hugo-based site using GitLab CI/CD</a>.</li>
+<li>Poorna Gaddehosur has an update on <a href="https://cloudblogs.microsoft.com/opensource/2022/02/22/getting-linux-based-ebpf-programs-to-run-with-ebpf-for-windows/">getting Linux-based eBPF programs to run with eBPF on Windows</a>.</li>
+<li>When I first saw <a href="https://blog.dowhile0.org/2022/04/22/fedora-36-a-brave-new-drm-kms-only-world/">this article</a>, I was thinking DRM was &ldquo;Digital Rights Management&rdquo; and was I really caught off-guard. (Hint: DRM means something entirely different in the context of the article.)</li>
+<li>Andreas Sommer shares some <a href="https://andidog.de/blog/2022-04-21-grafana-dashboards-best-practices-dashboards-as-code">best practices for Grafana dashboards</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Howard Oakley has <a href="https://eclecticlight.co/2022/04/23/explainer-filevault/">a great post explaining FileVault</a>. (Hat tip to Stephen Foskett for putting this in my Twitter timeline.)</li>
+<li>Also from Howard, <a href="https://eclecticlight.co/2022/04/18/m1-thunderbolt-ports-dont-fully-support-usb-3-1-gen-2/">here&rsquo;s an explanation</a> of why you may be getting less-than-promised storage throughput for USB-C storage on your M1-based Macs.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Eric Sloof has some information on <a href="https://www.ntpro.nl/blog/archives/3668-Configure-the-vRealize-Orchestrator-Plug-in-for-vCloud-Director.html">how to configure the vRealize Orchestrator plugin for vCloud Director</a>.</li>
+<li>QEMU 7.0 was recently released; <a href="https://www.phoronix.com/scan.php?page=news_item&amp;px=QEMU-7.0-Released">here&rsquo;s</a> Michael Larabel&rsquo;s write-up for Phoronix.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Robin Moffatt, a developer advocate at Confluent, recently wrote about <a href="https://rmoff.net/2022/04/07/hanging-up-my-boarding-passes-and-jetlagfor-now/">hanging up his boarding passes and jetlag (for now)</a>. I have a lot of respect for Robin taking the time to do some serious introspection, and deciding to put family first. Kudos.</li>
+<li>I love <a href="https://blog.ipspace.net/2022/04/keep-blogging.html">this motivational post</a> by Ivan Pepelnjak on why you (yes, you!) should keep blogging. And thanks for the shout-out at the end of that post, Ivan!</li>
+</ul>
+<p>That&rsquo;s all for now! I&rsquo;ll be back in a couple weeks with another Technology Short Take, but until then feel free to contact me if you have links to share, interesting articles you&rsquo;ve found, or if you just want to say hello! You can find me on any number of Slack communities, or you can contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Thanks for reading!</p>
+    </div>
+  
+    <div class="post">
+      <h1 class="post-title"><a href="https://www.howellyang.com/2022/04/15/technology-short-take-153/">Technology Short Take 153</a></h1>
+      <span class="post-date">159 May 151515</span>
+      <p>Welcome to Technology Short Take #153! My personal and professional life has kept me busy over the last couple of months, so things have been quiet here on the blog. I&rsquo;ve still been collecting links to share with you, though, and here&rsquo;s the latest collection. I hope you&rsquo;re able to find something useful here!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li><a href="https://pansift.com/blog/how-to-fix-ipv6-connectivity/">This article</a> contains some good information on IPv6 for those who are just starting to get more familiar with it, although toward the end it turns into a bit of an advertisement.</li>
+<li>Want to understand <code>kube-proxy</code>, a key part of Kubernetes networking, a bit better? <a href="https://mayankshah.dev/blog/demystifying-kube-proxy/">Start here</a>. Arthur Chiao&rsquo;s <a href="https://arthurchiao.art/blog/cracking-k8s-node-proxy/">post on cracking <code>kube-proxy</code></a> is also an excellent resource&mdash;in fact, there&rsquo;s so much information packed in there you may need to read it more than once.</li>
+<li>Xavier Avrillier <a href="https://www.vxav.fr/2022-03-11-on-premise-layer-2-service-type-loadbalancer-with-antrea/">walks</a> readers through using Antrea (a Kubernetes CNI built on top of Open vSwitch&mdash;a topic I&rsquo;ve touched on a time or two) to provide on-premise load balancing in Kubernetes.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Cabling is hardware, right? What happens to submarine cables when there are massive events, like a volcanic eruption? Ulrich Speidel <a href="https://blog.apnic.net/2022/03/01/when-volcanoes-go-bang-submarine-cables-do-what/">shares</a> some of the findings after the volcanic eruption in Tonga.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Although Linux is often considered to be superior to Windows and macOS with regard to security, it is not without <a href="https://arstechnica.com/information-technology/2022/03/linux-has-been-bitten-by-its-most-high-severity-vulnerability-in-years/">its own security flaws</a>. I, personally, would posit that Linux <em>can</em> be more secure than other platforms, but it requires proper configuration and can still be undone by a loose nut behind the keyboard.</li>
+<li>Ouch&mdash;<a href="https://orca.security/resources/blog/autowarp-microsoft-azure-automation-service-vulnerability/">another Azure vulnerability</a> that allows cross-account access.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Diego Sucaria shows <a href="https://diegosucaria.info/how-to-access-a-private-eks-cluster-from-your-local-machine-without-a-vpn/">how to use an SSH SOCKS proxy to access private Kubernetes clusters</a>. This is an interesting approach that, honestly, I hadn&rsquo;t considered. (Warning: I&rsquo;m not sure the configuration as described in the article will actually work, but the concept is sound.) If you&rsquo;re unfamiliar with SSH SOCKS proxying, read <a href="https://linuxtect.com/create-socks-proxy-via-ssh-tunnelling/">this</a> to get up to speed (or use your favorite web search engine, there are many articles out there on this topic).</li>
+<li>Version 3.8.0 of Helm adds the ability to store and work with charts in container (OCI, Open Container Initiative) registries (instead of Helm repositories). More information is available in <a href="https://helm.sh/blog/storing-charts-in-oci/">this Helm blog post</a>.</li>
+<li>Daniel Helfand <a href="https://carvel.dev/blog/carvel-vcluster/">plays around with vclusters and Carvel</a>.</li>
+<li>Here&rsquo;s <a href="https://elastisys.com/designing-and-deploying-scalable-applications-on-kubernetes/">a set of 15 principles for designing and deploying scalable applications on Kubernetes</a>.</li>
+<li>Fatima Silveira has a good article on <a href="https://itnext.io/kubernetes-for-dummies-deployment-auto-scaling-28ad0f9da1df">using the Kubernetes Horizontal Pod Autoscaler</a>.</li>
+<li>Ajeet Singh Raina shares a list of <a href="https://dev.to/ajeetraina/top-200-kubernetes-tools-for-devops-engineer-like-you-3h7e">the top 200 Kubernetes tools for DevOps engineers</a>.</li>
+<li>Levent Ogut takes <a href="https://loft.sh/blog/kubernetes-init-containers/">a deep dive into Kubernetes init containers</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Steven Bright shows <a href="https://www.stevenbright.com/2022/03/deploy-salt-minions-automatically-using-vmware-tools/">how to deploy Salt minions automatically using VMware Tools</a>. (Note that this page doesn&rsquo;t seem to render properly in Firefox, although Chrome and Safari seem fine.)</li>
+<li>I found this article to be <a href="https://www.fermyon.com/blog/how-to-think-about-wasm">a good overview of WebAssembly</a>.</li>
+<li>Matt Oswalt takes readers though <a href="https://oswalt.dev/2022/02/non-local-address-binds-in-linux/">a fairly in-depth look</a> at sockets and address binds in Linux.</li>
+<li>If you are an absolute beginner with Envoy Proxy, <a href="https://adamtheautomator.com/envoy-proxy/">this tutorial</a> will help you get started. However, it quickly runs out of steam, and you&rsquo;ll need to progress to more advanced examples and documentation to continue your learning journey.</li>
+<li>I asked a question about Git, Git tags, and releasing versions of a project on Twitter the other day (here&rsquo;s <a href="https://twitter.com/scott_lowe/status/1513557942255206401">the tweet</a>), and <a href="https://nvie.com/posts/a-successful-git-branching-model/">this article on Git branching</a> was shared with me. Perhaps you&rsquo;ll find it useful as well!</li>
+<li>I&rsquo;ve been digging into OIDC/OAuth 2.0 lately, and learning about JWTs (JSON Web Tokens, see <a href="https://jwt.io/introduction/">here</a> for an introduction). I found this article telling folks to <a href="https://sdoxsee.github.io/blog/2020/01/06/stop-overloading-jwts-with-permission-claims">stop overloading JWTs with permissions claims</a> a while ago, but at the time I didn&rsquo;t fully understand all the concepts or the implications. Now that I&rsquo;ve had some time and some exposure, this makes a lot more sense to me&mdash;and I agree with the author!</li>
+<li>Speaking of JWTs: they don&rsquo;t score so well in Thomas Ptacek&rsquo;s <a href="https://fly.io/blog/api-tokens-a-tedious-survey/">survey of API tokens</a>. There&rsquo;s a lot to unpack in Ptacek&rsquo;s article; I suspect I&rsquo;ll be coming back to read it again later as my knowledge in this area grows. Some of it is still too advanced for me right now.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing here this time around&mdash;maybe <a href="https://jmetz.com/2022/03/storage-short-take-41/">go check J Metz&rsquo; blog instead</a>?</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>If you&rsquo;re a PowerCLI user, <a href="https://www.hollebollevsan.nl/usefull-powercli-scripts/">here are some scripts you may find useful</a>.</li>
+<li><a href="https://www.vmwareopsguide.com/">This</a> is such an invaluable resource. And it&rsquo;s <a href="https://github.com/TheNewStellW/vmware-operations-guide">publicly available on GitHub</a>, although not licensed with a typical open source license.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Have you ever had one of those days where you just aren&rsquo;t feeling like working? I think we all have. Here is <a href="https://hbr.org/2018/11/how-to-keep-working-when-youre-just-not-feeling-it">an article from the Harvard Business Review</a> on some strategies for motivating yourself when that happens.</li>
+<li>Although written from the perspective of a developer seeking to improve their knowledge in a particular programming language, I think the ideas and principles laid out in this article on <a href="https://www.learncoderetain.com/2021/06/28/how-developers-remember-things/">how developers remember things</a> are applicable to folks learning new things in other IT disciplines as well.</li>
+</ul>
+<p>That&rsquo;s it for this time around. I&rsquo;ll be back soon with more original content as well as more Short Takes! In the meantime, feel free to reach out to me&mdash;my e-mail address isn&rsquo;t hard to find, I&rsquo;m present in a number of Slack communities, and you can always hit <a href="https://twitter.com/scott_lowe">me on Twitter</a> (DMs are open). Thanks for reading!</p>
+    </div>
+  
+
+
+  <h1>Recent Posts</h1>
+
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/02/28/technology-short-take-152/">Technology Short Take 152</a></h2>
+      <span class="post-date">289 May 282828</span>
+      <p>Welcome to Technology Short Take #152! Normally I&rsquo;d publish a Technology Short Take in the morning on a Friday, but I really wanted to get this one out so I&rsquo;m making it live late in the day on a Monday. Here&rsquo;s hoping I&rsquo;ve included some content below that you find useful!</p><em><a href="https://www.howellyang.com/2022/02/28/technology-short-take-152/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/02/17/using-cert-manager-with-kuma-mtls/">Using cert-manager with Kuma for mTLS</a></h2>
+      <span class="post-date">179 May 171717</span>
+      <p>When configuring mutual TLS (mTLS) on <a href="https://kuma.io/">the open source Kuma service mesh</a>, users have a couple of different options. They can use a &ldquo;builtin&rdquo; certificate authority (CA), in which Kuma itself will generate a CA certificate and key for use in creating service-specific mTLS certificates. Users also have the option of using a &ldquo;provided&rdquo; CA, in which they must supply a CA certificate and key for Kuma to use when creating service-specific mTLS certificates. Both of these options are described <a href="https://kuma.io/docs/1.4.x/policies/mutual-tls/">on this page in the Kuma documentation</a>. In this post, I&rsquo;d like to explore the use of <a href="https://cert-manager.io/">cert-manager</a> as a &ldquo;provided&rdquo; CA for mTLS on Kuma.</p><em><a href="https://www.howellyang.com/2022/02/17/using-cert-manager-with-kuma-mtls/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/01/21/follow-up-bootstrapping-servers-ansible/">Follow Up: Bootstrapping Servers into Ansible</a></h2>
+      <span class="post-date">219 May 212121</span>
+      <p>Seven years ago, I wrote a quick post on <a href="/2015/05/26/bootstrap-servers-ansible/">bootstrapping servers into Ansible</a>. The basic gist of the post was that you can use variables on the <a href="https://www.ansible.com/">Ansible</a> command-line to specify hosts that aren&rsquo;t part of your inventory or log in via a different user (useful if the host doesn&rsquo;t yet have a dedicated Ansible user account because you want to use Ansible to create that account). Recently, though, I encountered a situation where this approach doesn&rsquo;t work, and in this post I&rsquo;ll describe the workaround.</p><em><a href="https://www.howellyang.com/2022/01/21/follow-up-bootstrapping-servers-ansible/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/01/21/technology-short-take-151/">Technology Short Take 151</a></h2>
+      <span class="post-date">219 May 212121</span>
+      <p>Welcome to Technology Short Take #151, the first Technology Short Take of 2022. I hope everyone had a great holiday season and that 2022 is off to a wonderful start! I have a few more links than normal this time around, although I didn&rsquo;t find articles in a couple categories. Don&rsquo;t worry&mdash;I&rsquo;ll keep my eyes peeled and my RSS reader ready to pull in new articles in those categories for next time. And now for the content!</p><em><a href="https://www.howellyang.com/2022/01/21/technology-short-take-151/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/01/12/getting-certificate-details-from-hashicorp-vault/">Getting Certificate Details from HashiCorp Vault</a></h2>
+      <span class="post-date">129 May 121212</span>
+      <p>It seems there are lots of tutorials on setting up a PKI (public key infrastructure) using <a href="https://www.vaultproject.io/">HashiCorp Vault</a>. What I&rsquo;ve found missing from most of these tutorials, however, is how to get details on certificates issued by a Vault-driven PKI <em>after</em> the initial creation. For example, someone other than you issued a certificate, but now you need to get the details for said certificate. How is that done? In this post, I&rsquo;ll show you a couple ways to get details on certificates issued and stored in HashiCorp Vault.</p><em><a href="https://www.howellyang.com/2022/01/12/getting-certificate-details-from-hashicorp-vault/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2022/01/10/using-test-driven-development-for-kustomize-overlays/">Using Test-Driven Development for Kustomize Overlays</a></h2>
+      <span class="post-date">109 May 101010</span>
+      <p>I am by no means a developer (not by a long shot!), but I have been learning lots of development-related things over the last several years and trying to incorporate those into my workflows. One of these is the idea of <em>test-driven development</em> (see <a href="https://en.wikipedia.org/wiki/Test-driven_development">Wikipedia</a> for a definition and some additional information), in which one writes tests to validate functionality before writing the code to implement said functionality (pardon the paraphrasing). In this post, I&rsquo;ll discuss how to use <a href="https://www.conftest.dev/"><code>conftest</code></a> to (loosely) implement test-driven development for <a href="https://kubernetes-sigs.github.io/kustomize/">Kustomize</a> overlays.</p><em><a href="https://www.howellyang.com/2022/01/10/using-test-driven-development-for-kustomize-overlays/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/12/31/technology-short-take-150/">Technology Short Take 150</a></h2>
+      <span class="post-date">319 May 313131</span>
+      <p>Welcome to Technology Short Take #150! This is the last Technology Short Take of 2021, so hopefully I&rsquo;ll close the year out &ldquo;with a bang&rdquo; with this collection of links and articles on various technology areas. Bring on the content!</p><em><a href="https://www.howellyang.com/2021/12/31/technology-short-take-150/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/12/23/review-owc-thunderbolt-dock/">Review: OWC Thunderbolt 3 Dock</a></h2>
+      <span class="post-date">239 May 232323</span>
+      <p>About six months ago I purchased an <a href="https://www.owcdigital.com/products/thunderbolt-3-dock-14-port">OWC Thunderbolt 3 Dock</a> to replace my <a href="https://www.anker.com/a8396launch">Anker PowerElite Thunderbolt 3 Dock</a> (see my review <a href="/2020/07/24/review-anker-powerexpand-elite-thunderbolt-3-dock/">here</a>). While there was nothing necessarily wrong with the Anker PowerElite, it lacked a digital audio port that I could use to send audio to a soundbar positioned under my monitor. (I&rsquo;d grown accustomed to using a soundbar when my 2012 Mac Pro was my primary workstation.) In this post, I&rsquo;ll provide a brief review of the OWC Thunderbolt 3 Dock.</p><em><a href="https://www.howellyang.com/2021/12/23/review-owc-thunderbolt-dock/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/12/10/technology-short-take-149/">Technology Short Take 149</a></h2>
+      <span class="post-date">109 May 101010</span>
+      <p>Welcome to Technology Short Take #149! I&rsquo;ll have one more Technology Short Take in 2021, scheduled for three weeks from now (on the last day of the year!). For now, though, I have a small collection of articles and links for your reading pleasure&mdash;not as many as I usually include in a Technology Short Take, but better than nothing at all (I hope!). Enjoy!</p><em><a href="https://www.howellyang.com/2021/12/10/technology-short-take-149/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/11/19/technology-short-take-148/">Technology Short Take 148</a></h2>
+      <span class="post-date">199 May 191919</span>
+      <p>Welcome to Technology Short Take #148, aka the Thanksgiving Edition (at least, for US readers). I&rsquo;ve been scouring RSS feeds and various social media sites, collecting as many useful links and articles as I can find: from networking hardware and networking CI/CD pipelines to Kernel TLS and tricks for improving your working memory. That&rsquo;s quite the range! I hope that you find something useful here.</p><em><a href="https://www.howellyang.com/2021/11/19/technology-short-take-148/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/11/01/using-kustomize-components-with-cluster-api/">Using Kustomize Components with Cluster API</a></h2>
+      <span class="post-date">19 May 1011</span>
+      <p>I&rsquo;ve been using <a href="https://kustomize.io">Kustomize</a> with <a href="https://cluster-api.sigs.k8s.io">Cluster API</a> (CAPI) to manage my AWS-based <a href="https://kubernetes.io">Kubernetes</a> clusters for quite a while (along with <a href="https://www.pulumi.com">Pulumi</a> for managing the underlying AWS infrastructure). For all the time I&rsquo;ve been using this approach, I&rsquo;ve also been unhappy with the overlay-based approach that had evolved as a way of managing multiple workload clusters. With the recent release of CAPI 1.0 and the v1beta1 API, I took this opportunity to see if there was a better way. I found a different way&mdash;time will tell if it is a better way. In this post, I&rsquo;ll share how I&rsquo;m using Kustomize components to help streamline managing multiple CAPI workload clusters.</p><em><a href="https://www.howellyang.com/2021/11/01/using-kustomize-components-with-cluster-api/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/10/29/technology-short-take-147/">Technology Short Take 147</a></h2>
+      <span class="post-date">299 May 292929</span>
+      <p>Welcome to Technology Short Take #147! The list of articles is a bit shorter than usual this time around, but I&rsquo;ve still got a good collection of articles and posts covering topics in networking, hardware (mostly focused on Apple&rsquo;s processors), cloud computing, and virtualization. There&rsquo;s bound to be something in here for most everyone! (At least, I hope so.) Enjoy your weekend reading!</p><em><a href="https://www.howellyang.com/2021/10/29/technology-short-take-147/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/10/25/influencing-cluster-api-ami-selection/">Influencing Cluster API AMI Selection</a></h2>
+      <span class="post-date">259 May 252525</span>
+      <p>The <a href="https://cluster-api.sigs.k8s.io/">Kubernetes Cluster API (CAPI) project</a>&mdash;which recently released v1.0&mdash;can, if you wish, help manage the underlying infrastructure associated with a cluster. (You&rsquo;re also fully able to have CAPI <a href="https://cluster-api-aws.sigs.k8s.io/topics/consuming-existing-aws-infrastructure.html">use existing infrastructure</a> as well.) Speaking specifically of <a href="https://aws.amazon.com/">AWS</a>, this means that the <a href="https://cluster-api-aws.sigs.k8s.io/">Cluster API Provider for AWS</a> is able to manage VPCs, subnets, routes and route tables, gateways, and&mdash;of course&mdash;EC2 instances. These EC2 instances are booted from a set of AMIs (Amazon Machine Images, definitely pronounced &ldquo;ay-em-eye&rdquo; with <a href="https://blog.technodrone.cloud/2019/03/ami-has-3-syllables-ami-aws.html">three syllables</a>) that are prepared and maintained by the CAPI project. In this short and simple post, I&rsquo;ll show you how to influence the AMI selection process that CAPI&rsquo;s AWS provider uses.</p><em><a href="https://www.howellyang.com/2021/10/25/influencing-cluster-api-ami-selection/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/10/21/creating-reusable-kuma-installation-yaml/">Creating Reusable Kuma Installation YAML</a></h2>
+      <span class="post-date">219 May 212121</span>
+      <p>Using CLI tools&mdash;instead of a &ldquo;wall of YAML&rdquo;&mdash;to install things onto <a href="https://kubernetes.io">Kubernetes</a> is a growing trend, it seems. <a href="https://istio.io">Istio</a> and <a href="https://cilium.io">Cilium</a>, for example, each have a CLI tool for installing their respective project. I get the reasons why; you can build logic into a CLI tool that you can&rsquo;t build into a YAML file. <a href="https://kuma.io">Kuma</a>, the open source service mesh maintained largely by Kong and a CNCF Sandbox project, takes a similar approach with its <code>kumactl</code> tool. In this post, however, I&rsquo;d like to take a look at creating reusable YAML to install Kuma, instead of using the CLI tool every time you install.</p><em><a href="https://www.howellyang.com/2021/10/21/creating-reusable-kuma-installation-yaml/">Read more...</a></em>
+    </div>
+  
+    <div class="post">
+      <h2 class="post-title"><a href="https://www.howellyang.com/2021/10/12/using-the-external-aws-cloud-provider-for-kubernetes/">Using the External AWS Cloud Provider for Kubernetes</a></h2>
+      <span class="post-date">129 May 121212</span>
+      <p>In 2018, after finding a dearth of information on setting up <a href="https://kubernetes.io">Kubernetes</a> with AWS integration/support, I set out to try to establish some level of documentation on this topic. That effort resulted in a few different blog posts, but ultimately culminated in <a href="/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">this post on setting up an AWS-integrated Kubernetes cluster using <code>kubeadm</code></a>. Although originally written for Kubernetes 1.15, the process described in that post is still accurate for newer versions of Kubernetes. With the release of Kubernetes 1.22, though, the in-tree AWS cloud provider&mdash;which is what is used/described in the post linked above&mdash;has been deprecated in favor of <a href="https://github.com/kubernetes/cloud-provider-aws">the external cloud provider</a>. In this post, I&rsquo;ll show how to set up an AWS-integrated Kubernetes cluster using the external AWS cloud provider.</p><em><a href="https://www.howellyang.com/2021/10/12/using-the-external-aws-cloud-provider-for-kubernetes/">Read more...</a></em>
+    </div>
+  
+
+
+  <h1>Older Posts</h1>
+
+  <div class="post">
+    <ul id="list">
+    
+      <li><a href="https://www.howellyang.com/2021/10/11/kustomize-transformer-configurations-for-cluster-api-v1beta1/">Kustomize Transformer Configurations for Cluster API v1beta1</a> <span class="post-date-list">119 May 111111</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/10/08/technology-short-take-146/">Technology Short Take 146</a> <span class="post-date-list">89 May 8088</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/10/07/installing-cilium-via-clusterresourceset/">Installing Cilium via a ClusterResourceSet</a> <span class="post-date-list">79 May 7077</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/09/24/technology-short-take-145/">Technology Short Take 145</a> <span class="post-date-list">249 May 242424</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/27/technology-short-take-144/">Technology Short Take 144</a> <span class="post-date-list">279 May 272727</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/26/establishing-vpc-peering-with-pulumi-and-go/">Establishing VPC Peering with Pulumi and Go</a> <span class="post-date-list">269 May 262626</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/23/using-aws-cli-tag-groups-of-aws-resources/">Using the AWS CLI to Tag Groups of AWS Resources</a> <span class="post-date-list">239 May 232323</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/06/technology-short-take-143/">Technology Short Take 143</a> <span class="post-date-list">69 May 6066</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/04/starting-wireguard-interfaces-automatically-launchd-macos/">Starting WireGuard Interfaces Automatically with Launchd on macOS</a> <span class="post-date-list">49 May 4044</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/08/03/alternate-approach-etcd-certificate-generation-kubeadm/">An Alternate Approach to etcd Certificate Generation with Kubeadm</a> <span class="post-date-list">39 May 3033</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/07/16/technology-short-take-142/">Technology Short Take 142</a> <span class="post-date-list">169 May 161616</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/07/07/adding-multiple-items-using-kustomize-json-6902-patches/">Adding Multiple Items Using Kustomize JSON 6902 Patches</a> <span class="post-date-list">79 May 7077</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/28/using-wireguard-on-mac-via-cli/">Using WireGuard on macOS via the CLI</a> <span class="post-date-list">289 May 282828</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/25/installing-older-versions-of-kumactl-on-an-m1-mac/">Installing Older Versions of Kumactl on an M1 Mac</a> <span class="post-date-list">259 May 252525</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/22/making-wireguard-from-homebrew-work-on-an-m1-mac/">Making WireGuard from Homebrew Work on an M1 Mac</a> <span class="post-date-list">229 May 222222</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/21/kubernetes-port-names-and-terminating-https-traffic-on-aws/">Kubernetes Port Names and Terminating HTTPS Traffic on AWS</a> <span class="post-date-list">219 May 212121</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/18/technology-short-take-141/">Technology Short Take 141</a> <span class="post-date-list">189 May 181818</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/17/review-logitech-ergo-k860-ergonomic-keyboard/">Review: Logitech Ergo K860 Ergonomic Keyboard</a> <span class="post-date-list">179 May 171717</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/06/02/review-2020-m1-based-macbook-pro/">Review: 2020 M1-Based MacBook Pro</a> <span class="post-date-list">29 May 2022</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/05/18/the-next-step/">The Next Step</a> <span class="post-date-list">189 May 181818</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/05/07/technology-short-take-140/">Technology Short Take 140</a> <span class="post-date-list">79 May 7077</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/04/13/making-firefox-on-linux-use-private-browsing-by-default/">Making Firefox on Linux use Private Browsing by Default</a> <span class="post-date-list">139 May 131313</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/04/02/technology-short-take-139/">Technology Short Take 139</a> <span class="post-date-list">29 May 2022</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/04/01/using-wireguard-on-macos/">Using WireGuard on macOS</a> <span class="post-date-list">19 May 1011</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/03/19/adding-a-machinehealthcheck-with-kustomize/">Adding a MachineHealthCheck using Kustomize</a> <span class="post-date-list">199 May 191919</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/03/12/technology-short-take-138/">Technology Short Take 138</a> <span class="post-date-list">129 May 121212</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/03/02/deploying-a-cni-automatically-with-a-clusterresourceset/">Deploying a CNI Automatically with a ClusterResourceSet</a> <span class="post-date-list">29 May 2022</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/02/22/setting-up-wireguard-for-aws-vpc-access/">Setting up WireGuard for AWS VPC Access</a> <span class="post-date-list">229 May 222222</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/02/13/closing-out-the-tokyo-assignment/">Closing out the Tokyo Assignment</a> <span class="post-date-list">139 May 131313</span></li>
+    
+      <li><a href="https://www.howellyang.com/2021/02/12/technology-short-take-137/">Technology Short Take 137</a> <span class="post-date-list">129 May 121212</span></li>
+    
+    </ul>
+  </div>
+
+
+  <div class="post">Find more posts by browsing the <a href="/categories/">post categories</a>, <a href="/tags/">content tags</a>, or <a href="/archives/">site archives</a> pages. Thanks for visiting!</div>
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>
+

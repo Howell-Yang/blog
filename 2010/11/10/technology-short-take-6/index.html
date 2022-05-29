@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/11/10/technology-short-take-6/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #6</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1238 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #6, the latest collection of links, articles, and thoughts on virtualization, networking, storage, and the intersection of the three. I&rsquo;m going to try a slightly new format for this post in my Technology Short Take series; I&rsquo;m interested in knowing what you think about the format.</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>If you&rsquo;ve worked with UNIX (or UNIX variants like Linux or BSD), then you&rsquo;re probably familiar with regular expressions. This post breaks down the use of <a href="http://www.ciscozine.com/2010/09/29/cisco-regular-expressions/">regular expressions in Cisco IOS</a>, which I found useful.</p>
+</li>
+<li>
+<p>To get a better understand of some of the IEEE standards that serve to make Ethernet lossless (and thus be a viable transport for FCoE), I recommend having a look at two articles on Cisco IOS Hints and Tricks. The first article is on <a href="http://blog.ioshints.info/2010/09/introduction-to-8021qaz-enhanced.html">802.1Qaz (Enhanced Transmission Selection, or ETS)</a> and the second article touches on <a href="http://blog.ioshints.info/2010/10/pfcets-and-storage-traffic-real-story.html">PFC/ETS and how it impacts storage traffic</a>. The article on PFC&rsquo;s interaction with storage traffic is particularly good, as it really sheds light on how PFC/ETS will interact with FCoE in a way that at first seems counterintuitive. Once you think about it for a little bit, though, it does make sense.</p>
+</li>
+<li>
+<p>This article also provides <a href="http://packetattack.wordpress.com/2010/10/06/dont-drop-the-baby-data-center-bridging-wants-storage-to-trust-ethernet/">a quick summary of the various Data Center Bridging (DCB) standards</a>, in case you need a review of what&rsquo;s involved. (Another post on the DCB standards is available <a href="http://www.networkworld.com/community/blog/ethernet-adapts-data-center-applications---pa">here</a> as well.)</p>
+</li>
+<li>
+<p>Aaron Conaway has a good post on using <a href="http://aconaway.com/2010/10/15/sla-monitoring-on-the-pixasa/">SLA monitoring on the PIX/ASA</a>.</p>
+</li>
+<li>
+<p>Need to add a static ARP entry on a Nexus switch? Jeff (aka <a href="http://twitter.com/fryguy_pa">fryguy_pa</a> on Twitter) has a quick how-to on adding <a href="http://fryguypa.wordpress.com/2010/10/28/static-arp-entries-on-nx-os/">static ARP entries on NX-OS</a>.</p>
+</li>
+<li>
+<p>Carole Warner Reece posted what I thought was a useful how-to on <a href="http://www.netcraftsmen.net/resources/blogs/configuring-back-to-back-vpcs-on-cisco-nexus-switches.html">setting up back-to-back vPCs on Cisco Nexus switches</a>. In her example, she used two pairs of Nexus 7000 switches, but it could have just as easily been Nexus 7000s and Nexus 5000s. I&rsquo;m not sure I entirely understand the benefit of this configuration; she states that it&rsquo;s loop-free but I think I&rsquo;m going to need to think on this for a bit longer in order to fully get why someone might use this particular configuration.</p>
+</li>
+<li>
+<p>And speaking of ways to eliminate Spanning Tree, Jeremy Filliben has a <a href="http://www.jeremyfilliben.com/2010/10/comparison-of-current-spanning-tree.html">comparison of a few of the methods</a>. In the spirit of redundancy, here&rsquo;s another good post on the topic of <a href="http://www.networkworld.com/community/blog/ethernet-adapts-data-center-applications---p-0">Spanning Tree and it&rsquo;s role in FCoE multipathing</a>.</p>
+</li>
+<li>
+<p>Josh O&rsquo;Brien reminds readers in <a href="http://www.staticnat.com/WP/2010/10/07/sometimes-we-just-dont-need-routing/">this post</a> that there&rsquo;s a reason the <code>no ip routing</code> command exists in Layer 3-capable switches. &ldquo;Just because you can, doesn&rsquo;t mean you should&hellip;&rdquo;</p>
+</li>
+<li>
+<p>I experimented with policy-based routing in my virtualized GNS3 environment a while ago, but never could make it work. I didn&rsquo;t really have a use case; I was just experimenting and (hopefully) learning. I might have to use <a href="http://www.booches.nl/2010/10/13/policy-based-routing-in-a-nutshell/">this post</a> for some guidance next time I give it another try.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>If you&rsquo;re in the market for a new storage array, you might want to check support for the vStorage APIs for Array Integration (VAAI). <a href="http://v-reality.info/2010/10/list-of-vaai-capable-storage-arrays/">This page</a> has a list of VAAI-capable arrays and the necessary firmware required to support VAAI.</p>
+</li>
+<li>
+<p>Erik Zandboer describes a <a href="http://www.vmdamentals.com/?p=797">potential issue with VMware ESXi 4.1, host profiles, and CLARiion auto-registration</a>. I&rsquo;m not aware of any workaround for the problem yet.</p>
+</li>
+<li>
+<p>I think that this has been covered quite well elsewhere, but I did want to point it out for the sake of completeness. Fellow vSpecialist team member Nick Weaver (<a href="http://twitter.com/lynxbat">lynxbat</a> on Twitter) has created a PowerShell front-end for the EMC Celerra arrays, which he&rsquo;s calling <a href="http://nickapedia.com/2010/11/01/ubershell-ninja-scripting/">UBERShell</a>. It&rsquo;s quite impressive what Nick&rsquo;s managed to create. Go have a look if you haven&rsquo;t already.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>I don&rsquo;t know if this one counts as virtualization or networking, but either way I guess it doesn&rsquo;t really matter. I found <a href="http://kb.vmware.com/kb/1013094">this VMware KB article</a> on the use of the &ldquo;Route based on IP hash&rdquo; setting and the fact that it is not supported on Cisco UCS. This is because the UCS 6100 series fabric interconnects currently don&rsquo;t support any form of cross-stack link aggregation.</p>
+</li>
+<li>
+<p>Here&rsquo;s another article that I&rsquo;m not quite sure is networking or virtualization, but I&rsquo;ll put it under virtualization. Cisco UCS offers the ability to do fabric failover, i.e., provide NIC redundancy in hardware so that the OS/hypervisor doesn&rsquo;t need to. Prior to the 1.4 release of the UCS Manager software, though, there were problems with learned MAC addresses, like the ones given to VMs. I&rsquo;ll let Brad Hedlund explain the rest of it to you in this great post on <a href="http://bradhedlund.com/2010/09/23/cisco-ucs-fabric-failover/">UCS fabric failover</a>. As with so many of Brad&rsquo;s articles, this one is well-written and very informative.</p>
+</li>
+<li>
+<p>I think I&rsquo;m missing something with regard to Hyper-V&rsquo;s new dynamic memory feature. I&rsquo;ve been reading a few posts (<a href="http://blogs.technet.com/b/virtualization/archive/2010/11/08/hyper-v-dynamic-memory-test-for-vdi-density.aspx">this one</a> springs to mind) about how using dynamic memory can increase VM density. I agree with that. As I understand Hyper-V&rsquo;s dynamic memory, it&rsquo;s about configuring a VM with the minimum amount of RAM and then letting it &ldquo;burst&rdquo; up to a pre-configured maximum, but without actually overcommitting memory on the host (because, according to Microsoft, overcommitment is bad). So what happens to the extra memory that VMs aren&rsquo;t using? You can&rsquo;t overcommit, so that memory sits there idle, even though you could probably use it. Or am I missing something?</p>
+</li>
+<li>
+<p>In the event you&rsquo;re interested in exploring Hyper-V&rsquo;s dynamic memory feature, Ben Armstrong describes <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/10/28/enabling-dynamic-memory-on-windows-server-standard-and-web-editions.aspx">here</a> what&rsquo;s required to use it.</p>
+</li>
+<li>
+<p>This two-part series on VSS and VMware is great reading to get a better understanding of how VSS integration in VMware works (or doesn&rsquo;t work). Part 1 is <a href="http://www.blueshiftblog.com/?p=180">here</a>; Part 2 is <a href="http://www.blueshiftblog.com/?p=224">here</a>. Also, there&rsquo;s a good follow-up to both these articles that provides <a href="http://www.blueshiftblog.com/?p=473">additional information on application-level quiescing</a>.</p>
+</li>
+<li>
+<p>Jason Boche has been on a bit of a blogging marathon recently, cranking out some good stuff. There&rsquo;s this article on <a href="http://www.boche.net/blog/index.php/2010/10/28/reducing-ft-logging-traffic-for-disk-read-intensive-workloads/">reducing FT logging traffic for disk read intensive workloads</a>, this post on <a href="http://www.boche.net/blog/index.php/2010/10/24/vmware-dpm-issue/">an issue with VMware DPM</a>, a post on <a href="http://www.boche.net/blog/index.php/2010/10/20/hardware-status-and-maintenance-mode/">hardware status and maintenance mode</a> (applies only to pre-vSphere 4.1 environments), and finally a post on the <a href="http://www.boche.net/blog/index.php/2010/10/21/cpu-ready-to-rdy-conversion/">conversion from CPU Ready to %RDY</a>. All of these are good articles and well worth the read.</p>
+</li>
+<li>
+<p>Duncan&rsquo;s latest article on <a href="http://www.yellow-bricks.com/2010/11/09/esxplot-on-a-mac/">using esxplot on Mac OS X</a> is pretty cool; I might have to try that myself. Of course, Duncan produces lots and lots of good stuff (which is why he&rsquo;s perennially voted #1). One example: this brief summary of <a href="http://www.yellow-bricks.com/2010/10/14/vmware-high-availability-futures-part-of-bc7803/">some VMware HA futures</a>. If you haven&rsquo;t visited his site recently (or if you aren&rsquo;t subscribed to his RSS feed), you&rsquo;re doing yourself a disservice.</p>
+</li>
+<li>
+<p>Reviewing <a href="http://www.vmdamentals.com/?p=722">vscsiStats data using 3D surface charts</a> is awesome. I love it.</p>
+</li>
+<li>
+<p>These two articles by William Lam on <a href="http://www.virtuallyghetto.com/2010/10/how-to-run-vm-on-dropbox-storage.html">running VMs on Dropbox</a> and <a href="http://www.virtuallyghetto.com/2010/10/how-to-backup-vms-in-esx-onto-dropbox.html">backing up VMs to Dropbox</a> are interesting (and different), but not entirely practical. Of course, I don&rsquo;t think that William necessarily intended them to be practical, they struck me as more of &ldquo;I wonder if I could&hellip;&rdquo; type of situation. Still, it&rsquo;s interesting to see how data synchronization tools like <a href="http://www.dropbox.com/">Dropbox</a> could change the way we view/use VMs. If only there was a hardware-based solution that was transparent to the hypervisor&hellip;oh, wait, there is: it&rsquo;s called VPLEX! (Sorry, I couldn&rsquo;t resist. I&rsquo;ll try to behave next time.)</p>
+</li>
+</ul>
+<p>I have a ton more links and posts that I&rsquo;d love to include, but in the interest of time and length I&rsquo;ll stop here for today. I hope that you find something interesting and useful here!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/11/01/sioc-event-with-emc-mirrorview/">SIOC Event with EMC MirrorView</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/11/21/upcoming-podcasts/">Upcoming Podcasts</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f11%2f10%2ftechnology-short-take-6%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f11%2f10%2ftechnology-short-take-6%2f&text=Technology%20Short%20Take%20%236" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f11%2f10%2ftechnology-short-take-6%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/09/28/technology-short-take-4/">Technology Short Take #4</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2010/09/10/technology-short-take-3/">Technology Short Take #3</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2010/08/28/technology-short-take-2/">Technology Short Take #2</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

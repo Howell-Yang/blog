@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #12: Networking Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #12: Networking Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #12: Networking Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/05/16/technology-short-take-12-networking-edition/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #12: Networking Edition</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;527 words (estimated 3 minutes to read)</span>
+  <p>Now that I&rsquo;ve published the Storage Edition of Technology Short Take #12, it&rsquo;s time for the Networking Edition. Enjoy, and I hope you find something useful!</p>
+<ul>
+<li>
+<p>Ron Fuller&rsquo;s ongoing deep dive series on OTV (Overlay Transport Virtualization) has been great for me. I knew about the basics of OTV, but Ron&rsquo;s articles really gave me a better understanding of the technology. Check out the first three articles here: <a href="http://ccie5851.blogspot.com/2011/02/otv-deep-dive-part-one.html">part 1</a>, <a href="http://ccie5851.blogspot.com/2011/02/otv-deep-dive-part-two.html">part 2</a>, and <a href="http://ccie5851.blogspot.com/2011/03/otv-deep-dive-part-3.html">part 3</a>.</p>
+</li>
+<li>
+<p>Similarly, Joe Onisick&rsquo;s two-part (so far) series on inter-fabric traffic on Cisco UCS is very helpful and informative as well. There are definitely some design considerations that come about from deploying VMware vSphere on Cisco UCS. Have a look at Joe&rsquo;s articles on his site (<a href="http://www.definethecloud.net/inter-fabric-traffic-in-ucs">Part 1</a> and <a href="http://www.definethecloud.net/inter-fabric-traffic-in-ucspart-ii">Part 2</a>).</p>
+</li>
+<li>
+<p>Kurt Bales&rsquo; <a href="http://www.network-janitor.net/2011/02/proprietary-cometh-before-the-standard/">article on innovation vs. standardization</a> is a great read. The key, in my mind, is innovating (releasing &ldquo;non-standard&rdquo; stuff) while also working with the broader community to help encourage standardization around that innovation.</p>
+</li>
+<li>
+<p>Here&rsquo;s another great multi-part series, this time from Brian Feeny on NX-OS (<a href="http://www.feeny.org/?p=794">part 1 here</a>, and <a href="http://www.feeny.org/?p=827">part 2 here</a>). Brian exposes some pretty interesting stuff in the NX-OS kickstart and system image.</p>
+</li>
+<li>
+<p>I&rsquo;ve discussed LISP a little bit here and there, but Greg Ferro reminds us <a href="http://etherealmind.com/path-lisp-certain-rfc-6115/">that LISP isn&rsquo;t a &ldquo;done deal.&rdquo;</a></p>
+</li>
+<li>
+<p>J Metz wrote a good article on the interaction (or lack thereof, depending on how you look at it) between <a href="http://blogs.cisco.com/datacenter/understanding-fcoe-and-trill-the-easy-way/">FCoE and TRILL</a>.</p>
+</li>
+<li>
+<p>For a non-networking geek like me, some great resources to become more familiar with TRILL might include <a href="http://blog.ioshints.info/2010/08/trill-and-8021aq-are-like-apples-and.html">this comparison of 802.1aq and TRILL</a>, this <a href="http://packetattack.org/2010/10/06/traveling-east-west-might-get-a-little-easier-highlights-from-the-trill-rfc5556/">explanation from RFC 5556</a>, this <a href="http://blog.ioshints.info/2011/03/trillfabric-path-stp-integration.html">discussion of TRILL-STP integration</a>, or this <a href="http://etherealmind.com/layer-2-multipath-east-west-bandwidth-switch-designs/">explanation using north-south/east-west terminology</a>. Brad Hedlund&rsquo;s <a href="http://bradhedlund.com/2010/05/07/setting-the-stage-for-trill/">TRILL write-up</a> from a year ago is also helpful, in my opinion. All of these are great resources, in my mind.</p>
+</li>
+<li>
+<p>And as if understanding TRILL, or the differences between TRILL and FabricPath weren&rsquo;t enough (see <a href="http://www.networkworld.com/community/blog/full-tilt-boogie-networking-ciscos-fabricpat">this discussion</a> by Ron Fuller on the topic), then we have 802.1aq Shortest Path Bridging (SPB) thrown in for good measure, too. If it&rsquo;s hard for networking experts to keep up with all these developments, think about the non-networking folks like me!</p>
+</li>
+<li>
+<p>Ivan Pepelnjak&rsquo;s <a href="http://blog.ioshints.info/2011/04/vcloud-director-networking.html">examination of vCDNI-based private networks via Wireshark traces</a> exposes some notable scalability limitations. It makes me wonder, as Ivan does, why VMware chose to use this method versus something more widely used and well-proven, <a href="http://blog.ioshints.info/2011/04/vcloud-architects-ever-heard-of-mpls.html">like MPLS?</a> And isn&rsquo;t there an existing standard for MAC-in-MAC encapsulation? Why didn&rsquo;t VMware use that existing standard? Perhaps it goes back to innovation vs. standardization again?</p>
+</li>
+<li>
+<p>If you&rsquo;re interested in more details on vCDNI networks, check out <a href="http://www.borgcube.com/blogs/2011/03/vcd-network-isolation-vcdni/">this post</a> by Kamau Wanguhu.</p>
+</li>
+<li>
+<p>Omar Sultan of Cisco has a quick post on OpenFlow and Cisco&rsquo;s participation <a href="http://blogs.cisco.com/datacenter/openflow-pulling-networking-into-the-application-stack/">here</a>.</p>
+</li>
+<li>
+<p>Jake Howering of Cisco (nice guy, met him a few times) has <a href="http://blogs.cisco.com/datacenter/dci-use-case-capacity-expansion/">a write-up</a> on an interesting combination of technologies: ACE (load balancing) plus OTV (data center interconnect), with a small dash of VMware vCenter API integration.</p>
+</li>
+</ul>
+<p>I think that&rsquo;s going to do it for this Networking Edition of Technology Short Take #12. I&rsquo;d love to hear your thoughts, suggestions, or corrections about anything I&rsquo;ve mentioned here, so feel free to join the discussion in the comments. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/otv">OTV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/05/12/stretched-clusters-distance-vmotion-and-l2-adjacency/">Stretched Clusters, Distance vMotion and L2 Adjacency</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/05/16/distance-vmotion-stretched-cluster/">Distance vMotion = Stretched Cluster?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f16%2ftechnology-short-take-12-networking-edition%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f16%2ftechnology-short-take-12-networking-edition%2f&text=Technology%20Short%20Take%20%2312%3a%20Networking%20Edition" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f16%2ftechnology-short-take-12-networking-edition%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/12/29/technology-short-take-9/">Technology Short Take #9</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2010/11/10/technology-short-take-6/">Technology Short Take #6</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2010/09/10/technology-short-take-3/">Technology Short Take #3</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

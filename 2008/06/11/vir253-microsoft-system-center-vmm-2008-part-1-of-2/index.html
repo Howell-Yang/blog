@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VIR253: Microsoft System Center VMM 2008, Part 1 of 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VIR253: Microsoft System Center VMM 2008, Part 1 of 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VIR253: Microsoft System Center VMM 2008, Part 1 of 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/06/11/vir253-microsoft-system-center-vmm-2008-part-1-of-2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VIR253: Microsoft System Center VMM 2008, Part 1 of 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1751 words (estimated 9 minutes to read)</span>
+  <p>It&rsquo;s Day 2 of Tech-Ed 2008, and my first session of the day is VIR253, Microsoft System Center Virtual Machine Manager 2008 Overview, Part 1 of 2. Part 2 will be later this morning. I&rsquo;ve got a seat right by the doors to the breakout session, so I&rsquo;m hoping that the wireless LAN will hold out for liveblogging the session.</p>
+<p>I&rsquo;ve actually been here at the conference center since 7:00 AM this morning; I spent some time in the Hands-On Labs this morning going through Hyper-V setup, configuration, Authorization Manager, etc. Useful stuff; I&rsquo;ll blog more on that later.</p>
+<p>The presenter, Edwin Yuen, starts with defining virtualization as the &ldquo;isolation of one computing resource from the other.&rdquo; This is a good generic definition and allows us to view virtualization as more than just server virtualization. It allows us to extend the idea of virtualization to things like VPNs (which I&rsquo;ve long described as a form of network virtualization), virtual storage, virtual presentation (think Terminal Services). While virtualization creates flexibility, it can also create issues. Edwin states that &ldquo;Virtual machines are machines first, virtual second.&rdquo; That&rsquo;s an important point to remember&mdash;while virtual machines can be very useful and extremely flexible, they are still machines that must be managed, monitored, and supported.</p>
+<p>Edwin then reviews Microsoft&rsquo;s virtualization product suite, encompassing server virtualization (Hyper-V), application virtualization (SoftGrid), desktop virtualization (VirtualPC), and presentation virtualization (Terminal Services).</p>
+<p>In reviewing Microsoft&rsquo;s &ldquo;growing momentum&rdquo; for virtualization, Edwin reminded attendees that as of last Friday, Microsoft released a patch that will fix SCVMM 2008 Beta 1 to allow it to manage Hyper-V RC1. There&rsquo;s also a disk available in the Technical Learning Center (TLC) downstairs in the conference center.</p>
+<p>Next we discuss the four major members of the System Center family that apply to a virtualization environment. SCVMM, of course, has already been mentioned. There&rsquo;s also System Center Configuration Manager (SCCM) for patch management and deployment, software upgrades, and OS and application configuration management; System Center Operations Manager (SCOM), which provides end-to-end service management, server and application health monitoring and management, and performance reporting and analysis; and System Center Data Protection Manager (SCDPM), which enables the VSS support for live VM backups with in-guest consistency. However, the focus of this session is SCVMM 2008.</p>
+<p>Key things to remember about SCVMM 2008 is the management of VMware ESX servers through VirtualCenter (VirtualCenter is still required to manage ESX servers via SCVMM 2008) as well as Virtual Server and Hyper-V. SCVMM supports intelligent placement, although I believe at startup only since there is no live migration support within any MS virtualization product. SCVMM 2008 also provides P2V and V2V support. Edwin also mentions that you can use SCVMM&rsquo;s P2V (what he likes to call &ldquo;VP2V&rdquo;) to convert a VMware VM to a Hyper-V VM <em>live</em>. There&rsquo;s also application and service-level monitoring integration with SCOM; the idea of Performance and Resource Optimization (PRO) came up again. More on PRO will be available in Part 2 later this morning. The presenter reinforced again that SCVMM 2008 is completely built on PowerShell, and that there are some things you can do in PowerShell that can&rsquo;t be done in the SCVMM GUI. And the PowerShell scripts will generally work equally against both Hyper-V and managed VMware hosts.</p>
+<p>(Note to readers: You may see some information overlap from sessions I attended yesterday. Sorry about that; I&rsquo;m trying to present each session as completely as possible. Just ignore repeated information wherever you can.)</p>
+<p>RTM for SCVMM 2008 is dependent upon the RTM for Hyper-V; projected RTM for SCVMM 2008 is expected in the Q3/Q4 timeframe.</p>
+<p>Edwin next launched into a live demo of the SCVMM 2008 GUI. SCVMM allows you to maintain the VirtualCenter logical groups, allowing users to place Hyper-V hosts and ESX hosts in the same logical groupings. The list of hosts and virtual machines can be grouped by guest operating system, or date added, or a custom tag, and again this is true for VMs on either virtualization platform. SCVMM 2008 also offers a quick &ldquo;snapshot&rdquo; of the selected VM at the bottom, including a Windows Task Manager-style overview of current CPU usage. Many of the UI elements are hyperlinked and take you to other areas of the application for more information or more details. Overall, the UI looks pretty nice, although I&rsquo;m not necessarily a huge fan of the three-pane interface that Microsoft has adopted with Windows Server 2008 and the latest version of MMC.</p>
+<p>SCVMM integrates Sysprep, so that templates can be customized not only with regard to virtual hardware, but also with regard to the guest OS parameters as well. This brings SCVMM&rsquo;s templates on par with VirtualCenter.</p>
+<p>Edwin again shows off the automatic generation of PowerShell scripts. At the end of each wizard (and all GUI operations are wizard-driven) there&rsquo;s an option to display the underlying PowerShell script. PowerShell scripts can be modified and customized, and then added to the SCVMM library to be run whenever needed.</p>
+<p>As for SCVMM libraries, these are just ordinary file shares. This means that the placement of SCVMM libraries should be carefully considered in the design and implementation of SCVMM; you don&rsquo;t want to be pulling library information across the WAN.</p>
+<p>Next Edwin displays the conversion capabilities of SCVMM 2008 by performing a &ldquo;VP2V&rdquo;. This installs an agent into the VM that allows the conversion to take place while the source system is live. In the conversion process, we can select which drives we&rsquo;d like to convert (the C: drive is always required) or we can modify the number of CPUs or the memory assigned to the VM. The P2V process, like everything else in SCVMM 2008, is driven by PowerShell and can optionally display a PowerShell script at the end of the GUI wizard.</p>
+<p>SCVMM also has a web interface that allows for delegated administration, so that certain tasks can be delegated out to end users. This can allow business owners to have the ability to reboot a virtual machine, but not necessarily change the configuration of the VM. In addition, the web interface can also give end users console access to the VMs as well. VM provisioning, with limits via policy, is also available.</p>
+<p>Next we moved on to discuss VMware management in more detail. It&rsquo;s driven by customer demand and is intended to provide a unified management experience, for both physical and virtual, Hyper-V and VMware. The SCVMM feature set encompasses the ability to invoke VMotion, manage Resource Pools, etc. SCVMM can perform intelligent placement against VMware servers (I&rsquo;m guessing that this does <em>not</em> leverage VirtualCenter&rsquo;s existing intelligent placement algorithms), use PowerShell scripts, etc. SCVMM can manage multiple VirtualCenter instances, allowing users to consolidate multiple VCs and become a &ldquo;manager of managers.&rdquo;</p>
+<p>When dealing with Windows Server-based hosts, SCVMM can remotely enable the Hyper-V role, which makes it easier to add Hyper-V hosts to SCVMM. Entire Hyper-V clusters can be added in a single step, and SCVMM will automatically detect node additions/removals. SCVMM also provides enhanced management of Hyper-V clusters.</p>
+<p>The SCVMM library can contain VHDs, ISOs, offline VMs (difference between VHDs and offline VMs?), and PowerShell scripts. The SCVMM library is just a file share.</p>
+<p>SCVMM&rsquo;s conversion functionality supports live conversions for Windows Server 2003, Windows Server 2008, Windows XP, and Windows Vista. Offline conversions are available for Windows 2000 Server. Both SMP and x64 sources are also supported. The entire process is automatable via PowerShell.</p>
+<p>Edwin next presented some more detail on user roles, delegated administrators, self-service users, the default profiles available in SCVMM 2008, and how they are used. The scope for delegated administrators and self-service users can be modified, but the scope for administrators can&rsquo;t be changed.</p>
+<p>Intelligent placement uses some of the capacity planning functionality in SCVMM along with some weightings of the various resource requirements. SCVMM performs checks to ensure that potential target hosts are even capable of running the VM, i.e., it won&rsquo;t recommend an x64 VM on an x86 host. The star rating is generated by comparing available resources, used resources, and the weightings to create the final recommendation. Based on this information, it looks definitely like SCVMM does not leverage any VirtualCenter intelligent placement functionality when managing VMware hosts.</p>
+<p>PowerShell is the SCVMM API; that is how you access SCVMM functionality from other applications or from scripts. Edwin showed some simple examples of PowerShell scripts.</p>
+<p>When deploying VMs via the LAN, BITS is used. Hyper-V uses Quick Migration; VMware uses VMotion. NPIV support is included, which will allow VMs to independently zoned. VDS support is included for both Fibre Channel and iSCSI SANs. I hope to get more information on the VDS support and NPIV in a session later today on advanced storage connectivity for VMs.</p>
+<p>Part of the SCVMM integration with SCCM is the Offline Virtual Machine Servicing Tool to provide automated patching of VM libraries. This provides integration with WSUS and SCCM. Real-time status reporting will be available as well. A beta of this is now available, and it will RTM after SCVMM 2008 goes RTM (which of course won&rsquo;t happen until Hyper-V goes RTM). The tool works by moving offline VMs to &ldquo;maintenance hosts&rdquo;, where they are patched by WSUS/SCCM. Once the patching is complete, the VMs are powered back down and returned to the library.</p>
+<p>Getting SCVMM 2008 is done by getting System Center Management Suite Enterprise. This includes VMM as well as Operations Manager, Data Protection Manager, and Configuration Manager.</p>
+<p>Licensing is handled much like in previous versions of Windows. Standard Edition grants 1 additional VM instance; Enterprise Edition grants 4 additional VM instances; and Datacenter Edition grants unlimited VM instances. This is not a software limitation, this is a licensing limitation. Hyper-V does have an artificial limit of 256 VMs. Datacenter Edition is licensed per socket; Standard and Enterprise are licensed per server.</p>
+<p>With regards to the virtualization roadmap, Hyper-V RC1 is available now and will RTM no later than August. SCVMM 2008 will RTM after Hyper-V goes final.</p>
+<p>According to Edwin, management is the key. In his words, &ldquo;Using virtualization with no management is worse than not using virtualization at all.&rdquo;</p>
+<p>Other SCVMM-related content at Tech-Ed 2008 includes VIR360 (I&rsquo;ll be blogging that later this morning), VIR59-TLC, VIR350, VIR52-TLC, and VIR356. I&rsquo;m not attending most of those sessions, but for those that I am I&rsquo;ll blog as much content as possible.</p>
+<p>At this point, Edwin wrapped up the session. I&rsquo;m heading clear across the convention center to attend Part 2 of the 2 SCVMM series.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/teched2008">TechEd2008</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/06/10/a-discussion-with-jeff-woolsey/">A Discussion with Jeff Woolsey</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/06/11/vir360-microsoft-system-center-vmm-2008-part-2-of-2/">VIR360: Microsoft System Center VMM 2008, Part 2 of 2</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f11%2fvir253-microsoft-system-center-vmm-2008-part-1-of-2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f11%2fvir253-microsoft-system-center-vmm-2008-part-1-of-2%2f&text=VIR253%3a%20Microsoft%20System%20Center%20VMM%202008%2c%20Part%201%20of%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f11%2fvir253-microsoft-system-center-vmm-2008-part-1-of-2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/06/10/a-discussion-with-jeff-woolsey/">A Discussion with Jeff Woolsey</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2008/06/10/vir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v/">VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2008/06/10/vir367-hyper-v-security-and-best-practices/">VIR367: Hyper-V Security and Best Practices</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

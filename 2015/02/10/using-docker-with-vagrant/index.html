@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Docker with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Docker with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Docker with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/02/10/using-docker-with-vagrant/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Docker with Vagrant</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1756 words (estimated 9 minutes to read)</span>
+  <p>As part of my ongoing effort to create tools to assist others in learning some of the new technologies out there, I spent a bit of time today working through the use of <a href="http://www.docker.com">Docker</a> with <a href="http://www.vagrantup.com">Vagrant</a>. Neither of these technologies should be new to my readers; I&rsquo;ve already provided quick introductory posts to both (see <a href="/2014/03/11/a-quick-introduction-to-docker/">here</a> and <a href="/2014/09/12/a-quick-introduction-to-vagrant/">here</a>). However, using these two together may provide a real benefit for users who are new to either technology, so I&rsquo;d like to take a bit and show you how to use Docker with Vagrant.</p>
+<h2 id="background">Background</h2>
+<p>Vagrant first started shipping with a Docker provider as part of the core product in version 1.6 (recall that Vagrant uses the concept of <em>providers</em> to support multiple backend virtualization solutions). Therefore, if you&rsquo;ve installed any recent version of Vagrant, you already have the Docker provider as part of your Vagrant installation.</p>
+<p>However, while you may have the Docker provider as part of Vagrant, you still need Docker itself (just like if you have the VMware provider for Vagrant, you still need the appropriate VMware product&mdash;<a href="http://www.vmware.com/products/fusion/">VMware Fusion</a> on the Mac or <a href="http://www.vmware.com/products/workstation/">VMware Workstation</a> on Windows/Linux) in order to provide the functionality Vagrant will consume. This presents a bit of a unique challenge because not all platforms support Docker. Unless you&rsquo;re running Vagrant directly on Linux, you&rsquo;re going to need an installation of Linux to support running the Docker daemon. The Docker community solved this problem using <a href="https://github.com/boot2docker/boot2docker">boot2docker</a>, which is essentially a super-lightweight Linux instance running the Docker daemon, and provided some simple installers to install <a href="https://www.virtualbox.org/">VirtualBox</a> and this boot2docker VM onto systems running OS X and Windows so that users could more easily use/experiment with Docker.</p>
+<p>&ldquo;OK,&rdquo; you might reply. &ldquo;But what does that have to do with using Docker with Vagrant?&rdquo;</p>
+<p>Vagrant&rsquo;s creator, Mitchell Hashimoto, took the boot2docker VM and created a Vagrant box (recall that Vagrant uses the concept of <em>boxes</em>, which are essentially VM templates created for each back-end provider) with support for the VirtualBox provider as well as the VMware provider. Vagrant&rsquo;s Docker provider, by default, uses this boot2docker box as the target for its Docker functionality when you are running Vagrant on anything other than Linux.</p>
+<p>I took the time to explain all of this because as you move into the next section where I show you how to set up some <code>Vagrantfiles</code> to work with Docker under Vagrant, you&rsquo;ll understand <em>why</em> things work the way they do.</p>
+<h2 id="setting-up-docker-with-vagrant">Setting Up Docker With Vagrant</h2>
+<p>Based on this background information, you should understand now that using Docker with Vagrant involves 4 different components in addition to Vagrant itself:</p>
+<ol>
+<li>The Docker provider for Vagrant</li>
+<li>Some sort of Linux instance on which to run the Docker daemon</li>
+<li>A virtualization platform, such as VirtualBox, VMware Fusion, or VMware Workstation</li>
+<li>The appropriate Vagrant provider for your virtualization platform</li>
+</ol>
+<p>The Docker provider is installed when you install Vagrant (any release since 1.6), and I&rsquo;m going to assume here that you&rsquo;ve already installed the appropriate virtualization platform and provider (I&rsquo;m using VMware Fusion 6.0.5 on OS X 10.9.5 with the Vagrant VMware plugin). All that&rsquo;s left to discuss then, is the Linux instance for the Docker daemon and putting together the appropriate <code>Vagrantfiles</code> to make this all work as expected.</p>
+<h3 id="specifying-the-linux-instance-for-docker">Specifying the Linux Instance for Docker</h3>
+<p>I mentioned earlier that Mitchell Hashimoto, the creator of Vagrant, took the boot2docker VM and created a Vagrant box from it. You can add that Vagrant box to your system by simply running <code>vagrant box add mitchellh/boot2docker</code>. Vagrant will prompt for the provider, and then download the appropriate version of the box for the selected provider. Then, unless you tell it otherwise, Vagrant will spin up an instance of this boot2docker box anytime it needs to perform Docker provider operations. If you haven&rsquo;t already added the Vagrant box (using the command above) the first time you use the Docker provider, it will download the box automatically.</p>
+<p>But what if you <em>don&rsquo;t want</em> to use boot2docker? What if you&rsquo;d rather use Ubuntu or CentOS, so that what you do in Vagrant more closely matches what you might do in the data center?</p>
+<p>No problem&mdash;you can change this behavior by adding a line in the <code>Vagrantfile</code> that spins up your Docker containers. The specific line would look something like this (I&rsquo;ll provide more concrete examples later in the post):</p>
+<pre><code>docker.vagrant_vagrantfile = &quot;path/to/host/VM/Vagrantfile&quot;
+</code></pre>
+<p>That&rsquo;s right: all you have to do is create a <code>Vagrantfile</code> that spins up a VM running the Linux distribution of your choice, and then reference that <code>Vagrantfile</code> in the one that creates your Docker containers. Of course, since Vagrant expects the filename to be <code>Vagrantfile</code>, that means the file defining the host VM <em>must</em> be in a different directory than the file defining the Docker containers. Hence, you need to specify the path to the host VM <code>Vagrantfile</code>. (There might be a way to combine the files, but I haven&rsquo;t figured out how.)</p>
+<p>Although Vagrant expects Docker to be running inside this host VM, it does provide a way to simplify that by allowing you to provision (install) Docker into the VM when you run <code>vagrant up</code> (much in the same way Vagrant can provision other things into a VM when it is first instantiated). This is done with a simple command in the host VM <code>Vagrantfile</code>:</p>
+<pre><code>config.vm.provision &quot;docker&quot;
+</code></pre>
+<p>Pretty straightforward, right? Let&rsquo;s take a look at a full example of a <code>Vagrantfile</code> that could be used to define a host VM for the Vagrant Docker provider:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># -*- mode: ruby -*-</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># vi: set ft=ruby :</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Specify Vagrant version and Vagrant API version</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>require_version <span style="color:#e6db74">&#34;&gt;= 1.6.0&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Create and configure the VM(s)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>configure(<span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span>) <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>config<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Assign a friendly name to this host VM</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>hostname <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;docker-host&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Skip checking for an updated Vagrant box</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box_check_update <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Always use Vagrant&#39;s default insecure key</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>ssh<span style="color:#f92672">.</span>insert_key <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Spin up a &#34;host box&#34; for use with the Docker provider</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># and then provision it with Docker</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;slowe/ubuntu-trusty-x64&#34;</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>provision <span style="color:#e6db74">&#34;docker&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Disable synced folders (prevents an NFS error on &#34;vagrant up&#34;)</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>synced_folder <span style="color:#e6db74">&#34;.&#34;</span>, <span style="color:#e6db74">&#34;/vagrant&#34;</span>, <span style="color:#e6db74">disabled</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>Most of this <code>Vagrantfile</code> is pretty simple&mdash;define a VM, specify the box, disable checking for new versions of the box, etc. A couple of things I want to note:</p>
+<ul>
+<li>First, note the <code>config.vm.synced_folders</code> command&mdash;during my testing I found that if you did <em>not</em> disable synced folders, Vagrant would halt with an NFS error. The only workaround that I found was to disable synced folders both at the host VM <em>and</em> at the Docker container level.</li>
+<li>Second, note the aforementioned <code>config.vm.provision</code> command. This expects that the VM created by Vagrant will have Internet access; if it doesn&rsquo;t, it will fail. Please plan accordingly.</li>
+</ul>
+<p>You&rsquo;ll note that this box uses my Ubuntu 14.04 base box for the vmware_desktop provider (works with both Fusion and Workstation), but you could use just about any appropriate Linux box here. (I&rsquo;m just trying to make it as easy as possible for folks to try this out themselves, so feel free to use my Ubuntu 14.04 base box.)</p>
+<p>I like to store this <code>Vagrantfile</code> in a subdirectory of the main project directory. So, if I was storing my Vagrant project in, say, <code>/Users/slowe/Projects/vagrant-docker</code>, then I might put the <code>Vagrantfile</code> that defined the host VM in <code>/Users/slowe/Projects/vagrant-docker/host</code> or similar. Obviously, this is completely up to you; you just need to know the path and specify it in the file that defines your containers.</p>
+<h3 id="specifying-your-containers">Specifying your Containers</h3>
+<p>And speaking of defining your containers&hellip;that&rsquo;s the next topic to discuss. Here&rsquo;s a sample <code>Vagrantfile</code> that specifies the host VM and builds a single Nginx container:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># -*- mode: ruby -*-</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># vi: set ft=ruby :</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Specify Vagrant version and Vagrant API version</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>require_version <span style="color:#e6db74">&#34;&gt;= 1.6.0&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">ENV</span><span style="color:#f92672">[</span><span style="color:#e6db74">&#39;VAGRANT_DEFAULT_PROVIDER&#39;</span><span style="color:#f92672">]</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;docker&#39;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Create and configure the Docker container(s)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>configure(<span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span>) <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>config<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Disable synced folders for the Docker container</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># (prevents an NFS error on &#34;vagrant up&#34;)</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>synced_folder <span style="color:#e6db74">&#34;.&#34;</span>, <span style="color:#e6db74">&#34;/vagrant&#34;</span>, <span style="color:#e6db74">disabled</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Configure the Docker provider for Vagrant</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>provider <span style="color:#e6db74">&#34;docker&#34;</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>docker<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Define the location of the Vagrantfile for the host VM</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Comment out this line to use default host VM that is</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># based on boot2docker</span>
+</span></span><span style="display:flex;"><span>    docker<span style="color:#f92672">.</span>vagrant_vagrantfile <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;host/Vagrantfile&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Specify the Docker image to use</span>
+</span></span><span style="display:flex;"><span>    docker<span style="color:#f92672">.</span>image <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;nginx&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Specify port mappings</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># If omitted, no ports are mapped!</span>
+</span></span><span style="display:flex;"><span>    docker<span style="color:#f92672">.</span>ports <span style="color:#f92672">=</span> <span style="color:#f92672">[</span><span style="color:#e6db74">&#39;80:80&#39;</span>, <span style="color:#e6db74">&#39;443:443&#39;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Specify a friendly name for the Docker container</span>
+</span></span><span style="display:flex;"><span>    docker<span style="color:#f92672">.</span>name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;nginx-container&#39;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>As with the <code>Vagrantfile</code> that specifies the host VM, this is reasonably straightforward once you&rsquo;ve worked with Vagrant a little while. This example <code>Vagrantfile</code> disables synced folders, specifies the path to the <code>Vagrantfile</code> defining the host VM (in this case, that file resides in a subdirectory named <code>host</code>), provides the name of the Docker image to use, the ports to map, and a user-friendly name. Note that if you omit the <code>docker.ports</code> statement no ports will be mapped.</p>
+<p>The techniques I&rsquo;ve already shared with you regarding the use of YAML and an external data file could certainly be applied here to create a multi-container <code>Vagrantfile</code> (see <a href="/2014/10/22/multi-machine-vagrant-with-yaml/">this post</a> for more details).</p>
+<h2 id="bringing-up-the-environment">Bringing Up the Environment</h2>
+<p>As with most uses of Vagrant, all you need to do is run <code>vagrant up</code> from the main directory where the <code>Vagrantfile</code> that defines your containers is located. The main <code>Vagrantfile</code> includes a reference to the <code>Vagrantfile</code> defining your host VM, so Vagrant will automatically turn up the VM (if needed), install Docker (if this host VM is being provisioned for the first time), and create the Docker containers. Once it&rsquo;s done, you&rsquo;re ready to roll!</p>
+<p>When you go to turn down the environment, it&rsquo;s a bit trickier. The <code>vagrant halt</code> and <code>vagrant destroy</code> commands will only affect the Docker containers; you&rsquo;ll have to use the <code>vagrant global-status</code> command to get a reference for the host VM so that you can halt or destroy it separately.</p>
+<h2 id="additional-notes-and-resources">Additional Notes and Resources</h2>
+<p>I performed my testing using Vagrant 1.7.2, running with the Vagrant VMware plugin against VMware Fusion 6.0.5 on OS X 10.9.5. If you use different versions or different platforms, the specifics might be slightly different (but should not be dramatically different).</p>
+<p>I found <a href="http://nickapedia.com/2014/06/12/docker-vagrant-vmware-fusion-bug/">this post</a> by Nick Weaver to be very helpful as well, providing some additional details and examples that fleshed out the Vagrant documentation.</p>
+<p>Finally, I posted resources to help you follow along with this blog post in <a href="https://github.com/scottslowe/learning-tools">my &ldquo;learning-tools&rdquo; GitHub repository</a>; feel free to clone or download the repository to help with your own studies.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/02/10/technology-short-take-48/">Technology Short Take #48</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/02/11/multi-container-docker-yaml-vagrant/">Multi-Container Docker with YAML and Vagrant</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f10%2fusing-docker-with-vagrant%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f10%2fusing-docker-with-vagrant%2f&text=Using%20Docker%20with%20Vagrant" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f10%2fusing-docker-with-vagrant%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/02/05/vagrant-coreos-etcd-fleet-docker/">Using Vagrant with CoreOS, etcd, fleet, and Docker</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2014/11/07/technology-short-take-46/">Technology Short Take #46</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2014/09/12/a-quick-introduction-to-vagrant/">A Quick Introduction to Vagrant</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

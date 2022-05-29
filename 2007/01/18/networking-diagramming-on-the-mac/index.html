@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Networking Diagramming on the Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Networking Diagramming on the Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Networking Diagramming on the Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/01/18/networking-diagramming-on-the-mac/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Networking Diagramming on the Mac</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;304 words (estimated 2 minutes to read)</span>
+  <p>I spent the entire day trying to create a professional looking network diagram for a customer who recently installed an iSCSI-based SAN (a Network Appliance storage system, by the way). I didn&rsquo;t want generic rectangles and boxes; I wanted nice icons. Preferably vendor-specific icons. Is that so much to ask?</p>
+<p>I visited <a href="http://graffletopia.com/">Graffletopia</a>, which is to <a href="http://www.omnigroup.com/applications/omnigraffle/">OmniGraffle</a> (I use <a href="http://www.omnigroup.com/applications/omnigraffle/pro">OmniGraffle Professional</a>) what <a href="http://www.visiocafe.com/">Visio Cafe</a> is to <a href="http://www.microsoft.com/office/visio/">Visio</a>. Unfortunately, I wasn&rsquo;t able to find very many helpful stencils.</p>
+<p>Realizing that OmniGraffle Pro (OGP) reads/writes Visio XML files, I thought then that I might be able to export Visio stencils into a form that I could use on my Mac. Alas, no; OGP wouldn&rsquo;t read them. Finally, I settled into manually creating my own OGP stencils from selected items in the Visio stencils, and was finally able to piece together a diagram that was decent. At some point I may post the OGP stencils I&rsquo;m creating for my own use out on Graffletopia for others as well, provided the original author is amenable to the idea.</p>
+<p>In the meantime, I&rsquo;ll continue plugging away at laboriously converting Visio stencil items to OGP stencil items. Here&rsquo;s the process I&rsquo;m using:</p>
+<ol>
+<li>
+<p>Place a single item from a Visio stencil onto a blank Visio diagram and save that diagram as a PNG image.</p>
+</li>
+<li>
+<p>Move the PNG image to my Mac and copy the contents of the PNG to the clipboard.</p>
+</li>
+<li>
+<p>Paste the image into a stencil in OGP. Tweak the size, connection points, etc., until I&rsquo;m satisfied.</p>
+</li>
+<li>
+<p>Repeat as needed.</p>
+</li>
+</ol>
+<p>Given that VMware Fusion&rsquo;s ability to drag-and-drop from the guest back to the host isn&rsquo;t working (Did it ever work? Or am I imagining things?), step 2 above is more laborious than it should be. Oh well, it could be worse.</p>
+<p>Is there a faster process for this? Anyone know?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/office">Office</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/01/16/editing-files-from-the-data-ontap-cli/">Editing Files from the Data ONTAP CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/01/22/mac-ftpsftp-clients/">Mac FTP/SFTP Clients</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f18%2fnetworking-diagramming-on-the-mac%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f18%2fnetworking-diagramming-on-the-mac%2f&text=Networking%20Diagramming%20on%20the%20Mac" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f18%2fnetworking-diagramming-on-the-mac%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2006/02/04/brief-thoughts-on-virtual-server-2005/">Brief Thoughts on Virtual Server 2005</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2006/12/15/now-three-word-zero-day-exploits/">Now Three Word Zero-Day Exploits</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 85 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 85 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 85 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/08/11/technology-short-take-85/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 85</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1194 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #85! This is my irregularly-published collection of links and articles from around the Internet related to the major data center technologies: networking, hardware, security, cloud computing, applications/OSes, storage, and virtualization. Plus, just for fun, I usually try to include a couple career-related links as well. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Want to install VMware NSX in your home lab, but concerned about resource utilization? Here&rsquo;s a guide to <a href="http://www.virten.net/2016/05/deploy-vmware-nsx-in-homelabs-with-limited-resources/">deploying NSX in home labs with limited resources</a>. (Although it&rsquo;s not called out in the article, it&rsquo;s important to note that this is not supported by VMware.)</li>
+<li>Jeffrey Kusters has a write-up on <a href="https://www.jeffreykusters.nl/2017/07/04/integrate-aws-vrealize-network-insight-vrni-3-4/">how to integrate AWS and vRealize Network Insight 3.4</a>. This allows you to visualize network activity on AWS using vRNI (as on-premises traffic, assuming you&rsquo;ve configured vRNI appropriately).</li>
+<li>Gareth Lewis walks through <a href="http://www.virtualaspirations.com/2017/02/20/vmware-vcns-5-5-4-to-nsx-6-2-5-upgrade/">a vCNS 5.5.4 to VMware NSX 6.2.5 upgrade</a>.</li>
+<li>It&rsquo;s a bit Ansible-skewed (as expected given it&rsquo;s posted on the Ansible site), but networking pros looking for some perspectives on using Ansible for network automation might find <a href="https://www.ansible.com/blog/five-questions-network-automation">this post</a> useful.</li>
+<li><a href="http://networkinferno.net/contain-yourself-powernsx-please">PowerNSX in a container?</a> Sure!</li>
+<li>I know that I saw this article from Matt Oswalt before, but for some reason when I came across it again while putting this post together it just <em>really</em> resonated with me. Networking professionals, it&rsquo;s time to realize <a href="https://keepingitclassless.net/2017/04/cheese-moved-long-time-ago/">your cheese moved a long time ago</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>There&rsquo;s a lot of talk about how Nvidia is &ldquo;owning&rdquo; the AI movement, but as Derrick Harris points out, <a href="https://architecht.io/dont-forget-that-intel-still-owns-the-data-center-473944d15ce2">Intel still owns the data center</a>.</li>
+<li>Here&rsquo;s <a href="http://bladesmadesimple.com/2017/07/what-you-need-to-know-about-intel-xeon-sp-cpus/">a good &ldquo;what you need to know&rdquo; article</a> by Kevin Houston on the new Intel Xeon Scalable Processor (SP), recently announced.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><a href="https://blog.acolyer.org/2017/06/22/iot-goes-nuclear-creating-a-zigbee-chain-reaction/">This post</a> was a particularly interesting (to me, at least) examination of another aspect of IoT security; specifically, the ZigBee protocol.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Soenke Ruempler has a good overview of <a href="https://ruempler.eu/2017/07/09/advantages-aws-multi-account-architecture/index.html">why an AWS multi-account architecture is probably better</a> once you start working in AWS at any real (beyond lab testing) scale. This is, in my opinion, a really good article that draws upon a number of different sources to make recommendations. Well worth reading.</li>
+<li>This post by Ross Kukulinski describes <a href="https://blog.heptio.com/kubectl-shell-autocomplete-heptioprotip-48dd023e0bf3">shell autocompletion for <code>kubectl</code></a>. Handy!</li>
+<li>I found <a href="https://developer.atlassian.com/blog/2017/07/kubernetes-infra-on-aws/">this post</a> on how Atlassian designed their Kubernetes infrastructure on AWS to be helpful, if for no other reason than as a real-life example of how an organization reconciles AWS design considerations with Kubernetes design considerations.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Chances are you&rsquo;ve heard of CRI, the Container Runtime Interface for Kubernetes (which is a way of standardizing how Kubernetes interacts with an underlying container runtime). CRI-O is the effort to implement CRI for OCI-compatible runtimes like <code>runC</code>. <a href="https://www.projectatomic.io/blog/2017/06/6-reasons-why-cri-o-is-the-best-runtime-for-kubernetes/">This post</a> helps explain CRI-O in a bit more detail.</li>
+<li>Looks like Microsoft&rsquo;s Nano Server is <a href="http://www.zdnet.com/article/microsofts-nano-server-what-to-expect-this-fall/">headed in a new direction</a>.</li>
+<li>Ajeet Singh Raina has <a href="http://collabnix.com/docker-17-06-swarm-mode-now-with-macvlan-support/">an overview of some new networking functionality</a> available in the RC5 release of Docker 17.06. Raina specifically calls out MACVLAN driver support in Swarm mode (recall that I discussed MACVLAN <a href="/2016/01/28/docker-macvlan-interfaces/">here</a> about 18 months ago) as an example of the new networking functionality, and proceeds to provide some examples on how to use MACVLAN networking with Docker on Google Cloud Platform. I found this last part interesting, because early testing on my part with MACVLAN on AWS didn&rsquo;t work; I guess this is one of those differences between GCP and AWS.</li>
+<li>Feeling geeky? Read <a href="https://randomascii.wordpress.com/2017/07/09/24-core-cpu-and-i-cant-move-my-mouse/">this article</a> on diving deep into Windows to figure out what was causing an erratic performance issue despite plenty of hardware resources.</li>
+<li>If you&rsquo;re interested in learning more about BPF/eBPF, check out these two posts (<a href="https://jvns.ca/blog/2017/06/28/notes-on-bpf---ebpf/">here</a> and <a href="https://jvns.ca/blog/2017/04/07/xdp-bpf-tutorial/">here</a>) from Julia Evans. (I&rsquo;m of the opinion that eBPF portends a major change in Linux networking, and given the prevalance of Linux in networking portends a change in the networking industry as a whole.)</li>
+<li>I came across this article thanks to The New Stack on Twitter (good account to follow for &ldquo;cloud-native&rdquo; sorts of things): how software development <a href="http://shiroyasha.io/monorepos-monoliths-in-disguise.html">tends to creep back towards the monolith</a>. It&rsquo;s a good read, and a good reminder that tools alone can&rsquo;t replace discipline and rigor when it comes to building microservices-based architectures.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>J Metz offered to send me a few links for storage, so I happily took him up on that offer. First up we have <a href="http://www.businesswire.com/news/home/20170621005405/en/NVMe-Revision-1.3-Expands-Reach-Fast-Storage">the announcement of the release of the NVMe 1.3 specification</a>, which adds a number of new features and expands the suitability of the specification to more markets (like mobile devices). Next up is <a href="http://www.storagenewsletter.com/2017/06/21/14-mas-in-storage-industry-at-mid-year-2017/">a brief review</a> of M&amp;A (merger and acquisition) activity in the storage industry in the first half of 2017. There are some well-known entries there (such as Nimble&rsquo;s acquisition by HPE), but also some not-so-well-known ones (such as Double-Take&rsquo;s acquisition by Carbonite). Thanks for the links, J! (By the way, all readers are more than welcome to send over links they feel might be useful to other readers. Don&rsquo;t just send me press releases, please.)</li>
+<li>WekaIO recently came out of stealth, touting their &ldquo;cloud-scale storage software.&rdquo; It looks interesting; check out <a href="http://www.marketwired.com/press-release/wekaio-eliminates-need-legacy-external-storage-with-cloud-scale-storage-software-2225816.htm">the press release here</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Jason Brooks outlines how to get <a href="https://www.ovirt.org/blog/2017/04/up-and-running-with-ovirt-4.1-and-gluster-storage/">up and running with oVirt 4.1 and Gluster</a>.</li>
+<li>William Lam tackles a<a href="http://www.virtuallyghetto.com/2017/06/workaround-to-deploy-vsphere-integrated-containers-1-1-ova-using-powercli-sha256-not-supported.html">n issue deploying vSphere Integrated Containers 1.1</a> (due to a lack of SHA256 support in PowerCLI). (See <a href="http://www.virtuallyghetto.com/2016/11/default-hashing-algorithm-changed-in-ovftool-4-2-preventing-ovfova-import-using-vsphere-c-client.html">this related article</a> as well.)</li>
+<li>Jason Boche <a href="http://www.boche.net/blog/index.php/2017/06/12/vmware-horizon-share-folders-issue-with-windows-10/">describes the workaround</a> to an obscure bug involving VMware Horizon shared folders with Windows 10.</li>
+<li>John Slack shares some tips and tricks garnered while <a href="https://blogs.technet.microsoft.com/virtualization/2017/07/06/vagrant-and-hyper-v-tips-and-tricks/">learning to use Vagrant on Windows 10</a>. Since I may end up with a Windows 10 box in my home office setup soon (a long story I&rsquo;ll share elsewhere when appropriate), some of this information may prove quite useful to me. I&rsquo;m sure others will find it useful as well.</li>
+<li>Chris Bradshaw has a PowerCLI script he wrote to <a href="http://isjw.uk/test-esxi-network/">test ESXi host network connectivity</a> (useful for verifying new hosts are connected correctly).</li>
+<li>I&rsquo;m looking forward to the changes that are making their way into VMware Fusion; see <a href="https://blogs.vmware.com/teamfusion/2017/07/tech-preview-2017.html">this note on the VMware Fusion 2017 Technical Preview</a>. As many of you know, I <a href="/2016/09/28/why-now-using-virtualbox-with-vagrant/">switched from Fusion to VirtualBox</a> some time ago, and I&rsquo;m hopeful that this release will address my concerns so I can switch back.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Frank Denneman&rsquo;s recent release of <em>VMware vSphere 6.5 Host Resources Deep Dive</em> led him to write about <a href="http://frankdenneman.nl/2017/07/11/exploring-core-motivation-writing-book/">the core motivation for writing a book</a>. As a fellow author, I can wholeheartedly endorse and support Frank&rsquo;s statements in this article. If you&rsquo;re thinking about writing a book, definitely read this post. As Frank says, I&rsquo;m not saying don&rsquo;t do it&mdash;I&rsquo;m just advocating for being well-educated before you jump in.</li>
+<li>I found Matt Klein&rsquo;s article on <a href="https://medium.com/@mattklein123/optimizing-impact-why-i-will-not-start-an-envoy-platform-company-8904286658cb">why he will not start an Envoy platform company</a> interesting, and I think there are lessons there that many of us can apply to our own career decisions/directions.</li>
+</ul>
+<p>I think that&rsquo;s enough for this time around; here&rsquo;s hoping you found something useful and pertinent. As I mentioned above in the Storage section, if you have some links you&rsquo;ve found useful that you&rsquo;d like to share with me, I&rsquo;d love to see them (and maybe they&rsquo;ll make their way into a future Tech Short Take!). Thanks for reading, and have a great weekend!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/powershell">PowerShell</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvme">NVMe</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualbox">VirtualBox</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/08/10/information-recent-site-migration/">Information on the Recent Site Migration</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/08/13/manually-installing-azure-cli-fedora-25/">Manually Installing Azure CLI on Fedora 25</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f11%2ftechnology-short-take-85%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f11%2ftechnology-short-take-85%2f&text=Technology%20Short%20Take%2085" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f11%2ftechnology-short-take-85%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2017/06/19/technology-short-take-84/">Technology Short Take 84</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/05/05/technology-short-take-82/">Technology Short Take 82</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

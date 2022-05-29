@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using the AWS CLI to Tag Groups of AWS Resources - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using the AWS CLI to Tag Groups of AWS Resources - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using the AWS CLI to Tag Groups of AWS Resources - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/08/23/using-aws-cli-tag-groups-of-aws-resources/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using the AWS CLI to Tag Groups of AWS Resources</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;856 words (estimated 5 minutes to read)</span>
+  <p>To conduct some testing, I recently needed to spin up a group of <a href="https://kubernetes.io/">Kubernetes</a> clusters on AWS. Generally speaking, my &ldquo;weapon of choice&rdquo; for something like this is <a href="https://cluster-api.sigs.k8s.io/">Cluster API (CAPI)</a> with the AWS provider. Normally this would be enormously simple. In this particular case&mdash;for reasons that I won&rsquo;t bother going into here&mdash;I needed to spin up all these clusters in a single VPC. This presents a problem for the <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/">Cluster API Provider for AWS (CAPA)</a>, as it currently doesn&rsquo;t add some required tags to existing AWS infrastructure (see <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/issues/2584">this issue</a>). The fix is to add the tags manually, so in this post I&rsquo;ll share how I used the AWS CLI to add the necessary tags.</p>
+<p>Without the necessary tags, the AWS cloud provider&mdash;which is responsible for the integration that creates Elastic Load Balancers (ELBs) in response to the creation of a Service of type <code>LoadBalancer</code>, for example&mdash; won&rsquo;t work properly. Specifically, the following tags are needed:</p>
+<pre><code>kubernetes.io/cluster/&lt;cluster-name&gt;
+kubernetes.io/role/elb
+kubernetes.io/role/internal-elb
+</code></pre>
+<p>The latter two tags are mutually exclusive: the former should be assigned to public subnets to tell the AWS cloud provider where to place public-facing ELBs, while the latter is assigned to private subnets to manage the placement of internal ELBs.</p>
+<p>When CAPA is managing the infrastructure, this isn&rsquo;t a problem because CAPA will add the necessary tags when it creates the infrastructure. Therefore, had I been able to use a separate VPC for each cluster, I could have let CAPA manage the infrastructure and avoided any issues entirely. In this case I was using a separate infrastructure-as-code tool (<a href="https://www.pulumi.com/">Pulumi</a>) to manage the underlying AWS infrastructure and had the requirement to use a single VPC for multiple clusters.</p>
+<p>Now, I <em>could</em> have logged into the AWS console and used &ldquo;point-and-click&rdquo; to work my way through tagging the VPC and the subnets, but I preferred to use the AWS CLI. I quickly found <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/create-tags.html">the <code>aws ec2 create-tags</code> command</a>, which would do exactly what I needed; all I had to do was provide a list of the resources to tag and the tags to add.</p>
+<p>To find the resources, I just had to make use of the tags that I&rsquo;d made sure to assign to all the resources I created. So, to find all my public subnets, I used this AWS CLI command:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=tag:Owner,Values=&quot;Scott Lowe&quot; Name=tag:Name,Values=&quot;*pub*&quot; --query 'Subnets[*].SubnetId' --output text
+</code></pre>
+<p>Similarly, I could pull up my private subnets like this:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=tag:Owner,Values=&quot;Scott Lowe&quot; Name=tag:Name,Values=&quot;*priv*&quot; --query 'Subnets[*].SubnetId' --output text
+</code></pre>
+<p>Next, I had to prepare the tags I wanted added to each resource. For this, the parameter <code>--generate-cli-skeleton input</code> was very helpful; it generated the following framework:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;DryRun&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Resources&#34;</span>: [
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    ],
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;Tags&#34;</span>: [
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Key&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;Value&#34;</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Using this skeleton as the foundation, I created two JSON input files&mdash;one for the tags to be assigned to public subnets, and one for the tags to be assigned to private subnets.</p>
+<p>The documentation for the <code>aws ec2 create-tags</code> command indicated that it would take a space-delimited list of resource IDs, and the output from the <code>aws ec2 describe-subnets</code> command appeared to be space-delimited. At this point, I thought I&rsquo;d be able to do something like this:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=tag:Owner,Values=&quot;Scott Lowe&quot; \
+Name=tag:Name,Values=&quot;*priv*&quot; --query 'Subnets[*].SubnetId' \
+--output text | xargs -I {} aws ec2 create-tags --resources {} \
+--cli-input-json file://priv-subnet-tags.json
+</code></pre>
+<p>Alas, this did not work. Further, no amount of messing around with the output of the <code>aws ec2 describe-subnets</code> command could get it into a format that <code>aws ec2 create-tags</code> liked. I&rsquo;m sure it was an error of some sort on my part, but I couldn&rsquo;t figure it out.</p>
+<p>I&rsquo;d been spending a fair amount of time with <code>jq</code> recently (parsing a lot of Envoy configurations), so I thought, &ldquo;Why not drop back to JSON output and use <code>jq</code>?&rdquo;</p>
+<p>Dropping the <code>--output text</code> and piping output through <code>jq</code> finally got me to a working command. Here&rsquo;s the command for the public subnets:</p>
+<pre><code>aws ec2 describe-subnets --filters Name=tag:Owner,Values=&quot;Scott Lowe&quot; \
+Name=tag:Name,Values=&quot;*pub*&quot; --query 'Subnets[*].SubnetId' \
+jq -r '.[]' | xargs -p -I {} -n 1 aws ec2 create-tags --resources {} \
+--cli-input-json file://pub-subnet-tags.json
+</code></pre>
+<p>There was also a corresponding version for the private subnets as well.</p>
+<p>Along the way, I did end up accidentally applying some private tags to public subnets; fortunately, <a href="https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ec2/delete-tags.html">the <code>aws ec2 delete-tags</code> command</a> was there to save me.</p>
+<p>Once the (correct) tags were applied, I was able to create a series of workload clusters via CAPI, and everything worked just as expected.</p>
+<p>What did I learn from this whole process?</p>
+<ul>
+<li>I had not been previously aware of the <code>aws ec2 create-tags</code> and <code>aws ec2 delete-tags</code> commands; these are pretty handy.</li>
+<li>It seems that working with structured data, like JSON, can sometimes be easier than freeform text. <code>jq</code> is your ally here.</li>
+<li>Using the <code>--generate-cli-skeleton input</code> parameter is very useful for generating JSON input documents. I&rsquo;ll definitely be using that one again.</li>
+</ul>
+<p>I hope this information is useful to you in some way. Thanks for reading! Feedback is always welcome, so feel free to reach out to <a href="https://twitter.com/scott_lowe">me on Twitter</a> if you have any questions or comments.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/08/06/technology-short-take-143/">Technology Short Take 143</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/08/26/establishing-vpc-peering-with-pulumi-and-go/">Establishing VPC Peering with Pulumi and Go</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f23%2fusing-aws-cli-tag-groups-of-aws-resources%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f23%2fusing-aws-cli-tag-groups-of-aws-resources%2f&text=Using%20the%20AWS%20CLI%20to%20Tag%20Groups%20of%20AWS%20Resources" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f23%2fusing-aws-cli-tag-groups-of-aws-resources%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/07/16/technology-short-take-142/">Technology Short Take 142</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2020/08/21/technology-short-take-130/">Technology Short Take 130</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2021/08/06/technology-short-take-143/">Technology Short Take 143</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Heat Template for Docker Containers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Heat Template for Docker Containers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Heat Template for Docker Containers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/08/22/a-heat-template-for-docker-containers/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Heat Template for Docker Containers</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1018 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;ll share a simple template for deploying <a href="http://www.docker.com/">Docker</a> containers in an OpenStack environment using Heat. Given that Docker is targeted at application deployment, then I felt that using Heat was a more appropriate way of leveraging Docker in an OpenStack environment as opposed to treating Docker as a form of a hypervisor. Later in this post, I&rsquo;ll compare this approach to using a more container-aware solution such as fleet.</p>
+<p>I assume you&rsquo;re already familiar with OpenStack Heat and Docker. If you aren&rsquo;t, take a look at these articles first:</p>
+<ul>
+<li>
+<p><a href="/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a></p>
+</li>
+<li>
+<p><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a></p>
+</li>
+<li>
+<p><a href="/2014/03/11/a-quick-introduction-to-docker/">A Quick Introduction to Docker</a></p>
+</li>
+</ul>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before you can actually use Heat to orchestrate Docker containers, there are some prerequisites you&rsquo;ll need to have done first:</p>
+<ol>
+<li>
+<p>You&rsquo;ll need to have the Docker plugin for Heat installed. This can be tricky; see <a href="/2014/07/31/installing-the-docker-plugin-for-heat/">here</a> for some instructions that worked for me. To verify that the Docker plugin is working as expected, run <code>heat resource-type-list</code> and check the output for &ldquo;DockerInc::Docker::Container&rdquo;. If that resource type is included in the output, then the Docker plugin is working as expected.</p>
+</li>
+<li>
+<p>Any Docker hosts you&rsquo;re running must have Docker configured to listen on a network-accessible socket. I was running CoreOS in my environment, so I followed the instructions <a href="https://coreos.com/docs/launching-containers/building/customizing-docker/#enable-the-remote-api-on-a-new-socket">to make Docker on CoreOS listen on a TCP socket</a>. (In case the link doesn&rsquo;t take you to the right section, see the section titled &ldquo;Enable the Remote API on a New Socket.&rdquo;) In my case, I selected TCP port 2345. Make note of whatever port you select, as you&rsquo;ll need it in your template.</p>
+</li>
+<li>
+<p>Any Docker hosts that will be orchestrated by Heat must have an IP address assigned that is reachable from the server where Heat is running (typically the cloud controller). In my case, I use Neutron with NSX, so I had to assign floating IPs to the instances with which Heat would be communicating.</p>
+</li>
+<li>
+<p>You&rsquo;ll need to be sure that the TCP port you select for Docker to use (I used TCP port 2345) is accessible, so modify any security groups assigned to the instances to allow inbound TCP traffic on that port from the appropriate sources.</p>
+</li>
+</ol>
+<p>Once these prerequisites are addressed&mdash;Docker plugin installed and working, Docker listening on a TCP port, instance reachable from cloud controller on selected TCP port&mdash;then you&rsquo;re ready to go.</p>
+<h2 id="template-for-docker-orchestration">Template for Docker Orchestration</h2>
+<p>Here is a sample template that will create a Docker container on an existing instance:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">heat_template_version</span>: <span style="color:#e6db74">2013-05-23</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">description</span>: &gt;<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  </span>  <span style="color:#ae81ff">Heat template to deploy Docker containers to an existing host</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">nginx-01</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">DockerInc::Docker::Container</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">properties</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">image</span>: <span style="color:#ae81ff">nginx</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">docker_endpoint</span>: <span style="color:#e6db74">&#39;tcp://192.168.1.207:2345&#39;</span>
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/2c22e5548910e5717f12">here</a> for a downloadable version of the code block above.)</p>
+<p>As I said, this is pretty simple. The <code>image</code> property is the name of the Docker image you want to use; in this case, I&rsquo;m using an image containing the popular Nginx web server. The <code>docker_endpoint</code> property should be a URL that specifies the protocol (TCP), IP address (in my case, a floating IP address assigned to the instance), and the port number on which the Docker daemon is listening. Note that the format for this property isn&rsquo;t documented <em>anywhere</em> I&rsquo;ve found.</p>
+<p>In the &ldquo;stable/icehouse&rdquo; branch of the Docker plugin (required if you&rsquo;re using distro packages for your OpenStack installation, as I am), there are some additional properties available as well. Unfortunately, without <strong>any</strong> documentation on what these properties should look like, I was unable to make it work with any of those properties included. In particular, the <code>port_specs</code> property, which controls how ports in a Docker container are exposed to the outside world, would have been very useful and applicable. However, I was unable to make it work with the <code>port_specs</code> attribute included. If anyone has information on the exact syntax and format for the <code>port_specs</code> property in the &ldquo;stable/icehouse&rdquo; branch of the plugin, please speak up in the comments.</p>
+<p>Naturally, you could embed this portion of YAML code into a larger HOT-formatted template that also launched instances, created Neutron networks, attached the instances to Neutron networks, created a logical router, and mapped a floating IP address to the instance. I leave the creation of such a template as an exercise for the reader, but I will point out that I&rsquo;ve already shared with you almost all the pieces necessary to do exactly that. (See the blog posts I provided earlier.)</p>
+<h2 id="summary">Summary</h2>
+<p>I mentioned at the start of this post that I&rsquo;d provide some comparison to other methods for deploying containers in an automated fashion. With that in mind, here are a few points you&rsquo;ll want to consider:</p>
+<ul>
+<li>
+<p><em>There is no container scheduling in this solution.</em> Containers are statically mapped to a container host (the VM instance, in this case, although this could be a bare metal host running Docker as well). Other solutions, like fleet, at least let you just point to a cluster of systems instead of a specific system. (See <a href="/2014/08/20/coreos-continued-fleet-and-docker/">this write-up on fleet</a> for more information.)</p>
+</li>
+<li>
+<p><em>Docker must be listening on a TCP socket.</em> This isn&rsquo;t Docker&rsquo;s default configuration, so this is an additional change that must be incorporated into the environment. Fleet doesn&rsquo;t have this requirement, although other solutions such as Mesos might (I haven&rsquo;t tested any other solutions&ndash;<em>yet</em>.)</p>
+</li>
+<li>
+<p><em>There is <strong>very</strong> little documentation available right now.</em> Note that this may be true for other solutions as well (this entire space is relatively new and growing/evolving rapidly). Regardless, until someone can at least figure out how to expose Docker containers to the network via a Heat template, this isn&rsquo;t very useful.</p>
+</li>
+</ul>
+<p>My initial assessment is that OpenStack needs container scheduling, not static assignment, in order for Docker integration into OpenStack to be truly useful. Proponents of the Nova-Docker approach (treating Docker as a hypervisor and Docker images as Glance images) point to their approach as superior because of the integration of Nova&rsquo;s scheduling functionality. It will be interesting to see how things develop on this front.</p>
+<p>If you have any questions, have more information to share, or have corrections or clarifications to any of the information presented here, please speak up in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/08/20/coreos-continued-fleet-and-docker/">CoreOS Continued: Fleet and Docker</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/08/25/vmworld-2014-day-1-keynote/">VMworld 2014 Day 1 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f22%2fa-heat-template-for-docker-containers%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f22%2fa-heat-template-for-docker-containers%2f&text=A%20Heat%20Template%20for%20Docker%20Containers" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f22%2fa-heat-template-for-docker-containers%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/08/08/technology-short-take-43/">Technology Short Take #43</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2014/07/31/installing-the-docker-plugin-for-heat/">Installing the Docker Plugin for Heat</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

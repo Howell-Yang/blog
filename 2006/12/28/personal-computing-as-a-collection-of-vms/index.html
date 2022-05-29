@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Personal Computing as a Collection of VMs? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Personal Computing as a Collection of VMs? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Personal Computing as a Collection of VMs? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/12/28/personal-computing-as-a-collection-of-vms/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Personal Computing as a Collection of VMs?</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1170 words (estimated 6 minutes to read)</span>
+  <p>There appear to be basically two views on how virtualization will affect the future development of operating systems and computing environments <em>in the personal computing space</em>. One camp believes that virtualization functionality will be present within the operating system. Whether that virtualization functionality comes bundled with the operating system or is a third-party add-on to the operating system is, quite frankly, irrelevant to this particular discussion. The other camp believes that virtualization will be outside the operating system, perhaps in the form of a hypervisor or thin virtualization layer that resides &ldquo;below&rdquo; the OS and governs access to hardware. Again, the discussion of whether this virtualization layer comes bundled with the hardware or comes from a third-party vendor is an interesting discussion (and one that I&rsquo;d like to have), but is not relevant right at this moment.</p>
+<p>My discussions of application agnosticism puts me in the camp that places virtualization functionality in the operating system. On the desktop side (not speaking of servers here), that kind of makes sense to me. It seems to me that the <em>simplest approach</em>&mdash;placing virtualization functionality within the operating system&mdash;is likely to be the approach that most people will accept. We have to keep in mind that millions of users out there are not nearly as technical as we are, and for them simple is good. It may not be the most technologically advanced approach but rather the simpler approach that wins out (especially on the consumer side).</p>
+<p>Now, having said all that, I&rsquo;d like to take a closer look at the alternate approach to having virtualization placed within the operating system. In this scenario, there is virtualization functionality that sits below the idea of today&rsquo;s general purpose OS. For those of you familiar with <a href="http://www.vmware.com/products/vi/esx/">ESX Server</a>, think of it that way&mdash;some sort of bare metal virtualization layer that controls the hardware. From there, a collection of VMs will cooperatively provide the various services that are today provided by the general purpose OS. This idea is expressed <a href="http://www.brianmadden.com/content/content.asp?id=623">in this article by Ron Oglesby</a> (also linked to by <a href="http://blogs.vmware.com/vmtn/2006/12/blogscottloweor.html">this VMTN Blog entry</a> as well).</p>
+<p>In this approach, you might have a networking VM that is responsible for scanning inbound and outbound traffic, managing security policies, interacting with corporate networks and network access controls, etc. You can think of this as the &ldquo;firewall&rdquo; component of the general purpose OS (Windows Firewall on <a href="http://www.microsoft.com/windows/">Windows</a>, ipfw on <a href="http://www.apple.com/macosx/">Mac OS X</a>, iptables on Linux), but more feature-rich and more isolated (the idea being that it is therefore more secure and harder to bypass or disable). Likewise, you might have a VM designed specifically for running sensitive corporate applications, a VM for surfing the Internet, and a VM that provides anti-virus services to the other VMs. Taken individually, none of these VMs could replace today&rsquo;s general purpose OS; taken as a whole, the collection of VMs provides the services and functionality of a general purpose OS, but with greater isolation, encapsulation, and protection between these &ldquo;service&rdquo; VMs.</p>
+<p>Is this a viable approach? Not today, in my opinion, but certainly in the future. (To be completely fair, Ron&rsquo;s article was written in the context of the long-term impact of virtualization, so we can&rsquo;t really look at today&rsquo;s feasibility.) As <a href="http://www.intel.com/">Intel</a> and <a href="http://www.amd.com/">AMD</a> continue to add virtualization support in hardware and performance draws nearer to &ldquo;native&rdquo; performance, this definitely becomes a more viable approach. A couple questions persist in my mind, though:</p>
+<ul>
+<li>
+<p>What is the mechanism whereby a user adds new functionality to their computing environment, i.e., how does a user add a new service VM?</p>
+</li>
+<li>
+<p>What kind of mechanism or tools are provided to the user to help manage, operate, or configure these service VMs?</p>
+</li>
+</ul>
+<p>Let&rsquo;s say that the user&rsquo;s &ldquo;normal&rdquo; working environment exists in a VM that runs Windows, Linux, or the like. We&rsquo;ll call this VM-Home. From VM-Home, the user needs to be able to access the functionality of a networking/firewall VM (we&rsquo;ll call this VM-FW) and a corporate applications VM (we&rsquo;ll call this VM-Corp). How does the user go about switching between these VMs, like between VM-Home and VM-Corp? Does each VM provide its own windowing environment? How is switching between these windowing environments handled? Is there a common windowing environment provided by the virtualization layer? Is there some internal networking connectivity between VM-Home and VM-FW that allows the user to manage the VM-FW functionality? Where does the user go, or what program does the user run, to add a new VM (say, an anti-virus VM) to his/her environment?</p>
+<p>&ldquo;Scott, stop being so picky,&rdquo; you say. &ldquo;This is all being talked about in theory, anyway. It&rsquo;s not like we need to have all the answers right now.&rdquo;</p>
+<p>You&rsquo;re right, we don&rsquo;t. But as we look at how these questions may be answered (someone&rsquo;s got to answer them sometime), it seems that we&rsquo;ll need to add some functionality to the virtualization layer in order to make it easier/more seamless to switch between the VM environments. Users will want a seamless UI to work with, so we may need to add a windowing environment to the virtualization layer. Either that or we&rsquo;ll have to enable some sort of mechanism whereby other VMs can display windows inside another VM, and now we&rsquo;re breaking down the isolation/protection boundaries that we originally found to be desirable. Users will want to be able to copy and paste between the VM environments, so we&rsquo;ll need to add that functionality to the virtualization layer. Users will want to be able to double-click an icon and have it launch in the appropriate VM environment, so now we&rsquo;ve got to add some links and communications channels between the various VM components in our computing solution. As each of these pieces of functionality is added, the virtualization layer starts to look more like a general purpose OS&mdash;just one that&rsquo;s leaner, meaner, and free of years of legacy code.</p>
+<p>As this virtualization layer starts to resemble a general purpose OS and as the general purpose OS starts to incorporate technologies such as virtualization, application-specific subsystems, and the like, these two start to look a lot like each other. That brings us back to a central question in this discussion, a question I asked when I first started discussing <a href="/2006/12/05/the-future-of-the-os/">the future of the OS</a>:</p>
+<blockquote>
+<p>So I guess the future of the operating system depends on your perspective. If you&rsquo;re an operating system guy, you&rsquo;ll say that the OS has a bright future, and point to developments such as built-in paravirtualization and bundled hypervisors to prove your point. If you&rsquo;re a virtualization guy, you&rsquo;ll say that the OS is dead, and you&rsquo;ll point to developments such as third-party paravirtualization and independent hypervisors to prove your point. Which of these two is correct?</p>
+</blockquote>
+<p>Indeed! Which approach do you think desktop computing will take? Application agnosticism, in which virtualization and other technologies are placed within the operating system, or groups of virtual machines (&ldquo;VM cooperatives&rdquo;? &ldquo;VM federations&rdquo;? &ldquo;OS agnosticism&rdquo;? Need a fancy marketing term again&hellip;) coordinated by a hardware/firmware virtualization layer?</p>
+<p>What do <em>you</em> think?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macintosh">Macintosh</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/12/27/ssh-from-esx-server-to-data-ontap/">SSH from ESX Server to Data ONTAP</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/12/30/happy-new-year/">Happy New Year!</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f28%2fpersonal-computing-as-a-collection-of-vms%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f28%2fpersonal-computing-as-a-collection-of-vms%2f&text=Personal%20Computing%20as%20a%20Collection%20of%20VMs%3f" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f28%2fpersonal-computing-as-a-collection-of-vms%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/12/05/the-future-of-the-os/">The Future of the OS</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/07/10/iscsi-and-esx-server-3/">iSCSI and ESX Server 3</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

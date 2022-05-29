@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: OpenStack Summit Keynote, Day 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: OpenStack Summit Keynote, Day 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: OpenStack Summit Keynote, Day 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/05/09/openstack-summit-keynote-day-2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: OpenStack Summit Keynote, Day 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;923 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of the day 2 keynote of the OpenStack Summit in Boston, MA. (I wasn&rsquo;t able to liveblog yesterday&rsquo;s keynote due to a schedule conflict.) It looks as if today&rsquo;s keynote will have an impressive collection of speakers from a variety of companies, and&mdash;judging from the number of laptops on the stage&mdash;should feature a number of demos (hopefully all live).</p>
+<p>The keynote starts with the typical high-energy video that&rsquo;s intended to &ldquo;pump up&rdquo; the audience, and Mark Collier (COO, OpenStack Foundation) takes the stage promptly at 9am. Collier re-iterates a few statistics from yesterday&rsquo;s keynote (attendees from 63 countries, for example). Collier shares that he believes that all major challenges humanity is trying to solve counts on computing. &ldquo;All science is computer science,&rdquo; according to Collier, which is both great but also represents a huge responsibility. He leads this discussion by pointing out what he believes to be the fundamental role of open source in machine learning and artificial intelligence (ML/AI). Collier also mentions a collection of &ldquo;composable&rdquo; open source projects that are leading the way toward a &ldquo;cloud-native&rdquo; future. All of these projects are designed in a way to be combined together in a &ldquo;mix-and-match&rdquo; sort of way to build technology stacks.</p>
+<p>This leads Collier to discuss how OpenStack and how OpenStack&rsquo;s components can (should?) be used in more composable ways, and points to Swift as a project that has been very successful in running either with or without OpenStack. To be successful in that effort, though, Collier believes there are a couple challenges that must be addressed:</p>
+<ul>
+<li>Complexity</li>
+<li>NIH (Not Invented Here) Syndrome</li>
+</ul>
+<p>Addressing these challenges really matters in order to make OpenStack more composable and more consumable. This leads Collier to introduce the first of some demos, which will show off using Ironic to turn up OpenStack on a small rack of DellEMC equipment sitting on the stage. The demo is led by Julia Kreger of IBM. The demo shows Ironic being used to turn up infrastructure for Kubernetes.</p>
+<p>That, in turn, leads to John Griffith and Kendall Nelson taking the stage to show how you can use Docker to deploy Cinder in containers on top of the Kubernetes infrastructure that was deploying using Ironic. That enables them to create a persistent volume through Cinder. The demo runs into a few timing errors, but Collier manages to keep things moving along with good use of humor.</p>
+<p>One key takeaway from the Cinder-in-containers demo is that there is an OpenStack project called &ldquo;Loki&rdquo; that helps make OCI-compatible container images of OpenStack services like Cinder and others. (It is these images, created by Loki, that Griffith and Nelson are using for their demo.)</p>
+<p>Next up, Collier introduces Jakub Pavlik from Mirantis to show a live demo of a unified platform for VMs, containers, and bare metal workloads.</p>
+<p>Following a successful demo, Collier introduces a video from Intel. After the video, Imad Sousou from Intel takes the stage. Sousou takes a few minutes to pimp Intel&rsquo;s sessions at the Summit before moving into the meat of his presentation, which focuses on the need for OpenStack and Intel&rsquo;s efforts around making OpenStack more enterprise-ready. Sousou reiterates Intel&rsquo;s commitment to OpenStack, which I suppose is a response to the recent news regarding Intel&rsquo;s withdrawal from the OpenStack Innovation Center (a joint effort with Rackspace). After a disjointed mention of a bunch of different Intel products, Sousou wraps up.</p>
+<p>Collier takes the stage again and brings out Brian Stevens, CTO of Google Cloud. Collier and Stevens talk for a few minutes about topics like enterprise complexity, public cloud, open source, and Google&rsquo;s role in open source.</p>
+<p>Next up is another demo; Collier brings out Alex Polvi from CoreOS and Spencer Kimball from Cockroach Labs. Per Kimball, CockroachDB is so named because it replicates itself and is really hard to kill. Polvi and Kimball run through a demo of CockroachDB and Kubernetes. The first part of the demo is pretty straightforward, but then Collier brings Brad Topol out. Topol and Collier bring out 15 different OpenStack distributions to replicate last year&rsquo;s Interop Challenge&mdash;this time adding in CoreOS and CockroachDB. The demo is successful; attendees are able to see Kubernetes pods running CockroachDB running across multiple clouds in multiple countries all join the same CockroachDB cluster.</p>
+<p>After the interoperability demo, Collier brings out Dr. Clemens Hardewig of Deutsche Telekom (DT). Hardewig spends a few minutes talking about how DT has participated in the OpenStack community and their OpenStack experience, and how DT is leveraging that experience and expertise in DT&rsquo;s new OpenStack-based public cloud offering, Open Telekom Cloud. Hardewig believes that OpenStack has an advantage over public cloud providers in the form of hybrid support, which provides functional differentiation. OpenStack will never compete with the public cloud on scale, but Hardewig believes OpenStack&rsquo;s hybridity will help it compete on differentiation for a variety of use cases.</p>
+<p>Collier takes the stage again. He talks about the next two summits (Sydney, Australia, and then Vancouver, British Columbia, Canada). Right at the end of the keynote, Collier introduces his special guest, Edward Snowden, who joins the conference via video/audio link (he obviously can&rsquo;t be here in Boston in person). Collier and Snowden talk for a few minutes about cloud computing, the risks and benefits of cloud computing, how OpenStack addresses the &ldquo;silent vulnerability&rdquo; of public clouds, morals and ethics for open source contributors, and the dynamics of security vulnerabilities and their interplay with open source.</p>
+<p>After talking with Snowden for a few minutes, Collier wraps up the keynote.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/05/08/using-makefile-with-markdown-documents/">Using a Makefile with Markdown Documents</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/05/09/kuryr-project-update/">Liveblog: Kuryr Project Update</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f09%2fopenstack-summit-keynote-day-2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f09%2fopenstack-summit-keynote-day-2%2f&text=Liveblog%3a%20OpenStack%20Summit%20Keynote%2c%20Day%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f09%2fopenstack-summit-keynote-day-2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/07/14/examining-the-needs-of-a-policy-solution/">Examining the Needs of a Policy Solution</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #12: Storage Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #12: Storage Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #12: Storage Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/05/08/technology-short-take-12-storage-edition/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #12: Storage Edition</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;553 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;m so far behind in my technology reading that I have this massive list of blog posts and links that I would normally put into an issue of Technology Short Takes. However, people are already &ldquo;complaining&rdquo; that my Short Takes aren&rsquo;t all that short. To keep from overwhelming people, I&rsquo;m breaking Technology Short Take #12 into three editions: Virtualization, Storage, and Networking.</p>
+<p>Here&rsquo;s the &ldquo;Storage Edition&rdquo; of Technology Short Take #12!</p>
+<ul>
+<li>
+<p>When planning storage details for your vSphere implementation, be sure to keep block size in mind. Duncan Epping&rsquo;s post on <a href="http://www.yellow-bricks.com/2011/02/24/storage-vmotion-performance-difference/">the performance impact of the different datamovers</a> in a Storage vMotion operation should bring to light why this is an important storage detail to remember. (And read <a href="http://www.yellow-bricks.com/2011/02/18/blocksize-impact/">this post</a> if you need more info on the different datamovers.)</p>
+</li>
+<li>
+<p>Richard Anderson of EMC (aka <a href="http://twitter.com/storagesavvy">@storagesavvy</a>) posted a &ldquo;what if&rdquo; about <a href="http://storagesavvy.com/2011/02/24/auto-tiering-cloud-storage-and-risk-free-thin-pools/">using cloud storage as a buffer with thin provisioning and FAST VP</a>. It&rsquo;s an interesting idea, and one that will probably see greater attention moving forward.</p>
+</li>
+<li>
+<p>Richard also shared some <a href="http://storagesavvy.com/2011/03/26/real-world-emc-fastvp-and-fastcache-results/">real-world results</a> on the benefits of using FAST Cache and FAST VP on a NS-480 array.</p>
+</li>
+<li>
+<p>Interested in using OpenFiler as an FC target? Have a look <a href="http://brianshowto.com/?p=38">here</a>.</p>
+</li>
+<li>
+<p>Nigel Poulton posted an analysis of EMC&rsquo;s recent entry in the SPC benchmarketing wars in which he <a href="http://blog.nigelpoulton.com/storage-benchmarking-and-formula-1/">compares storage benchmarking to Formula 1 racing</a>. I can see and understand his analogy, and to a certain extent he has a valid point. On the other hand, it doesn&rsquo;t make sense to submit a more &ldquo;mainstream&rdquo; configuration if it&rsquo;s a performance benchmark; to use Nigel&rsquo;s analogy, that would be like driving your mini-van in a Formula 1 race. Yes, the mini-van is probably more applicable and useful to a wider audience, but a Formula 1 race is a &ldquo;performance benchmark,&rdquo; is it not? Anyway, I don&rsquo;t know why certain configurations were or were not submitted; that&rsquo;s for far more important people than me to determine.</p>
+</li>
+<li>
+<p>Vijay (aka <a href="http://twitter.com/veverything">@veverything</a> on Twitter) has a good <a href="http://virtualeverything.wordpress.com/2011/03/05/emc-storage-pool-deep-dive-design-considerations-caveats/">deep dive on EMC storage pools</a> as implemented on the CLARiiON and VNX arrays.</p>
+</li>
+<li>
+<p>Erik Smith has a couple of great FCoE-focused blog posts, first on <a href="http://brasstacksblog.typepad.com/brass-tacks/2011/03/pt2pt-and-vn2vn-directly-connecting-an-fcoe-initiator-to-an-fcoe-target-part-1-overview.html">directly connecting to an FCoE target</a> and then on <a href="http://brasstacksblog.typepad.com/brass-tacks/2011/03/fcoe-multihop-and-ve_ports.html">VE_Ports and multihop FCoE</a>. Both of these posts are in-depth technical articles that are, in my opinion, well worth reading.</p>
+</li>
+<li>
+<p>Brian Norris posted about <a href="http://goingvirtual.wordpress.com/2011/02/17/celerra-dart-6-0-x-with-clariion-flare-30-gotcha/">some limitations with certain FLARE 30 features</a> when used in conjunction with Celerra (DART 6.0). I know that at least one of these limitations&mdash;the support for FAST VP on LUNs used by Celerra&mdash;are addressed in the VNX arrays.</p>
+</li>
+<li>
+<p>Brian also recently posted some good information on <a href="http://goingvirtual.wordpress.com/2011/02/28/celerra-and-clariion-login-gotcha-with-unisphere/">a potential login issue with Unisphere</a>; this is caused by SSL certificates that are generated with future dates.</p>
+</li>
+<li>
+<p>J Metz of Cisco also has a couple of great FCoE-focused posts. In <a href="http://blogs.cisco.com/datacenter/to-tell-the-truth-multihop-fcoe/">To Tell the Truth: Multihop FCoE</a>, J covers in great detail the various topology options and the differences in each topology. Then, in his post on <a href="http://blogs.cisco.com/datacenter/announcing-true-director-class-multihop-fcoe/">director-class multihop FCoE</a>, J discusses the products that implement multihop FCoE for Cisco.</p>
+</li>
+<li>
+<p>If you&rsquo;ve never used EMC&rsquo;s VSI (Virtual Storage Integrator) plug-in for vCenter Server, have a look at <a href="http://www.rtfm-ed.co.uk/2011/03/01/using-the-emc-vsi-plug-in/">Mike Laverick&rsquo;s write-up</a>.</p>
+</li>
+</ul>
+<p>OK, that does it for the Storage Edition of Technology Short Take #12. Check back in a couple of days for the Networking Edition of Technology Short Take 12.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/clariion">CLARiiON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/05/04/a-few-references-for-ccna-certification/">A Few References for CCNA Certification</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/05/10/stretched-clustering-presentation/">Stretched Clustering Presentation</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f08%2ftechnology-short-take-12-storage-edition%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f08%2ftechnology-short-take-12-storage-edition%2f&text=Technology%20Short%20Take%20%2312%3a%20Storage%20Edition" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f08%2ftechnology-short-take-12-storage-edition%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/12/15/fcoe-through-a-nexus-to-a-mds-attached-storage-array/">FCoE through a Nexus to a MDS-Attached Storage Array</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2009/11/17/storage-short-take-5/">Storage Short Take #5</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2011/02/17/technology-short-take-11/">Technology Short Take #11</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NVP, Part 7: Handling the NVP to NSX Transition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NVP, Part 7: Handling the NVP to NSX Transition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NVP, Part 7: Handling the NVP to NSX Transition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/11/01/learning-nvp-part-7-handling-the-nvp-to-nsx-transition/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NVP, Part 7: Handling the NVP to NSX Transition</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;510 words (estimated 3 minutes to read)</span>
+  <p>Welcome to part 7 of the Learning NVP blog series, in which I will discuss transitioning from a focus on NVP to looking at NSX.</p>
+<p>If you&rsquo;re just now joining me for this series, here&rsquo;s what&rsquo;s transpired thus far:</p>
+<ul>
+<li>
+<p>In part 1, I provided a <a href="/2013/05/21/learning-nvp-part-1-high-level-architecture/">high-level overview of NVP</a> and its core components.</p>
+</li>
+<li>
+<p>In part 2, I showed you how to <a href="/2013/08/16/learning-nvp-part-2-nvp-controllers/">build NVP controllers and configure them into a controller cluster</a>.</p>
+</li>
+<li>
+<p>In part 3, you saw how to <a href="/2013/08/19/learning-nvp-part-3-nvp-manager/">install and configure NVP Manager</a>, a web-based GUI that you can use to configure certain aspects of NVP.</p>
+</li>
+<li>
+<p>In part 4, I walked you through the process of <a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">adding hypervisors to NVP</a>.</p>
+</li>
+<li>
+<p>In part 5, I showed you how to <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">create a logical network</a> that could be used to connect VMs to each other independent of the underlying physical network topology.</p>
+</li>
+<li>
+<p>In part 6, I took you through <a href="/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">adding an NVP gateway</a> to your environment, setting the stage for you to later add L2/L3 connectivity in and out of your logical networks.</p>
+</li>
+</ul>
+<p>When I first started this series back in May of this year, I said this:</p>
+<blockquote>
+<p>Before continuing, it might be useful to set some context around NVP and NSX The architecture I&rsquo;m describing here will also be applicable to NSX, which VMware announced in early March. Because NSX will leverage NVP&rsquo;s architecture, spending some time with NVP now will pay off with NSX later.</p>
+</blockquote>
+<p>Well, the &ldquo;later&rdquo; that I referenced is now upon us. I had hoped to be much farther along with this blog series by now, but it has proven more difficult than I had anticipated to get this content written and published. Given that NSX officially GA&rsquo;d last week at VMworld EMEA in Barcelona, I figured it was time to make the transition from NVP to NSX.</p>
+<p>The way I&rsquo;ll handle the transition from talking NVP to discussing VMware NSX is through an upgrade. I have a completely virtualized environment that is currently running all the NVP components: three controllers, NVP Manager, three nested hypervisors running Ubuntu+KVM+OVS, two gateways, and a service node. (I know, I know&mdash;I haven&rsquo;t written about service nodes yet. Sorry.) The idea is to take you through the upgrade process, upgrading my environment from NVP 3.1.1 to NVP 3.2.1 and then to NSX 4.0.0. From that point forward, the series will change from &ldquo;Learning NVP&rdquo; to &ldquo;Learning NSX&rdquo;, and I&rsquo;ll continue with discussing all the topics that I have planned. These include (among others):</p>
+<ul>
+<li>
+<p>Deploying service nodes</p>
+</li>
+<li>
+<p>Using an L2 gateway service</p>
+</li>
+<li>
+<p>Using an L3 gateway service</p>
+</li>
+<li>
+<p>Enabling distributed east-west routing</p>
+</li>
+<li>
+<p>Many, many more topics</p>
+</li>
+</ul>
+<p>Unfortunately, my travel schedule over the next few weeks is pretty hectic, which will probably limit my ability to move quickly on performing and documenting the upgrade process. Nevertheless, I will press forward as quickly as possible, so stay tuned to the site for more updates as soon as I&rsquo;m able to get them published.</p>
+<p>Questions? Comments? Feel free to add them below. All I ask for is common courtesy and disclosure of vendor affiliations, where applicable. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nicira">Nicira</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvp">NVP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/10/31/timbuk2-commute-messenger-bag-two-months-later/">Timbuk2 Commute Messenger Bag, Two Months Later</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/11/08/a-non-programmers-introduction-to-json/">A Non-Programmer&#39;s Introduction to JSON</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f01%2flearning-nvp-part-7-handling-the-nvp-to-nsx-transition%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f01%2flearning-nvp-part-7-handling-the-nvp-to-nsx-transition%2f&text=Learning%20NVP%2c%20Part%207%3a%20Handling%20the%20NVP%20to%20NSX%20Transition" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f01%2flearning-nvp-part-7-handling-the-nvp-to-nsx-transition%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">Learning NVP, Part 6: Adding an NVP Gateway</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">Learning NVP, Part 5: Creating a Logical Network</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">Learning NVP, Part 4: Adding Hypervisors to NVP</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

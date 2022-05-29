@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Plain Text Productivity Experiment - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Plain Text Productivity Experiment - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Plain Text Productivity Experiment - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/04/06/plain-text-productivity-experiment/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Plain Text Productivity Experiment</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;983 words (estimated 5 minutes to read)</span>
+  <p>I&rsquo;m a big fan of plain text-based formats and tools, for a variety of reasons. As a result, I&rsquo;ve moved almost all of my writing into plain text formats, primarily Markdown (MultiMarkdown, to be specific), and I recently spent a couple of months experimenting to see if a plain text-based productivity system would work for me as well. Here&rsquo;s what I found.</p>
+<p>&lt;aside&gt;I won&rsquo;t go into a great amount of detail on <em>why</em> I wanted to see if a plain text-based productivity system would work, as I&rsquo;ve discussed the merits of using plain text-based formats before (platform portability, application portability, longevity, etc.).&lt;/aside&gt;</p>
+<p>I first looked at Gina Trapani&rsquo;s <a href="http://todotxt.com">todo.txt system</a>, which is plain text-based and has a thriving community built around its format. The todo.txt format is very straightforward and very simple&mdash;almost <em>too</em> simple. After trying it for a short while I found that it just wasn&rsquo;t flexible enough to meet my needs.</p>
+<p>A few weeks later, I stumbled on the TaskPaper format (named after <a href="http://www.hogbaysoftware.com/products/taskpaper">the Mac app of the same name</a>). Also plain text-based, the TaskPaper format also had a thriving community of applications and tools built around the format, and while also very simple the TaskPaper format was extremely flexible. For example, not only does the TaskPaper format support tags (like &ldquo;@today&rdquo; or &ldquo;@telephone&rdquo;), but the TaskPaper format supports values embedded in the tags. So, for example, using a tag like &ldquo;@due(2014-07-15)&rdquo; allows you to specify a value for the &ldquo;@due&rdquo; tag. Being able to embed values in the tags allows a lot of flexibility, such as being able to model start dates, due dates, and task dependencies&mdash;for example, using &ldquo;@waiting(Bob)&rdquo; to indicate a task is waiting on something from your co-worker Bob. TaskPaper also had tools like <a href="http://code.google.com/p/taskpaper-bbedit/">a BBEdit language module</a> and <a href="https://github.com/psidnell/oo2taskpaper">an OmniOutliner exporter</a>, both very handy. The Mac app also sported extensive AppleScript support, which meant I could customize/extend its functionality over time.</p>
+<p>While amazingly powerful for an app that works with plain text-based files, after a few months I found that TaskPaper wasn&rsquo;t cutting it for me. That&rsquo;s not to say that it won&rsquo;t work for you, only that it wasn&rsquo;t working <em>for me.</em> After a while of using TaskPaper (both the app and the plain text file format), these limitations/drawbacks became significant enough to really get my attention:</p>
+<ul>
+<li><em>Handling future tasks is a problem.</em> One of the things I like to be able to do is capture a task I know I&rsquo;m going to need to do at some point in the future. Then I know it&rsquo;s in my &ldquo;trusted system,&rdquo; and I don&rsquo;t need to worry about it. All I need to do is assign a start date to the task&mdash;to denote when the task becomes available to do&mdash;and my trusted system will let me know when it&rsquo;s time to do the task. TaskPaper (the file format) allows you to embed a start date in a tag, like &ldquo;@start(2016-01-01)&rdquo;, but TaskPaper (the application) doesn&rsquo;t know what to do with it. Before the start date, the task is still in your list of active tasks, and isn&rsquo;t marked or formatted differently to denote that it is a future task. This made it difficult&mdash;though not impossible&mdash;to effectively track future tasks.</li>
+<li><em>Handling repeating tasks is a problem.</em> TaskPaper (both the format and the application) had no facility for repeating tasks. For repeating tasks, I would have to manually duplicate the existing task, edit the duplicate (if needed), then mark the first task complete. Yes, you could use a tag like &ldquo;@repeat(weekly)&rdquo; or similar, but the application doesn&rsquo;t do anything with such tags.</li>
+<li><em>Handling tasks with due dates is a problem.</em> Although TaskPaper (the file format) supports dates inside a &ldquo;@due&rdquo; tag, TaskPaper (the application) won&rsquo;t do anything with the tags or the values in the tags. You have write and manually run a separate set of AppleScripts to check the dates in the tags against the current date to see if the task is due soon or even overdue.</li>
+<li><em>Handling lots of tasks is a problem.</em> I like to capture all my tasks in my trusted system, and as a result my task list ends up being quite long. Although TaskPaper (the application) has an excellent search/query system with which to find tasks, managing a long list of tasks is still challenging. I tried breaking it up into separate TaskPaper files, but that only made the matter worse; now I had tasks split across multiple files with <em>no</em> way of filtering/searching across them.</li>
+<li><em>Keeping task lists synced across computers can be a problem.</em> TaskPaper (the application) doesn&rsquo;t have its own sync service; it relies on something like Dropbox. If you accidentally leave the application running with a file open on one computer, you can&rsquo;t modify that file on any other computer (the file is locked for changes). This made keeping task lists synced across computers challenging&mdash;if I didn&rsquo;t remember to kill TaskPaper on my Mac Pro at home before leaving on a trip, then I couldn&rsquo;t work with my task lists on my MacBook Air while I was traveling.</li>
+</ul>
+<p>None of these problems are insurmountable, but the friction they cause&mdash;recalling that I use the term &ldquo;friction&rdquo; to denote how seamless or streamlined a process is, where reducing the friction (streamlining the process) is a good thing&mdash;made the trusted system feel&hellip;well, less trusted. So, after several months of trying to make a plain text productivity system work, I&rsquo;m switching back to <a href="http://www.omnigroup.com/omnifocus/">OmniFocus</a>. While OmniFocus isn&rsquo;t perfect&mdash;no system is&mdash;it does address the challenges that I was experiencing with TaskPaper.</p>
+<p>While plain text-based formats have worked wonderfully for me for writing and presentations, it looks like the existing raft of plain text-based productivity solutions don&rsquo;t have quite the functionality and robustness that I need. Others, though, might find that they work perfectly fine. So, don&rsquo;t be afraid to run your own plain text productivity experiment&hellip;you might be surprised at the results!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/03/23/retire-the-rockstar-a-counterpoint/">Retiring the Rockstar: A Counterpoint</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/04/15/running-etcd-20-cluster/">Running an etcd 2.0 Cluster on Ubuntu 14.04</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f06%2fplain-text-productivity-experiment%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f06%2fplain-text-productivity-experiment%2f&text=The%20Plain%20Text%20Productivity%20Experiment" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f06%2fplain-text-productivity-experiment%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/02/18/presentations-markdown-deckset/">Presentations in Markdown Using Deckset</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2014/05/19/some-useful-markdown-tools-for-os-x/">Some Useful Markdown Tools for OS X</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2013/12/20/reducing-the-friction-training-a-spam-filter/">Reducing the Friction: Training a Spam Filter</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

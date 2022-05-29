@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Story Behind the Migration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Story Behind the Migration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Story Behind the Migration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/01/06/the-story-behind-the-migration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Story Behind the Migration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/general">General</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1074 words (estimated 6 minutes to read)</span>
+  <p>A number of people have asked me why I migrated from WordPress&mdash;which powered my blog for 9 years&mdash;to Jekyll and GitHub Pages. Now that the migration is finally complete, I can share with you the story behind the migration: why I migrated, the process I followed, and some of the tools I used.</p>
+<h2 id="why-i-migrated">Why I Migrated</h2>
+<p>&ldquo;Why?&rdquo; is a question I heard quite a bit as I was sharing updates on the progress of the blog migration over the Christmas/New Year holiday. It&rsquo;s quite simple, really: <em>I needed to walk the walk.</em></p>
+<p>Allow me to explain. For the last couple of years, I&rsquo;ve occasionally been giving presentations at VMUG meetings and other events on how to stay relevant in the fast-changing world of IT. The most recent instance was a whirlwind tour of Dallas, Chicago, and Phoenix in September of this last year, where I presented <a href="https://speakerdeck.com/slowe/closing-the-cloud-skills-gap">this deck</a>, titled &ldquo;Closing the Cloud Skills Gap.&rdquo;</p>
+<p>In that presentation, one of the recommendations I made to the audience was to become more familiar with the software development process. That includes tools like <a href="http://git-scm.com">Git</a> (and, by extension, <a href="https://github.com">GitHub</a>), <a href="http://vagrantup.com">Vagrant</a> (a quick introduction is available <a href="/2014/09/12/a-quick-introduction-to-vagrant/">here</a>), and others. I don&rsquo;t fully buy into the &ldquo;Everyone needs to become a programmer&rdquo; mantra, but I <em>do</em> believe that IT pros who educate themselves on the software development process will have an advantage over those who don&rsquo;t. I believe it&rsquo;s sound advice, but the issue was that <em>I wasn&rsquo;t following my own advice.</em> I was only relatively familar with Git, and even less familiar with GitHub. I needed to walk the walk as well as talk the talk.</p>
+<p>So I upped my game: I started becoming more active on GitHub, primarily through contributions to the Open vSwitch web site (which, like this site, is also hosted on GitHub Pages). I learned about Git branches, remotes, squashing commits, and submitting pull requests. I realized that the only way to make using these tools and processes as natural as possible was to integrate them into something that was already deeply a part of me&mdash;my blog. By migrating my blog to GitHub Pages and Jekyll, publishing a blog post becomes committing changes and pushing them to GitHub. If I decide I want to work on a new theme or work on adding new functionality to the site, I can create a branch to hold my work.</p>
+<p>There are other reasons why this move made sense for me, not the least of which was the fact that I was already writing all my blog posts in Markdown anyway (see <a href="/2013/05/31/reducing-the-friction-bbedit-to-marsedit/">this post</a>). Switching to Jekyll means I get to keep writing in Markdown and skip the HTML conversion process (Jekyll handles that for me on the server side). I gain the freedom to switch providers (I can run Jekyll locally and upload the resulting site to <em>any</em> web server). Heck, I could run the website out of Amazon S3 if I wanted to (which is <a href="http://www.allthingsdistributed.com/2011/08/Jekyll-amazon-s3.html">what Werner Vogels does</a>). It also frees me to use whatever content creation tool I want to use, since Markdown is just plain text. <code>vim</code> for writing blog posts, anyone?</p>
+<h2 id="the-process-i-followed">The Process I Followed</h2>
+<p>Once the decision to migrate was made, then the focus had to shift to <em>how</em> I was actually going to do this. I had a <strong>lot</strong> of content in WordPress (over 1,600 posts). After some trial-and-error, I finally settled on a process that seemed reasonable:</p>
+<ol>
+<li>
+<p>First, I exported the content out of WordPress using the Export tool in the WordPress dashboard. This created an XML file containing the blog posts and their associated metadata.</p>
+</li>
+<li>
+<p>Next, I used a tool called exitwp (itself <a href="https://github.com/thomasf/exitwp">a project hosted on GitHub</a>) to take the data in the XML export and turn it into a boatload of Markdown files and a directory structure. (Jekyll has a certain directory structure that it expects, and exitwp helps build that structure for you.)</p>
+<p>These two steps will get you most of the way (say, 90%) to getting your old WordPress content over to Jekyll. However, being the stickler that I am, I knew that a bunch of my old content wasn&rsquo;t formatted correctly&ndash;there were strange characters left over from a previous blog migration, for example. So I kept going.</p>
+</li>
+<li>
+<p>Using the Markdown files generated by exitwp, I used an application named <a href="http://www.unmarked.com/textsoap/">TextSoap</a> (an application designed to &ldquo;clean&rdquo; text files like the Markdown files I had) to apply a series of regular expressions (regexes) to all the files. These regexes did things like remove ASCII gremlins (odd characters), straighten all quotes, remove extra returns and spaces, etc. TextSoap was a huge lifesaver in cleaning up the files&mdash;I was able to transform all 1,600+ posts in a matter of minutes (once I had created and tested the regexes). For most people, this would have been more than enough. I kept going.</p>
+</li>
+<li>
+<p>I manually reviewed and cleaned up <em>every single blog post</em>, committing them to the GitHub repository only after I was satisfied with the source content files. Part of this final review was switching hard-coded blog URLs to <code>post_url</code> Liquid tags (so that post URLs were created correctly when the site is generated by Jekyll)&mdash;another area where TextSoap came in handy. This was obviously quite time-consuming, but it (hopefully) yielded a higher quality site.</p>
+</li>
+</ol>
+<h2 id="the-tools-i-used">The Tools I Used</h2>
+<p>I&rsquo;ve already talked about some of the tools I used, but let me recap them here:</p>
+<ul>
+<li>
+<p>The built-in WordPress Export tool gets the content (and associated metadata, like categories, tags, author, publication date, etc.&mdash;you <em>definitely</em> want this metadata) out of WordPress.</p>
+</li>
+<li>
+<p>A couple of different tools can take the exported XML and transform it for you. I used exitwp, but there are other tools as well. I believe Jekyll has a WordPress-to-Jekyll importer, for example.</p>
+</li>
+<li>
+<p>To further &ldquo;clean&rdquo; and/or fine-tune your Markdown content, you can use a tool like TextSoap to modify all the text files rapidly. (The more hardcore among us could use tools like <code>egrep</code> and <code>sed</code> to do the same thing.)</p>
+</li>
+<li>
+<p>You&rsquo;ll obviously need to use <code>git</code> or the GitHub client, as you have to push changes to the Git repository to GitHub.</p>
+</li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>I hope this post helps provide some context and information on why I switched to Jekyll, how I handled the migration, and some of the tools that were useful during the migration. There&rsquo;s so much more to be shared about the migration, so stay tuned for more posts in the near future.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/markdown">Markdown</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/01/05/blog-migration-complete/">Blog Migration Complete</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/01/07/technology-short-take-47/">Technology Short Take #47</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f06%2fthe-story-behind-the-migration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f06%2fthe-story-behind-the-migration%2f&text=The%20Story%20Behind%20the%20Migration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f06%2fthe-story-behind-the-migration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/05/31/reducing-the-friction-bbedit-to-marsedit/">Reducing the Friction: BBEdit to MarsEdit</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2015/01/05/blog-migration-complete/">Blog Migration Complete</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2014/12/18/blog-migration-in-the-works/">Blog Migration in the Works</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

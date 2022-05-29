@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #79 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #79 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #79 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/03/technology-short-take-79/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #79</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1153 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #79! There&rsquo;s lots of interesting links for you this time around.</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>I was <em>sure</em> I had mentioned Skydive before, but apparently not (a <code>grep</code> of all my blog posts found nothing), so let me rectify that first. Skydive is (in the project&rsquo;s own words) an &ldquo;open source real-time network topology and protocols analyzer.&rdquo; The project&rsquo;s GitHub repository is <a href="https://github.com/skydive-project/skydive">here</a>, and documentation for Skydive is <a href="https://skydive-project.github.io/skydive/">here</a>.</li>
+<li>OK, now that I&rsquo;ve mentioned Skydive, I can talk about this article that provides an example of <a href="https://dev.cloudwatt.com/en/blog/functionnal-sdn-testing.html">functional SDN testing with Terraform and Skydive</a>. Terraform is used to turn up OpenStack infrastructure, and Skydive (via connections into Neutron and OpenContrail, in this example) is used to validate SDN functionality.</li>
+<li>Tony Sangha took PowerNSX (a set of PowerShell cmdlets for interacting with NSX) and created <a href="https://tonysangha.com/2016/10/20/documenting-the-nsx-v-dfw-with-powernsx/">a tool to help document the NSX Distributed Firewall configuration</a>. This tool exports the DFW configuration and then converts it into Excel format, and is <a href="https://github.com/tonysangha/PowerNSX-DFW2Excel">available on GitHub</a>. (What&rsquo;s that? You haven&rsquo;t heard of PowerNSX before? See <a href="https://github.com/vmware/powernsx">here</a>.)</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around. Should I keep this section, or ditch it? Feel free to give me your feedback <a href="https://twitter.com/scott_lowe">on Twitter</a>.</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>I found this article on <a href="https://learntemail.sam.today/blog/selinux-concepts-but-for-humans/">SELinux concepts for humans</a> to be quite helpful. SELinux has been something that I&rsquo;ve avoided&mdash;yes, avoided&mdash;learning because it just seemed too complex. Instead, I should have followed my own advice and started with the vocabulary (which is what this article helps provide).</li>
+<li>The first practical way of generating SHA1 collisions has been discovered and revealed; more details are available <a href="https://security.googleblog.com/2017/02/announcing-first-sha1-collision.html">here</a>. Lots of things are potentially impacted.</li>
+<li>Here&rsquo;s <a href="https://textslashplain.com/2017/01/16/certified-malice/">a great article</a> highlighting some of the risks involved in relying only on HTTPS certificates to denote the &ldquo;security&rdquo; or &ldquo;validity&rdquo; of a site. My takeaway: double-check the address bar and look at the certificate!</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Massimo Re Ferre pointed me to an article by &ldquo;Cloud Opinion&rdquo; that discusses <a href="https://medium.com/@cloud_opinion/upcoming-saasocalypse-34e7e2ecf3ca#.irsb76h8d">the upcoming SaaSocalypse</a> that will be created by the next generation of SaaS vendors leveraging FaaS (Function-as-a-Service, as typified by AWS Lambda) and other &ldquo;serverless&rdquo; features. The efficiency described by Cloud Opinion is similar to what James Watters discussed in <a href="https://wattersjames.com/2013/05/09/economics-of-application-virtulization-on-aws/">this post from 2013</a> (also thanks to Massimo), which extols the benefits of using Cloud Foundry on top of &ldquo;plain&rdquo; IaaS offerings in order to increase utilization/efficiency.</li>
+<li>Check out <a href="http://blog.spotinst.com/2016/08/04/elastigroup-kubernetes-minions-steroids/">this article</a> that discusses using AWS Spot Instances and spotinst to run low-cost Kubernetes clusters.</li>
+<li>Brendan Burns, co-founder of Kubernetes and now an architect at Microsoft Azure, has <a href="http://blog.kubernetes.io/2017/02/caas-the-foundation-for-next-gen-paas.html">a blog post</a> about how Kubernetes enables containers-as-a-service (CaaS), which in turn is the foundation for the next generation of Platform-as-a-Service (PaaS).</li>
+<li>You know an effort/project is starting to be &ldquo;real&rdquo; when <a href="http://blog.linuxgrrl.com/2017/02/22/a-logo-for-cri-o/">a logo gets designed</a>. Such is the case with CRI-O (the Kubernetes Container Runtime Interface for OCI).</li>
+<li>I recently started experimenting with <code>awless</code>, a CLI tool for working with Amazon Web Services (AWS). So far, I really like it. Not sure if it will replace my use of the AWS CLI, but it may become a useful tool in my toolbelt. Check it out <a href="https://github.com/wallix/awless">on GitHub</a>.</li>
+<li>Sebastian Goasguen has a good overview of <a href="https://www.linux.com/learn/federating-your-kubernetes-clusters-new-road-hybrid-clouds">federating Kubernetes clusters</a>.</li>
+<li>I just noticed this article about <a href="https://blogs.vmware.com/openstack/resources-guarantee-openstack-and-vmware-integrated-openstack/">using Nova flavor extra-specs to pass QoS data down to the virtualization layer</a>. That&rsquo;s handy.</li>
+<li>This is a good article on <a href="https://ryaneschinger.com/blog/terraform-state-move/">refactoring Terraform against existing infrastructure</a> using <code>terraform state</code> commands.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Gojko Adzic has <a href="https://gojko.net/2017/02/23/serverless-migration-lesson.html">a great article</a> describing his organization&rsquo;s transition to serverless and lessons learned as a result of that transition. For me, the key takeaway was that you need to carefully examine the architecture of your application(s) in order to understand where serverless (function-as-a-service) is the best fit.</li>
+<li><a href="https://www.howtoforge.com/tutorial/install-arch-linux-on-virtualbox/">Here&rsquo;s a walkthrough</a> to install Arch Linux on VirtualBox.</li>
+<li>I like the idea of using Docker labels to include a reference to a commit in a version control system as suggested <a href="http://blog.microscaling.com/2016/06/the-joy-of-organising-container-image_6.html">in this article</a>, but as I was thinking about it this morning I had a question. If you are storing your Dockerfile in version control (which is a good idea, I would think), then changing the Dockerfile to add the commit reference is itself a change that needs to be committed, so any commit reference you add to the Dockerfile will be, at best, 1 commit behind (becuase you&rsquo;ll have to make a commit to record the reference in the Dockerfile). I suppose it doesn&rsquo;t really matter, it&rsquo;s just something about which my weird brain was thinking.</li>
+<li>I came across this article on <a href="https://dzone.com/articles/a-script-to-help-with-containerization">using SystemTap to help with containerization</a> by identifying the capabilities that a particular executable (or container) needs.</li>
+<li>Here&rsquo;s a list of <a href="http://opensourceforu.com/2017/02/docker-tools-developers/">some open source Docker-related tools that developers may find useful</a>. There were a couple of projects there I hadn&rsquo;t seen before, and a number of them that I fully expected to see listed.</li>
+<li>&ldquo;The HFT Guy&rdquo; has returned with <a href="https://thehftguy.com/2017/02/23/docker-in-production-an-update/">an update on Docker in production</a>.</li>
+<li>Distributed key-value stores&mdash;such as Zookeeper, Consul, and etcd&mdash;are an increasingly important part of application architectures (as well as an important part of the orchestration frameworks that manage applications). For that reason, <a href="https://coreos.com/blog/performance-of-etcd.html">this article</a> comparing the performance of the three key-value stores I named earlier may be worth reading. Keep in mind that this article was written by the etcd team, so the fact that etcd performs favorably in most results must be weighed accordingly.</li>
+<li>Tim Fairweather has a really useful article on <a href="http://www.arctiq.ca/our-blog/2017/2/16/ansible-jinja-warrior-loop-variable-scope">using variables in loops in Jinja2 templates</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Alan Renouf shows you <a href="http://www.virtu-al.net/2017/01/20/retrieving-nvme-details-powercli/">how to retrieve NVMe storage device details</a> using PowerCLI.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Thinking of virtualizing Linux on Hyper-V? Then you may find this list of <a href="http://www.blueshiftblog.com/?p=4010">tips for Linux performance on Hyper-V</a> to be useful.</li>
+<li>Frank Denneman and his partner in crime Niels Hagoort have launched a new book effort aimed at providing a deep-dive into host resources in vSphere 6.5 environments. Check out the details <a href="http://frankdenneman.nl/2017/02/24/vsphere-6-5-host-deep-dive-update/">here</a>.</li>
+<li>Microsoft recently added an overlay network driver with support for Docker in Windows 10; check out <a href="https://blogs.technet.microsoft.com/virtualization/2017/02/09/overlay-network-driver-with-support-for-docker-swarm-mode-now-available-to-windows-insiders-on-windows-10/">this Microsoft blog post</a> for more information.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>I really enjoyed this article by Evgeny Zislis on <a href="https://blog.devopspro.co.uk/devops-theory-of-constraints-cf1477f9bd1a#.owy576pzl">DevOps transformation using Theory of Constraints</a>. I&rsquo;m including it here in the &ldquo;Career/Soft Skills&rdquo; section because I think the four questions listed in this article apply to <em>all</em> IT professionals, not just those in &ldquo;DevOps&rdquo; roles. (Of course, the idea of a &ldquo;DevOps&rdquo; role is a topic unto itself, but I&rsquo;ll leave that for some future article.)</li>
+<li>I also enjoyed this article by Tim Bray on <a href="https://www.tbray.org/ongoing/When/201x/2017/02/18/Geek-Career-Paths">geek career paths</a>. This is something I&rsquo;ve been contemplating for a few years now, wondering if it was time for me to make the move to a less technical and more managerial/leadership role (yes, I know those two are different). Tim&rsquo;s article provided me with some useful food for thought.</li>
+</ul>
+<p>That&rsquo;s all for now&mdash;after all, I have to save some stuff for the next one (which you can expect in about 2 weeks). I hope you found something useful, and have a great weekend!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/powercli">PowerCLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualbox">VirtualBox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/career">Career</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/02/customizing-docker-centos-atomic-host/">Customizing Docker Engine on CentOS Atomic Host</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/06/linux-migration-other-users-stories-pt2/">The Linux Migration: Other Users&#39; Stories, Part 2</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f03%2ftechnology-short-take-79%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f03%2ftechnology-short-take-79%2f&text=Technology%20Short%20Take%20%2379" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f03%2ftechnology-short-take-79%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/03/technology-short-take-77/">Technology Short Take #77</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2016/10/10/technology-short-take-72/">Technology Short Take #72</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2015/12/11/technology-short-take-57/">Technology Short Take #57</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

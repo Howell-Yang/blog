@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Running Arista vEOS on KVM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Running Arista vEOS on KVM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Running Arista vEOS on KVM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/08/11/running-arista-veos-on-kvm/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Running Arista vEOS on KVM</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;920 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;ll show you how I got Arista&rsquo;s vEOS software running under KVM to create a virtualized Arista switch. There are a number of other articles that help provide instructions on how to do this, but none of those that I found included the use of <a href="http://libvirt.org/">libvirt</a> and/or <a href="http://openvswitch.org/">Open vSwitch (OVS)</a>.</p>
+<p>In order to run vEOS, you must first obtain a copy of vEOS. I can&rsquo;t provide you with a copy; you&rsquo;ll have to register on the Arista Networks site (see <a href="https://www.arista.com/en/login">here</a>) in order to gain access to the download. The download consists of two parts:</p>
+<ol>
+<li>
+<p>The Aboot ISO, which contains the boot loader</p>
+</li>
+<li>
+<p>The vEOS disk image, provided as a VMware VMDK</p>
+</li>
+</ol>
+<p>Both of these are necessary; you can&rsquo;t get away with just one or the other. Further, although the vEOS disk image is provided as a VMware VMDK, KVM/QEMU is perfectly capable of using the VMDK without any conversion required (this is kind of nice).</p>
+<p>One you&rsquo;ve downloaded these files, you can use the following libvirt domain XML definition to create a VM for running Arista vEOS (you&rsquo;d use a command like <code>virsh define &lt;filename&gt;</code>).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;domain</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;kvm&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;name&gt;</span>veos<span style="color:#f92672">&lt;/name&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;memory</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#39;KiB&#39;</span><span style="color:#f92672">&gt;</span>2097152<span style="color:#f92672">&lt;/memory&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;currentMemory</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#39;KiB&#39;</span><span style="color:#f92672">&gt;</span>2097152<span style="color:#f92672">&lt;/currentMemory&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;vcpu</span> <span style="color:#a6e22e">placement=</span><span style="color:#e6db74">&#39;static&#39;</span><span style="color:#f92672">&gt;</span>1<span style="color:#f92672">&lt;/vcpu&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;resource&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;partition&gt;</span>/machine<span style="color:#f92672">&lt;/partition&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/resource&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;os&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;type</span> <span style="color:#a6e22e">arch=</span><span style="color:#e6db74">&#39;x86_64&#39;</span> <span style="color:#a6e22e">machine=</span><span style="color:#e6db74">&#39;pc-i440fx-1.5&#39;</span><span style="color:#f92672">&gt;</span>hvm<span style="color:#f92672">&lt;/type&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;boot</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#39;cdrom&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;boot</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#39;hd&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/os&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;features&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;acpi/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;apic/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;pae/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/features&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;clock</span> <span style="color:#a6e22e">offset=</span><span style="color:#e6db74">&#39;utc&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;on_poweroff&gt;</span>destroy<span style="color:#f92672">&lt;/on_poweroff&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;on_reboot&gt;</span>restart<span style="color:#f92672">&lt;/on_reboot&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;on_crash&gt;</span>restart<span style="color:#f92672">&lt;/on_crash&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;devices&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;emulator&gt;</span>/usr/bin/qemu-system-x86_64<span style="color:#f92672">&lt;/emulator&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;disk</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;file&#39;</span> <span style="color:#a6e22e">device=</span><span style="color:#e6db74">&#39;disk&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;driver</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;qemu&#39;</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;vmdk&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">file=</span><span style="color:#e6db74">&#39;/var/lib/libvirt/images/eos-4.13.3-veos.vmdk&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;target</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#39;hda&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;ide&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;ide0-0-0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;drive&#39;</span> <span style="color:#a6e22e">controller=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">target=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/disk&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;disk</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;file&#39;</span> <span style="color:#a6e22e">device=</span><span style="color:#e6db74">&#39;cdrom&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;driver</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;qemu&#39;</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;raw&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">file=</span><span style="color:#e6db74">&#39;/var/lib/libvirt/images/aboot-veos-2.0.8.iso&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;target</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#39;hdc&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;ide&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;readonly/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;ide0-1-0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;drive&#39;</span> <span style="color:#a6e22e">controller=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;1&#39;</span> <span style="color:#a6e22e">target=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">unit=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/disk&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;controller</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;usb&#39;</span> <span style="color:#a6e22e">index=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;usb0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x01&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x2&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/controller&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;controller</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">index=</span><span style="color:#e6db74">&#39;0&#39;</span> <span style="color:#a6e22e">model=</span><span style="color:#e6db74">&#39;pci-root&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;pci0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/controller&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;controller</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;ide&#39;</span> <span style="color:#a6e22e">index=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;ide0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x01&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x1&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/controller&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;network&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">network=</span><span style="color:#e6db74">&#39;br-ex&#39;</span> <span style="color:#a6e22e">portgroup=</span><span style="color:#e6db74">&#39;management&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;e1000&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x03&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;network&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">network=</span><span style="color:#e6db74">&#39;br-ex&#39;</span> <span style="color:#a6e22e">portgroup=</span><span style="color:#e6db74">&#39;trunked&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;e1000&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x05&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;network&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">network=</span><span style="color:#e6db74">&#39;br-ex&#39;</span> <span style="color:#a6e22e">portgroup=</span><span style="color:#e6db74">&#39;trunked&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;e1000&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x06&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;serial</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pty&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">path=</span><span style="color:#e6db74">&#39;/dev/pts/4&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;target</span> <span style="color:#a6e22e">port=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;serial0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/serial&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;console</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pty&#39;</span> <span style="color:#a6e22e">tty=</span><span style="color:#e6db74">&#39;/dev/pts/4&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">path=</span><span style="color:#e6db74">&#39;/dev/pts/4&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;target</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;serial&#39;</span> <span style="color:#a6e22e">port=</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;serial0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/console&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;input</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;mouse&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;ps2&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;graphics</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;vnc&#39;</span> <span style="color:#a6e22e">port=</span><span style="color:#e6db74">&#39;5903&#39;</span> <span style="color:#a6e22e">autoport=</span><span style="color:#e6db74">&#39;yes&#39;</span> <span style="color:#a6e22e">listen=</span><span style="color:#e6db74">&#39;127.0.0.1&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;listen</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;address&#39;</span> <span style="color:#a6e22e">address=</span><span style="color:#e6db74">&#39;127.0.0.1&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/graphics&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;video&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;cirrus&#39;</span> <span style="color:#a6e22e">vram=</span><span style="color:#e6db74">&#39;9216&#39;</span> <span style="color:#a6e22e">heads=</span><span style="color:#e6db74">&#39;1&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;video0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x02&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/video&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;memballoon</span> <span style="color:#a6e22e">model=</span><span style="color:#e6db74">&#39;virtio&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;balloon0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x04&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/memballoon&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/devices&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;seclabel</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;dynamic&#39;</span> <span style="color:#a6e22e">model=</span><span style="color:#e6db74">&#39;apparmor&#39;</span> <span style="color:#a6e22e">relabel=</span><span style="color:#e6db74">&#39;yes&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/domain&gt;</span>
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/ca31c88a52284eb12ac2">here</a> for this XML text as a GitHub Gist.)</p>
+<p>There are a few key things to note about this libvirt domain XML:</p>
+<ul>
+<li>
+<p>Note the boot order; the VM must boot from the Aboot ISO first.</p>
+</li>
+<li>
+<p>Both the Aboot ISO as well as the vEOS VMDK are attached to the VM as devices, and you <em>must</em> use an IDE bus. Arista vEOS will refuse to boot if you use a SCSI device, so make sure there are no SCSI devices in the configuration. Pay particular attention to the <code>type=</code> parameters that specify the correct disk formats for the ISO (type &ldquo;raw&rdquo;) and VMDK (type &ldquo;vmdk&rdquo;).</p>
+</li>
+<li>
+<p>For the network interfaces, you&rsquo;ll want to be sure to use the e1000 model.</p>
+</li>
+<li>
+<p>This example XML definition includes three different network interfaces. (More are supported; up to 7 interfaces on QEMU/KVM.)</p>
+</li>
+<li>
+<p>This XML definition leverages <a href="/2012/11/07/using-vlans-with-ovs-and-libvirt/">libvirt integration with OVS</a> so that libvirt automatically attaches VMs to OVS and correctly applies VLAN tagging and trunking configurations. In this case, the network interfaces are attaching to a portgroup called &ldquo;trunked&rdquo;; this portgroup <a href="/2013/05/28/vlan-trunking-to-guest-domains-with-open-vswitch/">trunks VLANs up to the guest domain</a> (the vEOS VM, in this case). In theory, this should allow the vEOS VM to support VLAN trunk interfaces, although I had some issues making this work as expected and had to drop back to tagged interfaces.</p>
+</li>
+</ul>
+<p>Once you have the guest domain defined, you can start it by using <code>virsh start &lt;guest domain name&gt;</code>. The first time it boots, it will take a <em>long</em> time to come up. (A <em>really</em> long time&mdash;I watched it for a good 10 minutes before finally giving up and walking away to do something else. It was up when I came back.) According to the documentation I&rsquo;ve found, this is because EOS needs to make a backup copy of the flash partition (which in this case is the VMDK disk image). It might be quicker for you, but be prepared for a long first boot just in case.</p>
+<p>Once it&rsquo;s up and running, use <code>virsh vncdisplay</code> to get the VNC display of the vEOS guest domain, then use a VNC viewer to connect to the guest domain&rsquo;s console. You won&rsquo;t be able to SSH in yet, as all the network interfaces are still unconfigured. At the console, set an IP address on the Management1 interface (which will correspond to the first virtual network interface defined in the libvirt domain XML) and then you should have network connectivity to the switch for the purposes of management. Once you create a username and a password, then you&rsquo;ll be able to SSH into your newly-running Arista vEOS switch. Have fun!</p>
+<p>For additional information and context, here are some links to other articles I found on this topic while doing some research:</p>
+<ul>
+<li>
+<p><a href="https://eos.arista.com/veos-running-eos-in-a-vm/">vEOS - Running EOS in a VM</a> (this article provides only limited QEMU/KVM information toward the end)</p>
+</li>
+<li>
+<p><a href="https://eos.arista.com/running-veos-on-esxi-5-5/">Running vEOS on ESXi 5.5</a></p>
+</li>
+<li>
+<p><a href="http://thenetworksherpa.com/create-a-vbox-arista-veos-image-via-command-line/">Create a VirtualBox Arista vEOS image from the command line</a></p>
+</li>
+<li>
+<p><a href="http://www.gad.net/Blog/2012/10/27/building-a-virtual-lab-with-arista-veos-and-virtualbox/">Building a Virtual Lab with Arista vEOS and VirtualBox</a></p>
+</li>
+</ul>
+<p>If you have any questions or need more information, feel free to speak up in the comments below. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/08/08/technology-short-take-43/">Technology Short Take #43</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/08/12/cloud-hosted-cloud-management-via-platform9/">Cloud-Hosted Cloud Management via Platform9</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f11%2frunning-arista-veos-on-kvm%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f11%2frunning-arista-veos-on-kvm%2f&text=Running%20Arista%20vEOS%20on%20KVM" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f11%2frunning-arista-veos-on-kvm%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/12/libvirt-ovs-integration-revisited/">Libvirt-OVS Integration Revisited</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/11/07/using-vlans-with-ovs-and-libvirt/">Using VLANs with OVS and libvirt</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

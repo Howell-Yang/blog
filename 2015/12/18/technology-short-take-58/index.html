@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #58 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #58 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #58 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/12/18/technology-short-take-58/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #58</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1372 words (estimated 7 minutes to read)</span>
+  <p>Welcome to Technology Short Take #58. This will be the last Technology Short Take of 2015, as next week is Christmas and the following week is the New Year&rsquo;s holiday. Before I present this episode&rsquo;s collection of links, articles, and thoughts on various data center technologies, allow me to first wish all of my readers a very merry and very festive holiday season. Now, on to the content!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Looking for a step-by-step install guide for VMware NSX? <a href="http://dailyhypervisor.com/vmware-nsx-for-vsphere-6-1-step-by-step-installation/">This one</a> is a bit older (refers to NSX 6.1 and the current release is 6.2), but you might find it helpful nevertheless.</li>
+<li>Ray Budavari&mdash;who is an absolutely <em>fantastic</em> NSX resource&mdash;has <a href="https://blogs.vmware.com/networkvirtualization/2015/12/vmware-nsx-vrealize-automation.html">a blog post up on the integration between VMware NSX and vRealize Automation</a>. This first post (judging by the &ldquo;part 1&rdquo; in the title this will be a series) is a bit light on details, but I&rsquo;m hoping future posts will dive deeper into this topic.</li>
+<li>Mustafa Akin has <a href="http://mustafaak.in/2015/12/05/docker-overlay-performance.html">an article on Docker&rsquo;s new overlay networking functionality</a>. He describes how to set it up (on both VirtualBox and Digital Ocean) and provides some high-level performance information as well.</li>
+<li>If you&rsquo;d like to play around with Cumulus Linux but don&rsquo;t have a compatible hardware switch, Cumulus VX is the answer. Here&rsquo;s <a href="https://community.cumulusnetworks.com/cumulus/topics/converting-cumulus-vx-virtualbox-vagrant-box-gt-libvirt-vagrant-box">a post on converting VX from VirtualBox to Libvirt</a>, in case you&rsquo;d like to run it that way.</li>
+<li>I saw <a href="https://www.sdxcentral.com/articles/news/juniper-mx-routers-lean-toward-more-automation/2015/12/">this announcement regarding a recent Juniper MX router refresh on SDx Central</a>, but it is really light on details. It says the the JET (Juniper Extension Toolkit) uses &ldquo;open application programming interfaces&rdquo;, but fails to provide any specifics. Is this &ldquo;open-washing&rdquo;, or is there actually some meat to this? A general web search for &ldquo;Juniper Extension Toolkit&rdquo; yielded similarly low-value hits that were vague. If you have some details on this, <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>.</li>
+<li>Here&rsquo;s a post that claims to <a href="http://cisqueros.blogspot.co.ke/2015/12/openstack-neutron-and-ovs-open-virtual.html">translate OVS and OpenStack Neutron to the network engineer&rsquo;s language</a>. One small point of discussion: the post claims OpenStack Neutron &ldquo;isn&rsquo;t capable of controlling a physical network infrastructure&rdquo; (the author&rsquo;s words). I would respond to that by saying OpenStack Neutron wasn&rsquo;t built to manage a physical network.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Normally the hardware space is pretty boring (in fact, I&rsquo;ve been considering removing it from the Technology Short Take series), but HPE decided to shake things up recently with its Synergy servers and &ldquo;composable architecture&rdquo;. Most of the articles I found on the Synergy servers and &ldquo;composable architecture&rdquo; were more &ldquo;market-techture&rdquo; than anything substantive (see the list of links at the end of <a href="https://www.mirantis.com/blog/hpe-introduces-a-new-way-of-computing-but-will-it-work/">this Mirantis blog post</a>), but as far as I&rsquo;m able to glean this sounds a lot like Intel&rsquo;s Rack-Scale Architecture. (See <a href="/2014/09/22/thinking-about-intel-rack-scale-architecture/">here</a> for some of my thoughts on Intel&rsquo;s RSA following IDF 2014.) If HPE&rsquo;s Synergy takes the approach of enabling higher-level software to be more insightful and more effective, then great; if, on the other hand, HPE takes the approach of trying to replicate higher-level software functionality in hardware (as it seems they&rsquo;re trying to do), I&rsquo;m not a fan of the added complexity.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>This article listing <a href="http://www.cyberciti.biz/tips/linux-security.html">20 Linux server hardening tips</a> contains some basic tips but is nevertheless a very good resource for someone looking for Linux security recommendations.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Microsoft recently <a href="https://azure.microsoft.com/en-us/blog/azure-container-service-preview/">announced a preview</a> of Azure Container Service (ACS). ACS offers multiple &ldquo;endpoints,&rdquo; each of which enables you to use a particular open source container/orchestration tool. For example, there is a Docker Swarm endpoint, against which you could use standard Docker tools (like Docker Compose, for example).</li>
+<li>Rackspace and VMware have a pair of articles discussing their interoperable OpenStack cloud architecture (<a href="http://blog.rackspace.com/rackspace-vmware-interoperable-openstack-cloud-architecture/">here&rsquo;s the post from Rackspace</a>, and <a href="http://blogs.vmware.com/openstack/vmware-rackspace-interoperable-openstack-architecture/">here&rsquo;s the post from VMware</a>). In my opinion, this is the sort of interoperability across providers and implementations that OpenStack really needs, so it&rsquo;s good to see two well-known names stepping up to make this happen. It would be great to see this expand to even more OpenStack providers, but it has to start somewhere, right?</li>
+<li>Trevor Roberts Jr. has a three-part series on using Vagrant with OpenStack, something <a href="/2015/09/28/using-vagrant-with-openstack/">I&rsquo;ve tackled on my site</a> as well. Check out Trevor&rsquo;s posts (<a href="http://blogs.vmware.com/openstack/vagrant-up-with-vmware-integrated-openstack-part-1/">part 1</a>, <a href="http://blogs.vmware.com/openstack/vagrant-up-with-vmware-integrated-openstack-part-2/">part 2</a>, and <a href="https://blogs.vmware.com/openstack/vagrant-up-with-vmware-integrated-openstack-part-3/">part 3</a>).</li>
+<li>I&rsquo;ve been reviewing AWS VPC design recommendations recently, and one of the suggestions that comes up is using a VPC with a private subnet so that the instances on that VPC are not reachable from the Internet. Makes sense; if an instance isn&rsquo;t serving traffic from the Internet, then it shouldn&rsquo;t be reachable from the Internet. This, however, presents an issue; how do you provide <em>outbound</em> Internet access to these instances? You can use a pair of NAT instances (this has scale limitations and adds complexity), you can use <a href="https://aws.amazon.com/blogs/aws/new-managed-nat-network-address-translation-gateway-for-aws/">the new Managed NAT Gateway</a>, or you <a href="http://aws.amazon.com/articles/5995712515781075">can leverage a Squid proxy</a> (or even an AutoScaling Group of Squid proxies, if you&rsquo;re ambitious enough).</li>
+<li>This is an older post on <a href="http://blog.russellbryant.net/2013/05/21/availability-zones-and-host-aggregates-in-openstack-compute-nova/">OpenStack availability zones and host aggregates</a>, but useful nevertheless (for me, at least).</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Want to run Docker Swarm on Azure? Look <a href="https://ahmetalpbalkan.com/blog/docker-swarm-azure/">here</a>.</li>
+<li>There&rsquo;s been a fair amount of noise regarding the Open Container Initiative recently, including a pair of blog posts from (somewhat) opposing viewpoints (<a href="https://blog.docker.com/2015/12/progress-report-open-container-initiative/">a post from Docker</a> and <a href="https://coreos.com/blog/making-sense-of-standards/">a post from CoreOS</a>). Depending on your viewpoint, OCI is either the greatest thing since sliced bread, or it&rsquo;s a work in progress with a lot of potential. Time will tell which viewpoint was the most accurate.</li>
+<li>Splunk recently <a href="http://blogs.splunk.com/2015/12/16/splunk-logging-driver-for-docker/">announced</a> their Splunk Logging Driver for Docker, which allows Docker containers to send log data directly to Splunk. This comes on the heels of <a href="https://www.docker.com/press-release-12152015docker-unveils-new-ecosystem-technology-partners-log-management">the Docker announcement around their Ecosystem Technology Partner (ETP) program</a>, which initially includes a whole list of logging-related partners (but didn&rsquo;t include Splunk, oddly enough). If you&rsquo;re interested in trying the Splunk driver, you&rsquo;ll need to use the Docker experimental build.</li>
+<li><a href="http://www.commandlinefu.com/commands/view/15049/get-ip-of-all-running-docker-containers">This</a> looks handy. (CLI tricks are so much fun.)</li>
+<li>I really appreciated Kelsey Hightower&rsquo;s <a href="https://medium.com/@kelseyhightower/12-fractured-apps-1080c73d481c#.3s663gn8q">recent &ldquo;12 Fractured Apps&rdquo; article</a>, in which he tackles some less-than-ideal application patterns with Docker containers. I&rsquo;m not an application developer, but some of the suggestions Kelsey makes&mdash;like creating any directories the application needs if they don&rsquo;t exist&mdash;seem like ordinary common sense, and so part of me is surprised (although I shouldn&rsquo;t be) that this apparently isn&rsquo;t common practice.</li>
+<li>The recent release of CentOS 7.2 has caused some issues building Docker containers; see <a href="http://seven.centos.org/2015/12/fixing-centos-7-systemd-conflicts-with-docker/">this article</a> for a fix. (Thanks to Shannon McFarland for posting this on Twitter.)</li>
+<li><a href="http://k8s.info/cs.html">Kubernetes cheat sheet?</a> Why, yes, thanks.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Joseph Griffiths has an article talking about an error condition he experienced where his <a href="http://blog.jgriffiths.org/?p=620">VMware hosts lost access to a volume when connected via Brocade SAN switches</a>. The fix, as Joseph describes it, is to be sure to use the correct fillword setting. It&rsquo;s been ages (OK, a few years) since I worked with Fibre Channel SAN switches, so this doesn&rsquo;t mean a whole lot to me&mdash;but hopefully it&rsquo;s helpful to someone out there.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>William Lam <a href="http://www.virtuallyghetto.com/2015/12/what-does-load-balancing-the-platform-services-controller-really-give-you.html">breaks down the real value of load balancing your PSC</a> in this in-depth article. Good write-up.</li>
+<li>I saw <a href="http://www.ntpro.nl/blog/archives/3021-New-Book-VMware-vSphere-PowerCLI-Reference-Automating-vSphere-Administration-2nd-Edition.html">this announcement</a> from Eric Sloof regarding <em>VMware vSphere PowerCLI Reference: Automating vSphere Administration, 2nd Edition</em>. I&rsquo;m really glad to see that Wiley/Sybex worked with the authors to do a second edition of this massively helpful book. Congrats to the authors for all their hard work!</li>
+<li>Speaking of PowerCLI and good reference information: check out this article by Alan Renouf for <a href="http://www.virtu-al.net/2015/12/04/a-quick-reference-of-vsphere-ids/">a reference guide to vSphere IDs</a>.</li>
+<li>And while we are on a bit of a PowerCLI theme, have I mentioned <a href="https://github.com/vmware/PowerCLI-Example-Scripts">the PowerCLI-Example-Scripts GitHub repository</a>?</li>
+</ul>
+<h2 id="careersoft-skillsproductivity">Career/Soft Skills/Productivity</h2>
+<ul>
+<li>Tom Hollingsworth recently weighed in on the topic of full-stack engineers in <a href="http://networkingnerd.net/2015/11/18/a-stack-full-of-it/">his post titled &ldquo;A Stack Full of It&rdquo;</a>. I was in part of the discussion at ONUG that (apparently) triggered Tom&rsquo;s post. Tom makes some valid points, but I do respectfully disagree. I think full-stack engineers&mdash;folks that can work within and across multiple silos and layers of the data center&mdash;are a step in the <em>right</em> direction. I&rsquo;ll have more to say on this topic very soon, so stay tuned.</li>
+</ul>
+<p>I had more stuff to share with you, but I constrained myself to publish this last Short Take of 2015 no later than today, so I&rsquo;ll stop here. I hope that you found something useful!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/12/17/cloud-init-register-instance-into-consul/">Using Cloud-Init to Register an Instance into Consul</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/12/24/running-ansible-through-ssh-bastion-host/">Running Ansible Through an SSH Bastion Host</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f18%2ftechnology-short-take-58%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f18%2ftechnology-short-take-58%2f&text=Technology%20Short%20Take%20%2358" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f18%2ftechnology-short-take-58%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/11/17/technology-short-take-56/">Technology Short Take #56</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2015/08/25/technology-short-take-53/">Technology Short Take #53</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

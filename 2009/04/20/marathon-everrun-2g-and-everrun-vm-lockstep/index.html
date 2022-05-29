@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Marathon everRun 2G and everRun VM Lockstep - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Marathon everRun 2G and everRun VM Lockstep - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Marathon everRun 2G and everRun VM Lockstep - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/20/marathon-everrun-2g-and-everrun-vm-lockstep/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Marathon everRun 2G and everRun VM Lockstep</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;324 words (estimated 2 minutes to read)</span>
+  <p>I first <a href="/2008/09/15/marathon-and-xenserver-ha/">wrote</a> about Marathon Technologies and their everRun VM product last September just prior to the start of VMworld 2008 in Las Vegas, NV. Back at the start of 2009 I also mentioned Marathon&rsquo;s joint development agreement with Microsoft and the intended plan to bring everRun VM to Hyper-V environments.</p>
+<p>Today Marathon announced the availability of their everRun VM Lockstep product, which brings full circle the product announcement from last September. This product, which runs only on Citrix XenServer, puts into place the &ldquo;three levels&rdquo; of availability that Marathon has often spoke of:</p>
+<ul>
+<li>Auto-restart high availability (XenServer HA)</li>
+<li>Component-level fault tolerance</li>
+<li>Full system-level fault tolerance</li>
+</ul>
+<p>With full system-level fault tolerance, Marathon is able to provide organizations with the ability to protect applications with the highest levels of availability, eliminating downtime due to physical server failure. If a physical server fails, the virtual machine continues running on another physical server without any disruption.</p>
+<p>The announcement of everRun VM Lockstep gives Marathon and Citrix a slight edge over competitor VMware, whose similar VMware Fault Tolerance offering has been demonstrated and discussed extensively but has not been officially announced. Given that Marathon expects everRun VM Lockstep to be available within 30 days, they may also have an edge over VMware in getting their product to market as well. Marathon everRun VM Lockstep will run on the free version of Citrix XenServer.</p>
+<p>At the same time, Marathon is also announcing everRun 2G, the successor to Marathon&rsquo;s everRun HA and everRun FT products for Windows Server environments. Marathon everRun 2G combines and extends the functionality of the previous generation of products, allowing organizations to provide high availability to any Windows application without modification or scripting. Like everRun VM, everRun 2G will offer &ldquo;dialable&rdquo; availability ranging from automated HA to full system-level fault tolerance.</p>
+<p>Like everRun VM Lockstep, everRun 2G is expected to be available within the next 30 days.</p>
+<p>Visit the Marathon Technologies web site for more information.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/citrix">Citrix</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/15/question-to-my-readers/">Question to my Readers</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/21/mastering-vmware-vsphere-40/">Mastering VMware vSphere 4.0</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f20%2fmarathon-everrun-2g-and-everrun-vm-lockstep%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f20%2fmarathon-everrun-2g-and-everrun-vm-lockstep%2f&text=Marathon%20everRun%202G%20and%20everRun%20VM%20Lockstep" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f20%2fmarathon-everrun-2g-and-everrun-vm-lockstep%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/01/09/sanbolic-optimizes-melio-fs-adds-virtualization-support/">Sanbolic Optimizes Melio FS, Adds Virtualization Support</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2008/06/10/a-discussion-with-jeff-woolsey/">A Discussion with Jeff Woolsey</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2009/01/09/marathon-to-bring-everrun-vm-to-hyper-v/">Marathon to Bring EverRun VM to Hyper-V</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

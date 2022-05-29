@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 121 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 121 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 121 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/12/06/technology-short-take-121/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 121</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;879 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #121! This may possibly be the last Tech Short Take of 2019 (not sure if I&rsquo;ll be able to squeeze in another one), so here&rsquo;s hoping that you find something useful, helpful, or informative in the links that I&rsquo;ve collected. Enjoy some light reading over your festive holiday season!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Brian Linkletter has a post on <a href="https://www.brianlinkletter.com/run-the-antidote-network-emulator-on-kvm-for-better-performance/">how to run the Antidote network emulator on KVM for better performance</a>. Antidote, as I understand it, is the network emulator that runs the labs on the NRELabs web site (which is another cool thing in and of itself). In perusing some of Brian&rsquo;s content, I see lots of stuff at the intersection of networking and virtualization. That&rsquo;s a good place to be right now, in my opinion.</li>
+<li>Anders Olsson explains <a href="https://rtsab.com/rts_blogg/nsx-t-how-to-figure-out-what-those-weird-uuids-really-represent/">how to map NSX-T UUIDs to the actual logical objects</a>.</li>
+<li>Julien Demierre has three-part series on interfaces and uplinks for ESXi/Edge in NSX-T deployments (<a href="https://www.vm-spec.ch/2019/12/01/interfaces-uplinks-for-esxi-edge-part-1/">part 1</a>, <a href="https://www.vm-spec.ch/2019/12/01/interfaces-uplinks-for-esxi-edge-part-2/">part 2</a>, and <a href="https://www.vm-spec.ch/2019/12/01/interfaces-uplinks-for-esxi-edge-part-3/">part 3</a>).</li>
+<li>This is an old(er) post that I&rsquo;ve probably mentioned here before, but I think it still has relevance. Brent Salisbury&rsquo;s <a href="http://networkstatic.net/golang-network-ops/">post on Golang for Network Ops</a> not only points out <em>why</em> networking pros should learn Golang, but also provides some resources on <em>how</em> to learn it.</li>
+<li>Philippe Bogaerts has an article on <a href="https://medium.com/@xxradar/how-to-tcpdump-effectively-in-kubernetes-part-2-7e4127b42dc7">how to use <code>tcpdump</code> effectively in Kubernetes</a>. The one caveat to his approach that may be worth mentioning is that some policies (a PodSecurityPolicy or the use of Open Policy Agent) may prevent the user from launching a Pod connected to the host&rsquo;s network namespace.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around, although there may have been some hardware-related news coming out of re:Invent that I missed (such as new generations of AWS-designed chips being announced).</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>Joel de la Garza has a post over on the a16z site on <a href="https://a16z.com/2019/11/12/16-steps-secure-you/">16 steps to securing your data (and life)</a>.</li>
+<li>SentinelOne discusses <a href="https://www.sentinelone.com/blog/macos-red-team-spoofing-privileged-helpers-and-others-to-gain-root/">how to spoof privileged helpers to exploit macOS</a>. Once again we see that fooling the user is the most reliable way to gain access to a system.</li>
+<li>A massive data leak exposing details on as many as 1.2 <em>billion</em> (yes, you read that right) people? Ouch. See <a href="https://www.dataviper.io/blog/2019/pdl-data-exposure-billion-people/">this post</a> for details.</li>
+<li>Whiskey Tango brings <a href="https://www.whiskey-tango.org/2019/11/keybase-weve-got-privacy-problem.html">a privacy issue with Keybase</a> to light (and an issue that I&rsquo;ve experienced as a Keybase user).</li>
+<li>A <a href="https://thehackernews.com/2019/12/linux-vpn-hacking.html">new VPN security flaw</a> has been uncovered that affects a wide range of UNIX- and Linux-based systems.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>I found <a href="https://www.gremlin.com/community/tutorials/chaos-engineering-the-history-principles-and-practice/">this article on chaos engineering</a> to be helpful in understanding the principles and concepts. The article also pointed me to <a href="https://github.com/dastergon/awesome-chaos-engineering">this GitHub repository with chaos engineering resources</a>.</li>
+<li><a href="https://github.blog/2019-11-21-debugging-network-stalls-on-kubernetes/">This GitHub blog post</a> tells the story of the extremely in-depth debugging required to track down the source of some network stalls in Kubernetes.</li>
+<li>Taylor Clauson <a href="https://www.tclauson.com/2019/09/11/Unbundling-AWS.html">takes an investment-centric view</a> of AWS, its ever-growing list of services and offerings, and the evolving cloud computing market.</li>
+<li>Kief Morris&rsquo; article on <a href="https://sysadvent.blogspot.com/2019/12/day-5-break-up-your-terraform-project.html">breaking up your Terraform project</a> (day 5 of SysAdvent) is really good; well worth the read, in my opinion.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I found this tidbit on Twitter (<a href="https://twitter.com/micahhausler/status/1197661986458198016">here&rsquo;s the original tweet</a>) but wanted to share it here. Apparently you can get a terminal into your Docker Desktop for Mac VM by running <code>screen ~/Library/Containers/com.docker.docker/Data/vms/0/tty</code>. This will give you a root prompt for the VM behind Docker Desktop. Handy!</li>
+<li>The latest version of macOS (&ldquo;Catalina&rdquo;) drops <code>bash</code> as the default shell in favor of <code>zsh</code>. I guess this is fine, since the version of <code>bash</code> that ships with macOS is two major releases behind (due to Apple&rsquo;s aversion to all things GPL). To help you make the most of your <code>zsh</code> environment, check out <a href="https://github.com/rothgar/mastering-zsh">this repository by Justin Garrison</a>.</li>
+<li>Robert Kloosterhuis talks about <a href="http://thefluffyadmin.net/?p=1427">running CoreDNS in a Docker lab to provide DNS for your home lab</a>.</li>
+<li>Here&rsquo;s an article from Marko Saric on <a href="https://markosaric.com/linux/">his switch from macOS to Linux</a>.</li>
+<li>A complete OS based on the bare bones open source that backs macOS is apparently <a href="https://www.jamieweb.net/blog/a-look-at-puredarwin/">a real thing called PureDarwin</a>.</li>
+<li><a href="https://arstechnica.com/information-technology/2019/11/half-an-operating-system-the-triumph-and-tragedy-of-os2/">This Ars Technica article</a> is originally from November 2013, but resurfaced over the 2019 Thanksgiving holiday&mdash;it tells the story of OS/2.</li>
+<li>Samuel Karp has <a href="https://samuel.karp.dev/blog/2019/11/software-daemons/">a list of guidelines for designing and testing software daemons</a>.</li>
+<li>Jamie Duncan (a new teammate of mine) writes about <a href="https://medium.com/@jamieeduncan/i-recently-moved-to-a-macbook-for-my-primary-work-laptop-7c704dbaff59">domain-specific DNS settings on macOS</a>.</li>
+<li>Luc Dekens has <a href="http://www.lucd.info/2019/12/06/cloud-init-part-1-the-basics/">a great article on the basics of <code>cloud-init</code></a>, with a particular focus on its usage with PowerCLI in VMware-based environments.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time; sorry! I&rsquo;ll be on the lookout for stuff I can include next time around.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Are you running an all-VMware shop and want to add some Kubernetes to the mix? <a href="https://blogs.vmware.com/apps/2019/11/best-practices-for-enterprise-kubernetes-on-the-vmware-sddc.html">This blog post</a> has a link to a white paper that could be useful.</li>
+<li>Phil Chapman talks about <a href="https://medium.com/@jamieeduncan/i-recently-moved-to-a-macbook-for-my-primary-work-laptop-7c704dbaff59">using PowerCLI to modify settings for an existing Horizon View pool</a>.</li>
+<li>Maarten Van Driessen <a href="https://www.brisk-it.net/update-esxi-fails-with-dependency-error-vmkapi_2_0_0_0/">shares a workaround</a> for an error updating standalone ESXi hosts to version 6.5.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<p>I haven&rsquo;t included anything this time, as this Short Take has been pretty heavy on technical content. I&rsquo;ll stay alert for content to include here next time.</p>
+<p>OK, that&rsquo;s it for now! I hope this was helpful and informative. Feedback is always welcome; it&rsquo;s probably easiest <a href="https://twitter.com/scott_lowe">to contact me via Twitter</a>, but I&rsquo;m around a lot of different places if you look. Have a great weekend!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/11/22/technology-short-take-120/">Technology Short Take 120</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/12/27/technology-short-take-122/">Technology Short Take 122</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f12%2f06%2ftechnology-short-take-121%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f12%2f06%2ftechnology-short-take-121%2f&text=Technology%20Short%20Take%20121" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f12%2f06%2ftechnology-short-take-121%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/24/technology-short-take-95/">Technology Short Take 95</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

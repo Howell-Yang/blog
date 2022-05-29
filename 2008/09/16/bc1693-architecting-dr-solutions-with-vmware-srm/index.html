@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BC1693: Architecting DR Solutions with VMware SRM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BC1693: Architecting DR Solutions with VMware SRM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BC1693: Architecting DR Solutions with VMware SRM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/09/16/bc1693-architecting-dr-solutions-with-vmware-srm/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BC1693: Architecting DR Solutions with VMware SRM</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;825 words (estimated 4 minutes to read)</span>
+  <p>Late again! Man, I need to get on the ball! Fortunately, I only missed the first part of the agenda. Once again, no Wi-Fi access in the session breakout, so I&rsquo;ll publish this at the first available opportunity.</p>
+<p>This is BC1693, Architecting DR Solutions with VMware SRM. The presenters are John Arrasjid and Will Crittenden; these are two solid guys that know DR and know SRM very well.</p>
+<p>John starts the session with an overview of the influencing factors that affect a DR solution using SRM. Some of these factors may affect what you may or may not be able to do with SRM.</p>
+<p>Clearly, there are different types of disasters. Some of these are true disasters&mdash;Hurricane Ike in Galveston, for example, or power outages&mdash;and there are &ldquo;planned&rdquo; failovers. Each of these needs to be accommodated in the design.</p>
+<p>Some key questions to consider for DR design:</p>
+<ul>
+<li>
+<p>What applications are mission critical?</p>
+</li>
+<li>
+<p>Is availability or performance more important?</p>
+</li>
+<li>
+<p>How much of my business capacity will run at the remote site and for how long with I be able to sustain that load?</p>
+</li>
+<li>
+<p>What distance is required to protect against goegraphic disasters?</p>
+</li>
+<li>
+<p>What technologies (hardware and software) will be needed?</p>
+</li>
+<li>
+<p>How often will you test the DR plan?</p>
+</li>
+<li>
+<p>What impact will DR plan testing have on the production site? What impact is acceptable to the business?</p>
+</li>
+<li>
+<p>What is the budget for this DR solution?</p>
+</li>
+</ul>
+<p>The three key network influencing factors are distance, bandwidth, and hop count. Throughput is good, but latency must also be considered. The type of replication, synchronous vs. asynchronous, that is being used is also important.</p>
+<p>VLANs with SRM can be done in two ways: flat VLANs and disparate VLANs. With flat VLANs, no IP reconfiguration is required; with disparate VLANs, SRM can automate the process of reconfiguration IP addresses on VMs during the failover process.</p>
+<p>Compliance guidelines that impact the business also need to be considered and incorporated into the design. Things like manual vs. automatic, SLA/RPO/RTO, failback requirements, security and access controls, and which technologies to use are all important. What about requirements to ensure that data is isolated to its own media?</p>
+<p>What makes a DR solution successful? First, you need to understand what part of the business need to be protected. Understanding the applications and the dependencies (upstream and downstream) will help in this area. Ongoing testing of the DR plan is another key factor. The core virtualization itself is important&mdash;do you have the right version, is it correctly architected, are resources appropriately managed, etc. And, finally, operational readiness is important as well. Teams need to be trained on the different technologies and need to understand the workflows created within SRM.</p>
+<p>When setting up SRM, two VirtualCenters and two SRM servers are required. Back-end SQL servers are necessary as well, in addition to authentication servers, and of course a supported data replication mechnaism. SRM should not be used to protect &ldquo;shared services,&rdquo; like authentication (Active Directory), although these certainly can be virtual machines.</p>
+<p>Inventory mapping is used to map networks/port groups at the Protected Site to the coresponding networks/port groups on the Recovery Site. The SRA (Storage Replication Adapter) handles the matching of LUNs between the Protected Site and the Recovery Site. Empty LUNs (LUNs without a VM) won&rsquo;t be properly recognized by SRM. Protection Groups form the basis of the Recovery Plan and are centered around LUNs. When a LUN is failed over, all VMs on that LUN must be failed over at the same time. This may require some re-organization of the VMs on the various LUNs to group VMs together for similar service levels/failover requirements.</p>
+<p>In the Recovery Plan, high priority VMs are started sequentially, in the order defined in the plan; medium priority and low priority VMs are started in parallel. It&rsquo;s critical that business requirements and dependencies are understood here so that systems can be failed over and restarted in the correct order.</p>
+<p>John now moved deeper into the design considerations, like server types, network configuration, DNs services, Active Directory services, VirtualCenter infrastructure (two VC servers, one at each site), and ESX hosts (needed at both sites). Of course, SRM servers are needed at both sites. Distributed Power Management (DPM) may also play a role here to help reduce power costs for VMware ESX hosts at the Recovery Site.</p>
+<p>Will and John then proceeded to review some sample logical diagrams, sample recovery plan, sample workflow based on the sample recovery plan, and to discuss in more detail these various items.</p>
+<p>Overall, the session is very good, but it is much more business-oriented and not technology-oriented. That may be due in large part to the nature of SRM; in order to be successful in building a DR solution, a strong business focus is required. If nothing else, it would be important for attendees of this session to at least understand that a successful SRM implementation involves much, much more than just installing and configuring SRM.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwaresrm">VMwareSRM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2008">VMworld2008</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/09/16/dont-believe-me/">Don&#39;t Believe Me?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/09/16/other-vmworld-2008-resources/">Other VMworld 2008 Resources</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f16%2fbc1693-architecting-dr-solutions-with-vmware-srm%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f16%2fbc1693-architecting-dr-solutions-with-vmware-srm%2f&text=BC1693%3a%20Architecting%20DR%20Solutions%20with%20VMware%20SRM" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f16%2fbc1693-architecting-dr-solutions-with-vmware-srm%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/09/16/ta2668-vmware-esx-architectural-directions/">TA2668: VMware ESX Architectural Directions</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2008/09/16/bc2621-fault-tolerant-vms-in-vi-operations-and-best-practices/">BC2621: Fault-Tolerant VMs in VI: Operations and Best Practices</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2008/09/16/todays-vendor-meetings/">Today&#39;s Vendor Meetings</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

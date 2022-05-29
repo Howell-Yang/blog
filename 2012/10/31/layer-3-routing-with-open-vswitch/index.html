@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Layer 3 Routing with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Layer 3 Routing with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Layer 3 Routing with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/31/layer-3-routing-with-open-vswitch/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Layer 3 Routing with Open vSwitch</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;779 words (estimated 4 minutes to read)</span>
+  <p><a href="http://openvswitch.org">Open vSwitch (OVS)</a> is a core component in a number of prominent virtualization- and cloud-related products and projects (consider that OpenStack Quantum, CloudStack, XenServer, and Nicira NVP all leverage OVS). I&rsquo;ve discussed before how to do <a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">VLANs with OVS</a> (<a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">here</a> too) as well as how to use <a href="/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">link aggregation with OVS</a>. In this post, I&rsquo;m going to explore the use of OVS for inter-VLAN routing at Layer 3.</p>
+<p>&lt;aside&gt;It&rsquo;s actually a bit of a misnomer, in my opinion, to talk about using OVS for layer 3 routing. In reality, OVS relies on the routing functionality that&rsquo;s built into the Linux kernel, as you&rsquo;ll see, and doesn&rsquo;t perform the routing functionality itself (as far as I have been able to determine).&lt;/aside&gt;</p>
+<p>To configure OVS to do inter-VLAN routing, you&rsquo;ll need to perform the following steps:</p>
+<ol>
+<li>
+<p>Configure OVS for each VLAN.</p>
+</li>
+<li>
+<p>Configure VLAN interfaces.</p>
+</li>
+<li>
+<p>Enable IP routing in the Linux kernel.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a look at each of these steps in a bit more detail.</p>
+<h2 id="configuring-ovs-for-vlans">Configuring OVS for VLANs</h2>
+<p>This is something I&rsquo;ve written about already, so I&rsquo;ll refer you to one of the following articles for more information:</p>
+<p><a href="/2012/10/04/some-insight-into-open-vswitch-configuration/">Some Insight into Open vSwitch Configuration</a></p>
+<p><a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">VLANs with Open vSwitch Fake Bridges</a></p>
+<p><a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a></p>
+<p>Once this step is complete, you&rsquo;re ready to configure the VLAN interfaces.</p>
+<h2 id="configuring-vlan-interfaces">Configuring VLAN Interfaces</h2>
+<p>You can think of these VLAN interfaces as the equivalent of a Switched Virtual Interface (SVI) or Bridged Virtual Interface (BVI) on a multi-layer physical switch. For example, if you&rsquo;re familiar with Cisco switches, think of these as the <code>interface vlan</code> equivalent. In the Brocade FastIron line of switches, these would be the <code>interface ve</code> equivalent.</p>
+<p>To create the VLAN interfaces in OVS, you would use this command:</p>
+<pre><code>ovs-vsctl add-port &lt;bridge name&gt; &lt;port name&gt; -- set interface &lt;port name&gt; type=internal
+</code></pre>
+<p>Note that&mdash;as far as I can tell&mdash;the VLAN interfaces need to be attached to the appropriate OVS fake bridge for that particular VLAN (more information <a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">here</a>).</p>
+<p>I haven&rsquo;t (yet) found any detailed discussion of the theory (or principles) behind this command, but I can tell you that what it does is enable a &ldquo;pseudo&rdquo;-device that can be configured as a Layer 3 interface within Linux. (In other words, you can assign an IP address to it.) This is the same technique that I described in my post on running <a href="/2012/10/30/running-host-management-on-open-vswitch/">host management across OVS</a>.</p>
+<p>You&rsquo;ll need to repeat this process for each VLAN interface you need, i.e., for each VLAN that should be routable through this OVS-enabled host.</p>
+<p>Once the VLAN interfaces are created, then you need to configure them within Linux. The exact procedure for this varies between Linux distributions; in Ubuntu (which I generally use), this means creating the appropriate configuration stanzas within <code>/etc/network/interfaces</code>.</p>
+<p>Let&rsquo;s say you wanted to route between two VLANs, VLAN 100 and VLAN 200. If the VLAN interfaces on OVS were named <code>vlan100</code> and <code>vlan200</code>, then you might configure <code>/etc/network/interfaces</code> to include something like this:</p>
+<pre><code>auto vlan100
+iface vlan100 inet static
+address 192.168.100.1
+netmask 255.255.255.0
+
+auto vlan200
+iface vlan200 inet static
+address 192.168.200.1
+netmask 255.255.255.0
+</code></pre>
+<p>These are just examples, of course; you&rsquo;d need to supply the appropriate IP addresses for each VLAN involved.</p>
+<p>Once the VLAN interfaces are created and configured, you&rsquo;re ready for the final step&mdash;enabling IP routing (or IP forwarding) in the Linux kernel.</p>
+<h2 id="enabling-ip-forwarding-in-the-linux-kernel">Enabling IP Forwarding in the Linux Kernel</h2>
+<p>This is extremely well-documented on numerous sites around the World Wide Web; here&rsquo;s just <a href="http://www.ducea.com/2006/08/01/how-to-enable-ip-forwarding-in-linux/">one example</a>. For those who don&rsquo;t want to bother visiting another site, here&rsquo;s the quick run-down:</p>
+<ul>
+<li>
+<p>To temporarily enable IP forwarding, use <code>sysctl -w net.ipv4.ip_forward=1</code>. This will <strong>not</strong> persist across reboots.</p>
+</li>
+<li>
+<p>To permanently enable IP forwarding, edit <code>sysctl.conf</code> so that <code>net.ipv4.ip_forward</code> is set to 1.</p>
+</li>
+</ul>
+<p>Once IP forwarding is enabled, you should be able to route IP traffic from one VLAN through the OVS VLAN interfaces to another VLAN. You&rsquo;ll need to either set the default gateway of the device(s) to be the IP address on the OVS VLAN interface, or you&rsquo;ll need to manually manipulate the routing table. The procedure for either of these techniques will vary according to your OS. I tested it using a Windows Server guest domain, running on one VLAN and configured to use the OVS VLAN interface as the default gateway, communicating via <code>ping</code> to another device on another VLAN. The biggest challenge was making sure the routing tables were correct, so that each device was pointing to the appropriate default gateway (which should correspond to the IP address assigned to the matching OVS VLAN interface).</p>
+<p>Feel free to post any questions, corrections, or clarifications in the comments below. Your feedback and any courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/30/running-host-management-on-open-vswitch/">Running Host Management on Open vSwitch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/11/05/compiling-libvirt-1-0-0-on-ubuntu-12-04-and-12-10/">Compiling libvirt 1.0.0 on Ubuntu 12.04 and 12.10</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f31%2flayer-3-routing-with-open-vswitch%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f31%2flayer-3-routing-with-open-vswitch%2f&text=Layer%203%20Routing%20with%20Open%20vSwitch" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f31%2flayer-3-routing-with-open-vswitch%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/30/running-host-management-on-open-vswitch/">Running Host Management on Open vSwitch</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2012/10/18/thinking-out-loud-ovs-and-the-enterprise/">Thinking Out Loud: OVS and the Enterprise</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/03/05/vmware-esx-emc-clariion-arrays-and-multiple-protocols/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1776 words (estimated 9 minutes to read)</span>
+  <p>I was browsing through an EMC technical document titled &ldquo;EMC CLARiiON Integration with VMware ESX Server&rdquo; (download it <a href="http://www.emc.com/collateral/hardware/white-papers/h1416-emc-clariion-intgtn-vmware-wp.pdf">here</a>) a little while ago and I came across a phrase in the document that caught my attention:</p>
+<blockquote>
+<p>&ldquo;VMware ESX/ESXi support both Fibre Channel and iSCSI storage. However, VMware and EMC do not support connecting VMware ESX/ESXi servers to CLARiiON Fibre Channel and iSCSI devices on the same array simultaneously.&rdquo;</p>
+</blockquote>
+<p>What? No Fibre Channel and iSCSI from the same array to a VMware ESX/ESXi host simultaneously? That piqued my curiosity, so I contacted a few people within EMC to question the veracity of that statement. It turns out that the answer is more complicated than it might seem at first glance.</p>
+<p>For those of you who aren&rsquo;t interested in the deep technical details, here&rsquo;s the short explanation behind this behavior:</p>
+<ul>
+<li>
+<p>VMware fully supports the use of both Fibre Channel and iSCSI from the same array to the same VMware ESX/ESXi host simultaneously.</p>
+</li>
+<li>
+<p>VMware does not support presenting the <strong><em>same LUN</em></strong> via both protocols concurrently to the same host. (I qualified this directly with VMware.)</p>
+</li>
+<li>
+<p>For a Celerra, you can use both Fibre Channel (via the CLARiiON side of the array) and iSCSI (via the Celerra side of the array) simultaneously. This is a fully supported configuration.</p>
+</li>
+<li>
+<p>A CLARiiON array can easily present the same LUN via both Fibre Channel and iSCSI, but then VMware wouldn&rsquo;t support it (see earlier bullet).</p>
+</li>
+<li>
+<p>With a CLARiiON array, it is possible to present some LUNs via Fibre Channel and some LUNs via iSCSI to the same VMware ESX/ESXi host (i.e., LUN A via Fibre Channel and LUN B via iSCSI), but EMC will only support it if you file an RPQ. Without an RPQ, it&rsquo;s an unsupported configuration. An RPQ, by the way, is a request to qualify a certain configuration for support.</p>
+</li>
+</ul>
+<p>I&rsquo;m confident that some other array vendors out there will be very quick to jump on this post and harp on this limitation until the cows come home. I would just ask this question: is it really as big of a limitation as it seems? I&rsquo;ll come back to that question in a moment.</p>
+<p>With the short explanation in mind, here are the more in-depth details. If you like the longer, more technical explanation, then read on!</p>
+<p>From EMC&rsquo;s side, the root of the restriction about using both Fibre Channel and iSCSI devices on the same array simultaneously stems from the interaction of host registration and storage groups.</p>
+<p>Host registration is a requirement in the CLARiiON world. In order to present storage to a host from a CLARiiON array, you must first register the host&rsquo;s initiators with the array in Navisphere. Once the host has been registered, then you can proceed with presenting storage to that host. In theory the CLARiiON could operate without registering hosts and initiators, but EMC chose to require registration. EMC made this choice in order to help simplify host management.</p>
+<p>Requiring host registration is a bit different than some of other storage arrays on the market. It&rsquo;s not better or worse&mdash;just different. (Remember, <a href="/2009/10/23/cutting-yourself-on-the-double-edged-sword/">pros and cons come from every technology decision</a>.)</p>
+<p>If you&rsquo;re like me, you&rsquo;re probably wondering at this point how requiring host registration simplifies anything. Instead of having to manage multiple paths, multiple initiators, and individual hosts every time you want to present storage to a host, you only need to register the host&mdash;and all of its initiators&mdash;and then you can refer to that same object (the host) over and over again as needed. Yes, host registration does mean a bit more work up front, but the idea is that it will save some work down the road. I guess you can think of host registration kind of like defining aliases in your Fibre Channel zoning configuration: it&rsquo;s a bit more work up front, but it simplifies things later down the road. If you didn&rsquo;t create device aliases in your Fibre Channel switch, you&rsquo;d end up having to re-enter Fibre Channel WWPNs multiple times. You create the aliases so that it&rsquo;s easier later. The same applies to host registration. Again, it&rsquo;s a matter of choices.</p>
+<p>One might also say that registration is security measure, albeit a weak measure. Rather than allow just any Fibre Channel-attached or iSCSI-attached host to see storage, the array requires that it <em>know</em> about the host (via host registration) in order to present storage to the host. This provides an additional layer of security to ensure that only authorized hosts are presented storage from the array.</p>
+<p>Now you have a fairly decent idea of why host registration is necessary. So how does host registration occur? Host registration can occur either manually or automatically. Starting with version 4.0, both VMware ESX and VMware ESXi will automatically register with a CLARiiON array running any recent version of FLARE (ESX 3i version 3.5 also supports this form of push registration). FLARE release 28 and earlier will show these hosts as &ldquo;Manually registered, unmanaged&rdquo;; starting with FLARE 29, these hosts are listed as &ldquo;Manually registered, managed&rdquo;. In either case, the registration occurs automatically. If the host is Fibre Channel-attached, then the Fibre Channel initiators will be included in the automatic registration. The same goes for iSCSI initiators. Normally, this is a good thing because it saves the administrator the extra steps of registering the host with the storage array. (Also, because VMware ESX/ESXi hosts register automatically, there is no need to install the Navisphere Agent.)</p>
+<p>In this case, though, the automatic registration causes a problem. Why? This goes back to the second item I said I needed to discuss: storage groups. Specifically, storage groups have two characteristics that come into play here:</p>
+<ol>
+<li>
+<p>First, any given host&mdash;not just VMware ESX/ESXi hosts, but all types of hosts&mdash;can only be connected to a single storage group at any given time.</p>
+</li>
+<li>
+<p>Second, while the CLARiiON can present Fibre Channel LUNs and iSCSI LUNs simultaneously (including presenting the same LUN via both protocols simultaneously), there is no way within a single storage group to specify which LUNs should be accessed via Fibre Channel and which LUNs should be accessed via iSCSI. This is necessary because VMware won&rsquo;t support accessing the same LUN via both protocols at the same time (see earlier VMware support statement).</p>
+</li>
+</ol>
+<p>Do you see how all the pieces come together? The only way to control which LUNs should be presented via which protocol is to use multiple storage groups&mdash;but a host can only be in a single storage group at a time. With only a single host object for any given VMware ESX/ESXi host, that host can only see either Fibre Channel LUNs (by being in a storage group containing Fibre Channel LUNs) <strong>or</strong> iSCSI LUNs (by being in a storage group containing iSCSI LUNs), but not both. Hence, the statement in the CLARiiON document I referenced in the very beginning of this blog post that outlines using <em>either</em> Fibre Channel or iSCSI but not both. This behavior is required to enforce the single-protocol LUN access required by VMware.</p>
+<p>As with all things, there is a workaround. Because it is a workaround, that&rsquo;s why the RPQ is necessary to get full support.</p>
+<p>To work around this problem, you&rsquo;ll need to ignore the automatic host registration (or disable the automatic host registration) and instead create two manually registered &ldquo;pseudo-hosts&rdquo;: one with the Fibre Channel initiators and one with the iSCSI initiators. These &ldquo;pseudo-hosts&rdquo; will need fake IP addresses (if they both use the same IP address, Navisphere will treat them as the same host, thus defeating the purpose of the workaround). Put the Fibre Channel initiators into the Fibre Channel storage group(s), and put the iSCSI initiators into the iSCSI storage group(s). Each &ldquo;pseudo-host&rdquo; will be able to see LUNs presented to that storage group and therefore would see both Fibre Channel and iSCSI LUNs at the same time. And, as required by VMware, any given LUN would be accessed only via Fibre Channel or iSCSI but not both. Remember that you need to file an RPQ in order to get support on this configuration.</p>
+<p>For VMware ESX/ESXi 4.0 hosts (and ESX 3i version 3.5 hosts), you can disable automatic registration using the Disk.EnableNaviReg advanced configuration option. Setting this value to 0 disables the automatic registration with Navisphere. (Here are screenshots for <a href="/public/img/navireg-esx3.png">VMware ESX 3i</a> and <a href="/public/img/navireg-esx4.png">VMware ESX/ESXi 4</a>.) If you disable the automatic registration, then you only need to manually register the Fibre Channel and iSCSI initiators as separate &ldquo;pseudo-hosts&rdquo; and you&rsquo;re ready to go.</p>
+<p>Let me reiterate again that if you are presenting iSCSI LUNs via the Celerra and not the CLARiiON, <strong><em>none of this applies.</em></strong> Presenting Fibre Channel LUNs via the CLARiiON and iSCSI LUNs via the Celerra to the same VMware ESX/ESXi host is fine. This workaround that I&rsquo;ve described only applies when you want to present some LUNs via Fibre Channel and some LUNs via iSCSI from a CLARiiON to a single VMware ESX/ESXi host.</p>
+<p>Earlier you&rsquo;ll recall that I asked this question: is this really a limitation? There are a couple of viewpoints:</p>
+<ul>
+<li>
+<p>One viewpoint states there is no need for both Fibre Channel and iSCSI connectivity to the same array. Since you already have Fibre Channel connectivity to the array, what&rsquo;s the point in using iSCSI? Conversely, if you already have iSCSI connectivity to an array, why invest in establishing Fibre Channel connectivity? Since you can&rsquo;t use it for failover (that would violate the VMware support position), running another block protocol against the same array and same sets of disks doesn&rsquo;t add a great deal of value.</p>
+</li>
+<li>
+<p>A second viewpoint argues that the ability to provide a differentiation of service based on the different performance characteristics of Fibre Channel and iSCSI (and NFS, but we&rsquo;re focusing on block protocols for this discussion) is valuable, and thus the need to be able to easily present LUNs via either protocol from the same array to the same host is a worthwhile function. There are a number of potential use cases here&mdash;test/development environments, Tier 2 applications, varying SLAs, etc. This is especially true if you are using different disk pools (fast Fibre Channel drives or EFDs vs. slower SATA drives) on the same array.</p>
+</li>
+</ul>
+<p>I can see both sides of the coin. Personally, I tend to side more with the second viewpoint and would prefer to see the CLARiiON have the ability to easily present Fibre Channel and iSCSI to the same host, especially when multiple disk pools are involved. I think that CLARiiON engineering is now evaluating this possibility; as more information emerges, I&rsquo;ll be sure to keep you posted.</p>
+<p>Courteous and professional comments, clarifications, or corrections are always welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/03/02/pxe-booting-vmware-esx-40/">PXE Booting VMware ESX 4.0</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/03/09/virtualization-short-take-36/">Virtualization Short Take #36</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f05%2fvmware-esx-emc-clariion-arrays-and-multiple-protocols%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f05%2fvmware-esx-emc-clariion-arrays-and-multiple-protocols%2f&text=VMware%20ESX%2c%20EMC%20CLARiiON%20Arrays%2c%20and%20Multiple%20Protocols" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f05%2fvmware-esx-emc-clariion-arrays-and-multiple-protocols%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/01/12/vmware-esx-and-esxi-san-io-issue/">VMware ESX and ESXi SAN I/O Issue</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2008/10/03/netapp-igroup-strategies-for-vmware-esx/">NetApp iGroup Strategies for VMware ESX</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Creating UCS Service Profiles Part 2: Storage Elements - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Creating UCS Service Profiles Part 2: Storage Elements - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Creating UCS Service Profiles Part 2: Storage Elements - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/05/07/creating-ucs-service-profiles-part-2-storage-elements/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Creating UCS Service Profiles Part 2: Storage Elements</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1155 words (estimated 6 minutes to read)</span>
+  <p>This article is part 2 of a series of posts that provide some additional inormation on creating UCS service profiles. In <a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">part 1</a> of the series, I discussed some of the networking-related elements that you should create before you create your service profile (or service profile template). In this post, I&rsquo;m going to discuss the storage-related items that you should create in advance of creating the service profile (or service profile template).</p>
+<p>Much like there are three networking-related elements you should define before defining the service profile, there are five storage-related elements that I recommend you define in advance of creating a service profile:</p>
+<ol>
+<li>
+<p>At least one WWNN address pool</p>
+</li>
+<li>
+<p>At least one WWPN address pool</p>
+</li>
+<li>
+<p>All the VSANs that need to be visible/accessible within UCS</p>
+</li>
+<li>
+<p>At least one vHBA template</p>
+</li>
+<li>
+<p>A local disk configuration policy</p>
+</li>
+</ol>
+<p>Below I&rsquo;ve included the steps for creating each of these elements, along with their location in UCSM and a brief mention of any prerequisites.</p>
+<h2 id="creating-a-wwnn-address-pool">Creating a WWNN Address Pool</h2>
+<p><em>Location in UCSM: SAN tab - SAN &gt; Pools &gt; WWNN Pools</em><br>
+<em>Prerequisites: None</em></p>
+<p>Here are the steps for creating a WWNN pool:</p>
+<ol>
+<li>
+<p>Right-click on WWNN Pools and select Create WWNN Pool.</p>
+</li>
+<li>
+<p>Supply a name and description for this WWNN pool, then click Next to continue.</p>
+</li>
+<li>
+<p>Click Add (with the green plus symbol) to create a new WWNN address block. (This is a brand new pool, so it starts out with no address blocks.)</p>
+</li>
+<li>
+<p>Specify the starting WWNN address. As with MAC addresses, these addresses are not shared or coordinated among multiple UCSM instances, so you should take steps to ensure that WWNN addresses are unique across the entire SAN fabric. For example, you could use the sixth hextext to denote UCSM instance (01 for the first UCSM, 02 for the second UCSM, etc.). Note that Cisco provides a base WWNN address that they strongly recommend you use in order to ensure unique addresses across the SAN fabric.</p>
+</li>
+<li>
+<p>Click OK to add the WWNN address block.</p>
+</li>
+<li>
+<p>Repeat steps 3 through 5 to add more WWNN address blocks as needed. Click Finish to create the WWNN pool.</p>
+</li>
+</ol>
+<h2 id="creating-a-wwpn-address-pool">Creating a WWPN Address Pool</h2>
+<p><em>Location in UCSM: SAN tab - SAN &gt; Pools &gt; WWPN Pools</em><br>
+<em>Prerequisites: None</em></p>
+<p>Here are the steps for creating a WWPN address pool:</p>
+<ol>
+<li>
+<p>Right-click on WWPN Pools and select Create WWPN Pool.</p>
+</li>
+<li>
+<p>Specify a name and description for the new WWPN pool, then click Next.</p>
+</li>
+<li>
+<p>Click Add (with the green plus symbol) to add a new WWPN block.</p>
+</li>
+<li>
+<p>Specify the starting WWPN address. As with MAC addresses and WWNN addresses, these addresses need to be unique across multiple UCSM instances, so specify the base address accordingly. To ensure uniqueness, it is also possible to specify a different Cisco OUI (for example, to use 20:00:00:25:b4:xx:xx:xx as the base address instead of 20:00:00:25:b5:xx:xx:xx as the base address), but it is unclear what risk this raises of potential SAN address conflicts. <a href="http://standards.ieee.org/regauth/oui/oui.txt">This page</a> provides a list of registered OUIs that you can use to help ensure unique addresses.</p>
+</li>
+<li>
+<p>Click OK to add the WWPN block.</p>
+</li>
+<li>
+<p>Repeat steps 3 through 5 to add more WWPN address blocks as needed. When you are done, click Finish to complete the creation of the WWPN pool.</p>
+</li>
+</ol>
+<h2 id="defining-vsans">Defining VSANs</h2>
+<p><em>Location in UCSM: SAN tab - SAN &gt; SAN Cloud &gt; VSANs</em><br>
+<em>Prerequisites: None</em></p>
+<p>Here are the steps to define a VSAN that must be visible/accessible in UCS:</p>
+<ol>
+<li>
+<p>Right-click on VSANs and select Create VSAN.</p>
+</li>
+<li>
+<p>Specify a descriptive name for the VSAN.</p>
+</li>
+<li>
+<p>Select whether the VSAN should be global to both fabrics, specific to only a single fabric, or configured differently on each fabric. Generally, when defining VSANs, each VSAN is specific to a particular fabric. Select the appropriate fabric that will host this VSAN.</p>
+</li>
+<li>
+<p>Specify the VSAN ID and the matching FCoE VLAN ID. The FCoE VLAN must have been already defined, and fabrics cannot share the same FCoE VLAN.</p>
+</li>
+<li>
+<p>Click OK to create the VSAN.</p>
+</li>
+<li>
+<p>Repeat this process for all other VSANs that must be visible within this UCSM instance. If this is a dual fabric installation (and all production installations should be dual fabric installations), you will also need to repeat this process to define the VSANs for the second fabric.</p>
+</li>
+</ol>
+<h2 id="creating-a-vhba-template">Creating a vHBA Template</h2>
+<p><em>Location in UCSM: SAN tab - SAN &gt; Policies &gt; vHBA Templates</em><br>
+<em>Prerequisites: WWNN pool, WWPN pool, VSANs</em></p>
+<p>Here are the steps to create a vHBA template:</p>
+<ol>
+<li>
+<p>Right-click vHBA Templates and select Create vHBA Template.</p>
+</li>
+<li>
+<p>Supply a name and description for the new vHBA template.</p>
+</li>
+<li>
+<p>Select the fabric to which this vHBA will connect.</p>
+</li>
+<li>
+<p>Select the VSAN to which this vHBA will be associated.</p>
+</li>
+<li>
+<p>Select Updating template so that changes to this vHBA template will propagate to vHBAs created from this template. In general, this is less of an issue with vHBAs than it is for vNICs.</p>
+</li>
+<li>
+<p>Select the previously created WWPN pool. Generally, all other values on this dialog box remain at their default values.</p>
+</li>
+<li>
+<p>Click OK to create the vHBA template.</p>
+</li>
+<li>
+<p>In a dual fabric installation, you must repeat this process to create a vHBA template for the other fabric. If you are using a Cisco Virtual Interface Controller (VIC) mezzanine card, you can define multiple vHBA templates per fabric.</p>
+</li>
+</ol>
+<h2 id="creating-a-local-disk-configuration-policy">Creating a Local Disk Configuration Policy</h2>
+<p><em>Location in UCSM: Servers tab - Servers &gt; Policies &gt; root &gt; Local Disk Config Policies</em><br>
+<em>Prerequisites: None</em></p>
+<p>If you are using organizations (for role-based access control), you might need to define this policy within the specific organization where you want it to be visible. Otherwise, here are the steps for defining a local disk configuration policy:</p>
+<ol>
+<li>
+<p>Right-click on Local Disk Config Policies and select Create Local Disk Configuration Policy.</p>
+</li>
+<li>
+<p>Specify a name and description for the new local disk configuration policy.</p>
+</li>
+<li>
+<p>From the drop-down list, select the configuration mode for this policy. When doing boot from SAN, select No Local Storage from the mode drop-down list and ensure that hard drives are not actually installed in blades to which this policy will be applied. This policy won&rsquo;t apply successfully (when incorporated into a service profile) if hard drives are installed in the server. Likewise, selecting a mode that requires hard drives to be installed will fail to apply to blades that don&rsquo;t actually have hard drives installed. You will want to verify that the local disk configuration policy you define will actually apply to the blades that are found within the UCS.</p>
+</li>
+<li>
+<p>When you are ready, click OK to create the local disk configuration policy.</p>
+</li>
+</ol>
+<p>In <a href="/2010/05/10/creating-ucs-service-profiles-part-3-other-elements/">part 3</a> of the series, I will cover any other remaining elements that I recommend you define in advance of creating your service profiles or service profile templates. Then, in part 4, I&rsquo;ll bring it all together and discuss the creation of a service profile or service profile template when you have pre-created the elements I&rsquo;ve described in this series.</p>
+<p>As always, feel free to post questions, clarifications, or corrections in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsan">VSAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">Creating UCS Service Profiles Part 1: Networking Elements</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/05/10/emc-vplex-launches-today/">EMC VPLEX Launches Today</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f07%2fcreating-ucs-service-profiles-part-2-storage-elements%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f07%2fcreating-ucs-service-profiles-part-2-storage-elements%2f&text=Creating%20UCS%20Service%20Profiles%20Part%202%3a%20Storage%20Elements" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f07%2fcreating-ucs-service-profiles-part-2-storage-elements%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">Creating UCS Service Profiles Part 1: Networking Elements</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2010/04/19/another-collection-of-ucs-posts/">Another Collection of UCS Posts</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2010/02/18/a-collection-of-ucs-posts/">A Collection of UCS Posts</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

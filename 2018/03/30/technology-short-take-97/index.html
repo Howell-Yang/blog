@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 97 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 97 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 97 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/03/30/technology-short-take-97/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 97</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1008 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take 97! This Tech Short Take marks the end of an era (sort of); it&rsquo;s the last Tech Short Take published while I&rsquo;m a VMware employee (today is my last day; see <a href="/2018/03/26/time-to-evolve/">here</a> for more details). But enough about me&mdash;let&rsquo;s talk some tech! This Short Take may be a bit longer than some, so buckle up.</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Vadim Eisenberg has two articles that describe how to integrate external services into an Istio service mesh. The first article covers <a href="https://istio.io/blog/2018/egress-https.html">integrating external web services</a>; the second article discusses <a href="https://istio.io/blog/2018/egress-tcp.html">consuming external TCP services</a>.</li>
+<li>Matt Oswalt tackles the topic of unit testing (specifically with regard to network automation) with a post on <a href="https://keepingitclassless.net/2018/02/unit-testing-junos-jsnapy/">unit testing JunOS with JSNAPy</a>.</li>
+<li>This is an older post (more than 2 years old), but as far as I can tell the concepts are still quite applicable. Sean Howard talks about <a href="http://nsxperts.com/?p=65">using the NSX Service Compose to create a more elegant ruleset</a> for enforcing security policy.</li>
+<li>Jérôme Petazzoni <a href="https://jpetazzo.github.io/2018/03/13/appswitch-hyperlay-network-stack-future/">test drives AppSwitch</a>, the &ldquo;network stack from the future.&rdquo; I also recently received an invitation to give AppSwitch a look, so stay tuned for my feedback as well.</li>
+<li>Chris Young shares some details on a little side project he did to show <a href="https://kontrolissues.net/2018/03/22/playing-with-arisa-eapi-dynamic-vlan-assignment-ish/">how to use the Arista eAPI to do dynamic VLAN assignment based on MAC address</a>. While this specific use case may not be something worth implementing, the example of how to use eAPI from Python may prove useful for other use cases.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Thomas Maurer has <a href="https://www.thomasmaurer.ch/2018/03/first-impressions-surface-book-2/">a &ldquo;first impressions&rdquo; post</a> on the Microsoft Surface Book 2. (I must admit I&rsquo;ve been considering adding a Microsoft device to my collection.)</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Nitsan Bin-Nun of Twistlock provides <a href="https://www.twistlock.com/2018/03/21/deep-dive-severe-kubernetes-vulnerability-date-cve-2017-1002101/">a deep dive on two recent (and severe) Kubernetes vulnerabilities</a>. I definitely recommend reviewing this post and taking action to ensure your Kubernetes deployments are not at risk.</li>
+<li>Dan Walsh has a bit of a rant on <a href="https://danwalsh.livejournal.com/78373.html">SELinux and blocking access to the Docker socket</a>.</li>
+<li>And while we&rsquo;re discussing the Docker socket, the inimitable Jessie Frazelle shares some useful details on <a href="https://blog.jessfraz.com/post/building-container-images-securely-on-kubernetes/">building container images securely on Kubernetes</a>.</li>
+<li>And while I&rsquo;m talking about Jessie Frazelle: check out <a href="https://blog.jessfraz.com/post/tor-socks-proxy-and-privoxy-containers/">her guide to running Tor Socks5 and Privoxy containers</a>. (Yes, I know privacy and anonymity aren&rsquo;t the same as security&hellip;work with me here.)</li>
+<li>If you&rsquo;re running an etcd cluster, <em>please</em> make sure to secure access to it. Giovanni Collazo <a href="https://elweb.co/the-security-footgun-in-etcd/">shares some disturbing information</a> about unsecured etcd clusters.</li>
+<li>I&rsquo;ve long said that if you&rsquo;re going to use Docker, you need to exercise caution about blindly throwing some container on the &ldquo;FROM&rdquo; line of your <code>Dockerfile</code>. If you don&rsquo;t know how that image was built, this is no different than downloading a compiled executable from the Internet and running it. (Good luck with that.) In any case, this is something that <a href="https://blogs.vmware.com/opensource/2018/03/13/open-source-tern-makes-containers-compliant/">Tern is intended to help address</a>.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>William Lam has a series of posts on VMware Pivotal Container Service (PKS), which at the time of this writing was up to 4 posts in the series. William provides an overview in <a href="https://www.virtuallyghetto.com/2018/03/getting-started-with-vmware-pivotal-container-service-pks-part-1-overview.html">part 1</a>, discusses client tools in <a href="https://www.virtuallyghetto.com/2018/03/getting-started-with-vmware-pivotal-container-service-pks-part-2-pks-client.html">part 2</a>, reviews NSX-T integration in <a href="https://www.virtuallyghetto.com/2018/03/getting-started-with-vmware-pivotal-container-service-pks-part-3-nsx-t.html">part 3</a>, and actually kicks off the PKS installation with Ops Manager and BOSH in <a href="https://www.virtuallyghetto.com/2018/03/getting-started-with-vmware-pivotal-container-service-pks-part-4-ops-manager-bosh.html">part 4</a>.</li>
+<li>Gerald Venzi shows <a href="https://geraldonit.com/2018/03/26/deploying-a-kubernetes-cluster-with-vagrant-on-virtual-box/">how to use Vagrant and VirtualBox to deploy a local Kubernetes cluster</a>, using some Kubernetes support recently added to an Oracle GitHub repository of Vagrant boxes.</li>
+<li>Thorsten Hans walks through <a href="https://thorsten-hans.com/upgrading-a-kubernetes-cluster-on-aks-using-azure-cli-603c9be7b369">upgrading a Kubernetes cluster on AKS using the Azure CLI</a>. I myself have done this a couple of times&mdash;it&rsquo;s really straightforward.</li>
+<li>Trying to decide between GKE, AKS, and EKS? Tirumarai Selvan has <a href="https://blog.hasura.io/gke-vs-aks-vs-eks-411f080640dc">a comparison</a>.</li>
+<li>Richard Li <a href="https://blog.getambassador.io/kubernetes-ingress-nodeport-load-balancers-and-ingress-controllers-6e29f1c44f2d">discusses</a> strategies for ingress in Kubernetes and the tradeoffs associated with each approach.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Eben Freeman <a href="https://honeycomb.io/blog/2017/09/istio-envoy-and-honeycomb/">shows how</a> to integrate Istio, Envoy, and Honeycomb for detailed application statistics.</li>
+<li>Antonio Murdaca outlines <a href="http://www.projectatomic.io/blog/2017/06/using-kubeadm-with-cri-o/">how to use <code>kubeadm</code> to bootstrap a Kubernetes cluster with CRI-O</a> (instead of Docker). I haven&rsquo;t tried this myself yet&mdash;I&rsquo;m waiting for CRI-O to get a bit more mature so that I don&rsquo;t have to compile it from source (although this <em>is</em> an older article, so we might be there by now).</li>
+<li>If I ever get my hands on a Windows 10 box (I&rsquo;m seriously considering adding a Windows 10 box to my home office setup), I&rsquo;m going to try <a href="https://www.howtogeek.com/289594/how-to-install-macos-sierra-in-virtualbox-on-windows-10/">this process</a>. Hmmm&hellip;maybe I could install Windows 10 on my quad-proc Mac Pro, then run macOS virtualized on it&hellip;that might be something to try one day (as if I&rsquo;ll ever have time for that!).</li>
+<li>Ansible 2.5 was recently released; check out <a href="https://www.ansible.com/blog/ansible-2.5-traveling-space-and-time">this post</a> detailing some of the new features and functionality.</li>
+<li>Dusty Mabe <a href="https://dustymabe.com/2017/12/17/fedora-btrfssnapper-the-fedora-27-edition/">talks about</a> using BTRFS snapshots to snapshot and rollback entire installations of Fedora, and (rightfully) mentions Atomic Workstation as a (probably) better alternative. Still, the idea is pretty cool.</li>
+<li><a href="https://www.flatcar-linux.org">Flatcar Linux</a> is a &ldquo;friendly fork&rdquo; of Container Linux (of CoreOS).</li>
+<li>Windows Server 2019 is now in preview (see <a href="https://cloudblogs.microsoft.com/windowsserver/2018/03/20/introducing-windows-server-2019-now-available-in-preview/">this blog post</a>), and will include Kubernetes support. Also see <a href="https://venturebeat.com/2018/03/20/windows-server-2019-will-feature-linux-and-kubernetes-support/">this VentureBeat article</a>.</li>
+<li>Nick Joyce walks through a few tips to build more <a href="https://blog.realkinetic.com/building-minimal-docker-containers-for-python-applications-37d0272c52f3">minimal Docker containers for Python applications</a>.</li>
+<li>JJ Asghar provides some direct steps to <a href="http://jjasghar.github.io/blog/2018/03/22/powercli-10+-on-linux/">getting PowerCLI 10+ working on Ubuntu Linux</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>No links for you this time, but I&rsquo;ll stay alert for something to include next time. If you have links you&rsquo;d like to see included in the next Technology Short Take, send them my way!</p>
+<h2 id="virtualization">Virtualization</h2>
+<p>Nothing this time around&mdash;it seems like all the &ldquo;cool kids&rdquo; are talking about cloud, containers, and Kubernetes these days! Don&rsquo;t worry, though, I&rsquo;ll keep my eyes peeled for some content to include here next time around.</p>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Finding yourself procrastinating more than usual recently? There can be a lot of different reasons; <a href="https://zenhabits.net/antidotes/">this post</a> by Leo Babauta explores some reasons and some antidotes for procrastination.</li>
+<li>Guess I should&rsquo;ve read <a href="http://etherealmind.com/will-never-make-serious-money-working-startup/">this post by Greg Ferro</a> on why you will never make serious money working for a startup before I took a job at a startup. (Oops! That&rsquo;s a hint toward Monday&rsquo;s announcement!)</li>
+</ul>
+<p>It&rsquo;s time to wrap up. Have a great weekend, everyone!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/istio">Istio</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualbox">VirtualBox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/03/26/time-to-evolve/">Time to Evolve</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/04/02/the-future-is-containerized/">The Future is Containerized</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f03%2f30%2ftechnology-short-take-97%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f03%2f30%2ftechnology-short-take-97%2f&text=Technology%20Short%20Take%2097" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f03%2f30%2ftechnology-short-take-97%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/11/technology-short-take-85/">Technology Short Take 85</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2017/06/19/technology-short-take-84/">Technology Short Take 84</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

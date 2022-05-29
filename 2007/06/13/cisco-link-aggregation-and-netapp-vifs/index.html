@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Cisco Link Aggregation and NetApp VIFs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Cisco Link Aggregation and NetApp VIFs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Cisco Link Aggregation and NetApp VIFs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/06/13/cisco-link-aggregation-and-netapp-vifs/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Cisco Link Aggregation and NetApp VIFs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;750 words (estimated 4 minutes to read)</span>
+  <p><a href="http://www.netapp.com/">Network Appliance</a> storage systems support the use of virtual interfaces (VIFs) to provide link redundancy and improved network throughput. Two types of VIFs are available:</p>
+<ul>
+<li>
+<p><em>Single-mode VIFs</em> act like a fault tolerant team and will fail traffic over to a standby link when the active link goes down.</p>
+</li>
+<li>
+<p><em>Multi-mode VIFs</em> act like a group of links providing aggregate bandwidth as well as link redundancy.</p>
+</li>
+</ul>
+<p>Single-mode VIFs are great for fault tolerance, but the storage system isn&rsquo;t leveraging all the links. It&rsquo;s &ldquo;active-passive&rdquo; arrangement in which only one of the links is passing traffic while the other link is idle. No switch support is required for this configuration.</p>
+<p>Multi-mode VIFs, on the other hand, allow for both greater bandwidth utilization as well as fault tolerance. Traffic will be distributed across all the links in the VIF (typically based on IP address), and if one link fails the traffic is redistributed across the remaining links. However, this configuration requires support on the switch. In this article, we&rsquo;re going to look at configuring a <a href="http://www.cisco.com/en/US/products/hw/switches/ps5528/index.html">Cisco Catalyst 3560</a> switch to do link aggregation with a NetApp storage system running Data ONTAP 7.1.1.1.</p>
+<p>To configure the switch, you would use the following commands (these are entered in global configuration mode on the switch):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>s3(config)#int port-channel1
+</span></span><span style="display:flex;"><span>s3(config-if)#description Multi-mode VIF for netapp1
+</span></span><span style="display:flex;"><span>s3(config-if)#int gi0/23
+</span></span><span style="display:flex;"><span>s3(config-if)#channel-group 1 mode on
+</span></span><span style="display:flex;"><span>s3(config-if)#int gi0/24
+</span></span><span style="display:flex;"><span>s3(config-if)#channel-group 1 mode on
+</span></span></code></pre></div><p>This creates the port-channel1 interface (you may need to increment that number, i.e., use port-channel2 or port-channel3, if you already have existing link aggregates configured) and adds interfaces GigabitEthernet0/23 and GigabitEthernet0/24 to the link aggregate. If you do have to use a different link aggregate interface, be sure the number of the interface (<code>int port-channel 4</code>, for example) matches the number of the channel-group specified on the member interfaces (<code>channel-group 4 mode on</code>, for example). This seems obvious, but it&rsquo;s worth mentioning nevertheless.</p>
+<p>Be aware that Data ONTAP&rsquo;s multi-mode VIFs are only compatible with static 802.3ad link aggregation; you can&rsquo;t use PAgP (Cisco proprietary protocol). I would assume dynamic LACP is also incompatible. For this reason we used the <code>channel-group 1 mode on</code> statement instead of something like <code>channel-group 1 mode desirable</code>.</p>
+<p>By default, many Cisco switches default to MAC address-based load balancing across the links, whereas NetApp defaults to IP address-based load balancing. To see the switch&rsquo;s current load balancing configuration, use this command in privileged mode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>s3#show etherchannel load-balance
+</span></span></code></pre></div><p>To change the switch&rsquo;s load balancing algorith to a mode compatible with NetApp&rsquo;s, use one of the following command in global configuration mode (note that changing it affects the entire switch; you can&rsquo;t change it for a single port-channel individually):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>s3(config)#port-channel load-balance src-dst-ip
+</span></span></code></pre></div><p>Once the switch is configured, then we can proceed with configuring the NetApp storage system. The following commands will create the the multi-mode VIF (this can also be done via the FilerView GUI):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>netapp1&gt;vif create multi vif0 e6d e7d
+</span></span><span style="display:flex;"><span>netapp1&gt;ifconfig vif0 172.31.254.10 netmask 255.255.255.0
+</span></span><span style="display:flex;"><span>netapp1&gt;ifconfig vif0 up
+</span></span></code></pre></div><p>This creates the VIF with interfaces e6d and e7d as members, plumbs it with an IP address, and brings it up. Running the command <code>vif status vif0</code> now will return the following results:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>default: transmit &#39;IP Load balancing&#39;, VIF Type &#39;multi_mode&#39;, fail &#39;log&#39;
+</span></span><span style="display:flex;"><span>vif0: 2 links, transmit &#39;IP Load balancing&#39;, VIF Type &#39;multi-mode&#39; fail &#39;default&#39;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  VIF Status     Up      Addr_set
+</span></span><span style="display:flex;"><span>        up:
+</span></span><span style="display:flex;"><span>        e6d: state up, since 05Oct2001 17:17:15 (05:23:05)
+</span></span><span style="display:flex;"><span>                mediatype: auto-1000t-fd-up
+</span></span><span style="display:flex;"><span>                flags: enabled
+</span></span><span style="display:flex;"><span>                input packets 2000, input bytes 12800
+</span></span><span style="display:flex;"><span>                output packets 173, output bytes 1345
+</span></span><span style="display:flex;"><span>                up indications 1, broken indications 0
+</span></span><span style="display:flex;"><span>                drops (if) 0, drops (link) 0
+</span></span><span style="display:flex;"><span>                indication: up at boot
+</span></span><span style="display:flex;"><span>                        consecutive 3, transitions 1
+</span></span><span style="display:flex;"><span>        e7d: state up, since 05Oct2001 17:18:03 (00:10:03)
+</span></span><span style="display:flex;"><span>                mediatype: auto-1000t-fd-up
+</span></span><span style="display:flex;"><span>                flags: enabled
+</span></span><span style="display:flex;"><span>                input packets 134, input bytes 987
+</span></span><span style="display:flex;"><span>                output packets 20, output bytes 156
+</span></span><span style="display:flex;"><span>                up indications 1, broken indications 0
+</span></span><span style="display:flex;"><span>                drops (if) 0, drops (link) 0
+</span></span><span style="display:flex;"><span>                indication: broken
+</span></span></code></pre></div><p>Note the &lsquo;IP Load balancing&rsquo; algorithm stated in the output; this is why the switch&rsquo;s load-balancing mechanism should be changed to match.</p>
+<p>At this point, the links should be up between the Cisco switch and the NetApp storage system, and traffic should be passing to and from the storage system without any problems. To test the fault tolerance, we can pull one of the links in VIF; traffic should continue to flow with very little, if any, interruption. And while traffic from a single client to the NetApp won&rsquo;t see a significant increase in throughput, the overall throughput of multiple separate clients to the NetApp should improve with multiple links in the VIF.</p>
+<p>More information, including additional Cisco configs, is available <a href="http://episteme.arstechnica.com/eve/forums/a/tpc/f/469092836/m/781008784831">here</a>.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ontap">ONTAP</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/06/08/how-do-non-geeks-fix-problems/">How Do Non-Geeks Fix Problems?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/06/15/leaving-esx-for-virtual-server/">Leaving ESX for Virtual Server?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f13%2fcisco-link-aggregation-and-netapp-vifs%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f13%2fcisco-link-aggregation-and-netapp-vifs%2f&text=Cisco%20Link%20Aggregation%20and%20NetApp%20VIFs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f13%2fcisco-link-aggregation-and-netapp-vifs%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2007/06/04/iscsi-boot-with-microsoft-mpio/">iSCSI Boot with Microsoft MPIO</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

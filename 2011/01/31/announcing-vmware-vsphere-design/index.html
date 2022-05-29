@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Announcing VMware vSphere Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Announcing VMware vSphere Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Announcing VMware vSphere Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/01/31/announcing-vmware-vsphere-design/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Announcing VMware vSphere Design</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;433 words (estimated 3 minutes to read)</span>
+  <p><em>This is a joint post of three prominent writers in the virtualization community: <a href="http://twitter.com/forbesguthrie">Forbes Guthrie</a>, <a href="http://twitter.com/scott_lowe">Scott Lowe</a>, and <a href="http://twitter.com/maishsk">Maish Saidel-Keesing</a>.</em></p>
+<p>For the past 6 months we have been working on a joint project. It has actually been kept pretty quiet, and it is now time to make this public.</p>
+<p>Previous VMware vSphere books have focused on how to master the technology, deep-diving into certain elements and giving tips &amp; tricks that help you manage your virtual infrastructure.</p>
+<p>But we felt there was something missing in all these books. What was missing was how to design an infrastructure, accounting for all the elements that you need to consider. For example:</p>
+<ul>
+<li>
+<p>What kind of servers should I use?</p>
+</li>
+<li>
+<p>Which storage: NFS, iSCSI or FC?</p>
+</li>
+<li>
+<p>How do I scale a vCenter Server appropriately?</p>
+</li>
+</ul>
+<p>&hellip;and many more similar questions. This is how <em>VMware vSphere Design</em> was born&hellip;</p>
+<p><img src="/public/img/vsphere-design.png" alt="VMware vSphere Design"></p>
+<p>The three of us collaborated on the book, to not only explain how to configure each element of your infrastructure, but to make you think about all the options available, and how each choice can impact the overall design. It should help you find the right solution for your environment&mdash;because no &ldquo;one size fits all.&rdquo;</p>
+<p>To our knowledge, it is the only book focused on designing VMware vSphere implementations. It is written for engineers and architects who plan, install, maintain and optimize vSphere solutions.</p>
+<p>The book details the overall design process, server hardware selection, network layout, security considerations, storage infrastructure, virtual machine design, and more. We debate the merits of scaling up servers versus scaling out, ESX versus ESXi hypervisors, vSwitches versus dvSwitches, and FC, FCoE, iSCSI or NFS storage. We show you which tools can be used to monitor, to plan, to manage, to deploy and to secure your vSphere landscape. We run through the design decisions that a typical company might face, and question the choices you come to. The book is packed with real-world proven strategies. <em>VMware vSphere Design</em> examines how the virtualization architecture for your company should ideally look, be it a newly deployed environment or an optimization of the existing infrastructure.</p>
+<p><em>VMware vSphere Design</em> is <a href="http://www.amazon.com/dp/0470922028">available now for pre-order on Amazon</a> and will be in the stores around the middle of March 2011.</p>
+<p>We would like to thank <a href="http://twitter.com/jasonboche">Jason Boche</a> for acting as the technical editor for the book. <em>(Note from Scott: I can&rsquo;t speak for Forbes or Maish, but I know that Jason&rsquo;s contributions as technical editor definitely improved the quality of this book. His role should not be underestimated!)</em></p>
+<p>We hope you enjoy reading this book as much as we enjoyed writing it!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/01/29/presentation-on-vmware-vsphere-4-1-storage-features/">Presentation on VMware vSphere 4.1 Storage Features</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/02/06/dont-you-just-love-it/">Don&#39;t You Just Love It?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f31%2fannouncing-vmware-vsphere-design%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f31%2fannouncing-vmware-vsphere-design%2f&text=Announcing%20VMware%20vSphere%20Design" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f31%2fannouncing-vmware-vsphere-design%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/09/08/vsphere-41-links/">vSphere 4.1 Links</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2010/08/25/my-book-project-has-been-canceled/">My Book Project Has Been Canceled</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2009/12/09/vmware-vsphere-4-administration-instant-reference-now-available/">VMware vSphere 4 Administration Instant Reference Now Available</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

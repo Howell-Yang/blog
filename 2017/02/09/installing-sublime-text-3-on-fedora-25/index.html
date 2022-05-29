@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing Sublime Text 3 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing Sublime Text 3 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing Sublime Text 3 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/02/09/installing-sublime-text-3-on-fedora-25/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing Sublime Text 3 on Fedora 25</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;370 words (estimated 2 minutes to read)</span>
+  <p><a href="http://www.sublimetext.com/">Sublime Text</a> is my current text editor of choice. I won&rsquo;t go into why I chose it over other tools; instead, I encourage you to have a look for yourself. Installing Sublime Text 3 (ST3) on <a href="https://getfedora.org/">Fedora</a> 25, though, isn&rsquo;t as simple as running a <code>dnf install</code>. Fortunately, it&rsquo;s not a difficult process, but it is a process I wanted to document here for the sake of others.</p>
+<p>Here&rsquo;s the process I followed:</p>
+<ol>
+<li>
+<p>Download the latest tarball of ST3. As of this writing, it was build 3126, so this cURL command accomplishes what you need:</p>
+<pre><code> curl -LO https://download.sublimetext.com/sublime_text_3_build_3126_x64.tar.bz2
+</code></pre>
+<p>As build numbers change, though, you&rsquo;ll want to verify the correct URL for the latest build. (A lot of sites I saw provide hard-coded scripts that help perform this process for you, but don&rsquo;t account for changes in the download URL.)</p>
+</li>
+<li>
+<p>Extract the contents of the tarball with <code>tar xvjf sublime_text_3_build_3126_x64.tar.bz2</code>. This will create a directory called &ldquo;sublime_text_3&rdquo; with the contents of the tarball.</p>
+</li>
+<li>
+<p>Install the desktop launcher for ST3 by copying over the <code>.desktop</code> file in the tarball:</p>
+<pre><code> sudo cp -rf sublime_text_3/sublime_text.desktop /usr/share/applications/sublime_text.desktop
+</code></pre>
+</li>
+<li>
+<p>Edit the desktop launcher to specify the full path to the ST3 icon. You can use a GUI text editor, <code>vi</code>, <code>sed</code>, or whatever tool you&rsquo;d like. The path to the icon will be <code>/opt/sublime_text/Icon/128x128/sublime-text.png</code>, and you&rsquo;ll want to specify this on the &ldquo;Icon=&rdquo; line of the desktop launcher.</p>
+</li>
+<li>
+<p>Next, move the &ldquo;sublime_text_3&rdquo; directory created by extracting the tarball in step 2 to it&rsquo;s final location. I chose <code>/opt</code>:</p>
+<pre><code> sudo mv sublime_text_3 /opt/sublime_text
+</code></pre>
+<p>If you decide to put it somewhere else, be sure to repeat step 4 and adjust the path to the icon accordingly.</p>
+</li>
+<li>
+<p>Create a symbolic link to make it easier to launch ST3:</p>
+<pre><code> sudo ln -s /opt/sublime_text/sublime_text /usr/bin/subl
+</code></pre>
+</li>
+</ol>
+<p>And that&rsquo;s it. You can now launch ST3 from the Fedora Overview screen, or by running <code>subl</code> in your terminal. (Side note: I have noted that running <code>subl</code> without first launching ST3 via the GUI creates an additional icon in the Dash. This may not be a big deal for you. If you don&rsquo;t like that, launch ST3 first via the GUI, then use <code>subl</code> all you like. Or, use the fix described in <a href="/2017/02/16/fixing-double-sublime-text-icons-on-fedora-25/">this post</a>.)</p>
+<p>Enjoy!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/02/16/fixing-double-sublime-text-icons-on-fedora-25/">Fixing Double Sublime Text Icons on Fedora 25</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f09%2finstalling-sublime-text-3-on-fedora-25%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f09%2finstalling-sublime-text-3-on-fedora-25%2f&text=Installing%20Sublime%20Text%203%20on%20Fedora%2025" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f09%2finstalling-sublime-text-3-on-fedora-25%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2017/02/07/installing-virtualbox-51-fedora-25/">Installing VirtualBox 5.1 on Fedora 25</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2017/02/01/linux-migration-final-distro-selection/">The Linux Migration: Final Linux Distro Selection</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

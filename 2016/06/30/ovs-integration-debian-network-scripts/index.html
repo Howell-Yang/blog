@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>OVS Integration with Debian Network Scripts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="OVS Integration with Debian Network Scripts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="OVS Integration with Debian Network Scripts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/06/30/ovs-integration-debian-network-scripts/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">OVS Integration with Debian Network Scripts</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;544 words (estimated 3 minutes to read)</span>
+  <p>I had a reader contact me recently with some questions regarding the use of <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> on <a href="https://www.debian.org/">Debian &ldquo;Jessie&rdquo; 8.5</a> and using the OVS integration with the Debian network scripts. For those of you that might be unfamiliar with this functionality, it&rsquo;s the ability to configure OVS via instructions and directives found in the <code>/etc/network/interfaces</code> file. As I was helping this reader, I came across a couple potential &ldquo;gotchas&rdquo; that I wanted to point out here.</p>
+<p>First, I&rsquo;ll point you to the documentation for the Debian network scripts integration, which is found in <a href="https://github.com/openvswitch/ovs/blob/master/debian/openvswitch-switch.README.Debian">this file</a> in the &ldquo;Debian network scripts integration&rdquo; section. This documentation provides the complete breakdown of the various commands that can be used in <code>/etc/network/interfaces</code> to configure OVS.</p>
+<p>Based on that documentation, you could create an OVS bridge and add a physical port to that bridge by including the following stanzas in <code>/etc/network/interfaces</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>allow-ovs ovsbr0
+</span></span><span style="display:flex;"><span>iface ovsbr0 inet manual
+</span></span><span style="display:flex;"><span>  ovs_type OVSBridge
+</span></span><span style="display:flex;"><span>  ovs_ports eth1
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>allow-ovsbr0 eth1
+</span></span><span style="display:flex;"><span>iface eth1 inet manual
+</span></span><span style="display:flex;"><span>  ovs_bridge ovsbr0
+</span></span><span style="display:flex;"><span>  ovs_type OVSPort
+</span></span></code></pre></div><p>Now for the gotchas&hellip;</p>
+<p>The Debian &ldquo;Jessie&rdquo; repos include version 2.3.0 of OVS; the latest release in the 2.3.x train is 2.3.3. As it turns out, 2.3.3 includes a couple of fixes that did not make it into 2.3.0, and these fixes address a couple potential issues you might run into when using OVS with the Debian network scripts integration. Specifically:</p>
+<ol>
+<li>You should <em>not</em> include the <code>auto</code> keyword in any of your OVS-related stanzas. If you do that, the OVS integration scripts will not function as expected. 2.3.3 includes a fix that forces the integration scripts to work as expected even if the user includes the <code>auto</code> keyword.</li>
+<li>The 2.3.3 release adds <code>_SYSTEMCTL_SKIP_REDIRECT=yes</code> to the <code>/etc/init.d/openvswitch-switch</code> file, which prevents some systemd-related issues that might crop up (see <a href="https://github.com/openvswitch/ovs/blob/master/debian/openvswitch-switch.init#L30">here</a> for the change). This line is not found in the 2.3.0 version of OVS when installed on Debian 8.x. (That being said, I tested both with and without this line, and it worked as expected in both cases.)</li>
+</ol>
+<p>The first issue appears to be the more &ldquo;serious&rdquo; of the two; in my testing with version 2.3.0 of OVS (straight from the Debian repos), the integration simply didn&rsquo;t work when the <code>auto</code> keyword was included. As soon as I removed the <code>auto</code> keyword, it started working as expected. The addition of the <code>_SYSTEMCTL_SKIP_REDIRECT</code> line did not seem to be as significant; once the <code>auto</code> keyword issue was sorted, the presence (or absence) of that line didn&rsquo;t seem to have any effect on my testing.</p>
+<p>So, if you&rsquo;re having issues making OVS integration with the Debian network scripts work as expected, the first thing I&rsquo;d check is to ensure that the <code>auto</code> keyword is <em>not</em> included in any configuration stanzas related to OVS. From there, you <em>may</em> find it helpful to edit <code>/etc/init.d/openvswitch-switch</code> to include <code>_SYSTEMCTL_SKIP_REDIRECT</code>, but that seems (at this point) less likely to be the culprit.</p>
+<p>For other OVS-related content, have a look at any of <a href="/tags/ovs/">my OVS-tagged articles</a>.</p>
+<p><strong>UPDATE:</strong> Another reader contacted me to say that the <code>_SYSTEMCTL_SKIP_REDIRECT</code> setting may help in situations where you need to restart OVS (perhaps due to an update or similar). Without this setting, VM interfaces may be disconnected from the bridge. I haven&rsquo;t tested or verified this, so keep that in mind.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/debian">Debian</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/06/30/technology-short-take-68/">Technology Short Take #68</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/07/22/technology-short-take-69/">Technology Short Take #69</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f30%2fovs-integration-debian-network-scripts%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f30%2fovs-integration-debian-network-scripts%2f&text=OVS%20Integration%20with%20Debian%20Network%20Scripts" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f30%2fovs-integration-debian-network-scripts%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/06/30/technology-short-take-68/">Technology Short Take #68</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/03/18/technology-short-take-63/">Technology Short Take #63</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2015/12/18/technology-short-take-58/">Technology Short Take #58</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

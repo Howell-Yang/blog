@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #60 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #60 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #60 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/01/29/technology-short-take-60/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #60</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1118 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #60. As usual, I&rsquo;ve gathered what I hope to be a useful but varied collection of articles and links on key data center technologies. I hope something I&rsquo;ve included here will be helpful&mdash;enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>The rise of Linux in importance in the networking industry continues, with Arista announcing enhancements to Arista EOS to support&mdash;among other things&mdash;Docker containers. (See <a href="https://www.sdxcentral.com/articles/news/arista-outfits-eos-for-containers-hybrid-clouds/2016/01/">this SDx Central article</a> or <a href="http://www.networkworld.com/article/3023848/cloud-computing/arista-networks-pops-next-gen-os.html">this Network World article</a> for more details.)</li>
+<li>As a partial counterpoint to the increased use/visibility of Linux in the networking industry, check out <a href="http://blog.ipspace.net/2016/01/dell-os10-and-cumulus-linux.html">Ivan&rsquo;s take on Dell&rsquo;s OS10 announcement</a>.</li>
+<li>And while we are on the topic of Linux and open source in the networking industry&hellip;read <a href="http://packetpushers.net/industry-needs-open-source-framework-switching-silicon/">this entertaining <em>and</em> informative article</a> on the importance of (truly) open source libraries in networking.</li>
+<li>NIC offloads can make a noticeable difference in performance with VXLAN-based overlay networks, so it&rsquo;s worth some time making sure that VXLAN offloads are supported <em>and</em> enabled. Dale Coghlan has an article on <a href="http://www.sneaku.com/2015/05/26/broadcom-bnx2x-driver-and-vxlan-offload/">the Broadcom bnx2x driver and VXLAN offload</a> that may save you some time in this area.</li>
+<li>This post on <a href="https://blogs.vmware.com/networkvirtualization/2016/01/vmware-nsx-security-splunk.html">automating NSX security rules using Splunk</a> (and some custom code) is pretty cool. Granted, it&rsquo;s a VMware post, so it may gloss over some details, but it&rsquo;s still a decent look at what&rsquo;s possible when you take the abstractions and APIs offered by a solution like NSX.</li>
+<li>Elver Sena (great guy, by the way) has an article <a href="http://blog.senasosa.com/2015/12/nsx-manager-backup-and-restore.html">discussing NSX Manager backup and restore</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>I don&rsquo;t have anything this time around, but I&rsquo;ll stay alert for content to include in future posts.</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>Have you heard about the DoD Security Technical Implementation Guide (STIG) ESXi VIB? Here&rsquo;s <a href="http://www.vm5280.com/2016/01/dod-security-technical-implementation.html">a brief write-up</a> by Jason Scanga.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Though I haven&rsquo;t had much opportunity to work with Cloud Foundry (yet), I still try (my best) to keep track of what&rsquo;s happening in that space. As such, I recently came across <a href="https://mesosphere.com/blog/2015/12/15/cloud-foundry-dcos/">the announcement of CloudFoundry-Mesos</a>, an open source project aimed at running Cloud Foundry directly on Mesos (and thus the Mesosphere DCOS). The project itself is open source and <a href="https://github.com/mesos/cloudfoundry-mesos">hosted on GitHub</a>. Per the <code>README.md</code> in the repo, it&rsquo;s still early days yet, but this looks quite interesting.</li>
+<li>Ben Snape has a post <a href="http://bensnape.com/2016/01/14/terraform-design-patterns-the-terrafile/">that introduces the idea of a <code>Terrafile</code></a>, which is a list of all the Terraform modules and versions used by/in a particular Terraform configuration. Although I haven&rsquo;t worked too much with Terraform modules, I can definitely see where Ben is coming from with this idea. Here&rsquo;s hoping that Hashicorp picks up this concept and runs with it.</li>
+<li>Jon Langemak has an article describing <a href="http://www.dasblinkenlichten.com/building-an-openstack-home-lab-the-lab/">how he built his OpenStack home lab</a>, starting (in this article) with the networking. Jon was used nested virtualization in his home lab, so seeing how he mapped out the interplay between VLANs and virtual network may be helpful for others who are considering a similar setup.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>CoreOS <code>rkt</code> is coming along nicely; version 0.15.0 was recently introduced an includes a new <code>rkt fly</code> feature that aims to provide better support for software that needs more privileges than a typical container (the Kubernetes <em>kubelet</em> is one example). <a href="https://coreos.com/blog/rkt-0.15.0-introduces-rkt-fly.html">This blog post</a> has more details.</li>
+<li>This probably falls more into the &ldquo;interesting&rdquo; than &ldquo;useful&rdquo; category, but it may prove helpful to someone out there. As you know, the core of Docker Engine is morphing into <code>runc</code> as part of the Open Containers Initiative (OCI). Continuing her legacy of doing some unique things with containers on the desktop, Jessie Frazelle recently blogged about <a href="https://blog.jessfraz.com/post/runc-containers-on-the-desktop/"><code>runc</code> containers on the desktop</a>.</li>
+<li>In response to my post on my current productivity setup, the author of this blog post sent me a link to his article on <a href="https://blog.iefdev.se/2015/12/converting-files-before-mv2linux/">converting files before moving to Linux</a>. Good information, thanks!</li>
+<li><a href="https://github.com/nomisbeme/flotsam/blob/master/windowsdockeronthemac.md">Run Windows containers on the Mac</a>. &lsquo;Nuff said.</li>
+<li>With <a href="https://www.docker.com/press-release-01212016docker-acquires-unikernel-systems-extend-breadth-docker-platfrom">the recent acquisition of Unikernel Systems by Docker Inc.</a>, you&rsquo;ve probably suddenly got unikernels on your radar. (Bart Smith gave you the heads-up <a href="/2016/01/08/full-stack-journey-ep001/">in Episode 1 of the Full Stack Journey Podcast</a>, so you shouldn&rsquo;t have been surprised.) In any case, <a href="https://ma.ttias.be/what-is-a-unikernel/">here&rsquo;s an article</a> that provides a overview of unikernels. After you&rsquo;ve finished reading that, pop over to the Joyent site to read Bryan Cantrill&rsquo;s take on <a href="https://www.joyent.com/blog/unikernels-are-unfit-for-production">why unikernels are unfit for production</a>. A lot of folks criticized Bryan&rsquo;s viewpoint on unikernels, but he&rsquo;s right&mdash;there is (right now) a dearth of operational tools for unikernels. At best, that makes them an interesting research/innovation opportunity, but certainly not ready for production.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>This is cool&mdash;Scott Harney talks about <a href="http://www.scottharney.com/using-python-and-netmiko-to-automate-san-zoning/">using Netmiko to automate FC SAN zoning</a>, and he points to <a href="http://keepingitclassless.net/2014/04/san-config-automation-ansible/">an article by Matt Oswalt on a similar topic</a> that I don&rsquo;t recall seeing. It would be very cool if Scott were to share the source to the Python scripts he talks about in the article. (GitHub would be a good way. Hint, hint.)</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>The Fusion team at VMware recently blogged about <a href="https://blogs.vmware.com/teamfusion/2016/01/workaround-of-nat-port-forwarding-issue-in-fusion-8-1.html">an issue with port forwarding on NAT networks</a>; the blog post has a workaround for the issue. (The future of VMware Fusion&mdash;and VMware Workstation&mdash;as a result of recent VMware layoffs is <a href="http://planetvm.net/blog/?p=2952">a topic I leave others to discuss</a>.)</li>
+<li>William Lam shares <a href="http://www.virtuallyghetto.com/2015/12/how-to-bootstrap-the-vcsa-using-the-esxi-embedded-host-client.html">how to bootstrap the VCSA using the ESXi Embedded Host Client (EHC)</a>. William also has <a href="http://www.virtuallyghetto.com/2016/01/cheatsheet-for-the-entire-vmware-appcatalyst-api-using-curl.html">a great &ldquo;cheat sheet&rdquo; to the AppCatalyst API</a>, in case you&rsquo;re experimenting with that product (project?).</li>
+<li>Here&rsquo;s a post on <a href="https://michaelryom.dk/change-vmdk-geometry/">how to change the geometry of a VMDK</a>. (Personally, I&rsquo;m interested in reading the article that describes the where/why the author had to use this process.)</li>
+<li>According to <a href="http://blog.dustinkirkland.com/2015/11/lxd-in-sky-with-diamonds.html">this post by Dustin Kirkland</a>, LXD (which I first discussed in <a href="/2015/05/06/quick-intro-lxd/">this introductory post</a>) is part of Ubuntu Server 15.10 by default (and that will continue to be the case with 16.04, the next LTS release). LXC-based Linux containers&mdash;which are what LXD helps manage/manipulate/orchestrate&mdash;have a different architecture and different value prop than Docker containers, but too often get overlooked.</li>
+</ul>
+<h2 id="careersoft-skillsproductivity">Career/Soft Skills/Productivity</h2>
+<ul>
+<li>I like this post by Massimo Re Ferre&rsquo; on <a href="http://it20.info/2015/12/devops-for-dummies/">DevOps for Dummies</a>. The term &ldquo;DevOps&rdquo; has been thrown around by so many different people in so many different contexts that it&rsquo;s now incredibly difficult to understand what is meant when someone says &ldquo;DevOps&rdquo;. Massimo does a good job (as usual!) of breaking it down and making it consumable.</li>
+<li>Following up on the IRC vs. mailing list vs. whatever discussion from previous Technology Short Takes, here&rsquo;s an article on <a href="https://developer.ibm.com/opentech/2016/01/21/openstack-development-tips-setting-up-a-znc-bouncer/">setting up a ZNC bouncer</a> (which is a way to improve your reachability on IRC). <a href="https://dague.net/2014/09/13/my-irc-proxy-setup/">This post</a> by Sean Dague (upon which the first post I referenced is also based) may also be useful.</li>
+</ul>
+<p>That&rsquo;s enough for this time around. See you next time around! Until then, feel free to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a> if you have any questions, comments, or thoughts.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/arista">Arista</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lxc">LXC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/01/28/docker-macvlan-interfaces/">Using Docker with macvlan Interfaces</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/02/03/full-stack-journey-ep002/">Full Stack Journey Episode #2: Matt Oswalt</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f29%2ftechnology-short-take-60%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f29%2ftechnology-short-take-60%2f&text=Technology%20Short%20Take%20%2360" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f29%2ftechnology-short-take-60%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2016/01/15/technology-short-take-59/">Technology Short Take #59</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2015/12/18/technology-short-take-58/">Technology Short Take #58</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

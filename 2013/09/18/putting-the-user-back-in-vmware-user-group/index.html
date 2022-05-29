@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Putting the User Back in VMware User Group - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Putting the User Back in VMware User Group - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Putting the User Back in VMware User Group - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/09/18/putting-the-user-back-in-vmware-user-group/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Putting the User Back in VMware User Group</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;737 words (estimated 4 minutes to read)</span>
+  <p>As most of you probably know, I visit quite a few VMUG User Conferences around the United States and around the world. I&rsquo;d probably do even more if my calendar allowed, because it&rsquo;s truly an honor for me to have the opportunity to help educate the VMware user community. I know I&rsquo;m not alone in that regard; there are numerous VMware &ldquo;rock stars&rdquo; (not that I consider myself a &ldquo;rock star&rdquo;) out there who also work tirelessly to support the VMware community. One need not look very far to see some examples of these types of individuals: Mike Laverick, William Lam, Duncan Epping, Josh Atwell, Nick Weaver, Alan Renouf, Chris Colotti, Cody Bunch, or Cormac Hogan are all great examples. (And I&rsquo;m sure there are many, <em>many</em> more I&rsquo;ve forgotten!)</p>
+<p>However, one thing that has consistently been a topic of discussion among those of us who frequent VMUGs has been this question: &ldquo;How do we get users more engaged in VMUG?&rdquo; VMUG is, after all, the VMware <em>User</em> Group. And while all of us are more than happy to help support VMUG (at least, I know I am), we&rsquo;d also like to see more user engagement&mdash;more customers speaking about their use cases, their challenges, the things they&rsquo;ve learned, and the things they want to learn. We want to see users get connected with other users, to share information and build a community-based body of knowledge. So how can we do that?</p>
+<p>As I see it, there is a variety of reasons why users don&rsquo;t volunteer to speak:</p>
+<ul>
+<li>
+<p>They might be afraid of public speaking, or aren&rsquo;t sure how good they&rsquo;ll be.</p>
+</li>
+<li>
+<p>They feel like the information they could share won&rsquo;t be helpful or useful to others.</p>
+</li>
+<li>
+<p>They aren&rsquo;t sure how to structure their presentation to make it informative yet engaging.</p>
+</li>
+</ul>
+<p>We (meaning a group of us that support a lot of these events) have tossed around a few ideas, but nothing has ever really materialized. Today I hope to change all that. <strong>Today, I&rsquo;m announcing that I will personally help mentor 5 different VMware users who are willing to step up and volunteer to speak <em>for the first time</em> at a local VMUG meeting in the near future.</strong></p>
+<p>So what does this mean?</p>
+<ul>
+<li>
+<p>I will help you select a topic on which to speak (in coordination with your local VMUG leader).</p>
+</li>
+<li>
+<p>I will provide guidance and feedback on gathering your content.</p>
+</li>
+<li>
+<p>I will review and provide feedback and suggestions for improving your presentation.</p>
+</li>
+<li>
+<p>If desired, I will provide tips and tricks for public speaking.</p>
+</li>
+</ul>
+<p>And I&rsquo;m calling on others within the VMUG community who are frequent speakers to do the same. I think that Mike Laverick might have already done something like this; perhaps the others have as well. If so, that&rsquo;s awesome. If not, I challenge you, as someone viewed in a technical leadership role within the VMware and VMUG communities, to use that leadership role in a way that I hope will reinvigorate and renew user involvement and participation in the VMware/VMUG community.</p>
+<p>If you&rsquo;re one of the 5 people who&rsquo;s willing to take me up on this offer, the first step is contact me and your local VMUG leader and express your interest. Don&rsquo;t have my e-mail address? Here&rsquo;s your first challenge: it&rsquo;s somewhere on this site.</p>
+<p>If you&rsquo;re already a frequent speaker at VMUGs and you, too, want to help mentor other speakers, you can either post a comment here to that effect (and provide people with a way of getting in touch with you), or&mdash;if you have your own blog&mdash;I encourage you to make the same offer via your own site. Where possible, I&rsquo;ll try to update this (or you can use trackbacks) so that readers have a good idea of who out there is willing to provide assistance to help them become the next VMUG &ldquo;rock star&rdquo; presenter.</p>
+<p>Good luck, and I look forward to hearing from you!</p>
+<p><strong>UPDATE:</strong> A few folks have noted that all the names I listed above are VMware employees, so I&rsquo;ve added a couple others who are not. Don&rsquo;t read too much into that; it was all VMware employees because I work at VMware, too, and they&rsquo;re the ones I communicate with frequently. There are lots of passionate and dedicated VMUG supporters out there&mdash;you know who you are!</p>
+<p>Also, be sure to check the comments; a number of folks are volunteering to also mentor new speakers.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/09/13/idf-2013-summary-and-thoughts/">IDF 2013 Summary and Thoughts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/10/04/using-puppet-for-ubuntu-cloud-archive-support/">Using Puppet for Ubuntu Cloud Archive Support</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f18%2fputting-the-user-back-in-vmware-user-group%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f18%2fputting-the-user-back-in-vmware-user-group%2f&text=Putting%20the%20User%20Back%20in%20VMware%20User%20Group" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f18%2fputting-the-user-back-in-vmware-user-group%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/25/presentation-from-uk-vmug/">Presentation from UK VMUG</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2012/08/21/my-vmworld-2012-schedule/">My VMworld 2012 Schedule</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2012/06/26/thoughts-on-a-vmworld-unconference/">Thoughts on a VMworld Unconference</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

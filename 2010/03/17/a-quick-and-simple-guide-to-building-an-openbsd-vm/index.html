@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Quick and Simple Guide to Building an OpenBSD VM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Quick and Simple Guide to Building an OpenBSD VM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Quick and Simple Guide to Building an OpenBSD VM - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/03/17/a-quick-and-simple-guide-to-building-an-openbsd-vm/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Quick and Simple Guide to Building an OpenBSD VM</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;651 words (estimated 4 minutes to read)</span>
+  <p>I&rsquo;ll start this off with a disclaimer: this post is really more for my own benefit than the benefit of anyone else.</p>
+<p><a href="http://www.openbsd.org">OpenBSD</a> is my OS of choice when it comes to setting up a quick, simple UNIX-based virtual machine (VM). Need a virtual firewall? Use OpenBSD. Need a router? Use OpenBSD. Need a web server or an FTP server? Use OpenBSD. Need to run some network security tools? Use OpenBSD.</p>
+<p>The problem is this: once I get an OpenBSD system up and running, it runs so well that I rarely have to go set up another one. Because there is then this length of time between installations, I always find myself forgetting the steps to take when installing an OpenBSD system. Thus, the need for this post and why I say it&rsquo;s really for my benefit more than anything else. Next time I need to install OpenBSD in a VM for some reason, I can quickly come back and reference my list. (I will say that the installation of OpenBSD in recent versions has gotten <em>much</em> simpler than it was in the past.)</p>
+<p>Oh, another disclaimer is probably necessary here, too: this is <strong><em>not</em></strong> to be considered some sort of &ldquo;best practices&rdquo; guide, so please don&rsquo;t hammer the comments with stuff like &ldquo;You know, you really should&hellip;&rdquo;. This is just a quick and simple setup.</p>
+<p>With those disclaimers out of the way, here&rsquo;s the installation procedure. This was written for use with OpenBSD 4.6:</p>
+<ol>
+<li>
+<p>Boot from the OpenBSD installation ISO image. When prompted, choose &ldquo;i&rdquo; to install.</p>
+</li>
+<li>
+<p>Press Enter for the default keyboard layout (unless you need a different layout, naturally).</p>
+</li>
+<li>
+<p>Enter the system&rsquo;s hostname in short form.</p>
+</li>
+<li>
+<p>Enter the name of the network interface to configure. When installing on VMware Fusion 3.0.2 on my Macintosh, the default interface is <code>em0</code>. On VMware vSphere 4, the default interface is <code>vic0</code>.</p>
+</li>
+<li>
+<p>Enter the IPv4 address or press Enter to use DHCP.</p>
+</li>
+<li>
+<p>Enter the IPv6 address or press Enter to not assign an IPv6 address.</p>
+</li>
+<li>
+<p>Press Enter to complete the configuration of network interfaces.</p>
+</li>
+<li>
+<p>Press Enter not to perform any manual network configuration.</p>
+</li>
+<li>
+<p>Enter and confirm the root password.</p>
+</li>
+<li>
+<p>Press Enter to start <code>sshd</code> by default.</p>
+</li>
+<li>
+<p>Press Enter not to start <code>ntpd</code> by default.</p>
+</li>
+<li>
+<p>Enter &ldquo;no&rdquo; to indicate that you will not be running the X Window System.</p>
+</li>
+<li>
+<p>Press Enter not to change the default console to <code>com0</code>.</p>
+</li>
+<li>
+<p>Press Enter not to create an additional user. (I generally prefer to create an additional user after installation is complete.)</p>
+</li>
+<li>
+<p>Press Enter to accept the default disk as the root disk. On my Mac running VMware Fusion 3.0.2, the default disk is <code>wd0</code>.</p>
+</li>
+<li>
+<p>Press Enter to use the whole disk.</p>
+</li>
+<li>
+<p>Press Enter to use auto layout of partitions on the disk. (I&rsquo;m not sure what version of OpenBSD added this feature, but it is quite handy for simple installations.)</p>
+</li>
+<li>
+<p>Press Enter to use the CD to install the sets. The CD in the VM should be mapped to the ISO image of the OpenBSD 4.6 install CD.</p>
+</li>
+<li>
+<p>Press Enter to use the default CD (which showed up as <code>cd0</code> on my system).</p>
+</li>
+<li>
+<p>Press Enter to use the default path to the sets.</p>
+</li>
+<li>
+<p>Remove the X Window System sets by entering &ldquo;-x*&rdquo; and pressing Enter.</p>
+</li>
+<li>
+<p>Verify that the X Window System sets (<code>xbase46.tgz</code>, <code>xetc46.tgz</code>, <code>xshare46.tgz</code>, <code>xfont46.tgz</code>, and <code>xserv46.tgz</code>) are unselected, then press Enter to complete set selection. OpenBSD will start installing the sets.</p>
+</li>
+<li>
+<p>Enter the timezone, such as &ldquo;US/Eastern&rdquo;.</p>
+</li>
+<li>
+<p>Enter <code>reboot</code> to reboot your new OpenBSD VM. You should now be ready to perform final configuration of OpenBSD, such as using <code>pkg_add</code> to install packages or editing <code>rc.conf.local</code> to control what daemons are launched at startup. (Of course, those are tasks for an entirely different blog post).</p>
+</li>
+</ol>
+<p>That&rsquo;s it. Again, this not a best practice/ideal installation. It&rsquo;s just a &ldquo;drop dead simple&rdquo; installation in a VM for when you need to get something done quickly.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/03/16/understanding-network-interface-virtualization/">Understanding Network Interface Virtualization</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/03/21/how-niv-and-fcoe-play-together/">How NIV and FCoE Play Together</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f17%2fa-quick-and-simple-guide-to-building-an-openbsd-vm%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f17%2fa-quick-and-simple-guide-to-building-an-openbsd-vm%2f&text=A%20Quick%20and%20Simple%20Guide%20to%20Building%20an%20OpenBSD%20VM" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f03%2f17%2fa-quick-and-simple-guide-to-building-an-openbsd-vm%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/05/23/openbsd-41-on-esx-server-301/">OpenBSD 4.1 on ESX Server 3.0.1</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2006/05/18/openbsd-39-on-esx-server/">OpenBSD 3.9 on ESX Server</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2006/04/03/openbsd-on-esx-server/">OpenBSD on ESX Server</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

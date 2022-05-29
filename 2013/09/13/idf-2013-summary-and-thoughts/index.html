@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2013 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2013 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2013 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/09/13/idf-2013-summary-and-thoughts/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2013 Summary and Thoughts</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;717 words (estimated 4 minutes to read)</span>
+  <p>I&rsquo;m back home in Denver after spending a few days in San Francisco at Intel Developer Forum (IDF) 2013, so I thought I&rsquo;d take a few minutes to sit down and share a summary of the event and my thoughts.</p>
+<p>First, here are links to all the liveblogging I did while at the conference:</p>
+<p><a href="/2013/09/10/idf-2013-keynote-day-1/">IDF 2013 Keynote, Day 1</a></p>
+<p><a href="/2013/09/10/idf-2013-enhancing-openstack-with-intel-technologies/">Enhancing OpenStack with Intel Technologies for Public, Private, and Hybrid Cloud</a></p>
+<p><a href="/2013/09/11/idf-2013-keynote-day-2/">IDF 2013 Keynote, Day 2</a></p>
+<p><a href="/2013/09/11/idf-2013-rack-scale-architecture-for-cloud/">Rack Scale Architecture for Cloud</a></p>
+<p><a href="/2013/09/11/idf-2013-virtualizing-the-network-to-enable-sdi/">Virtualizing the Network to Enable a Software-Defined Infrastructure (SDI)</a></p>
+<p><a href="/2013/09/12/idf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design/">The Future of Software-Defined Networking with the Intel Open Network Platform Switch Reference Design</a></p>
+<p><a href="/2013/09/12/idf-2013-enabling-nfvsdn-with-intel-onp-server-reference-design/">Enabling Network Function Virtualization and Software Defined Networking with the Intel Open Network Platform Server Reference Architecture Design</a></p>
+<p>Overall, I enjoyed the event and found it quite useful. It appears to me that Intel has a three-prong strategy:</p>
+<ol>
+<li>
+<p>Expand the footprint of IA (Intel Architecture, what everyone else calls x86, x86_64, or x64) CPUs by moving into adjacent markets</p>
+</li>
+<li>
+<p>Extend Intel&rsquo;s reach with non-IA hardware (FM6000 series, QuickAssist Server Acceleration Card [QASAC]</p>
+</li>
+<li>
+<p>Use software, especially open source software, to drive more development toward Intel-based solutions</p>
+</li>
+</ol>
+<p>I&rsquo;m sure there&rsquo;s probably more, but those are the ones that really stand out. You can see some evidence of these moves:</p>
+<ul>
+<li>
+<p>Intel&rsquo;s Open Network Platform (ONP) Switch reference design (aka &ldquo;Seacliff Trail&rdquo;) helps drive #1 and #2; it contains an IA CPU for programmability and leverages the FM6000 series for high-speed networking functionality</p>
+</li>
+<li>
+<p>Intel&rsquo;s ONP Server reference design (&ldquo;Sunrise Trail&rdquo;) pushes Intel-based servers into markets they haven&rsquo;t traditionally seen (telco/networking roles), especially in conjunction with strategy #3 above (as shown by the strong use of Intel DPDK to optimize Sunrise Trail for SDN/NFV applications)</p>
+</li>
+<li>
+<p>Intel&rsquo;s Avoton and newly-announced Quark families push Intel into new markets (micro-servers, tablets, phones, sensors) where they haven&rsquo;t traditionally been a major player</p>
+</li>
+</ul>
+<p>All in all, it will be very interesting to see how things play out. As others have said, an definitely an interesting time to be in technology.</p>
+<p>As with other relevant industry conferences (like VMworld, for example), one of the values of IDF is engaging in conversations with other professionals. I had a few of these conversations while at IDF:</p>
+<ul>
+<li>
+<p>I spent some time talking with an Intel employee about Intel&rsquo;s Cache Acceleration Software (CAS), which came out of the acquisition of a company called Nevex. I wasn&rsquo;t even aware that Intel was doing cache acceleration. Intel CAS operates at the operating system (OS) level, serving as a file-level cache on Windows and a block-level cache (with file awareness) on Linux. It also supports caching to a remote SSD (in a SAN, for example) so that you can still use vMotion in vSphere environments. In the near future, they&rsquo;re looking at supporting cache clustering with a cache coherence algorithm that would allow you to use SSDs/flash from multiple servers as a single cache.</p>
+</li>
+<li>
+<p>I had a brief conversation with an Intel engineer who specialized in SSDs (didn&rsquo;t get to hit him up for some free Intel DC S3700s, though). We touched on a number of different areas, but one interesting statistic that came out of the conversation was the reality behind the &ldquo;running out of writes&rdquo; on an SSD. (This refers to the number of times you can write data to an SSD, which is made out to be a pretty big deal by some folks.) He spoke of a test that wrote 45GB an hour to an SSD; even at that rate, would have taken multiple decades of use before the SSD would not have been able to perform any writes.</p>
+</li>
+<li>
+<p>Finally, I spent some time chatting with my friend Brian Johnson, who works in the networking group at Intel. There&rsquo;s lots of cool stuff going on there, but&mdash;unfortunately&mdash;I can&rsquo;t really discuss most of what he shared with me. Sorry folks! We did have an interesting discussion around the user experience, personal data, mobility, and ubiquitous connectivity. Who knows&mdash;maybe the next great startup will emerge out of our discussion! :-)</p>
+</li>
+</ul>
+<p>Anyway, that&rsquo;s it for my IDF 2013 coverage. I hope that some of the information I shared proves useful to you in some way. As usual, courteous comments (with vendor disclosures, where needful) are always welcome.</p>
+<p><em>(Disclosure: I work for VMware, but was invited to attend IDF at Intel&rsquo;s expense.)</em></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2013">IDF2013</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/09/12/idf-2013-enabling-nfvsdn-with-intel-onp-server-reference-design/">IDF 2013: Enabling NFV/SDN with Intel ONP Server Reference Design</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/09/18/putting-the-user-back-in-vmware-user-group/">Putting the User Back in VMware User Group</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f13%2fidf-2013-summary-and-thoughts%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f13%2fidf-2013-summary-and-thoughts%2f&text=IDF%202013%20Summary%20and%20Thoughts" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f13%2fidf-2013-summary-and-thoughts%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/09/12/idf-2013-enabling-nfvsdn-with-intel-onp-server-reference-design/">IDF 2013: Enabling NFV/SDN with Intel ONP Server Reference Design</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2013/09/10/idf-2013-enhancing-openstack-with-intel-technologies/">IDF 2013: Enhancing OpenStack with Intel Technologies</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2013/09/12/idf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design/">IDF 2013: Future of SDN with the Intel ONP Switch Reference Design</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

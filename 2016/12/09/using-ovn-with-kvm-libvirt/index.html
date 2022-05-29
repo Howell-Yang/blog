@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using OVN with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using OVN with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using OVN with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/12/09/using-ovn-with-kvm-libvirt/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using OVN with KVM and Libvirt</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1610 words (estimated 8 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to discuss how to use OVN (Open Virtual Network; part of <a href="http://openvswitch.org/">the Open vSwitch project</a>) with KVM and Libvirt to provide virtual networking for KVM-based virtual machines. This post will build on some concepts around OVS and Libvirt that I&rsquo;ve discussed previously; be sure to review the <a href="/tags/ovs/">OVS posts</a> and <a href="/tags/libvirt/">Libvirt posts</a> on this site for more details and prerequisite knowledge.</p>
+<p>I&rsquo;ll structure this discussion around 2 key steps:</p>
+<ol>
+<li>Setting up OVN</li>
+<li>Integrating KVM/Libvirt into OVN</li>
+</ol>
+<p>Note that I&rsquo;m not going to discuss setting up KVM/Libvirt, as that&rsquo;s something I&rsquo;ve covered previously and is well-documented.</p>
+<p>Ready? Let&rsquo;s jump in!</p>
+<h2 id="setting-up-ovn">Setting up OVN</h2>
+<p>The biggest &ldquo;challenge&rdquo; here is package availability&mdash;many Linux distributions don&rsquo;t have packages available for OVS 2.6.0, which is the first release with non-experimental support of OVN. If you&rsquo;re an Ubuntu user, then you can use the Ubuntu Cloud Archive for the OpenStack &ldquo;Newton&rdquo; release, which includes OVS/OVN 2.6.0 packages. For other distributions, you&rsquo;ll probably need to compile from source. In that case, the <a href="http://openvswitch.org/support/dist-docs/INSTALL.rst.html">OVS installation documentation</a> is quite accurate and usable.</p>
+<p>For the purposes of this post, I&rsquo;ll assume you&rsquo;re using Ubuntu 16.04 and will pull packages from the Ubuntu Cloud Archive. Instructions for using the Ubuntu Cloud Archive are <a href="https://wiki.ubuntu.com/OpenStack/CloudArchive">here</a>; once you&rsquo;ve added the UCA repository for Newton, installing OVS and OVN is just a matter of running <code>apt install</code> (or <code>apt-get install</code>) to install the following packages:</p>
+<ul>
+<li>openvswitch-common</li>
+<li>openvswitch-switch</li>
+<li>ovn-common</li>
+<li>ovn-host</li>
+</ul>
+<p>On only <em>one</em> system, you&rsquo;ll also want to install the &ldquo;ovn-central&rdquo; package. Make note of the IP address where this package is installed; you&rsquo;ll need it later. I&rsquo;ll refer to the IP address of the system where &ldquo;ovn-central&rdquo; is installed as CENTRAL_IP.</p>
+<p>Naturally, since we&rsquo;re discussing the use of OVN with KVM/Libvirt here, you&rsquo;d also want to install the packages for those features as well (&ldquo;qemu-kvm&rdquo; and &ldquo;libvirt-bin&rdquo;, for example).</p>
+<p>Once the packages are installed, then it&rsquo;s necessary to configure OVN appropriately. Fortunately, this is pretty straightforward:</p>
+<ol>
+<li>
+<p>First, stop OVN&rsquo;s local component (the &ldquo;ovn-controller&rdquo; component) with this command:</p>
+<pre><code> /usr/share/openvswitch/scripts/ovn-ctl stop_controller
+</code></pre>
+</li>
+<li>
+<p>Next, you&rsquo;ll need to configure the local OVN controller to talk to OVN&rsquo;s central components. You&rsquo;ll do this by setting some values in the OVS database using <code>ovs-vsctl</code>. To set the correct values, run this command:</p>
+<pre><code> ovs-vsctl set Open_vSwitch . \
+ external_ids:ovn-remote=&quot;tcp:CENTRAL_IP:6642&quot; \
+ external_ids:ovn-nb=&quot;tcp:CENTRAL_IP:6641&quot; \
+ external_ids:ovn-encap-ip=&lt;IP address on this system&gt; \
+ external_ids:ovn-encap-type=geneve
+</code></pre>
+<p>So, what does all this do? You&rsquo;re populating the &ldquo;external_ids&rdquo; column of the Open_vSwitch database with values that configure OVN. The &ldquo;ovn-remote&rdquo; and &ldquo;ovn-nb&rdquo; values tell OVN&rsquo;s local component (a piece called &ldquo;ovn-controller&rdquo;) how to talk to OVN&rsquo;s central component (running on the sytem where you installed the &ldquo;ovn-central&rdquo; package). The &ldquo;ovn-encap-ip&rdquo; tells OVS/OVN what IP address to use for overlay tunnels, and the &ldquo;ovn-encap-type&rdquo; tells OVS/OVN what encapsulation protocol to use (Geneve, in this case, but others are supported).</p>
+</li>
+<li>
+<p>Restart the local OVN controller:</p>
+<pre><code> /usr/share/openvswitch/scripts/ovn-ctl start_controller
+</code></pre>
+</li>
+</ol>
+<p>At this point, OVN should be up and running. You can verify this by running <code>ovs-vsctl show</code>, and you should see that OVN has automatically performed some configuration on the local OVS instance, including setting up Geneve tunnel ports to the other hypervisors in the OVN environment.</p>
+<p>Now you&rsquo;re ready to look at integrating KVM/Libvirt with OVN.</p>
+<h2 id="integrating-kvmlibvirt-with-ovn">Integrating KVM/Libvirt with OVN</h2>
+<p>&ldquo;Integrating&rdquo; is perhaps the wrong word to use here; there is no pre-built integration between KVM/Libvirt and OVN. You&rsquo;ll have to perform manual steps or build your own custom scripts to make these two projects work together (for now). As I go through this section, I&rsquo;m going to assume you&rsquo;ll create a Libvirt network to &ldquo;front-end&rdquo; your OVS bridge (as described <a href="/2012/11/12/libvirt-ovs-integration-revisited/">here</a>). Since we are working with OVN here, you&rsquo;ll want to make sure the Libvirt network references the &ldquo;br-int&rdquo; bridge (the default OVN integration bridge).</p>
+<p>One part of the Libvirt-OVS integration that is critical to making it work with OVN pertains to the <em>interface ID</em>. This is a value that is written into both the OVS database and the VM&rsquo;s Libvirt XML definition. For example, after launching a VM using Libvirt-OVS integration, you can see the interface ID in the Libvirt XML code using <code>virsh dumpxml &lt;domain&gt;</code> (the excerpt below shows only the network interface section of the XML):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;bridge&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;mac</span> <span style="color:#a6e22e">address=</span><span style="color:#e6db74">&#39;52:54:00:93:05:25&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">network=</span><span style="color:#e6db74">&#39;ovs&#39;</span> <span style="color:#a6e22e">bridge=</span><span style="color:#e6db74">&#39;br-int&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;virtualport</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;openvswitch&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;parameters</span> <span style="color:#a6e22e">interfaceid=</span><span style="color:#e6db74">&#39;668033d2-06a4-4aaa-aca5-30cde245e477&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/virtualport&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;target</span> <span style="color:#a6e22e">dev=</span><span style="color:#e6db74">&#39;vnet0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;model</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;virtio&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;alias</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;net0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x03&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span></code></pre></div><p>Note the <code>parameters interfaceid</code> element. Now, let&rsquo;s look at the corresponding OVS port (which we know to be &ldquo;vnet0&rdquo; from the XML configuration above, as specified by <code>target dev=vnet0</code>) using <code>ovs-vsctl list interface vnet0</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>_uuid               : 1948c2bc-c768-4b77-9275-78923eae80bd
+</span></span><span style="display:flex;"><span>admin_state         : up
+</span></span><span style="display:flex;"><span>bfd                 : {}
+</span></span><span style="display:flex;"><span>bfd_status          : {}
+</span></span><span style="display:flex;"><span>cfm_fault           : []
+</span></span><span style="display:flex;"><span>cfm_fault_status    : []
+</span></span><span style="display:flex;"><span>cfm_flap_count      : []
+</span></span><span style="display:flex;"><span>cfm_health          : []
+</span></span><span style="display:flex;"><span>cfm_mpid            : []
+</span></span><span style="display:flex;"><span>cfm_remote_mpids    : []
+</span></span><span style="display:flex;"><span>cfm_remote_opstate  : []
+</span></span><span style="display:flex;"><span>duplex              : full
+</span></span><span style="display:flex;"><span>error               : []
+</span></span><span style="display:flex;"><span>external_ids        : {attached-mac=&#34;52:54:00:93:05:25&#34;, iface-id=&#34;668033d2-06a4-4aaa-aca5-30cde245e477&#34;, iface-status=active, vm-id=&#34;b427e283-f0a1-460b-84a8-56d7ced81b1e&#34;}
+</span></span><span style="display:flex;"><span>ifindex             : 9
+</span></span><span style="display:flex;"><span>ingress_policing_burst: 0
+</span></span><span style="display:flex;"><span>ingress_policing_rate: 0
+</span></span><span style="display:flex;"><span>lacp_current        : []
+</span></span><span style="display:flex;"><span>link_resets         : 1
+</span></span><span style="display:flex;"><span>link_speed          : 10000000
+</span></span><span style="display:flex;"><span>link_state          : up
+</span></span><span style="display:flex;"><span>lldp                : {}
+</span></span><span style="display:flex;"><span>mac                 : []
+</span></span><span style="display:flex;"><span>mac_in_use          : &#34;fe:54:00:93:05:25&#34;
+</span></span><span style="display:flex;"><span>mtu                 : 1500
+</span></span><span style="display:flex;"><span>mtu_request         : []
+</span></span><span style="display:flex;"><span>name                : &#34;vnet0&#34;
+</span></span><span style="display:flex;"><span>ofport              : 3
+</span></span><span style="display:flex;"><span>ofport_request      : []
+</span></span><span style="display:flex;"><span>options             : {}
+</span></span><span style="display:flex;"><span>other_config        : {}
+</span></span><span style="display:flex;"><span>statistics          : {collisions=0, rx_bytes=1437, rx_crc_err=0, rx_dropped=0, rx_errors=0, rx_frame_err=0, rx_over_err=0, rx_packets=9, tx_bytes=648, tx_dropped=0, tx_errors=0, tx_packets=8}
+</span></span><span style="display:flex;"><span>status              : {driver_name=tun, driver_version=&#34;1.6&#34;, firmware_version=&#34;&#34;}
+</span></span><span style="display:flex;"><span>type                : &#34;&#34;
+</span></span></code></pre></div><p>Note the <code>iface-id</code> value in the &ldquo;external_ids&rdquo; column; it matches the <code>interfaceid</code> value from Libvirt.</p>
+<p>So why is this important? Well, as <a href="http://openvswitch.org/support/dist-docs/IntegrationGuide.rst.html">the OVS integration guide</a> points out, the <code>iface-id</code> value is used by OVS integrations to uniquely identify a VM&rsquo;s interface. When integrating KVM/Libvirt/OVS with OVN, we&rsquo;ll need to use this value as well; this provides an &ldquo;end-to-end&rdquo; link between an OVN logical port, an OVS virtual port, and a VM&rsquo;s network interface.</p>
+<p>With that bit of background out of the way, let&rsquo;s look at what&rsquo;s required to connect a KVM-based VM, using Libvirt and OVS, to OVN:</p>
+<ol>
+<li>Power on the VM and connect it to OVS. (This is all handled by Libvirt and the Libvirt-OVS integration.)</li>
+<li>Create an OVN logical port on an OVN logical switch.</li>
+<li>Populate the addresses associated with the OVN logical port.</li>
+</ol>
+<p>Since step #1 is handled by Libvirt, I won&rsquo;t discuss it in any detail here, focusing instead of #2 and #3.</p>
+<p>Assuming that an OVN logical switch has already been created (you can use <code>ovn-nbctl ls-add &lt;switch-name&gt;</code> on the sytem where the OVN central components are running), adding a logical switch port is pretty straightforward&mdash;just use <code>ovn-nbctl lsp-add &lt;switch name&gt; &lt;port name&gt;</code>. There&rsquo;s a small &ldquo;gotcha&rdquo; though. Remember the discussion about the interface ID? Here&rsquo;s where it comes back to affect us: <em>the logical switch port you create in OVN <strong>must</strong> use the interface ID as the port name.</em></p>
+<p>To extract the interface ID from OVS, you can use this command:</p>
+<pre><code>ovs-vsctl get interface &lt;name&gt; external_ids:iface-id
+</code></pre>
+<p>So, if the VM was attached to interface &ldquo;vnet0&rdquo;, then the command would look like:</p>
+<pre><code>ovs-vsctl get interface vnet0 external_ids:iface-id
+</code></pre>
+<p>Now, you might think you could use Bash command substitution to store the output of that command into a variable and use it later, and you&rsquo;d be <em>mostly</em> correct. <code>ovs-vsctl</code> returns the value surrounded by double quotes, and OVN requires the value not have any quotes. So, if you wanted to extract a value you could use in a Bash script, you&rsquo;d have to do a little manipulation:</p>
+<pre><code>ovs-vsctl get interface vnet0 external_ids:iface-id | sed s/\&quot;//g
+</code></pre>
+<p>Let&rsquo;s say you store that value in a variable named IFACE_ID. To create an OVN logical port that matches the OVS virtual port, you&rsquo;d use this command:</p>
+<pre><code>ovn-nbctl lsp-add &lt;switch name&gt; $IFACE_ID
+</code></pre>
+<p>OK, that takes care of creating the OVN logical port on an OVN logical switch. Using the interface ID links the OVN logical port back to OVS, which is in turn linked (via the Libvirt XML) to the VM&rsquo;s network interface using the same value.</p>
+<p>Next, you&rsquo;ll need to tell OVN which addresses are associated with that logical port. OVS already has this information, but OVN needs it in order to create logical flows for traffic to move from VM to VM. We can extract the necessary information from OVS using this command:</p>
+<pre><code>ovs-vsctl get interface &lt;name&gt; external_ids:attached-mac
+</code></pre>
+<p>To use this information with OVN, though, we&rsquo;ll have to strip the double quotes away. Here&rsquo;s how to do that, and store the output into a variable for use later:</p>
+<pre><code>MAC_ADDR=$(ovs-vsctl get interface vnet0 external_ids:attached-mac | sed s/\&quot;//g)
+</code></pre>
+<p>We can now use that value to populate the addresses on the OVN logical port:</p>
+<pre><code>ovn-nbctl lsp-set-addresses $IFACE_ID $MAC_ADDR
+</code></pre>
+<p>You can verify that the addresses are linked to the logical ports using <code>ovn-nbctl show</code>, and you can verify that the logical ports are linked to OVS using <code>ovn-nbctl list Logical_Switch_Port $IFACE_ID</code> (the &ldquo;up&rdquo; value should be &ldquo;true&rdquo;, meaning that the link to OVS is working).</p>
+<p>At this point, you should be able to enter one of the VMs running on one of the hypervisors and have connectivity to the other VMs on the same logical switch (regardless if they are on the same hypervisor or a different hypervisor).</p>
+<p>You now have Libvirt-managed KVM-based VMs connected to OVN via OVS. There&rsquo;s so much more you could do from here&mdash;link multiple OVN logical switches together via logical routers, add containers to the same logical switch for seamless VM-container connectivity, control traffic via ACLs&mdash;but I&rsquo;ll save those for future blog posts.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>There&rsquo;s quite a bit of information out there about OVN (see <a href="https://blog.russellbryant.net/">Russell Bryant&rsquo;s web site</a>, for example), but not much about using OVN with KVM/Libvirt. To help make it easier for readers to work with this sort of setup, I&rsquo;ve created a Vagrant-based environment. This Vagrant-based environment is found in <a href="https://github.com/scottslowe/learning-tools">my GitHub &ldquo;learning-tools&rdquo; repository</a>, in the <code>ovn-kvm</code> directory.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovn">OVN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/12/07/learning-environments-ovn/">Learning Environments for OVN</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/12/09/technology-short-take-74/">Technology Short Take #74</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f12%2f09%2fusing-ovn-with-kvm-libvirt%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f12%2f09%2fusing-ovn-with-kvm-libvirt%2f&text=Using%20OVN%20with%20KVM%20and%20Libvirt" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f12%2f09%2fusing-ovn-with-kvm-libvirt%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/02/09/using-kvm-libvirt-macvtap-interfaces/">Using KVM with Libvirt and macvtap Interfaces</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2014/08/11/running-arista-veos-on-kvm/">Running Arista vEOS on KVM</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/02/06/technology-short-take-38/">Technology Short Take #38</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

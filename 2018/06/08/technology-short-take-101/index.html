@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 101 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 101 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 101 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/06/08/technology-short-take-101/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 101</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;737 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #101! I have (hopefully) crafted an interesting and varied collection of links for you today, spanning all the major areas of modern data center technology. Now you have some reading material for this weekend!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Kirk Byers <a href="https://pynet.twb-tech.com/blog/automation/netmiko-textfsm.html">discusses the direct TextFSM integration</a> he added to the 2.0 release of Netmiko.</li>
+<li>David Gee <a href="http://ipengineer.net/2018/05/configuring-ssl-grpc-junos/">provides a walkthrough</a> on creating a self-signed root certificate for use with mutual SSL for gRPC on JunOS. (How&rsquo;s that for a mouthful!) If you&rsquo;re a networking pro and didn&rsquo;t understand most of that last sentence, I&rsquo;d content that you&rsquo;ve got some learning to do. The networking industry is changing, don&rsquo;t get left behind!</li>
+<li>Here&rsquo;s another one from David: <a href="http://ipengineer.net/2018/06/juniper-vqfx10k-esxi-6-5/">running Juniper vQFX10K on ESXi 6.5</a>. (Personally, I&rsquo;d love to see the KVM option explained.)</li>
+<li>Kamal Kyrala discusses <a href="https://medium.com/@kyralak/accessing-kubernetes-services-without-ingress-nodeport-or-loadbalancer-de6061b42d72">a method for accessing Kubernetes Services without Ingress, NodePort, or load balancers</a>. Why is this in the networking section? Because it involves IP routing and ECMP!</li>
+<li>On the Ansible web site, Sean Cavanaugh provides <a href="https://www.ansible.com/blog/command-module-deep-dive-for-networks">a deep dive</a> into the <code>command</code> modules for network devices.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>AWS adds local NVMe storage to the M5 instance family; more details <a href="https://aws.amazon.com/blogs/aws/ec2-instance-update-m5-instances-with-local-nvme-storage-m5d/">here</a>. What I found interesting is that the local NVMe storage is also hardware encrypted. AWS also mentions that these M5d instances are powered by (in their words) &ldquo;Custom Intel Xeon Platinum&rdquo; processors, which just goes to confirm the long-known fact that AWS is leveraging custom Intel CPUs in their stuff (as are all the major cloud providers, I&rsquo;m sure).</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Daniel Steinberg <a href="https://daniel.haxx.se/blog/2018/06/03/inside-firefoxs-doh-engine/">takes a look inside Firefox&rsquo;s DOH (DNS over HTTPS) engine</a>, slated to be included in the Firefox 62 release.</li>
+<li>Guy Maliar has a detailed post describing <a href="https://medium.com/@gmaliar/dynamic-secrets-on-kubernetes-pods-using-vault-35d9094d169">dynamic secrets on Kubernetes pods using HashiCorp Vault</a>. Along the way, just for fun, he also throws init containers into the mix as well. Good stuff here.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Amazon EKS (Elastic Container Service for Kubernetes) <a href="https://aws.amazon.com/blogs/aws/amazon-eks-now-generally-available/">was made generally available this past week</a>. I plan to take a closer look at EKS very soon, and will share some feedback when I am able to do so.</li>
+<li>Jason Plum of GitLab shares <a href="https://about.gitlab.com/2018/04/16/five-things-i-wish-i-knew-about-kubernetes/">five things he wishes he&rsquo;d known about Kubernetes before he started</a>.</li>
+<li>Co-worker Ruben Orduz takes a (potentially controversial) stance and says that <a href="https://medium.com/@walloffire/you-dont-need-a-ha-control-plane-3af9da8e556d">you don&rsquo;t need an HA control plane for Kubernetes</a>. His points are spot-on: making the control plane highly available isn&rsquo;t going to improve the availability or scalability of your applications.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Speaking of EKS, here&rsquo;s <a href="https://eksctl.io/">a new command-line interface for EKS</a>, courtesy of Weaveworks.</li>
+<li>Along with the GA of EKS, HashiCorp has a release of the Terraform AWS provider that has EKS support. More details are available <a href="https://www.hashicorp.com/blog/hashicorp-announces-terraform-support-aws-kubernetes">here</a>.</li>
+<li>Google recently <a href="https://kubernetes.io/blog/2018/05/29/introducing-kustomize-template-free-configuration-customization-for-kubernetes/">announced <code>kustomize</code></a>, a tool that provides a new approach to customizing Kubernetes object configuration.</li>
+<li>Following after <a href="/2018/05/23/quick-post-parsing-aws-instance-data-with-jq/">a recent post</a> involving parsing AWS instance data with <code>jq</code>, a Twitter follower pointed out <a href="https://github.com/simeji/jid"><code>jid</code> (the JSON incremental digger)</a>. Handy tool!</li>
+<li>I&rsquo;m seeing a fair amount of attention on <code>podman</code>, a tool primarily backed by Red Hat that aims to replace Docker as the client-side tool of choice. The latest was <a href="https://medium.com/cri-o/how-good-is-podman-eecedbbf71f">this post</a>. Anyone else spent any quality time with this tool and have some feedback?</li>
+<li>Nick Janetakis has a collection of quick &ldquo;Docker tips&rdquo; that you may find useful; the latest one shows <a href="https://nickjanetakis.com/blog/docker-tip-58-output-all-of-your-containers-env-variables">how to see all your container&rsquo;s environment variables</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>This is an interesting announcement from a few weeks ago that I missed&mdash;Dell EMC will offer Isilon on Google Cloud Platform. See Chris Evans&rsquo; article <a href="https://blog.architecting.it/dell-emc-isilon-gcp/">here</a>. (I&rsquo;ll leave the analysis and pontificating to Chris, who&rsquo;s much better at it than I am.)</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Mike Foley <a href="https://www.yelof.com/2018/06/06/prepping-an-esxi-6-7-host-for-secure-boot/">shares his experience</a> in updating his vSphere hosts to support the new Secure Boot functionality in vSphere 6.7. I&rsquo;d stay tuned to Mike&rsquo;s blog; he&rsquo;s indicated that some TPM 2.0-related content is due soon.</li>
+<li>Ed Haletky discusses <a href="https://www.astroarch.com/2018/06/vsphere-upgrade-saga-prepping-for-vsphere-6-7/">some considerations around upgrading to vSphere 6.7</a>.</li>
+<li>VMware rock star Frank Denneman provides <a href="http://frankdenneman.nl/2018/06/07/introduction-elastic-drs/">an introduction to Elastic DRS</a>, a feature of VMware Cloud on AWS.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>I found this two-part series (<a href="https://unclutterer.com/2018/05/24/understanding-how-you-process-information-to-help-you-get-organized-part-i/">part 1</a>, <a href="https://unclutterer.com/2018/05/25/understanding-how-you-process-information-to-help-you-get-organized-part-2/">part 2</a>) on understanding how to process information to help you get organized to be an interesting (and quick) read. It&rsquo;s been my experience that improving your skills at being organized often reaps benefits in other areas.</li>
+</ul>
+<p>OK, that&rsquo;s all this time around. I hope you found something useful in this post. As always, your feedback is welcome; feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/firefox">Firefox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/juniper">Juniper</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/google">Google</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/06/05/exploring-kubernetes-kubeadm-part-1-introduction/">Exploring Kubernetes with Kubeadm, Part 1: Introduction</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/06/08/quadruple-provider-vagrant-environment/">A Quadruple-Provider Vagrant Environment</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f08%2ftechnology-short-take-101%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f08%2ftechnology-short-take-101%2f&text=Technology%20Short%20Take%20101" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f08%2ftechnology-short-take-101%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2017/11/10/technology-short-take-90/">Technology Short Take 90</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/08/11/technology-short-take-85/">Technology Short Take 85</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

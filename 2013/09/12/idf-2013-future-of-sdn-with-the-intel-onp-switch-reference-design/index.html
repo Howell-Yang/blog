@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2013: Future of SDN with the Intel ONP Switch Reference Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2013: Future of SDN with the Intel ONP Switch Reference Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2013: Future of SDN with the Intel ONP Switch Reference Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/09/12/idf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2013: Future of SDN with the Intel ONP Switch Reference Design</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;940 words (estimated 5 minutes to read)</span>
+  <p>This is session COMS002, titled &ldquo;The Future of Software-Defined Networking with the Intel Open Network Platform Switch Reference Design.&rdquo; The speakers are Recep Ozdag, a PME with Intel, and Gershon Schatzberg, a PLM with Wind River Systems. The Intel Open Network Platform (ONP) Switch is the official name for Seacliff Trail, which I <a href="/2012/09/12/idf-2012-day-1-summary-and-thoughts/">talked about last year at IDF 2012</a>.</p>
+<p>Recep starts the session with some brief background; he came to Intel through the Fulcrum acquisition a couple of years ago. Recep will cover the hardware side of ONP; Gershon will cover the software side of ONP (referred to as ONS). First, though, Recep takes a few minutes to review some SDN concepts.</p>
+<p>The first concept that Recep discusses is network virtualization. He believes that network virtualization is primarily about decoupling network services from the underlying network infrastructure. The virtual network must provide the same services as the physical network, but can provide greater flexibility, automation and programmability, and isolation. From the operator&rsquo;s point of view, network virtualization allows each tenant (or customer) to see a single network switch that is specific to that tenant or customer.</p>
+<p>So how does this work? Recep talks about how the predominant architecture for network virtualization involves the use of overlay networks created and managed at the edge by virtual switches in the hypervisors. This means using an encapsulation protocol to decouple the logical network topology from the physical network topology. The specific terminology involved is that the virtual switches become a VTEP, a virtual tunnel end-point. These VTEPs are responsible for encapsulation and decapsulating traffic.</p>
+<p>ONP fits into this picture by performing VTEP functions in hardware (at line rate). This is particularly helpful for bridging physical/non-virtualized workloads into the virtual networks. ONP also helps by being a &ldquo;tunnel-aware&rdquo; switch, which can extract Quality of Service (QoS) information from the encapsulated traffic and direct traffic accordingly across the network. (Network virtualization solutions can also copy QoS information into the outer headers as well.)</p>
+<p>Also related to network virtualization, according to Recep, is Network Functions Virtualization (NFV). NFV is intended to address the problem caused by having to route/direct traffic from various sources through physical appliances designed to provide services like content filtering, security, content delivery/acceleration, and load balancing. Rather than having physical appliances scattered throughout the network, NFV allows us to provision these services as a VM, which provides greater agility, greater scale, and greater efficiency. Some of these services naturally should run on the top-of-rack (ToR) switch, like load balancing or security services.</p>
+<p>In summary, the goal of SDN/NFV is to enable architectural transformation that moves from dedicated hardware appliances to software running on x86 servers.</p>
+<p>Next, Recep discusses the need for separated control and data planes to enable greater automation of network configuration tasks so as to allow the network to respond more quickly to changing business needs.</p>
+<p>That leads Recep into a discussion of what ONP actually is. ONP is an SDN-optimized reference platform that combines Intel x86 CPUs plus the switching-optimized FM6700 silicon and software from Wind River Systems (referred to as Open Network Software [ONS]). The Seacliff Trail reference platform uses the ToR form factor, configured with 48 10GbE ports and 4 40GbE ports. This is the first form factor for Intel ONP, but not the only form factor planned:</p>
+<ul>
+<li>
+<p>ONP Rack Scale Architecture (RSA) switching module</p>
+</li>
+<li>
+<p>ONP micro-server switching module</p>
+</li>
+</ul>
+<p>From a roadmap/timeline perspective, you might expect to see micro-server switching modules next year and RSA switching modules in 2015.</p>
+<p>At this point, Gershon from Wind River takes over to discuss the software side of ONP (ONS). So, what is ONS? ONS was designed from the ground up to be optimized for SDN, offering a complete network software environment. ONS offers both native layer 2/2+ and layer 3 protocol support, supports OpenFlow, supports a range of management interfaces (XML-RPC, SNMP, NETCONF), and offers a &ldquo;legacy&rdquo; CLI.</p>
+<p>So what is offered to customers as a product? In this case, it sounds like Wind River&rsquo;s customers are OEMs/ODMs, not end users. What&rsquo;s offered as a product is the ONS itself, SimSwitch (a switch simulator), a basic test suite, Wind River Linux (which provides the basis for ONS), and optional professional services to help customers develop additional features and functionality.</p>
+<p>Gershon claims that ONS is the first and only SDN-optimized software environment. (I&rsquo;m not sure I agree with that statement.) It was designed to be easily integrated with switching hardware, extensible via APIs, scalable programmability, and easy maintenance/troubleshooting/support. ONS is object-oriented and compiles on every major operating system (Linux and OS X specifically called out). It is hardware switch independent. Wind River worked hard to make it easy for developers to use this as the basis for their customization and extensibility efforts. To help with that, Wind River also offers an Application Development Kit (ADK), which will allow customers to develop additional applications, additional protocols, additional tools that will run over ONS (the Wind River software) on ONP (the Intel hardware reference platform).</p>
+<p>Gershon now reviews a diagram that shows the ONS software architecture. I separately tweeted a picture of this software architecture. Not unsurprisingly, the ONS software architecture features <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> as a core component. ONS also integrated Quagga for layer 3 functions like OSPF, ARP, and BGP.</p>
+<p>Next, Gershon reviews some additional details about the various layers of the ONS software architecture, most of which was directed primarily toward developers who would be building applications and/or services on top of ONS for their end-customers.</p>
+<p>At this point, Recep and Gershon provide a quick summary of the key points, and then open the session up for questions and answers.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2013">IDF2013</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/09/11/idf-2013-virtualizing-the-network-to-enable-sdi/">IDF 2013: Virtualizing the Network to Enable SDI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/09/12/idf-2013-enabling-nfvsdn-with-intel-onp-server-reference-design/">IDF 2013: Enabling NFV/SDN with Intel ONP Server Reference Design</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f12%2fidf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f12%2fidf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design%2f&text=IDF%202013%3a%20Future%20of%20SDN%20with%20the%20Intel%20ONP%20Switch%20Reference%20Design" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f12%2fidf-2013-future-of-sdn-with-the-intel-onp-switch-reference-design%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/09/11/idf-2013-virtualizing-the-network-to-enable-sdi/">IDF 2013: Virtualizing the Network to Enable SDI</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2013/05/03/technology-short-take-32/">Technology Short Take #32</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2013/04/08/technology-short-take-31/">Technology Short Take #31</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

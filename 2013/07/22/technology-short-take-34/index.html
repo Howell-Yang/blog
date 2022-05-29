@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #34 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #34 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #34 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/07/22/technology-short-take-34/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #34</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;990 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #34, my latest collection of links, articles, thoughts, and ideas from around the web, centered on key data center technologies. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Henry Louwers has <a href="http://hlouwers.wordpress.com/2013/06/17/choose-your-netscaler-wisely/">a nice write-up</a> on some of the design considerations that go into selecting a Citrix NetScaler solution.</p>
+</li>
+<li>
+<p>Scott Hogg <a href="http://www.networkworld.com/community/blog/jumbo-frames">explores jumbo frames and their benefits/drawbacks</a> in a clear and concise manner. It&rsquo;s worth reading if you aren&rsquo;t familiar with jumbo frames and some of the considerations around their use.</p>
+</li>
+<li>
+<p>The networking &ldquo;old guard&rdquo; likes to talk about how x86 servers and virtualization create network bottlenecks due to performance concerns, but as Ivan points out in <a href="http://blog.ioshints.info/2013/04/virtual-appliance-performance-is.html">this post</a>, it&rsquo;s rapidly becoming&mdash;or has already become&mdash;a non-issue. (By the way, if you&rsquo;re not already reading all of Ivan&rsquo;s content, you need to be. Seriously.)</p>
+</li>
+<li>
+<p>Greg Ferro, aka EtherealMind, has a great series of articles on overlay networking (a component technology used in a number of network virtualization solutions). Greg <a href="http://etherealmind.com/overlay-networking-is-more-and-better-while-ditching-the-toxic-sludge/">starts out</a> with a quick look at the value prop for overlay networking. In addition to highlighting one key value of overlay networking&mdash;that decoupling the logical network from the physical network enables more rapid change and innovation&mdash;Greg also establishes that overlay networking is <em>not</em> new. Greg continues with a more detailed look at <a href="http://etherealmind.com/introduction-to-how-overlay-networking-and-tunnel-fabrics-work/">how overlay networking works</a>. Finally, Greg takes a look at <a href="http://etherealmind.com/integrating-overlay-networking-and-the-physical-network/">whether overlay networking and the physical network should be integrated</a>; he arrives at the conclusion that integrating the two is likely to be unsuccessful given the history of such attempts in the past.</p>
+</li>
+<li>
+<p>Terry Slattery <a href="http://www.netcraftsmen.net/blogs/softwaredefinednetwork/entry/the-virtual-network-instance.html">ruminates</a> on the power of creating (and using) the right abstraction in networking. The value of the &ldquo;right abstraction&rdquo; has come up a number of times; it was a featured discussion point of Martin Casado&rsquo;s talk at the OpenStack Summit in Portland in April, and takes center stage <a href="http://networkheresy.com/2013/07/15/visibility-debugging-and-network-virtualization-part-1/">in a recent post over at Network Heresy</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a decent two-part series about running Vyatta on VMware Workstation (<a href="http://wojcieh.net/vyatta-router-running-on-vmware-workstation-part-1/">part 1</a> and <a href="http://wojcieh.net/vyatta-router-running-on-vmware-workstation-part-2-dns-firewall-and-nat/">part 2</a>).</p>
+</li>
+<li>
+<p>Could we use OpenFlow to build better internet exchanges? Here&rsquo;s <a href="http://pieknywidok.blogspot.co.nz/2013/07/building-better-internet-exchange-with.html">one idea</a>.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>
+<p>The Dell VRTX made its debut recently. Kevin Houston has three blog posts that provide some additional information on VRTX: <a href="http://bladesmadesimple.com/2013/06/an-introduction-to-dell-poweredge-vrtx/">a quick video introduction</a>, a <a href="http://bladesmadesimple.com/2013/06/a-detailed-look-at-dell-poweredge-vrtx/">more detailed look</a>, and <a href="http://bladesmadesimple.com/2013/06/demonstrating-the-quietness-of-dell-poweredge-vrtx/">a demonstration of how quiet the VRTX is</a>.</p>
+</li>
+<li>
+<p>In this post, William Lam <a href="http://www.virtuallyghetto.com/2013/06/will-intels-vmcs-shadowing-feature.html">explores the potential benefits</a> of Intel&rsquo;s VMCS Shadowing functionality on nested virtualization.</p>
+</li>
+</ul>
+<h2 id="security">Security</h2>
+<p>I have nothing to share this time around, but I&rsquo;ll keep watch for content to include in future Technology Short Takes.</p>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>Tom Fojta takes a look at integrating vCloud Automation Center (vCAC) with vCloud Director in <a href="http://fojta.wordpress.com/2013/06/03/integration-of-vcloud-automation-center-with-vcloud-director/">this post</a>. (By the way, congrats to Tom on becoming the <em>first</em> VCDX-Cloud!)</p>
+</li>
+<li>
+<p>In case you missed it, here&rsquo;s the recording for <a href="http://professionalvmware.com/2013/06/vbrownbag-follow-up-vmware-vcloud-automation-center-with-jon-harris-jon-harrisnm/">the #vBrownBag session with Jon Harris on vCAC</a>. (I had the opportunity to hear Jon speak about his employer&rsquo;s vCAC deployment and some of the lessons learned at a recent New Mexico VMUG meeting.)</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>Need to do some port forwarding on a Linux box and want to automate the configuration with Puppet? Here&rsquo;s <a href="http://chriscowan.us/posts/firewall-port-forwarding-with-puppet">a configuration example</a>.</p>
+</li>
+<li>
+<p>Nick Buraglio provides some quick-and-dirty instructions for <a href="http://www.forwardingplane.net/2013/07/building-flowvisor-on-centos-6-quick-and-dirty/">building FlowVisor on CentOS 6</a>.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Rawlinson Rivera starts to address a lack of available information about Virsto in the first of a series of posts on VMware Virsto. This initial post provides <a href="http://blogs.vmware.com/vsphere/2013/06/introduction-to-vmware-virsto.html">an introduction to Virsto</a>; future posts will provide more in-depth technical details (which is what I&rsquo;m really looking forward to getting).</p>
+</li>
+<li>
+<p>Nigel Poulton <a href="http://blog.nigelpoulton.com/anyone-for-target-driven-zoning/">talks a bit about target driven zoning</a>, something I&rsquo;ve mentioned before on this site. For more information on target driven zoning (also referred to as peer zoning), also be sure to check out <a href="http://brasstacksblog.typepad.com/">Erik Smith&rsquo;s blog</a>.</p>
+</li>
+<li>
+<p>Now that he&rsquo;s had some time to come up to speed in his new role, Frank Denneman has started a great series on the basic elements of PernixData&rsquo;s Flash Virtualization Platform (FVP). You can read part 1 <a href="http://frankdenneman.nl/2013/06/18/basic-elements-of-the-flash-virtualization-platform-part-1/">here</a> and part 2 <a href="http://frankdenneman.nl/2013/07/02/basic-elements-of-fvp-part-2-using-own-platform-versus-in-place-file-system/">here</a>. I&rsquo;m looking forward to future parts in this series.</p>
+</li>
+<li>
+<p>I&rsquo;d often wondered this myself, and now Cormac Hogan has the answer: <a href="http://cormachogan.com/2013/07/18/why-is-uploading-files-to-vmfs-so-slow/">why is uploading files to VMFS so slow?</a> Good information.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Looks like Hyper-V supports an <a href="http://blogs.technet.com/b/virtualization/archive/2013/06/28/save-network-bandwidth-by-using-out-of-band-initial-replication-method-in-hyper-v-replica.aspx">out-of-band initial replication method for Hyper-V Replica</a>. I can see where this would be quite useful in some situations.</p>
+</li>
+<li>
+<p>Gabrie van Zanten shows <a href="http://www.gabesvirtualworld.com/add-fusion-io-driver-to-vmware-auto-deploy/">how to add the Fusion IO driver to VMware AutoDeploy</a> in this write-up. Thanks Gabe!</p>
+</li>
+<li>
+<p>Interested in running RHEV as a nested VM on ESXi? William Lam <a href="http://www.virtuallyghetto.com/2013/07/how-to-run-nested-rhev-hypervisor-on.html">shows you how</a>. William has been posting some great stuff recently; in addition to the nested RHEV article I just referenced, you might also be interested in his <a href="http://www.virtuallyghetto.com/2013/07/how-to-quickly-get-started-with-vmware.html">quick-start guide for OpenStack on vSphere</a>, or his 2 part series on forwarding VM logs to syslog (<a href="http://www.virtuallyghetto.com/2013/07/a-hidden-vsphere-51-gem-forwarding.html">part 1</a> and <a href="http://www.virtuallyghetto.com/2013/07/a-hidden-vsphere-51-gem-forwarding_10.html">part 2</a>).</p>
+</li>
+<li>
+<p>Itzik Reich provides some <a href="http://itzikr.wordpress.com/2013/07/17/under-the-dome0-tweaking-xenserver-for-emc-xtremio/">tips for tuning I/O</a> on XenServer when working with EMC XtremIO arrays.</p>
+</li>
+<li>
+<p>Some good information here from Jason Boche on <a href="http://www.boche.net/blog/index.php/2013/07/16/vcloud-director-rhel-6-3-and-windows-server-2012-nfs/">vCloud Director, RHEL 6.3, and Windows Server 2012 NFS</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a quick note from Eric Gray on <a href="http://www.vcritical.com/2013/07/automating-vmware-tools-install-on-ubuntu-12-04/">automating the VMware Tools install on Ubuntu 12.04</a>.</p>
+</li>
+<li>
+<p>Josh Townsend has <a href="http://vmtoday.com/2013/07/updated-load-balancer-virtual-appliance/">an updated version of his HAProxy virtual appliance</a> available.</p>
+</li>
+<li>
+<p>PowerCLI guru Luc Dekens has a pair of PowerCLI scripts to help with common homelab tasks: a script to <a href="http://www.lucd.info/2013/06/30/hl-tools-part-1-clone-a-vm-without-vcenter/">clone a VM without vCenter</a>, and a script to <a href="http://www.lucd.info/2013/07/12/hl-tools-part-2-create-a-nested-hypervisor/">create a nested ESXi hypervisor</a>.</p>
+</li>
+<li>
+<p>Setting a Hyper-V VM to use a wide-screen resolution is actually pretty easy, based on Ben Armstrong&rsquo;s instructions <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2013/07/09/configuring-wide-screen-resolutions-in-a-hyper-v-virtual-machine.aspx">here</a>.</p>
+</li>
+<li>
+<p>For beginners, here&rsquo;s a write-up on <a href="http://www.webestigate.com/2011/03/11/how-to-create-a-vsphere-lab-on-a-mac/">using Fusion to build a vSphere lab</a>.</p>
+</li>
+<li>
+<p>Another good post by Cormac Hogan <a href="http://blogs.vmware.com/vsphere/2013/07/sioc-which-ios-are-charged-to-the-vm.html">answering some questions about SIOC</a>.</p>
+</li>
+<li>
+<p>New network port diagram for vSphere 5.x? Get it <a href="http://blogs.vmware.com/kb/2013/07/new-network-port-diagram-for-vsphere-5-x.html">here</a>.</p>
+</li>
+</ul>
+<p>It&rsquo;s time to wrap up now, or this Technology Short Take is going to turn into a Technology Long Take. Anyway, I hope you found something useful in this little collection. If you have any feedback or suggestions for improvement for future posts, feel free to speak up in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmfs">VMFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/07/19/reducing-the-friction-processing-e-mail-part-2/">Reducing the Friction: Processing E-Mail, Part 2</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/08/07/a-short-dry-spell/">A Short Dry Spell</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f07%2f22%2ftechnology-short-take-34%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f07%2f22%2ftechnology-short-take-34%2f&text=Technology%20Short%20Take%20%2334" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f07%2f22%2ftechnology-short-take-34%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/03/05/technology-short-take-30/">Technology Short Take #30</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

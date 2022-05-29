@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Finding Duplicate Names in Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Finding Duplicate Names in Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Finding Duplicate Names in Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/08/17/finding-duplicate-names-in-active-directory/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Finding Duplicate Names in Active Directory</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;305 words (estimated 2 minutes to read)</span>
+  <p>To use this procedure, you&rsquo;ll need access to the Directory Service command line tools (these come installed automatically with <a href="http://www.microsoft.com/windowsserver2003/default.mspx">Windows Server 2003</a>) and Microsoft <a href="http://www.microsoft.com/downloads/details.aspx?FamilyID=890cd06b-abf8-4c25-91b2-f8d975cf8c07&amp;DisplayLang=en">Log Parser</a>. With these two tools in hand, let&rsquo;s proceed.</p>
+<p>First, we&rsquo;ll need to obtain a list of all the CNs in Active Directory for every user and/or every contact, regardless of their container. It may be possible to do this with Log Parser (using the ADS input format), but I couldn&rsquo;t figure out how. Instead, I turned to the Directory Service command line tool <code>dsquery</code>. Here&rsquo;s the command to use:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>dsquery * &#34;dc=example,dc=com&#34; -scope subtree
+</span></span><span style="display:flex;"><span>-filter &#34;(|(objectCategory=user)(objectCategory=contact))&#34;
+</span></span><span style="display:flex;"><span>-limit 0 &gt; output-file.txt
+</span></span></code></pre></div><p>This creates a file (<code>output-file.txt</code>) with a list of the CNs for every user object and contact in your Active Directory domain (obviously, you&rsquo;ll need to substitute the correct values in the query statement above&mdash;unless your domain is called example.com).</p>
+<p>Using this file, then we use Log Parser to list only those CNs that occur more than once in this file. This will identify those objects that have the same name in the domain:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>logparser -i:TEXTLINE -stats:off -o:NAT -rtp:-1
+</span></span><span style="display:flex;"><span>&#34;SELECT Text AS objName, COUNT(*) FROM output-file.txt
+</span></span><span style="display:flex;"><span>GROUP BY Text HAVING COUNT(*) &gt; 1&#34; &gt; duplicates.txt
+</span></span></code></pre></div><p>This produces a text file that lists each CN which is found more than once in the input file, along with a count of how many times it was found. Use this file to go to Active Directory Users and Computers, find the duplicate objects, and rename them as needed. You can then repeat the process until you don&rsquo;t find any more duplicate names.</p>
+<p>While this may seem like overkill for smaller Active Directory installations, this is certainly very applicable in larger organizations, particularly those with decentralized IT operations. Think about it&mdash;would <em>you</em> want to manually search through 15,000 objects to find the duplicates?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/08/15/reminders-of-why-i-like-the-mac/">Reminders of Why I Like the Mac</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/08/21/more-on-kerberos-authentication-against-active-directory/">More on Kerberos Authentication Against Active Directory</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f17%2ffinding-duplicate-names-in-active-directory%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f17%2ffinding-duplicate-names-in-active-directory%2f&text=Finding%20Duplicate%20Names%20in%20Active%20Directory" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f17%2ffinding-duplicate-names-in-active-directory%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/08/02/disabling-ad-replication/">Disabling AD Replication</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2006/08/01/complex-queries-against-active-directory/">Complex Queries Against Active Directory</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2006/07/28/active-directory-and-vas/">Active Directory and VAS</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

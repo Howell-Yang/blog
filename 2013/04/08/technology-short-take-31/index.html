@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #31 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #31 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #31 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/04/08/technology-short-take-31/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #31</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1193 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #31, my irregularly published series that takes a look at links, posts, articles, and thoughts from around the web related to core data center technologies. I hope that you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Umair Hoodbhoy <a href="http://umairhoodbhoy.net/2013/02/14/cisco-one-controller-sdn-startup-killer/">speculates in this post</a> that the inclusion of Cisco&rsquo;s ONE Controller in the recently-announced &ldquo;Daylight&rdquo; effort could mean the end for Big Switch&rsquo;s Floodlight. (Umair&rsquo;s play on words&ndash;&ldquo;in Daylight there is no need for Floodlights&rdquo;&ndash;is cute.)</p>
+</li>
+<li>
+<p>Of course, Big Switch recently moved to &ldquo;diversify,&rdquo; if you will, away from just Floodlight with the introduction of Switch Light. As usual, Brent Salisbury has <a href="http://networkstatic.net/big-switch-introduces-switch-light/">an excellent write-up on Switch Light</a>, so I recommend reading his post. Switch Light seems like a good idea&mdash;more competition is always good, isn&rsquo;t that what people say?&ndash;but I wonder how much cooperation Big Switch will get from the major networking vendors with regards to OpenFlow interoperability now that Big Switch is competing even more directly with them via Switch Light.</p>
+</li>
+<li>
+<p>I think I might have mentioned this before (sorry if so), but here&rsquo;s a good write-up on <a href="http://blogs.vmware.com/vsphere/2013/01/monitoring-and-troubleshooting-using-edge-gateway-clis.html">using the Edge Gateway CLI for monitoring and troubleshooting</a>. Nice.</p>
+</li>
+<li>
+<p>Greg Ferro <a href="http://etherealmind.com/sdn-use-case-firewall-migration-in-the-enterprise/">examines</a> a potential SDN use case (an OpenFlow use case) in the form of enterprise firewall migrations.</p>
+</li>
+<li>
+<p>Just getting started in the networking field? Last year, Brent Salisbury put together a couple of great posts that help &ldquo;refresh the basics&rdquo; of networking. Part 1 covers <a href="http://networkstatic.net/what-are-ethernet-ip-and-tcp-headers-in-wireshark-captures/">Ethernet, IP, and TCP headers in Wireshark captures</a>; part 2 pulls that together to show <a href="http://networkstatic.net/how-headers-encapsulate-in-the-osi-stack/">how the headers encapsulate in the OSI stack</a>. If you&rsquo;re not already familiar with this information, this is good reading.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around, but I&rsquo;ll stay alert for information I can include in the next Technology Short Take!</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>
+<p>Mounting guest disk images on the host? That&rsquo;s a no-no from a security perspective&mdash;see <a href="https://www.berrange.com/posts/2013/02/20/a-reminder-why-you-should-never-mount-guest-disk-images-on-the-host-os/">here</a> to learn why.</p>
+</li>
+<li>
+<p>Mike Foley shared recently that the release candidate of the vSphere 5 Security Hardening Guide has been released. Check it out <a href="http://communities.vmware.com/docs/DOC-22783">here</a>.</p>
+</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>I haven&rsquo;t had the chance to actually try it out myself, but <a href="http://devstructure.com/blueprint/">Blueprint</a> looks interesting. As the website describes it, it&rsquo;s designed to &ldquo;reverse engineer&rdquo; servers so that you can migrate them into a configuration management system like Chef or Puppet.</p>
+</li>
+<li>
+<p>Looking for a decent high-level overview of OpenStack and how it works? Check out <a href="http://vmartinezdelacruz.com/in-a-nutshell-how-openstack-works/">this article titled &ldquo;In a nutshell: How OpenStack works&rdquo;</a>. (As an aside, I think it&rsquo;s awesome how Ken Pepple&rsquo;s diagrams show up in all sorts of places. One day I hope my material proves as useful to folks.)</p>
+</li>
+<li>
+<p>If you use Puppet for configuration management and want to deploy GlusterFS, be sure to check out <a href="https://forge.puppetlabs.com/thias/glusterfs">this Puppet Forge module</a>. I&rsquo;ve tested it and it works as advertised.</p>
+</li>
+<li>
+<p>This is an older article (published in May of last year), and it&rsquo;s a bit on the lengthy side, but I like the tack the author uses. He describes <a href="http://highscalability.com/blog/2012/5/7/startups-are-creating-a-new-system-of-the-world-for-it.html">cloud as the synthesis of many different forms of innovation within IT</a>, pulling together things like open source, virtualization, distributed programming, NoSQL, DevOps/NoOps, distributed teams, dynamic languages, and Big Data (among others). He then goes on to provide examples of how organizations building or leveraging clouds are synthesizing these various independent technological innovations together. If you have a few minutes (as I said, it&rsquo;s a bit on the lengthy side), I&rsquo;d recommend reading it.</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>This series is a bit older, but an interesting one nevertheless. Brian McClain, who was one of the presenters in a Cloud Foundry/BOSH session I <a href="/2012/08/28/app-cap2165-operating-cloud-foundry/">liveblogged at VMworld 2012</a>, has his own personal blog and posted a series of articles on using BOSH with vSphere. I hadn&rsquo;t really considered how one might use BOSH for deploying (and managing) multi-VM applications on vSphere, but Brian provides some practical examples. Part 1 of the series is <a href="http://www.brianmmcclain.com/using-bosh-with-vsphere-part-1/">here</a>, followed by <a href="http://www.brianmmcclain.com/using-bosh-with-vsphere-part-2/">part 2</a>, <a href="http://www.brianmmcclain.com/using-bosh-with-vsphere-part-3/">part 3</a>, <a href="http://www.brianmmcclain.com/using-bosh-with-vsphere-part-4/">part 4</a>, and <a href="http://www.brianmmcclain.com/using-bosh-with-vsphere-part-5/">part 5</a>.</p>
+</li>
+<li>
+<p>Like using Markdown on OS X? You might find <a href="http://brettterpstra.com/projects/markdown-service-tools/">these</a> handy.</p>
+</li>
+<li>
+<p>Ah, the good old days of DOSreborn as <a href="http://www.freedos.org">FreeDOS</a>.</p>
+</li>
+<li>
+<p>Go ahead, read up on <a href="http://yaml.org">YAML</a>. You know you want to. Well, YAML <em>is</em> used in both Hiera (can be used with Puppet) and BOSH, after all.</p>
+</li>
+<li>
+<p>Here&rsquo;s another interesting tool that I haven&rsquo;t had the opportunity to actually test myself. <a href="https://github.com/clalancette/oz/wiki">Oz</a> looks like it could be quite useful&mdash;especially in virtualized/cloud computing environments&mdash;but I&rsquo;m struggling to determine why I should use Oz instead of OS-specific mechanisms (like a kickstart file). If anyone has used Oz and can shed some light on this question, I&rsquo;d appreciate it.</p>
+</li>
+<li>
+<p>You may have heard that I recently switched from TextMate to BBEdit as my default OS X text editor (and therefore the tool whereby I do most of my content generation). As part of the switch, I found <a href="http://ranea.org/bbedit-markdown.html">this</a> to be helpful. (I might post a separate entry about the switch, if enough people seem interested in reading about it.)</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Want to understand the differences between the block and NAS implementations of VAAI? Cormac Hogan has more information in <a href="http://cormachogan.com/2012/11/08/vaai-comparison-block-versus-nas/">this blog post</a>.</p>
+</li>
+<li>
+<p>If you&rsquo;re a real storage geek (or if you&rsquo;re not but are having trouble sleeping), check out <a href="https://www.usenix.org/conference/usenixfederatedconferencesweek/erasure-coding-windows-azure-storage">this USENIX presentation on erasure coding in Windows Azure storage</a>.</p>
+</li>
+<li>
+<p>Does a dedicated iSCSI infrastructure make sense? Have a look at Ivan&rsquo;s <a href="http://blog.ioshints.info/2013/03/does-dedicated-iscsi-infrastructure.html">view on the question</a>.</p>
+</li>
+<li>
+<p>Dmitry Ukov of Mirantis has a write-up on <a href="http://www.mirantis.com/blog/object-storage-openstack-cloud-swift-ceph/">Swift and Ceph as object storage in OpenStack environments</a>. If you&rsquo;re not familiar with either of these object storage solutions, this is a decent introductory article.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p><a href="http://techfieldday.com/event/sddc-symposium/">This event</a> looks interesting.</p>
+</li>
+<li>
+<p>Josh Coen has an informative write-up on <a href="http://www.valcolabs.com/2013/04/03/jumbo-frames-and-multi-nic-vmotion-performance-over-10gbe/">the effect of jumbo frames on multi-NIC vMotion performance on 10Gb Ethernet</a>. His testing shows (warning: spoiler alert!) that jumbo frames do not provide a noticeable benefit, and one would be well advised to consider the added complexity that jumbo frames introduce when incorporating them into a design. (OK, Josh didn&rsquo;t say that last part&mdash;that was mine.)</p>
+</li>
+<li>
+<p>Fellow VCDX and friend Andrea Mauro (based out of Italy) takes <a href="http://vinfrastructure.it/en/2013/01/pcoip-vs-rdp/">a look at PCoIP versus RDP</a>. Naturally, from a performance perspective PCoIP is generally better than RDP, but Andrea points out that sometimes performance isn&rsquo;t the only consideration. He follows that post up with a post <a href="http://vinfrastructure.it/en/2013/01/using-pcoip-on-wan-connections/">examining PCoIP on WAN connections</a>, where he provides some good information on PCoIP and VPNs, WAN accelerators, and protocol tuning.</p>
+</li>
+<li>
+<p><a href="http://networkstatic.net/open-vswitch-on-virtualbox/">OVS on VirtualBox?</a> Why yes, I think I will.</p>
+</li>
+<li>
+<p>In this post, Magnus Ullberg shares a technique for <a href="http://ullberg.us/orchestrate/214/template-build-process">orchestrating the deployment of VDI templates</a> using vCloud Director, SCCM, and vCenter Orchestrator.</p>
+</li>
+<li>
+<p><a href="http://www.v-front.de/2013/04/the-vmware-tools-gui-is-gone-now-what.html">This post</a> brings up an interesting change that occurred in recent versions of VMware Tools&mdash;the GUI is greatly diminished, instead requiring that you use a command-line tool to change things like time synchronization settings. Interesting.</p>
+</li>
+<li>
+<p>Everyone heard about <a href="http://blogs.vmware.com/kb/2013/04/introducing-the-vcenter-certificate-automation-tool-1-0.html">the vCenter Certification Automation Tool</a>, right?</p>
+</li>
+<li>
+<p>Using the vCenter Server Appliance (VCSA)? William Lam shows you a nifty trick to <a href="http://www.virtuallyghetto.com/2013/04/automating-ssl-certificate-regeneration.html">automate SSL certificate regeneration in the VCSA</a>.</p>
+</li>
+</ul>
+<p>That&rsquo;s it for this time. I have plenty more links I wanted to share, but I figured I&rsquo;d better not let this post get any longer. As always, courteous comments are welcome, so I invite you to participate in the conversation by adding your thoughts below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/04/05/highly-recommended-quantum-and-open-vswitch-resource/">Highly Recommended Quantum and Open vSwitch Resource</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/04/15/openstack-summit-2013-getting-from-grizzly-to-havana-a-devops-upgrade-pattern/">OpenStack Summit 2013: Getting from Grizzly to Havana, a DevOps Upgrade Pattern</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f08%2ftechnology-short-take-31%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f08%2ftechnology-short-take-31%2f&text=Technology%20Short%20Take%20%2331" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f08%2ftechnology-short-take-31%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/03/05/technology-short-take-30/">Technology Short Take #30</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

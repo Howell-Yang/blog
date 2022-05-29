@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Creating Reusable Kuma Installation YAML - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Creating Reusable Kuma Installation YAML - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Creating Reusable Kuma Installation YAML - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/10/21/creating-reusable-kuma-installation-yaml/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Creating Reusable Kuma Installation YAML</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1458 words (estimated 7 minutes to read)</span>
+  <p>Using CLI tools&mdash;instead of a &ldquo;wall of YAML&rdquo;&mdash;to install things onto <a href="https://kubernetes.io">Kubernetes</a> is a growing trend, it seems. <a href="https://istio.io">Istio</a> and <a href="https://cilium.io">Cilium</a>, for example, each have a CLI tool for installing their respective project. I get the reasons why; you can build logic into a CLI tool that you can&rsquo;t build into a YAML file. <a href="https://kuma.io">Kuma</a>, the open source service mesh maintained largely by Kong and a CNCF Sandbox project, takes a similar approach with its <code>kumactl</code> tool. In this post, however, I&rsquo;d like to take a look at creating reusable YAML to install Kuma, instead of using the CLI tool every time you install.</p>
+<p>You might be wondering, &ldquo;Why?&rdquo; That&rsquo;s a fair question. Currently, the <code>kumactl</code> tool, unless configured otherwise, will generate a set of TLS assets to be used by Kuma (and embeds some of those assets in the YAML regardless of the configuration). Every time you run <code>kumactl</code>, it will generate a new set of TLS assets. This means that the <em>command</em> is not declarative, even if the <em>output</em> is. Unfortunately, you can&rsquo;t reuse the output, as that would result in duplicate TLS assets across installations. That brings me to the point of this post: how can one create reusable YAML to install Kuma?</p>
+<p>Fortunately, this is <em>definitely</em> possible. There are two parts to this process:</p>
+<ol>
+<li>Define replacement TLS assets using cert-manager.</li>
+<li>Modify the output of <code>kumactl</code> to reference the replacement TLS assets.</li>
+</ol>
+<h2 id="defining-tls-assets">Defining TLS Assets</h2>
+<p>Instead of allowing <code>kumactl</code> to generate TLS assets every time the command is run, you need a way to be able to declaratively define what TLS assets are needed and what the properties of those assets should be. Fortunately, that&rsquo;s exactly what the <a href="https://cert-manager.io">cert-manager</a> project does!</p>
+<p>Relying on cert-manager to handle TLS assets does mean that cert-manager becomes a dependency (or a prerequisite) for Kuma&mdash;it will have to be installed before Kuma can be installed.</p>
+<p>To define the necessary TLS assets, you&rsquo;ll use cert-manager to:</p>
+<ol>
+<li>Create a self-signed ClusterIssuer.</li>
+<li>Use the self-signed ClusterIssuer to issue a CA root certificate (and a corresponding Secret to store the private key).</li>
+<li>Configure the root CA certificate as an Issuer.</li>
+<li>Issue a TLS certificate and key that will be used by Kuma.</li>
+</ol>
+<p>The root CA certificate definition could look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cert-manager.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Certificate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-root-ca</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kuma-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">isCA</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">commonName</span>: <span style="color:#ae81ff">kuma-root-ca</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">kuma-root-ca</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">duration</span>: <span style="color:#ae81ff">43800h</span> <span style="color:#75715e"># 5 years</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">renewBefore</span>: <span style="color:#ae81ff">720h</span> <span style="color:#75715e"># 30d</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">privateKey</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">algorithm</span>: <span style="color:#ae81ff">RSA</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">encoding</span>: <span style="color:#ae81ff">PKCS1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">size</span>: <span style="color:#ae81ff">2048</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">usages</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">digital signature</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">key encipherment</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">cert sign</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">issuerRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">selfsigned-issuer</span> <span style="color:#75715e"># References self-signed ClusterIssuer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterIssuer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">group</span>: <span style="color:#ae81ff">cert-manager.io</span>
+</span></span></code></pre></div><p>Here&rsquo;s an example of a cert-manager Certificate resource for the TLS certificate that Kuma would use:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cert-manager.io/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Certificate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-tls-general</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">kuma-system</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">commonName</span>: <span style="color:#ae81ff">kuma-tls-general</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">kuma-tls-general</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">duration</span>: <span style="color:#ae81ff">8760h</span> <span style="color:#75715e"># 1 year</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">renewBefore</span>: <span style="color:#ae81ff">360h</span> <span style="color:#75715e"># 15d</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">subject</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">organizations</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">kuma</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">isCA</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">privateKey</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">algorithm</span>: <span style="color:#ae81ff">RSA</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">encoding</span>: <span style="color:#ae81ff">PKCS1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">size</span>: <span style="color:#ae81ff">2048</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">usages</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">digital signature</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">key encipherment</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">server auth</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">client auth</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dnsNames</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">kuma-control-plane.kuma-system</span>
+</span></span><span style="display:flex;"><span>    - <span style="color:#ae81ff">kuma-control-plane.kuma-system.svc</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">issuerRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-ca-issuer</span> <span style="color:#75715e"># References Issuer based on kuma-root-ca</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Issuer</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">group</span>: <span style="color:#ae81ff">cert-manager.io</span>
+</span></span></code></pre></div><p>Make note of the <code>name</code> and <code>secretName</code> values for both certificates; they will be needed later.</p>
+<p>After all the TLS assets have been defined&mdash;they don&rsquo;t need to be actually applied against the cluster, just defined&mdash;then you&rsquo;re ready to modify the installation YAML to make it reusable.</p>
+<h2 id="creating-reusable-installation-yaml">Creating Reusable Installation YAML</h2>
+<p>Once you&rsquo;ve defined the TLS assets, then you can make the necessary changes to the YAML output of <code>kumactl</code> to make it reusable. Keep in mind, as described in the previous section, using cert-manager to manage TLS assets means that cert-manager becomes a dependency for Kuma (in other words, you&rsquo;ll need to install cert-manager before you can install Kuma).</p>
+<p>Begin by creating a starting point with <code>kumactl</code> and piping the output to a file:</p>
+<pre><code>kumactl install control-plane --tls-general-secret=kuma-tls-general \
+--tls-general-ca-bundle=$(echo &quot;blah&quot;) &gt; kuma.yaml
+</code></pre>
+<p>For the <code>--tls-general-secret</code> parameter, you&rsquo;re specifying the name of the Secret created by the general TLS certificate you defined earlier with cert-manager.</p>
+<p>The file created by this command needs four changes made to it:</p>
+<ol>
+<li>The <code>caBundle</code> value supplied for all webhooks needs to be deleted (hence, the value you specify on the command line doesn&rsquo;t matter).</li>
+<li>All webhooks need to be annotated for the cert-manager <a href="https://cert-manager.io/docs/concepts/ca-injector/">CA Injector</a> to automatically inject the correct <code>caBundle</code> value.</li>
+<li>The &ldquo;kuma-control-plane&rdquo; Deployment needs to be modified to mount the root CA certificate&rsquo;s Secret (created by cert-manager) as a volume.</li>
+<li>The &ldquo;kuma-control-plane&rdquo; Deployment needs to be changed to pass in a different value for the <code>KUMA_RUNTIME_KUBERNETES_INJECTOR_CA_CERT_FILE</code> environment variable (it should point to the <code>ca.crt</code> file on the volume added in step 3).</li>
+</ol>
+<p>You <em>could</em> make these changes manually, but since we&rsquo;re going for declarative why not use something like <a href="https://kustomize.io">Kustomize</a>?</p>
+<p>To make the first change&mdash;removing the <code>caBundle</code> value embedded by <code>kumactl</code>&mdash;you could use this JSON 6902 patch:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>    { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;remove&#34;</span>, <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/webhooks/0/clientConfig/caBundle&#34;</span> },
+</span></span><span style="display:flex;"><span>    { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;remove&#34;</span>, <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/webhooks/1/clientConfig/caBundle&#34;</span> },
+</span></span><span style="display:flex;"><span>    { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;remove&#34;</span>, <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/webhooks/2/clientConfig/caBundle&#34;</span> }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>To make the second change, you could use a JSON 6902 patch like this (the use of &ldquo;kuma-root-ca&rdquo; in the patch below refers to the name of the root CA Certificate resource defined earlier with cert-manager):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;add&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/metadata/annotations&#34;</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: 
+</span></span><span style="display:flex;"><span>      { <span style="color:#f92672">&#34;cert-manager.io/inject-ca-from&#34;</span>: <span style="color:#e6db74">&#34;kuma-system/kuma-root-ca&#34;</span> }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>These two changes enable you to remove the Base64-encoded copy of the CA certificate&mdash;referenced by Kuma&rsquo;s webhooks&mdash;and instead have cert-manager&rsquo;s CA Injector insert the correct value instead.</p>
+<p>This JSON 6902 patch would handle the third change:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;add&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/spec/template/spec/volumes/0&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;general-ca-crt&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;secret&#34;</span>: {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;secretName&#34;</span>: <span style="color:#e6db74">&#34;kuma-root-ca&#34;</span>
+</span></span><span style="display:flex;"><span>      }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  },
+</span></span><span style="display:flex;"><span>  {
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;add&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/spec/template/spec/containers/0/volumeMounts/0&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;general-ca-crt&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;mountPath&#34;</span>: <span style="color:#e6db74">&#34;/var/run/secrets/kuma.io/ca-cert&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;readOnly&#34;</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>The Secret referenced in the first part of the patch above references the Secret for the root CA Certificate resource, as noted in the <code>secretName</code> field on the Certificate&rsquo;s manifest.</p>
+<p>And, finally, the fourth change can be handled using this JSON 6902 patch:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;replace&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/spec/template/spec/containers/0/env/11/value&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: <span style="color:#e6db74">&#34;/var/run/secrets/kuma.io/ca-cert/ca.crt&#34;</span> }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>I won&rsquo;t walk through all of these changes in great detail, but I do want to take a moment to dive a bit deeper into the Secret mounted as an additional volume. Using the JSON 6902 patch above against the base YAML created using <code>kumactl</code> will result in a configuration that looks like this (focused only on volumes and volumeMounts in the Deployment, everything else is stripped away):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">containers</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">volumeMounts</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">mountPath</span>: <span style="color:#ae81ff">/var/run/secrets/kuma.io/ca-cert</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">general-ca-crt</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">readOnly</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">mountPath</span>: <span style="color:#ae81ff">/var/run/secrets/kuma.io/tls-cert</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">general-tls-cert</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">readOnly</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">mountPath</span>: <span style="color:#ae81ff">/etc/kuma.io/kuma-control-plane</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-control-plane-config</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">readOnly</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">volumes</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">general-ca-crt</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">secret</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">kuma-root-ca</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">name</span>: <span style="color:#ae81ff">general-tls-cert</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">secret</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">secretName</span>: <span style="color:#ae81ff">kuma-tls-general</span>
+</span></span><span style="display:flex;"><span>      - <span style="color:#f92672">configMap</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-control-plane-config</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">kuma-control-plane-config</span>
+</span></span></code></pre></div><p>The &ldquo;general-ca-cert&rdquo; Secret and volume are what&rsquo;s been added by the Kustomize patch. Why? When generating the YAML output, <code>kumactl</code> combines three resources&mdash;the TLS certificate, the TLS key, and the CA certificate&mdash;into a single Secret. However, cert-manager won&rsquo;t create a Secret like that. So, to avoid an additional manual step, you mount the Secret created by cert-manager for CA root certificate as a separate volume. This allows you modify the environment variable passed to the control plane specifying where the CA certificate is located to the new path where the volume is mounted.</p>
+<p>After the four changes are complete, the resulting modified YAML is completely reusable.</p>
+<h2 id="using-the-reusable-yaml">Using the Reusable YAML</h2>
+<p>To actually use the reusable YAML you&rsquo;ve just created with the above steps:</p>
+<ol>
+<li>Apply the cert-manager TLS definitions to the cluster where you want to install Kuma. This will create all the necessary Certificate resources and Secrets. (Obviously cert-manager will need to be installed already.)</li>
+<li>Apply the Kuma YAML created by the steps above. It&rsquo;s configured to reference the cert-manager assets created in step 1.</li>
+</ol>
+<p>That&rsquo;s it.</p>
+<h2 id="caveatslimitations">Caveats/Limitations</h2>
+<p>The process and changes outlined in this post only apply to a standalone (single zone) installation. It&rsquo;s absolutely possible to do this for multizone deployments, too, but I&rsquo;ll leave that as an exercise for the readers.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>I&rsquo;ve recently published two GitHub repositories with content that supports what&rsquo;s described in this post:</p>
+<ul>
+<li>The <a href="https://github.com/scottslowe/kuma-cert-manager">&ldquo;kuma-cert-manager&rdquo; repository</a> outlines how to replace <code>kumactl</code>-generated TLS assets with resources from cert-manager. This supports the &ldquo;Defining TLS Assets&rdquo; section above. Full examples of all the related cert-manager resources are found in this repository.</li>
+<li>The <a href="https://github.com/scottslowe/kuma-declarative-install">&ldquo;kuma-declarative-install&rdquo; repository</a> builds on the previous repository by showing the additional changes that must be made to the YAML output generated by <code>kumactl</code>. This supports the &ldquo;Creating Reusable Installation YAML&rdquo; section above. This includes a Kustomize configuration that will automate all the changes necessary to make the YAML reusable.</li>
+</ul>
+<p>I hope this information is useful. If you have questions, feel free to find me on <a href="https://kuma-mesh.slack.com">the Kuma community Slack</a> or contact <a href="https://twitter.com/scott_lowe">me on Twitter</a> (my DMs are open).</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kuma">Kuma</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kustomize">Kustomize</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/yaml">YAML</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/10/12/using-the-external-aws-cloud-provider-for-kubernetes/">Using the External AWS Cloud Provider for Kubernetes</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/10/25/influencing-cluster-api-ami-selection/">Influencing Cluster API AMI Selection</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f10%2f21%2fcreating-reusable-kuma-installation-yaml%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f10%2f21%2fcreating-reusable-kuma-installation-yaml%2f&text=Creating%20Reusable%20Kuma%20Installation%20YAML" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f10%2f21%2fcreating-reusable-kuma-installation-yaml%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/10/11/kustomize-transformer-configurations-for-cluster-api-v1beta1/">Kustomize Transformer Configurations for Cluster API v1beta1</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2020/03/17/kustomize-transformer-configuration-cluster-api-v1alpha3/">Kustomize Transformer Configurations for Cluster API v1alpha3</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2020/03/13/configuring-kustomize-transformers-for-cluster-api/">Configuring Kustomize Transformers for Cluster API</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

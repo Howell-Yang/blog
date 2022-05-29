@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Windows 7, Microsoft Security Essentials, and Proxy Servers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Windows 7, Microsoft Security Essentials, and Proxy Servers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Windows 7, Microsoft Security Essentials, and Proxy Servers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/08/23/windows-7-microsoft-security-essentials-and-proxy-servers/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Windows 7, Microsoft Security Essentials, and Proxy Servers</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;505 words (estimated 3 minutes to read)</span>
+  <p>On the recommendation of a number of Twitter users, I decided to install Microsoft Security Essentials (MSE) on a couple of laptops running 64-bit Windows 7. These laptops are used by my kids for their school work (they are home-schooled), and I just wanted to make sure that the laptops don&rsquo;t get infected with some nasty bug. More than a few Twitter users recommended MSE, so I figured it couldn&rsquo;t be all bad, right?</p>
+<p>The install was quick and painless. And that&rsquo;s where the fun started. MSE wanted to do an update immediately; OK, that&rsquo;s fine. The problem is, it won&rsquo;t connect. I use a Squid proxy server to control outbound web access, so I figured that somewhere was a setting that told MSE to use a proxy server. There&rsquo;s nothing within MSE itself. Could it be that I had forgotten to configure Internet Explorer? I did make Firefox the default browser, after all. Nope, a quick check shows that the Internet Explorer settings are configured for the right outbound proxy as well. Both Internet Explorer and Firefox are working fine, so I know it&rsquo;s not the network, the proxy, or the firewall. It must be MSE itself.</p>
+<p>Google turns up the <a href="http://all-things-pure.blogspot.com/2009/10/microsoft-security-essentials-network.html">first part of the puzzle</a>; even though your proxy support might be configured correctly for Internet Explorer (and thus most of the rest of Windows), MSE won&rsquo;t take those settings. Instead, you have to use <code>netsh</code>, like this:</p>
+<pre><code>netsh winhttp import proxy source=ie
+</code></pre>
+<p>Unfortunately, in its efforts to be &ldquo;helpful,&rdquo; Windows 7 won&rsquo;t allow you to run that command without elevated privileges. All you get when you try is a nondescript error message that vaguely implies that you don&rsquo;t have permission. However, instead of being able to elevate that one command (a la <code>sudo</code> in the UNIX/Linux/BSD world), you have to run the entire command prompt with administrative privileges, like explained <a href="http://www.blogsdna.com/2168/windows-7-how-to-open-elevated-command-prompt-with-administrator-privileges.htm">here</a> (and probably countless other places on the &lsquo;Net).</p>
+<p>Once you get a command prompt running with administrative credentials, then you can run the <code>netsh</code> command and it will successfully import the IE proxy configuration. Once the IE proxy configuration is successfully imported, then MSE will fetch updates from the Internet and function properly. <em>Wasn&rsquo;t that fun?</em></p>
+<p>This little episode brings up a couple questions/thoughts:</p>
+<ol>
+<li>
+<p>Why in the world <em>wouldn&rsquo;t</em> MSE use IE&rsquo;s proxy configuration? Most of the rest of Windows does.</p>
+</li>
+<li>
+<p>Even if Microsoft wanted MSE to have its own proxy settings, why force users down a rathole of command prompts and administrative privileges? Why not put it in the GUI?</p>
+</li>
+<li>
+<p>Windows 7 has made great strides in making Windows more secure, but does this enhanced security posture come at the price of decreased flexibility for the power user?</p>
+</li>
+<li>
+<p>If so, does Microsoft even care? After all, the default settings are probably fine for most users.</p>
+</li>
+</ol>
+<p>Anyway, there you have it. If you use a proxy server on your network and you also want to use MSE, you&rsquo;ll need to use <code>netsh</code> (with administrative privileges) to configure your proxy settings properly.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/23/new-users-guide-to-configuring-vmware-esxi-networking-via-cli/">New User&#39;s Guide to Configuring VMware ESXi Networking via CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/08/24/some-pre-vmworld-product-announcements/">Some Pre-VMworld Product Announcements</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f23%2fwindows-7-microsoft-security-essentials-and-proxy-servers%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f23%2fwindows-7-microsoft-security-essentials-and-proxy-servers%2f&text=Windows%207%2c%20Microsoft%20Security%20Essentials%2c%20and%20Proxy%20Servers" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f23%2fwindows-7-microsoft-security-essentials-and-proxy-servers%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/07/08/access-based-enumeration/">Access-Based Enumeration</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2008/10/02/now-ciscos-participation-in-svvp-becomes-clearer/">Now Cisco&#39;s Participation in SVVP Becomes Clearer</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2008/06/23/more-on-hyper-v-and-nic-teaming/">More on Hyper-V and NIC Teaming</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

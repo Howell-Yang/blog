@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>LDAP-Based Access Control - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="LDAP-Based Access Control - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="LDAP-Based Access Control - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/09/08/ldap-based-access-control/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">LDAP-Based Access Control</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;620 words (estimated 3 minutes to read)</span>
+  <p>First off, let&rsquo;s set some expectations. First, I performed this testing using <a href="http://www.centos.org/">CentOS</a> (version 4.3) and <a href="http://www.microsoft.com/windowsserver2003/default.mspx">Windows Server 2003 R2</a>, both running as VMs on <a href="http://www.vmware.com/products/vi/esx/">VMware ESX Server</a> (version 3.0.0). Active Directory and the CentOS server were configured for Kerberos authentication as described in my Linux-AD integration instructions. Second, I used <a href="http://www.openssh.org/">OpenSSH</a> (version 4.2p1 on the client, version 3.9p1 on the server) as the vehicle for testing host access. If you are using telnet, HTTP, or something else, the configuration will look <em>very</em> different. Third, and finally, I can&rsquo;t guarantee you that this procedure will work flawlessly in your environment. It should, however, get you well down the road to completion.</p>
+<p>OK, now you&rsquo;re ready to get rolling. Note: If you&rsquo;ve configured your SSH server for native Kerberos authentication, the changes we&rsquo;re going to make below are going to break that. Sorry, I couldn&rsquo;t find any way around that.</p>
+<h3 id="configure-openssh">Configure OpenSSH</h3>
+<p>Edit your <code>/etc/ssh/sshd_config</code> file and make sure that the following line is present:</p>
+<pre><code>UsePAM yes
+</code></pre>
+<p>(This is the piece that breaks native Kerberos authentication, by the way.) SSHd will need to re-read the configuration after making this change in order for the change to take effect; restarting sshd is an easy way to do that.</p>
+<h3 id="configure-pam">Configure PAM</h3>
+<p>Because PAM configurations vary from client to client, I can&rsquo;t give you the exact configuration and placement that you need. The CentOS configuration, which would be virtually identical to Red Hat/Fedora, is described below. Please be sure to adjust as needed for your particular Linux distribution (or flavor of Unix).</p>
+<p>Add the following line to the top (first line) of the &ldquo;account&rdquo; section of the <code>/etc/pam.d/system-auth</code> file:</p>
+<pre><code>account   sufficient   /lib/security/$ISA/pam_ldap.so
+</code></pre>
+<p>You should be able to leave the rest of the file intact.</p>
+<h3 id="configure-ldap">Configure LDAP</h3>
+<p>(Just as quick aside, you should be aware by now that modifying <code>ldap.conf</code> really only affects the pam_ldap and nss_ldap modules, not OpenLDAP itself. OpenLDAP is typically configured elsewhere.)</p>
+<p>Make the following changes to the <code>/etc/ldap.conf</code> file:</p>
+<pre><code>pam_groupdn cn=GroupName,ou=OUName,dc=example,dc=net
+pam_member_attribute member
+</code></pre>
+<p>These lines may already be present, and you may only have to uncomment them and substitue the correct value for the pam_groupdn parameter. Do <em>NOT</em> copy and paste the pam_groupdn line as shown above; they won&rsquo;t work! (The pam_member_attribute line is fine to copy and paste.) Just put in the correct DN for the group that you&rsquo;d like to use to control access to that particular host. Members of that group will be allowed access; others will be denied.</p>
+<p>If the group name includes spaces, enclose the entire DN in double quotes (i.e, pam_groupdn &ldquo;cn=Group Name,cn=Users,dc=example,dc=net&rdquo;).</p>
+<h3 id="configure-active-directory">Configure Active Directory</h3>
+<p>This part should be obvious, but be sure to create the appropriate group (making sure that the DN of the group matches what you specified in <code>/etc/ldap.conf</code> on the Linux/Unix server). Add user accounts that should be allowed access to the Linux/Unix host in question to this group (you may find it necessary or desirable to create multiple groups so that you can have fine-grained control over which hosts may be accessed by which users). The testing I performed indicated that the group did not need to be Unix-enabled in AD; your mileage may vary.</p>
+<h3 id="verify-and-test">Verify and Test</h3>
+<p>To verify and test the configuration, add a user account to the appropriate group and then try to login to the Linux/Unix server via SSH. Everything should work just fine. Take the user out of the group and try again; the login should fail.</p>
+<p>I&rsquo;m open to comments, suggestions for improvement, and corrections to this procedure. Also, if any of you out there have had the opportunity to try this on different Linux distributions or other Unix-based operating systems and want to share configs, please do so in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/09/07/new-zero-day-word-vulnerability/">New Zero-Day Word Vulnerability</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/09/10/a-new-direction/">A New Direction</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f08%2fldap-based-access-control%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f08%2fldap-based-access-control%2f&text=LDAP-Based%20Access%20Control" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f08%2fldap-based-access-control%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux, Active Directory, and Windows Server 2003 R2 Revisited</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/09/01/kerberos-tgt-validation/">Kerberos TGT Validation</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

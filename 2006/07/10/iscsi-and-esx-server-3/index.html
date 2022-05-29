@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>iSCSI and ESX Server 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="iSCSI and ESX Server 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="iSCSI and ESX Server 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/07/10/iscsi-and-esx-server-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">iSCSI and ESX Server 3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;695 words (estimated 4 minutes to read)</span>
+  <p>A few weeks ago I wrote about trying to use <a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp&rsquo;s ONTAP Simulator as a VM under ESX Server</a> so that I could do some testing with the new NAS and iSCSI functionality in <a href="http://www.vmware.com/products/vi/esx/">ESX Server 3.0</a>. I finally got that working, but later had to shut it down when I started working with ESX Server 3. As it turns out, the ProLiant 6400R servers I was using for my VMware lab (running ESX 2.5.x) were not supported for the final release of ESX 3 because the <code>cpqarray.o</code> driver was dropped from the final release, and the <code>cpqarray.o</code> driver is what supported the Smart Array 3200 and Smart Array 4250 RAID controllers in these two boxes. No ESX 3 on these boxes.</p>
+<p>Thankfully, I was able to locate an unused ProLiant ML350 G4p on which I could run ESX Server 3. Instead of trying to use the ONTAP Simulator as a VM, then, I rebuilt one of the 6400R servers with Red Hat Linux 9.0 and installed the <a href="http://www.netapp.com/">NetApp</a> ONTAP Simulator directly from there. After a fair amount of work, I finally had everything setup, and the simulated Filer was running with about 20GB of available storage to serve up via iSCSI, CIFS, NFS, or HTTP.</p>
+<p>iSCSI was what I was really interested in, so the available storage from the ONTAP Simulator got carved into a couple of LUNS to be presented via iSCSI, along with the requisite initiator groups. Once everything looked to be in place on the Simulator, I moved to the configuration of ESX Server. Had I been lucky, I might have been trying to do this after <a href="http://www.rtfm-ed.co.uk/">Mike Laverick</a> released his <a href="http://www.rtfm-ed.co.uk/?p=261">Service Console Guide</a>, but I was a few days too early, and used the VI Client GUI instead to configure the VM Kernel NIC and the software iSCSI client. The configuration looked correct, but there was no connectivity.</p>
+<p>Not sure if the problem was ESX Server or the ONTAP Simulator, I mapped another LUN and created another initiator group and tested iSCSI connectivity from a <a href="http://www.microsoft.com/windowsserver2003/">Windows Server 2003</a> VM using Microsoft&rsquo;s <a href="http://www.microsoft.com/downloads/info.aspx?na=22&amp;p=1&amp;SrcDisplayLang=en&amp;SrcCategoryId=&amp;SrcFamilyId=&amp;u=%2fdownloads%2fdetails.aspx%3fFamilyID%3d12cb3c1a-15d6-4585-b385-befd1319f825%26DisplayLang%3den">iSCSI initiator</a>. That worked <em>perfectly</em>&mdash;not even the first problem. Clearly, the problem was not with the ONTAP Simulator, but with ESX Server instead.</p>
+<p>Reviewing the configuration, I did find a couple of problems:</p>
+<ul>
+<li>
+<p>The iSCSI node name I had specified in the igroup configuration on the Simulator was incorrect, so I fixed that. (Or thought I had; more on that in a moment.)</p>
+</li>
+<li>
+<p>The iSCSI security configuration was incorrect, so I fixed that as well.</p>
+</li>
+</ul>
+<p>ESX Server should see the storage now, but there was still no connectivity. Finally, I came across a blurb somewhere about the new firewall in ESX Server 3.0, and how it controlled not only inbound traffic, but also <em>outbound</em> traffic. A quick trip to the service console and this command:</p>
+<pre><code>esxcfg-firewall -e swISCSIClient
+</code></pre>
+<p>You would expect that using the VI Client to enable the software iSCSI client would also enable outbound iSCSI traffic support on the ESX firewall, but it didn&rsquo;t. As soon as I entered that command, the Simulator&rsquo;s console (where I was logged in) started showing iSCSI connection requests. This, in turn, revealed another problem&mdash;ESX Server insisted on using its own iSCSI node name instead of the node name I had assigned. That was easily and quickly corrected, and I was finally able to mount the iSCSI LUN and create a VMFS datastore.</p>
+<p>Key points to remember:</p>
+<ul>
+<li>
+<p>Apparently, the iSCSI node name you specify in configuring ESX Server will be ignored, so don&rsquo;t bother. Just use whatever ESX is already configured with.</p>
+</li>
+<li>
+<p>Be sure to <em>either</em> configure iSCSI from the command line (where outbound iSCSI traffic is allowed through the firewall automatically) or go back and allow outbound iSCSI traffic through the ESX firewall.</p>
+</li>
+</ul>
+<p>Having iSCSI-based storage eliminates one potential block to testing and demonstrating VMotion to customers&mdash;shared storage&mdash;but now I need to work on getting Gigabit Ethernet into the test lab as well. Too bad there&rsquo;s not a software workaround for that, too&hellip;</p>
+<p><strong>UPDATE:</strong> I corrected the command-line above to reflect that the first &ldquo;I&rdquo; should be uppercase, not lowercase as was previously noted. Thanks to Chauncey for catching the error!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nas">NAS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/redhat">RedHat</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/07/07/setting-dns-and-wins-server-addresses-remotely/">Setting DNS and WINS Server Addresses Remotely</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/07/13/remotely-enabling-remote-desktop/">Remotely Enabling Remote Desktop</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f10%2fiscsi-and-esx-server-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f10%2fiscsi-and-esx-server-3%2f&text=iSCSI%20and%20ESX%20Server%203" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f10%2fiscsi-and-esx-server-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/05/16/follow-up-on-esx-server-integration/">Follow Up on ESX Server Integration</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

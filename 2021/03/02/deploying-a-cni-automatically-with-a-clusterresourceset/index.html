@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Deploying a CNI Automatically with a ClusterResourceSet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Deploying a CNI Automatically with a ClusterResourceSet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Deploying a CNI Automatically with a ClusterResourceSet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/03/02/deploying-a-cni-automatically-with-a-clusterresourceset/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Deploying a CNI Automatically with a ClusterResourceSet</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1061 words (estimated 5 minutes to read)</span>
+  <p>Not too long ago I hosted <a href="https://tgik.io/143">an episode of TGIK8s</a>, where I explored some features of <a href="https://cluster-api.sigs.k8s.io">Cluster API</a>. One of the features I explored on the show was <a href="https://cluster-api.sigs.k8s.io/tasks/experimental-features/cluster-resource-set.html">ClusterResourceSet</a>, an experimental feature that allows users to automatically install additional components onto workload clusters when the workload clusters are provisioned. In this post, I&rsquo;ll show how to deploy a CNI plugin automatically using a ClusterResourceSet.</p>
+<p>A lot of this post is inspired by a similar post on <a href="https://samperrin.com/posts/cluster-api-vsphere-using-clusterresourceset-to-install-calico-cni/">installing Calico using a ClusterResourceSet</a>. Although that post is for vSphere and this one focuses on AWS, much of the infrastructure differences are abstracted away by Kubernetes and Cluster API.</p>
+<p>At a high level, using ClusterResourceSet to install a CNI plugin automatically looks like this:</p>
+<ol>
+<li>Make sure experimental features are enabled on your CAPI management cluster.</li>
+<li>Create a ConfigMap that contains the information to deploy the CNI plugin.</li>
+<li>Create a ClusterResourceSet that references the ConfigMap.</li>
+<li>Deploy one or more workload clusters that match the cluster selector specified in the ClusterResourceSet.</li>
+</ol>
+<p>The sections below describe each of these steps in more detail.</p>
+<h2 id="enabling-experimental-features">Enabling Experimental Features</h2>
+<p>The <em>preferred</em> way to enable experimental features on your management cluster is to use a setting in the <code>clusterctl</code> configuration file or its environment variable equivalent before you initialize the management cluster. Specifically, putting <code>EXP_CLUSTER_RESOURCE_SET: &quot;true&quot;</code> in the <code>clusterctl</code> configuration file or using <code>export EXP_CLUSTER_RESOURCE_SET=true</code> before initializing the management cluster with <code>clusterctl init</code> will enable the ClusterResourceSet functionality.</p>
+<p>But what if your management cluster has already been initialized? It is possible to enable the functionality by editing a couple of the CAPI-related Deployments on your management cluster. Specifically, you&rsquo;ll need to edit the following Deployments:</p>
+<ul>
+<li>The &ldquo;capi-controller-manager&rdquo; Deployment in the &ldquo;capi-system&rdquo; namespace</li>
+<li>The &ldquo;capi-controller-manager&rdquo; Deployment in the &ldquo;capi-webhook-system&rdquo; namespace</li>
+</ul>
+<p>In both cases, the edit is the same: you&rsquo;ll want to edit the <code>--featureGates</code> parameter to specify &ldquo;true&rdquo; for ClusterResourceSet. For example, before editing the &ldquo;capi-controller-manager&rdquo; Deployment in the &ldquo;capi-system&rdquo; namespace, running <code>kubectl -n capi-system get deployment capi-controller-manager -o yaml</code> would show this for the command line parameters for the &ldquo;manager&rdquo; container:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">args</span>:
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">metrics-addr=127.0.0.1:8080</span>
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">enable-leader-election</span>
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">feature-gates=MachinePool=false,ClusterResourceSet=false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">command</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">/manager</span>
+</span></span></code></pre></div><p>After editing, it should look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">args</span>:
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">metrics-addr=127.0.0.1:8080</span>
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">enable-leader-election</span>
+</span></span><span style="display:flex;"><span>  - --<span style="color:#ae81ff">feature-gates=MachinePool=false,ClusterResourceSet=true</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">command</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">/manager</span>
+</span></span></code></pre></div><p>Editing the Deployments will cause Kubernetes to automatically start new versions of the containers with the new command-line flags.</p>
+<p>It&rsquo;s worth noting that the preferred way is to enable the experimental feature through the use of a <code>clusterctl</code> configuration file or the appropriate environment variable <em>before</em> initializing your management cluster with <code>clusterctl init</code>.</p>
+<p>Once the functionality is enabled, then you&rsquo;re ready to start creating the various components needed to use ClusterResourceSets. The first component you&rsquo;ll need to create is a ConfigMap.</p>
+<h2 id="create-the-configmap-for-the-cni-plugin">Create the ConfigMap for the CNI Plugin</h2>
+<p>Most CNI plugins provide a YAML manifest that will define the CustomResourceDefinitions (CRDs), controllers, and Pods/DaemonSets/Deployments that are necessary for the CNI plugin to function correctly. To enable a ClusterResourceSet to install the CNI plugin for you when provisioning a workload cluster, you&rsquo;ll need to take that installation manifest and place it into a ConfigMap on the management cluster. The ClusterResourceSet, which you&rsquo;ll create in the next section, will then reference this ConfigMap.</p>
+<p>To create a ConfigMap that contains the YAML manifest to install Calico, you&rsquo;d first download the desired version of the Calico manifest (we&rsquo;ll assume you call the downloaded manifest <code>calico.yaml</code>) and then run this command against the management cluster:</p>
+<pre><code>kubectl create configmap calico-crs-configmap --from-file=calico.yaml
+</code></pre>
+<p>Make a note of the name you use (this example calls the ConfigMap &ldquo;calico-crs-configmap&rdquo;), as you&rsquo;ll need it in the next step when you create the ClusterResourceSet itself.</p>
+<h2 id="create-the-clusterresourceset">Create the ClusterResourceSet</h2>
+<p>Next up is creating the ClusterResourceSet itself. Here&rsquo;s an example ClusterResourceSet that could be used to install a CNI plugin onto (or into) a workload cluster:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">addons.cluster.x-k8s.io/v1alpha3</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterResourceSet</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">calico-crs</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">clusterSelector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">cni</span>: <span style="color:#ae81ff">calico </span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ConfigMap</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">calico-crs-configmap</span>
+</span></span></code></pre></div><p>The two key things to note here are the <code>clusterSelector</code> and the <code>resources</code> fields. The <code>clusterSelector</code> field controls how Cluster API will match this ClusterResourceSet against one or more workload clusters. In this case, I&rsquo;m using a <code>matchLabels</code> approach where the ClusterResourceSet will be applied to all workload clusters that have the <code>cni: calico</code> label present. If the label isn&rsquo;t present, the ClusterResourceSet won&rsquo;t apply to that workload cluster.</p>
+<p>The <code>resources</code> field references the ConfigMap created in the previous step, which in turn contains the manifest for installing the CNI plugin. Note that a ClusterResourceSet can contain multiple resources; only a single resource is specified in this example. If you do specify multiple resources, keep in mind that all specified resources in the ClusterResourceSet will be applied to all workload clusters that match the cluster selector property. If you need more granularity/flexiblity, use separate ClusterResourceSets for each resource.</p>
+<p>The ClusterResourceSet is defined on the management cluster, so once you&rsquo;ve created the YAML manifest you&rsquo;d use <code>kubectl apply</code> to apply it against the management cluster:</p>
+<pre><code>kubectl apply -f calico-crs.yaml
+</code></pre>
+<p>All the setup is now completed, and you&rsquo;re ready to use the ClusterResourceSet with your workload cluster(s).</p>
+<h2 id="deploy-a-workload-cluster">Deploy a Workload Cluster</h2>
+<p>With the appropriate resources in place (in the form of ConfigMaps that encapsulate the desired YAML manifests) and the ClusterResourceSet defined, you&rsquo;re ready to deploy a workload cluster and have the ClusterResourceSet automatically install the specified resources&mdash;in this case, the CNI plugin.</p>
+<p>Use <code>clusterctl config cluster</code> to generate the YAML manifest for a workload cluster, then edit the resulting output to include the &ldquo;cni: calico&rdquo; label on the Cluster object, like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cluster.x-k8s.io/v1alpha3</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Cluster</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">workload-cluster-1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cni</span>: <span style="color:#ae81ff">calico</span>
+</span></span></code></pre></div><p>Apply the workload cluster manifest using <code>kubectl apply -f &lt;filename.yaml&gt;</code>, and then sit back and watch Cluster API go to work. After a few minutes (it depends on your provider and your specific configuration), you should see the workload cluster nodes (which you can check after you grab the Kubeconfig with <code>clusterctl get kubeconfig</code>) go to &ldquo;Ready&rdquo; status with no further intervention on your part&mdash;meaning that the CNI plugin was installed successfully!</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>In learning about ClusterResourceSets, I found reading the <a href="https://github.com/kubernetes-sigs/cluster-api/blob/master/docs/proposals/20200220-cluster-resource-set.md">ClusterResourceSet CAEP</a> to be helpful.</p>
+<p>I hope this post is useful. If you have any questions, comments, or suggestions for improvement, I&rsquo;d love to hear from you. You can find me on <a href="https://kubernetes.slack.com">the Kubernetes Slack instance</a>, or contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/02/22/setting-up-wireguard-for-aws-vpc-access/">Setting up WireGuard for AWS VPC Access</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/03/12/technology-short-take-138/">Technology Short Take 138</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f02%2fdeploying-a-cni-automatically-with-a-clusterresourceset%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f02%2fdeploying-a-cni-automatically-with-a-clusterresourceset%2f&text=Deploying%20a%20CNI%20Automatically%20with%20a%20ClusterResourceSet" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f02%2fdeploying-a-cni-automatically-with-a-clusterresourceset%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/01/11/using-velero-to-protect-cluster-api/">Using Velero to Protect Cluster API</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2020/10/08/considerations-for-using-iac-with-cluster-api/">Considerations for using IaC with Cluster API</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2020/09/02/updating-aws-credentials-in-cluster-api/">Updating AWS Credentials in Cluster API</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

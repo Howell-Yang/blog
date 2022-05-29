@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware HA in Action - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware HA in Action - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware HA in Action - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/01/22/vmware-ha-in-action/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware HA in Action</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;366 words (estimated 2 minutes to read)</span>
+  <p><a href="http://www.vmware.com/">VMware</a> touts <a href="http://www.vmware.com/products/vi/vc/ha.html">VMware HA</a> as a means of providing failover protection for virtual machines:</p>
+<blockquote>
+<p>VMware HA is a feature-rich product that continuously monitors all physical servers in a resource pool and restarts virtual machines affected by server failure.</p>
+</blockquote>
+<p>Well, that&rsquo;s all well and good, but does it actually work? I&rsquo;m here to tell you, &ldquo;Yes, it does.&rdquo;</p>
+<p>This isn&rsquo;t as striking an example as running mission critical apps for a multimillion dollar venture and VMware HA saving the day, but it is an excellent example, in my mind, of how well VMware HA works. It works so well, in fact, that you <em>may not even notice it working</em>.</p>
+<p>In my lab at the office, I have VMware HA and <a href="http://www.vmware.com/products/vi/vc/drs.html">VMware DRS</a> running on a cluster containing two hosts running <a href="http://www.vmware.com/products/vi/esx/">ESX Server</a>. On that foundation runs a number of VMs providing various services to the lab. I had been out for a few days working on-site with customers, and when I came back into the lab this morning everything seemed fine. It wasn&rsquo;t until later in the day, when I finally launched the Virtual Infrastructure (VI) Client and connected to <a href="http://www.vmware.com/products/vi/vc/">VirtualCenter</a>, that I realized one of my ESX hosts had crashed. VMware HA had stepped in and automatically restarted all the VMs on the second host, and the other engineers who were there when the failure happened said they didn&rsquo;t even notice the failover. Had I not logged in to the VI Client, I wouldn&rsquo;t have even known that I had a host failure. It was that seamless.</p>
+<p>&lt;aside&gt;Yes, a proper monitoring solution would have alerted me right away to this failure, and it could have been rectified much sooner. I know that. But this is a lab, not a production environment. Besides, the point here is that the lab&rsquo;s virtual infrastructure was resilient enough to sustain a hardware failure and continue providing services, not to berate me for the lack of a monitoring solution in the lab.&lt;/aside&gt;</p>
+<p>What&rsquo;s more, after I resolved the issue with the dead ESX host and brought it back online, VMware DRS kicked in and automatically rebalanced the VM load across the two hosts, just as advertised.</p>
+<p>Is that cool, or what?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/01/22/mac-ftpsftp-clients/">Mac FTP/SFTP Clients</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/01/25/mac-bookmark-managers/">Mac Bookmark Managers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f22%2fvmware-ha-in-action%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f22%2fvmware-ha-in-action%2f&text=VMware%20HA%20in%20Action" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f01%2f22%2fvmware-ha-in-action%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/01/10/esx-security-issues/">ESX Security Issues</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2007/01/09/pending-articles/">Pending Articles</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Enumerating Universal Group Membership - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Enumerating Universal Group Membership - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Enumerating Universal Group Membership - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/06/22/enumerating-universal-group-membership/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Enumerating Universal Group Membership</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;609 words (estimated 3 minutes to read)</span>
+  <p>It&rsquo;s a fairly well-known fact that universal group membership in Active Directory is replicated among all Global Catalog (GC) servers. That is, when the membership of a universal group changes, that change must be replicated to all GC servers in the forest. In Windows 2000, a change to universal group membership replicated the entire membership again; in Windows Server 2003, only the changes are replicated. Even though Windows Server 2003 reduces the load for replicating universal group membership, it&rsquo;s still considered a best practice to keep universal group membership fairly static and to use global groups instead of users. But how does an administrator check that? In large organizations, it&rsquo;s easy to lose control of universal groups and their memberships, especially when delegations have been performed to allow another group to handle group memberships. Fortunately, the directory service command line tools provide the functionality necessary to make this a relatively easy task even in large distributed enterprises.</p>
+<p>There are two components here. First, we must find all the universal groups. That in itself can be a fairly daunting task since the number of groups in an Active Directory deployment grows very large as the size of the company increases. Considering that groups, particularly security groups, are the fundamental building block of Windows security, it&rsquo;s easy to see how organizations can quickly end up with hundreds, perhaps thousands, of groups. So we must first find a way to sift through all the groups and find only the universal groups.</p>
+<p>Second, we need to enumerate the membership of those universal groups so that we can see who or what has been placed into the membership of the groups. If the members are only other groups, all is well; if there are users as members, that needs to be documented and noted. There very well may be valid business reasons why a user and not a group is placed into a universal group&mdash;that&rsquo;s fine. Just document it for future reference. What we want to avoid is allowing the membership of the universal group to become too dynamic, as that will have an adverse impact on Active Directory replication.</p>
+<h3 id="finding-all-the-universal-groups">Finding all the Universal Groups</h3>
+<p>To find all the universal groups, we turn to the <code>dsquery *</code> command. The <code>dsquery group</code> command won&rsquo;t work here because it has no way of specifying to list/find only universal groups. Instead, we&rsquo;ll use a generic LDAP query with the <code>dsquery *</code> command to find universal groups.</p>
+<p>But how exactly do we identify universal groups? Kudos to Microsoft&rsquo;s Scripting Guy for providing the <a href="http://www.microsoft.com/technet/scriptcenter/resources/qanda/aug05/hey0817.mspx">method to identify universal groups</a>. Based on that information (follow the link and read the article real quick, then come back), we come up with this command:</p>
+<pre><code>dsquery * &quot;dc=example,dc=net&quot; -scope subtree 
+-filter &quot;(&amp;(objectCategory=group)(groupType=-2147483640))&quot;
+</code></pre>
+<p>This command will return the DN of all universal groups. Note that it may be necessary to add a <code>-limit</code> parameter to allow the <code>dsquery</code> statement to return <em>all</em> of the universal groups (the default is 100, if I recall correctly).</p>
+<h3 id="enumerating-membership-in-universal-groups">Enumerating Membership in Universal Groups</h3>
+<p>Now that we have the DNs for the universal groups, we can use the <code>dsget group</code> command to show the membership for those groups, like so:</p>
+<pre><code>dsquery * &quot;dc=example,dc=net&quot; -scope subtree 
+-filter &quot;(&amp;(objectCategory=group)(groupType=-2147483640))&quot; |
+dsget group -members
+</code></pre>
+<p>This will return the membership of each of the universal groups. It may be helpful to redirect the output to a text file for future storage or additional manipulation.</p>
+<p>One problem with this method is that it doesn&rsquo;t list the universal group name along with the membership. I haven&rsquo;t quite figured out how to do that with the directory service command-line tools just yet&hellip;but give me some time.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/06/20/mass-changes-in-active-directory/">Mass Changes in Active Directory</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/06/22/more-excel-flaws/">More Excel Flaws</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f22%2fenumerating-universal-group-membership%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f22%2fenumerating-universal-group-membership%2f&text=Enumerating%20Universal%20Group%20Membership" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f22%2fenumerating-universal-group-membership%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/06/20/mass-changes-in-active-directory/">Mass Changes in Active Directory</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2006/06/13/mass-creating-exchange-mailboxes/">Mass-Creating Exchange Mailboxes</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2006/06/09/extending-group-policy/">Extending Group Policy</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

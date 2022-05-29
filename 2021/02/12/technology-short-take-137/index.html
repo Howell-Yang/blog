@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 137 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 137 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 137 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/02/12/technology-short-take-137/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 137</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;693 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #137! I&rsquo;ve got a wide range of topics for you this time around&mdash;eBPF, Falco, Snort, Kyverno, etcd, VMware Code Stream, and more. Hopefully one of these links will prove useful to you. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Matt Oswalt <a href="https://oswalt.dev/2021/01/introduction-to-ebpf/">digs into eBPF</a>.</li>
+<li>Justin Pietsch Has a lengthy article on why network engineers need to focus on <a href="https://elegantnetwork.github.io/posts/network-out-of-the-way/">getting the network out of the way</a>. Although it is a lengthy read, it is&mdash;in my opinion&mdash;well worth the time to read it.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>I recently mentioned on Twitter that I was considering building out a new Linux PC to replace my aging Mac Pro (it&rsquo;s a 2012 model, so going on 9 years old). Joe Utter shared with me <a href="https://non-descript.com/2020/12/11/new-lab-build-physical-build-info-2020-edition/">his new lab build information</a>, and now I&rsquo;m sharing it with all of you. Sharing is caring, you know.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Kaizhe Huang examines <a href="https://sysdig.com/blog/falco-vs-auditd-hids/">Falco versus AuditD from a host intrusion detection system (HIDS) perspective</a>.</li>
+<li>A major security flaw in <code>sudo</code> has been discovered; more details <a href="https://www.sudo.ws/alerts/unescape_overflow.html">available here</a>.</li>
+<li>Eclypsium discusses ways of <a href="https://eclypsium.com/2019/10/23/protecting-system-firmware-storage/">protecting system firmware storage</a>.</li>
+<li>I didn&rsquo;t even know that Snort was still a thing, but apparently <a href="https://9to5linux.com/snort-3-open-source-intrusion-prevention-system-released-with-major-new-features">version 3 was recently released</a>.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>I was going to put this under Security, but decided it fit here better&mdash;Michael Foster of StackRox (recently acquired by Red Hat) has been working on a CKS (Certified Kubernetes Security Specialist) certification study guide. I&rsquo;ll link you to <a href="https://www.stackrox.com/post/2021/01/cks-certification-study-guide-monitoring-logging-and-runtime-security/">part 6</a>, since it contains links to all the previous sections. I also like that StackRox has published <a href="https://github.com/stackrox/Kubernetes_Security_Specialist_Study_Guide">a GitHub repository</a> with the study materials as well.</li>
+<li>Sebastian Kurfürst shares some insights on <a href="https://sandstorm.de/de/blog/post/running-cilium-in-k3s-and-k3d-lightweight-kubernetes-on-mac-os-for-development.html">running Cilium in K3s and K3d on macOS</a> (for development purposes).</li>
+<li>David Anderson shares <a href="https://blog.dave.tf/post/new-kubernetes/">some thoughts on what a better Kubernetes</a> might look like.</li>
+<li>If you&rsquo;re using AWS&rsquo; AI or ML services, it may be worth reading <a href="https://summitroute.com/blog/2021/01/06/opting_out_of_aws_ai_data_usage/">this post about opting out of data usage</a>.</li>
+<li>Christian Posta talks a bit about some of the <a href="https://blog.christianposta.com/challenges-of-adopting-service-mesh-in-enterprise-organizations/">challenges of adopting service mesh in enterprise organizations</a>. His recommendations do feel a bit biased (he recommends starting with an API gateway, such as the one his company provides), but it doesn&rsquo;t mean the recommendations are wrong. To summarize Christian&rsquo;s recommendations at the end: start small and expand slowly where and as it makes sense.</li>
+<li>Emre Odabas has <a href="https://medium.com/@emreodabas_20110/best-practices-for-cka-exam-9c1e51ea9b29">some &ldquo;best practices&rdquo; for the CKA exam</a>.</li>
+<li>Chip Zoller has <a href="https://neonmirrors.net/post/2021-01/kyverno-the-swiss-army-knife-of-kubernetes/">a great article on some use cases for Kyverno</a>.</li>
+<li>There is an absolute <em>wealth</em> of information in <a href="https://www.mgasch.com/2021/01/listwatch-part-1/">this etcd article</a> by Michael Gasch. Make time to read it. Seriously, it&rsquo;s that good.</li>
+<li>Daniele Ulrich has a four-part series (so far) on installing the TKG extensions (<a href="https://vdan.niceneasy.ch/vmware-tanzu-basic-installing-tkg-extensions-1-2-0-part-1/">part 1</a>, <a href="https://vdan.niceneasy.ch/vmware-tanzu-basic-installing-tkg-extensions-1-2-0-part-2/">part 2</a>, <a href="https://vdan.niceneasy.ch/vmware-tanzu-basic-installing-tkg-extensions-1-2-0-part-3/">part 3</a>, and <a href="https://vdan.niceneasy.ch/vmware-tanzu-basic-installing-tkg-extensions-1-2-0-part-4/">part 4</a>).</li>
+<li>Mark Ukotic has some information on <a href="https://blog.ukotic.net/2021/01/26/working-with-kubernetes-pipelines-tasks-in-vmware-code-stream/">using Kubernetes pipelines and tasks in VMware Code Stream</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Turns out that the <code>apt-key</code> command on Debian and Debian derivatives (like Ubuntu and its derivatives) has been deprecated. <a href="https://www.linuxuprising.com/2021/01/apt-key-is-deprecated-how-to-add.html">This article</a> walks users through how to work with OpenPGP repository signing keys without the use of <code>apt-key</code>.</li>
+<li>I recently watched <a href="https://www.youtube.com/playlist?list=PLT98CRl2KxKGiyV1u6wHDV8VwcQdzfuKe">this YouTube video series on <code>tmux</code></a> in order to get more familiar with this very popular tool. I can definitely see the value, but it&rsquo;s going to take me some time to adjust my habits and workflows to take advantage of <code>tmux</code>.</li>
+<li>Red Hat continues its effort to commodotize Docker&rsquo;s position with developers: this time by <a href="https://fedoramagazine.org/manage-containers-with-podman-compose/">taking aim at Docker Compose</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Here&rsquo;s <a href="http://storagegaga.com/discovering-openzfs-fusion-pool/">a post on OpenZFS Fusion Pool</a>.</li>
+<li>Mark McBride shares his experience with <a href="https://markmcb.com/2020/01/07/five-years-of-btrfs/">five years of Btrfs</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Here&rsquo;s an article on <a href="https://virtjo.com/2021/deploy-k8s-vms-with-terraform-on-vsphere/">deploying Kubernetes nodes on vSphere using Terraform</a>.</li>
+<li>James Kiarie shows <a href="https://www.tecmint.com/create-kvm-virtual-machine-template/">how to create a VM template for KVM</a>.</li>
+<li>Julia Evans spent some time with <a href="https://github.com/firecracker-microvm/firecracker/">Firecracker</a>, and shares what she&rsquo;s learned <a href="https://jvns.ca/blog/2021/01/23/firecracker--start-a-vm-in-less-than-a-second/">here</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Lee Briggs shares a great post on <a href="https://www.leebriggs.co.uk/blog/2021/01/27/learn-to-code-with-iac.html">learning to code with infrastructure as code</a> (using infrastructure as code is something I think is a good career move for pretty much everyone). I like how Lee shares some very specific recommendations on how folks can get started.</li>
+</ul>
+<p>while I&rsquo;d love to keep going, I&rsquo;d better wrap it up here. If you have any feedback for me, feel free to hit <a href="https://twitter.com/scott_lowe">me on Twitter</a>. I&rsquo;d love to hear from you.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cilium">Cilium</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/01/15/technology-short-take-136/">Technology Short Take 136</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/02/13/closing-out-the-tokyo-assignment/">Closing out the Tokyo Assignment</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f12%2ftechnology-short-take-137%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f12%2ftechnology-short-take-137%2f&text=Technology%20Short%20Take%20137" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f12%2ftechnology-short-take-137%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/12/06/technology-short-take-121/">Technology Short Take 121</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2021/01/15/technology-short-take-136/">Technology Short Take 136</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

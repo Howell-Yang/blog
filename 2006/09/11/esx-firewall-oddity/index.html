@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>ESX Firewall Oddity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="ESX Firewall Oddity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="ESX Firewall Oddity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/09/11/esx-firewall-oddity/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">ESX Firewall Oddity</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;400 words (estimated 2 minutes to read)</span>
+  <p>Since I&rsquo;ve been performing quite a bit of Kerberos-based testing recently (and since Kerberos is very sensitive to clock skew), I wanted to make sure that my ESX-based hosts were keeping accurate time. Since ESX ships with NTP already installed, I planned on just enabling the NTP traffic outbound, configuring the daemon, and going on my merry way. No big deal, right?</p>
+<p>To make a long story short (I&rsquo;ll spare you all the intricate details), what I discovered was that even though the &ldquo;NTP Client&rdquo; service was showing as enabled in VirtualCenter, it was being reported as blocked by <code>esxcfg-firewall</code>, the command-line tool for manipulating the ESX Server firewall (this was with the command <code>esxcfg-firewall -q ntpClient</code>). To add to the confusion, NTP worked on some hosts but did not work on other hosts even though the firewall configuration and NTP configuration was the same on all the hosts.</p>
+<p>A quick search on the Internet turned up <a href="http://www.vmware.com/community/click.jspa?searchID=-1&amp;messageID=423937">this VMTN Forums thread</a>, which suggested to restart the management agent (using the command <code>service mgmt-vmware restart</code>). I did this, waited for VirtualCenter to shake itself back out again, and noted that NTP had disappeared from the list of enabled services in the firewall configuration in VirtualCenter. At least I had VirtualCenter and <code>esxcfg-firewall</code> in sync now.</p>
+<p>I enabled NTP client traffic in VirtualCenter again, but returning to the ESX host I again found that <code>esxcfg-firewall</code> was still reporting NTP traffic as blocked. Even after allowing almost ten minutes for the change from VirtualCenter to be applied back to ESX, <code>esxcfg-firewall</code> still reported NTP as blocked. On that one host, I restarted the VMware management agent again, and again NTP disappeared from VirtualCenter&rsquo;s list of services allowed through the firewall.</p>
+<p>So, to avoid any other problems, I enabled NTP with the following command:</p>
+<pre><code>esxcfg-firewall -e ntpClient
+</code></pre>
+<p>The <code>esxcfg-firewall -q ntpClient</code> command now listed the service as enabled, but what did VirtualCenter say? Even after a reboot and a disconnect/reconnect sequence, VirtualCenter <em>still</em> did not report NTP client traffic as enabled.</p>
+<p>What do I take from this? Perhaps it&rsquo;s a bit harsh, but <em>don&rsquo;t trust VirtualCenter</em>&mdash;at least, not with regards to firewall settings. If you want to know what&rsquo;s going on, then drop the service console and find out from the source. Just repeat after me: &ldquo;The command line is my friend. The command line is my friend. The command line is my friend&hellip;&rdquo;</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/09/10/a-new-direction/">A New Direction</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/09/12/embracing-diversity/">Embracing Diversity</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f11%2fesx-firewall-oddity%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f11%2fesx-firewall-oddity%2f&text=ESX%20Firewall%20Oddity" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f09%2f11%2fesx-firewall-oddity%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/06/04/strataguard-free/">StrataGuard Free</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2006/05/01/virtualization-layers/">Virtualization Layers</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

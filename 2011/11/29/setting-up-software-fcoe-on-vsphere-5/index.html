@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up Software FCoE on vSphere 5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up Software FCoE on vSphere 5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up Software FCoE on vSphere 5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/11/29/setting-up-software-fcoe-on-vsphere-5/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up Software FCoE on vSphere 5</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1040 words (estimated 5 minutes to read)</span>
+  <p>One of the features added in vSphere 5 was a <em>software FCoE initiator</em>. This is a feature that has gotten relatively little attention, other than a brief mention here and there. I&rsquo;m not entirely sure why the software FCoE initiator in vSphere 5 hasn&rsquo;t gotten more attention, but this past week I had the opportunity to work with the software FCoE initiator in a bit more detail. In this post I&rsquo;m going to describe in a bit more detail how to set up the software FCoE initiator; in future posts, I hope to be able to provide some performance and troubleshooting information.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>In order to use the software FCoE initiator, you must have a network interface card (NIC) that supports the FCoE offloads. The Intel X520 NICs certainly do; these are the cards that I used in my testing. (Disclaimer: Intel provided me a pair of X520 NICs at no charge to use in this testing.) There might be others, I don&rsquo;t know; the VMware HCL doesn&rsquo;t seem to provide an easy way of identifying those NICs that do support the FCoE offloads vs. those NICs that don&rsquo;t.</p>
+<p>If you have a NIC that doesn&rsquo;t support FCoE offloads, you won&rsquo;t even be able to add a software FCoE initiator:</p>
+<p><img src="/public/img/sw-fcoe-not-enabled.jpg" alt=""></p>
+<p>If, on the other hand, your NIC <em>does</em> support FCoE offloads, you&rsquo;ll see the option to add a software FCoE initiator, like this:</p>
+<p><img src="/public/img/sw-fcoe-enabled.jpg" alt=""></p>
+<p>Obviously, you&rsquo;ll want to be sure that your NIC does support FCoE offloads before continuing.</p>
+<h2 id="setting-up-networking-for-software-fcoe">Setting Up Networking for Software FCoE</h2>
+<p>Before you can actually set up a software FCoE initiator, you&rsquo;ll first need to configure your networking appropriately. There is one important piece of information you&rsquo;ll want to be sure to have before you continue: the ID of the VLAN for FCoE traffic.</p>
+<p>If you&rsquo;ve read <a href="/2009/10/25/setting-up-fcoe-on-a-nexus-5000/">my article on setting up FCoE on a Nexus 5000</a>, then you know that&mdash;on a Nexus 5000 series switch, anyway&mdash;you must map the FCoE VSAN to a VLAN (using the <code>fcoe vsan XXX</code> command). You&rsquo;re going to need that VLAN ID, so make sure that you have it. In a dual fabric setup, you&rsquo;re going to have two different VLAN IDs. You&rsquo;ll need both.</p>
+<p>Once you have those VLAN IDs, you can then proceed with the networking setup:</p>
+<ol>
+<li>
+<p>Create a VMkernel port on your ESXi host. When creating the VMkernel port, when prompted for VLAN ID specify the FCoE VLAN on fabric A.</p>
+</li>
+<li>
+<p>I don&rsquo;t know why (and maybe this will be fixed in a future release), but you&rsquo;ll need to assign an IP address to each VMkernel port. The IP address will <em>not</em> be used, so just pick an address on a subnet that you don&rsquo;t use. (Don&rsquo;t use a subnet that you are using elsewhere on the ESXi host or you could run into IP routing weirdness&mdash;remember that the VMkernel uses the <em>first</em> interface it finds for a particular route.)</p>
+</li>
+<li>
+<p>After you&rsquo;ve created the VMkernel port, modify the NIC teaming policy to only use the physical uplink that is physically connected to fabric A. This might require a bit of sleuthing and/or using CDP/LLDP data to ensure that you have the right uplink selected.</p>
+</li>
+<li>
+<p>Create a second VMkernel port on your ESXi host, this time specifying the FCoE VLAN ID for fabric B and modifying the NIC teaming policy
+When creating the VMkernel ports, specify the appropriate VLAN IDs&mdash;one for fabric A, one for fabric B. Modify the NIC teaming policy to only use the physical uplink connected to fabric B, again using physical tracing and CDP/LLDP data as needed to verify it.</p>
+</li>
+</ol>
+<p>At this point, you should now have two VMkernel ports, each with separate (unused) IP addresses and configured for separate VLAN IDs and separate physical uplinks. The VLAN IDs and the physical uplinks should correspond to the FCoE fabrics (fabric A and fabric B).</p>
+<h2 id="setting-up-the-software-fcoe-initiator">Setting Up the Software FCoE Initiator</h2>
+<p>With the networking in place, you can actually add the software FCoE initiator using the &ldquo;Add&rdquo; button on the Storage Adapters view of the Configuration tab. This opens up the Add Software Adapter dialog box I showed you earlier, where you can select &ldquo;Add Software FCoE Adapter&rdquo; and click OK.</p>
+<p>That option opens the following dialog box:</p>
+<p><img src="/public/img/add-sw-fcoe-adapter.jpg" alt=""></p>
+<p>You&rsquo;ll note that the VLAN ID is 0 and isn&rsquo;t changeable. I couldn&rsquo;t find any way to enable this field, and in my testing it proved unnecessary to change it (it worked anyway). Select the appropriate physical uplink and click OK. You&rsquo;ll do this twice&mdash;once for fabric A, and again for fabric B. After you&rsquo;ve done this twice, you&rsquo;ll have two software FCoE adapters:</p>
+<p><img src="/public/img/fcoe-adapters-added.jpg" alt=""></p>
+<p>For each of these two software FCoE adapters, you&rsquo;ll see a node WWN and a port WWN listed. You can use these values in creating the zones and zonesets (see <a href="/2009/10/25/setting-up-fcoe-on-a-nexus-5000/">here</a> for more information). First, though, you&rsquo;ll want to be sure that the software FCoE adapter is actually talking to the fabric correctly; the best way to do that is to use the <code>show flogi data</code> command (on a Nexus 5000; other vendors&rsquo; switches will use a slightly different command). The outcome of the <code>show flogi data</code> command will look something like this:</p>
+<p><img src="/public/img/sw-fcoe-flogi-results.jpg" alt=""></p>
+<p>In this screenshot (taken from an SSH session into a Nexus 5010), you can see that a device has logged into <code>vfc1009</code> on VSAN 300. If you compare the port name and node name, you&rsquo;ll see that they match one of the software FCoE adapters shown earlier. This is only one of the two fabrics; a matching result was seen from the other fabric, showing that both software FCoE adapters successfully logged into their respective fabrics.</p>
+<p>At this point, the rest of the configuration consists of creating the appropriate device aliases (if desired); defining zones and zonesets; and presenting storage from the storage array(s) to the initiator(s). Since these are topics that are fairly well understood and well documented elsewhere, I won&rsquo;t rehash them again here.</p>
+<p>In future posts, I hope to be able to do provide some performance and some troubleshooting information. However, it will likely be early 2012 before I have that opportunity. In the meantime, if anyone has any additional information they&rsquo;d like to share&mdash;including any corrections or clarifications&mdash;please feel free to add them to the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/11/28/technology-short-take-17/">Technology Short Take #17</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/11/30/vxlan-and-layer-3-connectivity/">VXLAN and Layer 3 Connectivity</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f29%2fsetting-up-software-fcoe-on-vsphere-5%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f29%2fsetting-up-software-fcoe-on-vsphere-5%2f&text=Setting%20up%20Software%20FCoE%20on%20vSphere%205" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f29%2fsetting-up-software-fcoe-on-vsphere-5%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2011/08/25/technology-short-take-13/">Technology Short Take #13</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

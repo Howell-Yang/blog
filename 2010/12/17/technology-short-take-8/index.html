@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #8 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #8 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #8 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/12/17/technology-short-take-8/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #8</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1023 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #8, my latest collection of item from around the Internet pertaining to data center technologies such as virtualization, networking, storage, and servers. I hope you find something useful here!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>A couple weeks ago I wrote about <a href="/2010/11/30/connecting-a-nexus-2148-to-a-nexus-5010/">how to connect a Nexus 2148T to a Nexus 5010</a>. What I haven&rsquo;t actually done yet is connect the Nexus 2148T to dual Nexus 5010 upstream switches using virtual port-channels. <a href="https://supportforums.cisco.com/message/3052114">This post</a> offers a configuration for just such an arrangement (just be sure to read the follow-up post for a key command to include in the configuration).</p>
+</li>
+<li>
+<p>And speaking of fabric extenders, Brad Hedlund recently posted a great article <a href="http://bradhedlund.com/2010/12/08/cisco-ucs-fabric-extender-fex-qos/">explaining QoS on the Cisco UCS fabric extender</a>.</p>
+</li>
+<li>
+<p>Erik Smith has posted <a href="http://brasstacksblog.typepad.com/brass-tacks/2010/12/fip-fip-snooping-bridges-and-fcfs-part-2-fip-snooping-bridges-and-fibre-channel-forwarders.html">part 2</a> of his series on FIP, FIP snooping bridges, and FCFs.</p>
+</li>
+<li>
+<p>This post by Ethan Banks on <a href="http://packetattack.wordpress.com/2010/11/27/the-scaling-limitations-of-etherchannel-or-why-11-does-not-equal-2">the scaling limitations of EtherChannel</a>  reinforces what I&rsquo;ve said before about the use of EtherChannel and VMware ESX/ESXi (see <a href="/2008/07/16/understanding-nic-utilization-in-vmware-esx/">this post</a> and <a href="/2008/10/08/more-on-vmware-esx-nic-utilization/">this follow-up post</a>). Apparently this misunderstanding about how link aggregation works isn&rsquo;t just limited to virtualization folks.</p>
+</li>
+<li>
+<p>This <a href="http://blog.ipexpert.com/2010/12/06/bpdu-filter-and-bpdu-guard/">article on BPDU Guard and BPDU Filter</a> is a bit deep for the non-expert networkers (like me), but is good reading nevertheless. Since it is recommended that you disable Spanning Tree Protocol for ports facing VMware ESX/ESXi hosts (and here&rsquo;s <a href="http://blog.ioshints.info/2010/11/vmware-virtual-switch-no-need-for-stp.html">the explanation why</a> from our good friend Ivan &ldquo;IOSHints&rdquo; Pepelnjak), it&rsquo;s good to understand which commands to use and at which scope to use them.</p>
+</li>
+<li>
+<p>While link aggregation isn&rsquo;t a panacea, it can be helpful in a number of situations. However, you really need to consider multi-chassis link aggregation in order to eliminate single points of failure. Ivan Pepelnjak posted a series of articles on multi-chassis link aggregation (MLAG): <a href="http://blog.ioshints.info/2010/10/multi-chassis-link-aggregation-basics.html">MLAG basics</a>, <a href="http://blog.ioshints.info/2010/10/multi-chassis-link-aggregation-stacking.html">MLAG via stacking</a>, and <a href="http://blog.ioshints.info/2010/11/multi-chassis-link-aggregation-mlag.html">MLAG external brains</a>. I think there&rsquo;s another post still coming, correct Ivan?</p>
+</li>
+<li>
+<p><a href="http://evilrouters.net/2010/10/12/reason-693-why-i-love-unix/">This post</a> is written by networking guru Jeremy Gaddis, but it&rsquo;s really more about UNIX and regular expressions. So in which category does it belong? (Does it really matter?) I guess since it deals with how to use UNIX tools and regular expressions to manipulate networking data I&rsquo;ll put it in the networking category.</p>
+</li>
+<li>
+<p>Here&rsquo;s a good post on creating <a href="http://roggyblog.blogspot.com/2010/11/vyatta-to-cisco-tunneling-from-asa-to.html">LAN-to-LAN tunnels between a Vyatta router and a Cisco ASA</a>.</p>
+</li>
+<li>
+<p>Joe Onisick has a good write-up on <a href="http://www.definethecloud.net/inter-fabric-traffic-in-ucs">the behavior of inter-fabric traffic in UCS</a>.</p>
+</li>
+</ul>
+<h2 id="servers">Servers</h2>
+<ul>
+<li>
+<p>Still think that Cisco UCS requires 10Gb Ethernet and Cisco Nexus switches? You might want to read <a href="http://jeffsaidso.com/2010/12/ucs-only-runs-at-10-ge-and-requires-nexus/">this</a>. Seriously, go read it.</p>
+</li>
+<li>
+<p>Jeff Allen has posted a good discussion of <a href="http://jeffsaidso.com/2010/11/ucs-bios-policies/">UCS BIOS policies</a>.</p>
+</li>
+<li>
+<p>In the past I&rsquo;ve covered various integrations with RADIUS using Microsoft IAS (see <a href="/2007/07/02/authenticating-to-cisco-ios-via-active-directory/">here</a>, <a href="/2006/12/07/8021x-integration-with-active-directory/">here</a>, and <a href="/2005/11/22/cisco-pix-vpn-and-active-directory-integration/">here</a> for some examples). Here&rsquo;s a post on <a href="http://jwalther.tumblr.com/post/1204778672/configuring-radius-with-cisco-ucs-and-microsoft-ias">how to use Microsoft IAS to integrate Cisco UCS into Active Directory</a>.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>It&rsquo;s good to see more &ldquo;virtualization&rdquo; people getting into storage. Recently, Jon Owings (of &ldquo;2vcps and a Truck&rdquo; fame) posted two good articles on storage caching vs. tiering (<a href="http://www.2vcps.com/2010/11/19/storage-caching-vs-tiering-part-1/">part 1</a> and <a href="http://www.2vcps.com/2010/11/24/storage-caching-vs-tiering-part-2/">part 2</a>). Jon provides a good vehicle to discuss these technologies, both of which are valuable and both of which have a place in many companies&rsquo; storage strategy.</p>
+</li>
+<li>
+<p>Here&rsquo;s another view on <a href="http://techvirtuoso.com/2010/11/12/storage-tiering-vs-caching/">storage tiering vs. caching</a>.</p>
+</li>
+<li>
+<p>And speaking yet again of caching and tiering&hellip;here&rsquo;s some <a href="http://vblog.matt-taylor.org/2010/11/07/fast-and-fast-cache-some-quick-highlights/">info on FAST (tiering) and FAST Cache (caching)</a>.</p>
+</li>
+<li>
+<p>Finally, rounding out this week&rsquo;s caching and tiering discussions, I have Nigel Poulton&rsquo;s post on <a href="http://blog.nigelpoulton.com/sub-lun-tiering-design-considerations/">sub-LUN tiering design considerations</a>.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Noted virtualization performance guru Scott Drummonds posted a collection of thoughts <a href="http://vpivot.com/?p=702">regarding maximum hosts per cluster</a>. Duncan Epping&mdash;who along with Frank Denneman recently published their <em>HA and DRS Technical Deep Dive</em> book&mdash;followed up with <a href="http://www.yellow-bricks.com/2010/11/29/re-maximum-hosts-per-cluster-scott-drummonds/">his own post</a> on the matter. Both Scott and Duncan summarized some of the advantages and disadvantages of both large and small clusters. The real key to understanding the &ldquo;right&rdquo; cluster size is, as Duncan points out, an understanding of how best to meet the requirements of the environment.</p>
+</li>
+<li>
+<p>Scott also posted this useful discussion on <a href="http://vpivot.com/2010/11/07/storage-consolidation-or-how-many-vmdks-per-volume/">considerations around VMDK consolidation</a> in virtualized environments.</p>
+</li>
+<li>
+<p>Need to find the IP address of a VM from an ESX host? Try <a href="http://jlscz.blogspot.com/2010/12/how-to-find-vms-ip-address-from-esx.html">this article</a>, which provides the steps and tools you need.</p>
+</li>
+<li>
+<p>I saw a couple of good articles from Frank Denneman recently. One was on <a href="http://frankdenneman.nl/2010/11/disallowing-multiple-vm-console-sessions/">how to disallow multiple VM console sessions</a>; the second was discussing <a href="http://frankdenneman.nl/2010/11/disable-ballooning/">disabling the balloon driver and why it&rsquo;s generally not a good idea</a>. Frank also posted a piece recently on <a href="http://frankdenneman.nl/2010/11/the-impact-of-qos-network-traffic-on-vm-performance/">the interaction between QoS and the adaptive algorithm that DRS uses</a> to determine concurrent vMotions. While I agree that you don&rsquo;t want to impact DRS&rsquo; ability to perform concurrent vMotions to restore cluster balance, it&rsquo;s also critically important to ensure proper balance in network traffic. You don&rsquo;t want a single type of network traffic to swamp others. As with many other things in the virtualization arena, just be sure to understand the impact of your decisions.</p>
+</li>
+<li>
+<p>If you need to shape network traffic (like vMotion), here&rsquo;s a <a href="http://v-reality.info/2010/10/shaping-vmotion-in-10-gb-networks/">how to document</a> on how it&rsquo;s done.</p>
+</li>
+<li>
+<p><a href="http://www.softwareadvice.com/articles/accounting/microsoft-is-all-in-for-the-cloud-but-what-about-dynamics-1121310/">This article</a> underscores the difficulty that many organizations have in adopting &ldquo;the cloud&rdquo;, at least as it pertains to public cloud-based services. Perhaps this is why VMware is so keen on embracing software development tools that help build cloud-enabled applications&hellip;</p>
+</li>
+<li>
+<p>I think that <code>esxtop</code> remains an underestimated tool in troubleshooting. If you need to deepen your understanding of this very useful tool, a good place to start&mdash;among the many, many resources that are available&mdash;would be <a href="http://www.virtu-al.net/2010/11/10/vmware-session-4-advanced-performance-troubleshooting-using-esxtop/">this presentation</a>. Thanks for posting this, Alan!</p>
+</li>
+<li>
+<p>William Lam has posted a thorough guide to <a href="http://www.virtuallyghetto.com/2010/11/how-to-configure-and-use-vmas-vi.html">using vi-fastpass with fpauth and adauth</a>. As the vMA grows in importance with the transition to ESXi in the next major release of vSphere, tips and tricks such as this are going to be worth their words in gold. Good job William!</p>
+</li>
+<li>
+<p>Remember how I&rsquo;ve mentioned before that it&rsquo;s funny when vendors taking existing technologies and rename them to include the word &ldquo;virtualization&rdquo;? That&rsquo;s the feeling I get from reading <a href="http://windowsteamblog.com/windows/b/business/archive/2010/11/30/user-state-virtualization-what-is-it-and-how-will-it-help-you-deliver-a-dynamic-and-personal-windows-experience.aspx">this article on Microsoft&rsquo;s user state virtualization</a>.</p>
+</li>
+</ul>
+<p>It&rsquo;s time to wrap up now, so I&rsquo;ll just say that I welcome any feedback, corrections, clarifications, or additions in the comments below. I hope you&rsquo;ve found something helpful. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nexus">Nexus</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/12/16/some-emc-product-updates/">Some EMC Product Updates</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/12/20/using-vplex-and-data-replication-together/">Using VPLEX and Data Replication Together</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f17%2ftechnology-short-take-8%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f17%2ftechnology-short-take-8%2f&text=Technology%20Short%20Take%20%238" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f17%2ftechnology-short-take-8%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/28/technology-short-take-2/">Technology Short Take #2</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2010/11/10/technology-short-take-6/">Technology Short Take #6</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Converting Kubernetes to an HA Control Plane - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Converting Kubernetes to an HA Control Plane - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Converting Kubernetes to an HA Control Plane - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/08/12/converting-kubernetes-to-ha-control-plane/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Converting Kubernetes to an HA Control Plane</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;2467 words (estimated 12 minutes to read)</span>
+  <p>While hanging out in the Kubernetes Slack community, one question I&rsquo;ve seen asked multiple times involves switching a Kubernetes cluster from a non-HA control plane (single control plane node) to an HA control plane (multiple control plane nodes). As far as I am aware, this isn&rsquo;t documented upstream, so I thought I&rsquo;d walk readers through what this process looks like.</p>
+<p>I&rsquo;m making the following assumptions:</p>
+<ul>
+<li>The existing single control plane node was bootstrapped using <code>kubeadm</code>. (This means we&rsquo;ll use <code>kubeadm</code> to add the additional control plane nodes.)</li>
+<li>The existing single control plane node is using a &ldquo;stacked configuration,&rdquo; in which both etcd and the Kubernetes control plane components are running on the same nodes.</li>
+</ul>
+<p>I&rsquo;d also like to point out that there are a <em>lot</em> of different configurations and variables that come into play with a process like this. It&rsquo;s (nearly) impossible to cover them all in a single blog post, so this post attempts to address what I believe to be the most common situations.</p>
+<p>With those assumptions and that caveat in mind, the high-level overview of the process looks like this:</p>
+<ol>
+<li>Create a load balancer for the control plane.</li>
+<li>Update the API server&rsquo;s certificate.</li>
+<li>Update the kubelet on the existing control plane.</li>
+<li>Update other control plane components.</li>
+<li>Update worker nodes.</li>
+<li>Add control plane nodes.</li>
+</ol>
+<p>The following sections will explore each of these steps in a bit more detail. First, though, a disclaimer.</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>In all reality, the <em>best</em> way to &ldquo;upgrade&rdquo; a non-HA control plane to an HA control plane is to build a new HA control plane and migrate all your workloads (perhaps using something like <a href="https://velero.io/">Velero</a>). This better aligns with &ldquo;cluster as cattle&rdquo; thinking (more appropriately known as <em>immutable infrastructure</em>). With that in mind, I&rsquo;m presenting the following information more as a means of learning a bit more about how Kubernetes works. I <em>do not</em> recommend using this procedure on any cluster that will ever be considered a production cluster.</p>
+<h2 id="create-a-load-balancer-for-the-control-plane">Create a Load Balancer for the Control Plane</h2>
+<p>The first step is to create a load balancer for the control plane (a load balancer is required when using multiple control plane nodes). Since the specifics of how to set up and configure a load balancer will vary from solution to solution, I won&rsquo;t try to include the details here other than to mention two high-level requirements:</p>
+<ul>
+<li>You should be using a Layer 4 load balancer (TCP instead of HTTP/HTTPS).</li>
+<li>Health checks should be configured as SSL health checks instead of TCP health checks (this will weed out spurious &ldquo;TLS handshake errors&rdquo; in the API server&rsquo;s logs).</li>
+</ul>
+<p>It is also a good idea at this time to create a DNS CNAME entry to point to your load balancer (highly recommended). This gives you some additional flexibility in the event you need to swap out or reconfigure your load balancing solution, as the DNS CNAME remains constant even if the names to which it resolves change behind the scenes. (The name remaining constant is important, as you&rsquo;ll see in a moment.)</p>
+<p>Whether or not you create a DNS CNAME, make a note of the IP address(es) and DNS names you&rsquo;ll use to connect to the cluster through the load balancer, as you&rsquo;ll need those in the next step.</p>
+<p>Because everything in the cluster still points directly to the single control plane node, adding in the load balancer won&rsquo;t affect anything <em>unless</em> the load balancer is inline (requiring traffic to go through the load balancer to reach the single control plane node). At this point, I&rsquo;d recommend sticking with a solution that still allows the rest of the cluster to reach the single control plane node directly.</p>
+<h2 id="update-the-api-servers-certificate">Update the API Server&rsquo;s Certificate</h2>
+<p>The next step is to update the API server&rsquo;s TLS certificate to account for the IP address(es) and/or DNS names that will be used to reach the control plane through the load balancer (see, I said you&rsquo;d need them in the next step!). The API server (one of the three Kubernetes control plane components, the other two being the controller manager and the scheduler) uses a TLS certificate to both provide authentication as well as to encrypt control plane traffic. This certificate needs to have a proper Subject Alternative Name (SAN) that matches whatever IP address or DNS name is being used to communicate with the API server. Otherwise, communications with the API server will result in an error, and that (ultimately) break your cluster.</p>
+<p>To address this, you&rsquo;ll need to add one or more new SANs to the API server&rsquo;s certificate. I wrote about this process in <a href="/2019/07/30/adding-a-name-to-kubernetes-api-server-certificate/">this blog post</a>, so follow the instructions in that post to update your API server certificate.</p>
+<p>Once you&rsquo;ve completed this process, I recommend you update your Kubeconfig file (as outlined in the &ldquo;Verifying the Change&rdquo; section of the blog post for updating your certificate) to point to an IP address or DNS name that will direct the traffic through the load balancer, and then test <code>kubectl</code> access to your cluster. Even though the rest of the cluster is still pointing directly to the single control plane node, using <code>kubectl</code> through the load balancer should still work as expected. If it doesn&rsquo;t work, stop and troubleshoot the issue <strong>before proceeding.</strong> You&rsquo;ll want to be sure that access to the API server through the load balancer is working before you continue.</p>
+<h2 id="update-the-kubelet-on-the-control-plane-node">Update the Kubelet on the Control Plane Node</h2>
+<p>The Kubelet on the existing control plane node communicates with the API server, as do all the other components of the cluster. Once you&rsquo;ve verified that access to the API server through the load balancer works, the next step is to update the Kubelet to access the API server through the load balancer as well.</p>
+<p>Much like a user does, the Kubelet uses a Kubeconfig file to know how to find the control plane and authenticate to it. This file is found in <code>/etc/kubernetes/kubelet.conf</code>, which you can verify by looking at the systemd drop-in added to the Kubelet service by <code>kubeadm</code> (the file is <code>/etc/systemd/system/kubelet.service.d/10-kubeadm.conf</code>).</p>
+<p>In order to have the Kubelet communicate with the API server through the load balancer, you&rsquo;ll need to edit this Kubeconfig file for the Kubelet (again, the file in question is <code>/etc/kubernetes/kubelet.conf</code>) and change the <code>server:</code> line to point to an IP address or DNS name for the load balancer (and for which there is a corresponding SAN on the API server&rsquo;s certificate). Note you can also use <code>export KUBECONFIG=/etc/kubernetes/kubelet.conf</code> and <code>kubectl config set clusters.default-cluster.server</code> to make this change. (Personally, I find editing the file easier.)</p>
+<p>Once you made this change, restart the Kubelet with <code>systemctl restart kubelet</code>, and then check the logs for the Kubelet to be sure it is working as expected.</p>
+<h2 id="update-control-plane-components">Update Control Plane Components</h2>
+<p>The fourth step is to update the other control plane components to communicate with the API server through the load balancer. Like the Kubelet, both the controller manager and the scheduler (two other components of the Kubernetes control plane along with the API server) use Kubeconfig files to communicate with and authenticate to the API server. Just as you updated the Kubeconfig file (by modifying the <code>server:</code> line for the cluster being modified to point to the load balancer) used by the Kubelet, you&rsquo;ll also need to update the Kubeconfig files that the controller manager and scheduler use to connect to the API server.</p>
+<p>The files that need to be modified are:</p>
+<pre><code>/etc/kubernetes/controller-manager.conf
+/etc/kubernetes/scheduler.conf
+</code></pre>
+<p>These files are standard Kubeconfig files. The only line that needs to be changed is the <code>server:</code> line that specifies the API endpoint (this is currently probably pointing to the IP address or hostname of the single control plane node). Edit each of these files to point to an IP address or DNS name for the load balancer (and for which a SAN exists on the API server certificate).</p>
+<p>For these components to pick up the change, you&rsquo;ll need to restart them. Assuming that Docker is the container runtime in use, these commands will kill the container for each component:</p>
+<pre><code>docker kill $(docker ps | grep kube-controller-manager | \
+grep -v pause | cut -d' ' -f1)
+docker kill $(docker ps | grep kube-scheduler | grep -v pause | \
+cut -d' ' -f1)
+</code></pre>
+<p>If you&rsquo;re using containerd as your container runtime, the commands will look a bit different. Use <code>crictl pods | grep kube-controller-manager | cut -d' ' -f1</code> to get the Pod ID. Then use <code>crictl stopp &lt;pod-id&gt;</code> to stop the Pod, and <code>crictl rmp &lt;pod-id&gt;</code> to remove the Pod. Repeat as needed for other control plane components.</p>
+<p>The Kubelet will then restart them automatically, and they&rsquo;ll pull in the changes to their respective Kubeconfig files. Once the controller manager and scheduler have restarted, check the logs for each (using either <code>docker logs &lt;containerID&gt;</code> or <code>kubectl logs -n kube-system &lt;podName&gt;</code>) to make sure that they are operating correctly.</p>
+<p>Before moving on to the worker nodes, there&rsquo;s one more component on the control plane node that needs to be updated: <code>kube-proxy</code>.</p>
+<h2 id="update-kube-proxy-on-the-control-plane-node">Update Kube-Proxy on the Control Plane Node</h2>
+<p>With most CNI plugins, <code>kube-proxy</code> is responsible for implementing the necessary mechanisms to support Services and Network Policies. Like the Kubelet and the other control plane components, <code>kube-proxy</code> uses a Kubeconfig file to specify how to connect to the Kubernetes API. In this case, however, the config file is provided to <code>kube-proxy</code> via a ConfigMap.</p>
+<p>To update this ConfigMap, use <code>kubectl -n kube-system edit cm kube-proxy</code> and look for the <code>server:</code> line that specifies how to connect to the Kubernetes API. It probably refers to the original control plane node&rsquo;s IP address, or possibly the control plane node&rsquo;s DNS name. You&rsquo;ll need to edit it to point to the load balancer you created for the control plane. Then restart the <code>kube-proxy</code> Pod on the control plane node using the instructions provided above.</p>
+<p>At this point, you&rsquo;ve created and configured a load balancer for the control plane, updated the API server&rsquo;s certificate to account for the load balancer, updated the Kubelet to point to the load balancer, updated the controller manager and scheduler to point to the load balancer, and updated <code>kube-proxy</code> to point to the load balancer. You&rsquo;re now ready to move on to the worker nodes.</p>
+<h2 id="update-worker-nodes">Update Worker Nodes</h2>
+<p>The only component running on the worker nodes that needs to be updated is the Kubelet configuration. Follow the instructions in the section &ldquo;Update the Kubelet on the Control Plane Node&rdquo; to update the Kubelet on the worker nodes as well.</p>
+<p>Next, restart the <code>kube-proxy</code> Pod running on the node so that it picks up the updated ConfigMap you edited in the previous section. Use the <code>docker</code> or <code>crictl</code> commands provided earlier.</p>
+<h2 id="update-the-in-cluster-configuration">Update the In-Cluster Configuration</h2>
+<p>As pointed out in <a href="/2019/07/30/adding-a-name-to-kubernetes-api-server-certificate/">this post</a>, <code>kubeadm</code> stores some configuration in a ConfigMap named &ldquo;kubeadm-config&rdquo; in the &ldquo;kube-system&rdquo; namespace. <code>kubeadm</code> uses this information when performing cluster upgrades, or when joining nodes to the cluster. Since we&rsquo;ve now added a load balancer in front of the control plane, we need to update this ConfigMap with the correct information. (You&rsquo;ll be adding control plane nodes to the cluster shortly, so having the correct information in this ConfigMap is important.)</p>
+<p>First, pull the current configuration from the ConfigMap with this command:</p>
+<pre><code>kubectl -n kube-system get configmap kubeadm-config -o jsonpath='{.data.ClusterConfiguration}' &gt; kubeadm.yaml
+</code></pre>
+<p>Currently, the <code>controlPlaneEndpoint</code> is most likely empty (just a pair of double quotes). Edit this value to point to the DNS CNAME of the load balancer you created and configured for the control plane. (As I mentioned earlier, the use of a DNS CNAME for the control plane load balancer is recommended.)</p>
+<p>You should also be able to see the <code>certSANs</code> section that was added as part of adding a SAN to the API server&rsquo;s certificate (assuming you followed the directions to update the ConfigMap when updating the API server certificate).</p>
+<p>Once you&rsquo;ve edited the file, upload it back to the cluster with this command:</p>
+<pre><code>kubeadm config upload from-file --config kubeadm.yaml
+</code></pre>
+<p>You also need to update the &ldquo;cluster-info&rdquo; ConfigMap in the &ldquo;kube-public&rdquo; namespace, which contains a Kubeconfig file with a <code>server:</code> line that points to the single control plane node. It&rsquo;s easist to just use <code>kubectl -n kube-public edit cm cluster-info</code> and update the <code>server:</code> line to point to the load balancer for the control plane. <em>(Thanks to Fabrizio Pandini for pointing this out!)</em></p>
+<p>Only one step remains now: actually adding more control plane nodes to make the control plane highly available.</p>
+<h2 id="add-control-plane-nodes">Add Control Plane Nodes</h2>
+<p>To add additional control plane nodes&mdash;and you should be adding two additional nodes, for a total of three, which allows etcd to reach quorum&mdash;you can follow the instructions from the Kubernetes web site (see <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/">here</a> for version 1.15 or <a href="https://v1-14.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/">here</a> for version 1.14). In particular, see the &ldquo;Steps for the rest of the control plane nodes&rdquo; under the &ldquo;Stacked control plane and etcd nodes&rdquo; section.</p>
+<p>There are a few caveats/considerations to keep in mind:</p>
+<ul>
+<li>These instructions assume you are joining the additional control plane nodes immediately or nearly immediately after creating the control plane. In this case, however, the control plane may have been up for quite a while. Therefore, you&rsquo;re going to need to upload the certificates again (and generate a new certificate key) using <code>kubeadm init phase upload-certs --upload-certs</code> (for 1.15) or <code>kubeadm init phase upload-certs --experimental-upload-certs</code> (for 1.14). This will generate a new certificate key, which you&rsquo;ll need (it&rsquo;s only good for 2 hours).</li>
+<li>For the same reason as above, you&rsquo;ll probably also need to generate a new bootstrap token (the default lifetime of a token is 24 hours). You can do this with <code>kubeadm token create</code>.</li>
+<li>Finally, you may not know the SHA256 hash of the CA certificate. Fortunately, I have this covered for you as well; see <a href="/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/">this post</a> for instructions.</li>
+</ul>
+<p>Once you have a valid certificate key, a valid bootstrap token, and the correct SHA256 hash of the CA certificate, you can join a new control plane node with this command:</p>
+<pre><code>kubeadm join &lt;DNS CNAME of load balancer&gt;:6443 \
+--token &lt;bootstrap-token&gt; \
+--discovery-token-ca-cert-hash sha256:&lt;CA certificate hash&gt; \
+--control-plane --certificate-key &lt;certificate-key&gt;
+</code></pre>
+<p>(If you&rsquo;re using 1.14, replace <code>--control-plane</code> with <code>--experimental-control-plane</code>.)</p>
+<p>Once you&rsquo;ve added two more control plane nodes (for a total of three), you now have a highly available Kubernetes control plane. Go pat yourself on the back.</p>
+<p><strong>Reminder:</strong> I <em>do not</em> recommend using this procedure for any sort of cluster that is or ever will be considered &ldquo;production.&rdquo; See the &ldquo;Disclaimer&rdquo; section above.</p>
+<p>If you have any questions, comments about the post, or corrections/suggestions, please don&rsquo;t hesitate to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a>. Or, you can find me on the Kubernetes Slack community (I hang out a lot in the &ldquo;#kubeadm&rdquo; channel). I hope this information is useful to you!</p>
+<p><strong>UPDATE 2020-02-20:</strong> I added notes about updating the <code>kube-proxy</code> configuration, and added commands for restarting Pods on containerd-based nodes.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/08/02/technology-short-take-117/">Technology Short Take 117</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f12%2fconverting-kubernetes-to-ha-control-plane%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f12%2fconverting-kubernetes-to-ha-control-plane%2f&text=Converting%20Kubernetes%20to%20an%20HA%20Control%20Plane" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f12%2fconverting-kubernetes-to-ha-control-plane%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/07/30/adding-a-name-to-kubernetes-api-server-certificate/">Adding a Name to the Kubernetes API Server Certificate</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/">Calculating the CA Certificate Hash for Kubeadm</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2018/11/09/technology-short-take-106/">Technology Short Take 106</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

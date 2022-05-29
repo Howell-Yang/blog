@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Viridian Feature Set Trimmed - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Viridian Feature Set Trimmed - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Viridian Feature Set Trimmed - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/05/10/viridian-feature-set-trimmed/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Viridian Feature Set Trimmed</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;498 words (estimated 3 minutes to read)</span>
+  <p>Microsoft has been hyping up its Windows Hypervisor (&ldquo;Viridian&rdquo;) for quite some time now, talking about how the Viridian feature set is going to leapfrog functionality that is currently available on the market. Now, in <a href="http://news.com.com/Microsoft+cuts+Windows+virtualization+features/2100-1016_3-6182852.html">this article</a> posted this morning, <a href="http://www.microsoft.com/">Microsoft</a> has revealed that they have to pull three key features from Viridian in order to meet its delivery schedule.</p>
+<p>Of the three features being cut, the most notable to me is live migration. <a href="http://www.vmware.com/">VMware</a> users will know this better as <a href="http://www.vmware.com/products/vi/vc/vmotion.html">VMotion</a>, the ability to move a live VM from one physical host to another with no downtime. This is a key enabling technology, and the fact that Microsoft won&rsquo;t have this functionality is a <em>huge</em> win for VMware (and, to a lesser extent, <a href="http://www.xensource.com/">XenSource</a>).</p>
+<p>But live migration isn&rsquo;t the only feature on the cutting block:</p>
+<blockquote>
+<p>The initial release of Viridian also won&rsquo;t support on-the-fly, or &ldquo;hot,&rdquo; adding of memory, storage, processors or network cards. And it will support computers with a maximum of 16 processing cores&mdash;for example, eight dual-core chips or four quad-core chips.</p>
+</blockquote>
+<p>I agree with the article&rsquo;s author that limiting support to 16 cores isn&rsquo;t a huge deal, at least not now. A year from now? Hard to say for sure if it will be an issue then, and if I were VMware or Xen I&rsquo;d make sure my software didn&rsquo;t have that limit. Even if it doesn&rsquo;t matter, let&rsquo;s face it: marketing is half the battle, and saying that your product can handle more horsepower than Microsoft&rsquo;s product can&rsquo;t hurt.</p>
+<p>Likewise, &ldquo;hot adding&rdquo; resources isn&rsquo;t a big deal today. The article points out that Xen has this capability today; VMware does not. (As an aside, I&rsquo;m curious to know if Xen&rsquo;s hot-add functionality is only supported for modified guests. Anyone know?) Note that the article is incorrect in pointing out that hot-add support is mitigated somewhat by live migration; that would be true only for adding resources to the <em>host</em>, not the <em>guest.</em> Without hot-add support, we would still require downtime at the guest level.</p>
+<p>It&rsquo;s not all good for VMware, though. In my humble opinion, VMware needs to stay vigilant and not discount Microsoft (or Xen) as a competitor. If they get complacent, then they will most assuredly lose their leadership position. VMware needs to continue to innovate and drive the market to new areas that were previously considered impossible (such as the experimental Record/Replay support in the newly released <a href="http://www.vmware.com/products/ws/">VMware Workstation 6.0</a>). What is possible now with Record/Replay? How could this functionality be used in ways that people aren&rsquo;t considering today? Can we continue to add value to ACE and VDI deployments by combining these technologies? It probably would be a good idea for them to release VDM (Virtual Desktop Manager), currently available only through a professional services engagement, to the public as a product as well.</p>
+<p>VMware has a tremendous lead in the virtualization market, but smart, nimble, and powerful competitors are waiting for a misstep. Here&rsquo;s hoping there isn&rsquo;t one.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/05/10/dead-powerbook/">Dead PowerBook</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/05/11/how-to-provision-vms-using-netapp-flexclones/">How to Provision VMs Using NetApp FlexClones</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f10%2fviridian-feature-set-trimmed%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f10%2fviridian-feature-set-trimmed%2f&text=Viridian%20Feature%20Set%20Trimmed" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f10%2fviridian-feature-set-trimmed%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/03/18/various-vmware-links/">Various VMware Links</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2007/02/28/more-on-microsoft-versus-vmware/">More on Microsoft versus VMware</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2007/02/27/return-of-the-old-microsoft/">Return of the Old Microsoft</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

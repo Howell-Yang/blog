@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Determining an Optimal Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Determining an Optimal Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Determining an Optimal Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/09/19/determining-an-optimal-design/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Determining an Optimal Design</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;487 words (estimated 3 minutes to read)</span>
+  <p>I had an interesting e-mail conversation last week with fellow EMC vSpecialist Clint Kitson. Now, if you&rsquo;ve never met Clint, he&rsquo;s a super-sharp fellow, no questions about it. I love conversations with super-sharp folks as they invariably lead to new thoughts and new ideas, and this conversation was no different. The topic of the conversation, in generalized terms, was this: when crafting designs for customers, what defines an <em>&ldquo;optimal design&rdquo;</em>?</p>
+<p>Allow me to share a few details from our conversation, and perhaps that question will make a bit more sense. Clint and I were discussing storage array designs and the various types of utilization that exist within a storage array. In this particular case, we were discussing a scenario in which an array&mdash;any type of array, not just an EMC array&mdash;could be configured in one of two ways:</p>
+<ol>
+<li>
+<p>You could configure the array with fewer drives than the storage controllers are actually capable of driving. Thus, there is a certain amount of storage controller capacity left unused, even if all the drives are fully utilized.</p>
+</li>
+<li>
+<p>You could configure the array with more drives than the storage controllers are capable of driving. Thus, even if the storage controllers are fully utilized, there are some unused drive resources (IOPS and capacity, but mostly IOPS) left unused.</p>
+</li>
+</ol>
+<p>In either configuration, there is a resource (either storage controller capacity or drive capacity in IOPS) that is not fully utilized. So what&rsquo;s the optimal design in this sort of scenario? Either way, something is going to be under-utilized.</p>
+<p>If you think about it, this same question could be asked of a VMware vSphere design. In almost every vSphere design, there is at least one resource that is not fully utilized. So what is an optimal design? Which resource should be left under-utilized? How does an architect&mdash;be it a storage architect creating storage array configurations or a virtualization architect creating virtualized infrastructure designs&mdash;determine which resources should be left under-utilized in order to create an optimal design?</p>
+<p>If you attended my VMworld session (VSP1926), you probably already know what I think the answer is: functional requirements. Which approach best satisfies the customer&rsquo;s functional requirements? In the example that Clint and I were discussing, which approach will best meet the customer&rsquo;s needs and requirements?</p>
+<p>&ldquo;But Scott,&rdquo; you say, &ldquo;either approach could satisfy the functional requirements.&rdquo;</p>
+<p>That might be true (it&rsquo;s hard to say here since we were discussing this in a very abstract sort of way), but I&rsquo;m almost certain that in every one of these situations one approach is more cost-effective than the others, and every project I&rsquo;ve ever seen has a financial functional requirement (more commonly referred to as a &ldquo;budget&rdquo;). Can you still say all approaches meet the functional requirements equally?</p>
+<p>This is a bit of an academic discussion, but an interesting one (in my mind, at least). What do you think? Share your thoughts, rants, and ideas in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2011">VMworld2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/09/16/the-right-vsphere-design-perspective/">The Right vSphere Design Perspective</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/09/20/exclusion-or-not/">Exclusion or Not?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f09%2f19%2fdetermining-an-optimal-design%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f09%2f19%2fdetermining-an-optimal-design%2f&text=Determining%20an%20Optimal%20Design" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f09%2f19%2fdetermining-an-optimal-design%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/08/29/vsp3205-tech-preview-vstorage-apis/">VSP3205: Tech Preview, vStorage APIs</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2011/08/31/vsp2117-virtualization-aware-datacenter-networks/">VSP2117: Virtualization-Aware Datacenter Networks</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2011/08/29/vmworld-2011-monday-general-session/">VMworld 2011 Monday General Session</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

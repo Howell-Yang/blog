@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #37 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #37 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #37 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/12/06/technology-short-take-37/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #37</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1075 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #37, the latest in my irregularly-published series in which I share interesting articles from around the Internet, miscellaneous thoughts, and whatever else I feel like throwing in. Here&rsquo;s hoping you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Ivan does <a href="http://blog.ipspace.net/2013/08/management-control-and-data-planes-in.html">a great job</a> of describing the difference between the management, control, and data planes, as well as providing examples. Of course, the distinction between control plane protocols and data plane protocols <a href="http://blog.ipspace.net/2013/10/what-exactly-is-control-plane.html">isn&rsquo;t always perfectly clear</a>.</p>
+</li>
+<li>
+<p>You&rsquo;ve heard me talk about <a href="http://martinfowler.com/bliki/SnowflakeServer.html">snowflake servers</a> before. In this post on <a href="http://www.plexxi.com/2013/10/designing-resilience-case-network-chaos-monkey/">why networking needs a Chaos Monkey</a>, Mike Bushong applies to the terms to networks&mdash;a <em>snowflake network</em> is an intricately crafted network that is carefully tailored to utilize a custom subset of networking features unique to your environment. What is the fix&mdash;if one exists&mdash;to snowflake networks? Designing your network for resiliency and unleashing a Chaos Monkey on it is one way, as Mike points out. A fan of network virtualization might also say that decomposing today&rsquo;s complex physical networks into multiple simple logical networks on top of a simpler physical transport network&mdash;similar to Mike&rsquo;s suggestion of converging on a smaller set of reference architectures&mdash;might also help. (Of course, I am a fan of network virtualization, since I work with/on VMware NSX.)</p>
+</li>
+<li>
+<p>Martijn Smit has launched a series of articles on VMware NSX. Check out part 1 (<a href="http://lostdomain.org/2013/10/20/vmware-nsx-general/">general introduction</a>) and part 2 (<a href="http://lostdomain.org/2013/11/03/vmware-nsx-distributed-services/">distributed services</a>) for more information.</p>
+</li>
+<li>
+<p>The <a href="http://networkheresy.com/2013/11/01/of-mice-and-elephants/">elephants and mice</a> post at Network Heresy has sparked some discussion across the &ldquo;blogosphere&rdquo; about how to address this issue. (Note that my name is on the byline for that Network Heresy post, but I didn&rsquo;t really contribute all that much.) Jason Edelman took up the idea of <a href="http://www.jedelman.com/1/post/2013/11/a-dedicated-data-center-corespine-for-your-special-elephants.html">using OpenFlow to provide a dedicated core/spine for elephant flows</a>, while Marten Terpstra at Plexxi talks about how Plexxi&rsquo;s <a href="http://www.plexxi.com/2013/11/elephants-need-affinities/#sthash.35qrqBIn.dpbs">Affinities could be used</a> to help address the problem of elephant flows. Peter Phaal speaks up in the comments to Marten&rsquo;s article about <a href="http://blog.sflow.com/2013/01/rapidly-detecting-large-flows-sflow-vs.html">how sFlow can be used to rapidly detect elephant flows</a>, and points to a demo taking place during SC13 that shows <a href="http://blog.sflow.com/2013/11/sc13-large-flow-demo.html">sFlow tracking elephant flows</a> on SCinet (the SC13 network).</p>
+</li>
+<li>
+<p>Want some additional information on layer 2 and layer 3 services in VMware NSX? Here&rsquo;s <a href="http://blog.ipspace.net/2013/11/layer-2-and-layer-3-switching-in-vmware.html">a good source</a>.</p>
+</li>
+<li>
+<p><a href="https://github.com/johann8384/puppet-routing/">This</a> looks interesting, but I&rsquo;m not entirely sure how I might go about using it. Any thoughts?</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around, but I&rsquo;ll keep my eyes peeled for something to include next time!</p>
+<h2 id="security">Security</h2>
+<p>I don&rsquo;t have anything to share this time&mdash;feel free to suggest something to include next time.</p>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Red Hat has a great <a href="http://openstack.redhat.com/Networking_in_too_much_detail">breakdown of all the different components in a typical OpenStack environment using OVS and GRE tunnels</a>. If you&rsquo;re looking for more information on how all the various pieces fit together, I definitely recommend reading this&mdash;it&rsquo;s worth your time.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>I found this post on <a href="https://www.twilio.com/engineering/2013/10/16/haproxy">getting the most out of HAProxy</a>&ndash;in which Twilio walks through some of the configuration options they&rsquo;re using and why&mdash;to be quite helpful. If you&rsquo;re relatively new to HAProxy, as I am, then I&rsquo;d recommend giving this post a look.</p>
+</li>
+<li>
+<p><a href="http://www.maclife.com/article/columns/terminal_101_5_timesaving_tips_and_tricks">This list</a> is reasonably handy if you&rsquo;re not a Terminal guru. While written for OS X, most of these tips apply to Linux or other Unix-like operating systems as well. I particularly liked tip #3, as I didn&rsquo;t know about that particular shortcut.</p>
+</li>
+<li>
+<p>Mike Preston has a great series going on tuning Debian Linux running under vSphere. In <a href="http://blog.mwpreston.net/2013/08/06/tuning-linux-debian-in-a-vsphere-vm-part-1-installation/">part 1</a>, he covered installation, primarily centered around LVM and file system mount options. In <a href="http://blog.mwpreston.net/2013/08/09/tuning-linux-debian-in-a-vsphere-vm-part-2-virtual-hardware/">part 2</a>, Mike discusses things like using the appropriate virtual hardware, the right kernel modules for VMXNET3, getting rid of unnecessary hardware (like the virtual floppy), and similar tips. Finally, in <a href="http://blog.mwpreston.net/2013/09/16/tuning-linux-debian-in-a-vsphere-vm-part-3-usrbinrandom/">part 3</a>, he talks about a hodgepodge of tips&mdash;things like blacklisting other unnecessary kernel drivers, time synchronization, and modifying the Linux I/O scheduler. All good stuff, thanks Mike!</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>&ldquo;Captain KVM,&rdquo; aka Jon Benedict, takes on <a href="http://captainkvm.com/2013/10/openstack-netapp-not-such-an-odd-couple/">the discussion of enterprise storage vs. open source storage solutions</a> in OpenStack environments. One good point that Jon makes is that solutions need to be evaluated on a variety of criteria. In other words, it&rsquo;s not just about cost nor is it just about performance. You need to use the right solution for your particular needs. It&rsquo;s nice to see Jon say that if your needs are properly met by an open source solution, then &ldquo;by all means stick with Ceph, Gluster, or any of the other cool software storage solutions out there.&rdquo; More vendors need to adopt this viewpoint, in my humble opinion. (By the way, if you&rsquo;re thinking of using NetApp storage in an OpenStack environment, here&rsquo;s <a href="http://captainkvm.com/2013/10/using-netapp-cinder-drivers-with-openstack/">a &ldquo;how to&rdquo;</a> that Jon wrote.)</p>
+</li>
+<li>
+<p>Duncan Epping has a quick post about <a href="http://www.yellow-bricks.com/2013/11/01/emc-vplex-storage-drs-storage-io-control/">a VMware KB article update regarding EMC VPLEX and Storage DRS/Storage IO Control</a>. The update is actually applicable to all vMSC configurations, so have a look at Duncan&rsquo;s article if you&rsquo;re using or considering the use of vMSC in your environment.</p>
+</li>
+<li>
+<p>Vladan Seget has <a href="http://www.vladan.fr/microsoft-refs-first-look/">a look at Microsoft ReFS</a>.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>A relatively little-known change in vSphere 5.5 involves how ESXi handles device drivers. ESXi 5.5 introduces the idea of <em>native device drivers</em>, eliminating a driver compatibility layer (or shim) that existed in previous versions of ESXi. (William Lam has more information on the <a href="http://www.virtuallyghetto.com/2013/10/esxi-55-introduces-new-native-device.html">ESXi 5.5 native device driver architecture</a>.) Unfortunately, it looks like this switch has had <a href="http://www.v-front.de/2013/10/the-good-and-bad-of-new-native-driver.html">a small side effect</a>: developing ESXi drivers is now limited to VMware Technology Alliance Partners, since the tools to develop drivers is no longer published under an open source license. Will this have a negative effect on the availability of ESXi device drivers?</p>
+</li>
+<li>
+<p>Andre Leibovici provides a round-up of <a href="http://myvirtualcloud.net/?p=5518">VMware Horizon View 5.3 limits and maximums</a>.</p>
+</li>
+<li>
+<p>Paul Meehan calls out some potential &ldquo;marketing spin&rdquo; in <a href="http://www.virtualizationsoftware.com/vsphere-hyper-v-phoney-war/">a recent post on comparing Hyper-V and vSphere</a>. You might also find <a href="http://www.virtualizationsoftware.com/the-phony-war-continuesshooting-blanks/">Paul&rsquo;s follow-up</a> an interesting read as well.</p>
+</li>
+<li>
+<p>As you may have heard, VMware recently released a set of <a href="http://www.virtuallyghetto.com/2013/11/w00t-vmware-tools-for-nested-esxi.html">VMware Tools for nested ESXi</a> instances. Vladan Seget shows how to build a <a href="http://www.vladan.fr/how-to-build-a-custom-iso-with-vmware-tools-for-nested-esxi/">custom ISO with VMware Tools for nested ESXi</a> to help simplify the process of bringing up nested instances. Good stuff!</p>
+</li>
+<li>
+<p>Wade Holmes gives the solution in case you find yourself, as he did, <a href="https://vwade.wordpress.com/2013/10/31/three-hosts-two-vsan-datastores/">with three hosts and two VSAN datastores</a>.</p>
+</li>
+</ul>
+<p>I&rsquo;d better wrap it up here so this doesn&rsquo;t get too long for folks. As always, your courteous comments and feedback are welcome, so feel free to start (or join) the discussion below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/12/05/learning-nvp-part-8-an-update-on-the-nvp-to-nsx-transition/">Learning NVP, Part 8: An Update on the NVP to NSX Transition</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/12/11/talking-network-virtualization-on-runas-radio/">Talking Network Virtualization on RunAs Radio</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f06%2ftechnology-short-take-37%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f06%2ftechnology-short-take-37%2f&text=Technology%20Short%20Take%20%2337" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f06%2ftechnology-short-take-37%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/07/22/technology-short-take-34/">Technology Short Take #34</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

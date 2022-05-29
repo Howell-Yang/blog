@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/05/technology-short-take-25/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #25</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;932 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #25, my irregularly-published collection of links, articles, thoughts, and rants. It&rsquo;s been a while since my last Technology Short Take (almost three months!); my apologies for that. This is my first time publishing a Technology Short Take with my new filesystem-based approach of managing resources. We&rsquo;ll see how well it goes</p>
+<p>In any case, let&rsquo;s get on with it!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Some folks from Nicira (now part of VMware) recently published <a href="http://networkheresy.com/2012/09/15/remembering-the-management-plane/">a blog post discussing the OVSDB IETF draft</a> (see <a href="https://datatracker.ietf.org/doc/draft-pfaff-ovsdb-proto/">here</a>). It&rsquo;s a valid point&mdash;people get all worked up over OpenFlow, but OpenFlow doesn&rsquo;t address the management plane (only the control plane). Unfortunately, the management plane is often the place where vendors choose to &ldquo;innovate&rdquo; and &ldquo;differentiate&rdquo; their offerings, which&mdash;in my humble view&mdash;makes any sort of standardization in the management plane extremely difficult. I could be wrong (wouldn&rsquo;t be the first time).</p>
+</li>
+<li>
+<p>I think this three-part series on new network models for cloud computing (<a href="http://news.cnet.com/8301-19413_3-20119643-240/cloud-open-source-and-new-network-models-part-1/">part 1</a>, <a href="http://news.cnet.com/8301-19413_3-20121638-240/cloud-open-source-and-new-network-models-part-2/">part 2</a>, and <a href="http://news.cnet.com/8301-19413_3-20126245-240/clouds-open-source-and-new-network-models-part-3/">part 3</a>), while almost a year old, is quite good. James Urquhart, the author of the series, does a good job of breaking down some of the commonly-discussed &ldquo;disruptive&rdquo; technologies like Quantum (part of OpenStack) and OpenFlow. Worth a read if you are trying to get up to speed on these efforts, in my opinion.</p>
+</li>
+<li>
+<p>There&rsquo;s some additional information on the Quantum release on Folsom <a href="https://www.ibm.com/developerworks/mydeveloperworks/blogs/e93514d3-c4f0-4aa0-8844-497f370090f5/entry/quantum_folsom12?lang=en">here</a>.</p>
+</li>
+<li>
+<p>Erik Smith, notably known for his outstanding posts on storage and FCoE, takes a stab at describing some of the differences between SDN and network virtualization in <a href="http://brasstacksblog.typepad.com/brass-tacks/2012/08/network-virtualization-networkings-21st-century-equivalent-to-the-space-race.html">this post</a>.</p>
+</li>
+<li>
+<p>I found <a href="https://brezular.wordpress.com/category/gns3/linux-switch/openvswitch/">this series of posts</a> to be helpful when I was working on configuring LACP with Open vSwitch (I hope to have a blog post on that up soon).</p>
+</li>
+<li>
+<p>Reading these <a href="http://networkstatic.net/2012/06/the-birth-unicorn-early-openflow-meeting-notes/">early OpenFlow meeting notes</a> (via Brent Salisbury, aka @networkstatic on Twitter) was very fascinating. There&rsquo;s a lot to digest there (for me, anyway, there is a lot to digest).</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around&mdash;but I&rsquo;ll keep my eyes peeled for interesting information to include next time!</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>I came across <a href="http://blog.cloudfoundry.org/2012/07/23/uaa-intro/">this post</a> on CloudFoundry&rsquo;s User Account and Authentication Service (the UAA). If you&rsquo;re seeking more information on UAA, this looks like a good place to start.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>This is an <em>awesome</em> <a href="http://ken.pepple.info/openstack/2012/09/25/openstack-folsom-architecture/">overview of the OpenStack Folsom architecture</a>, courtesy of Ken Pepple. Definitely worth reading, in my view.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I haven&rsquo;t had much time to spend working with Puppet (a shame, I really enjoy the product&mdash;hopefully I&rsquo;ll get back to it soon). When I do get back into working with Puppet again, I&rsquo;m going to do my best to follow <a href="http://bombasticmonkey.com/2011/12/27/stop-writing-puppet-modules-that-suck">this advice</a> regarding Puppet modules.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Sean Thulin has a nice write-up on <a href="http://www.thulinaround.com/2012/08/05/configuring-vasa-for-use-with-a-vnx/">configuring VASA for use with a VNX</a>.</p>
+</li>
+<li>
+<p>Is Cisco&rsquo;s Insieme effort producing a storage product? Some interesting speculation can be found <a href="http://www.networkworld.com/community/blog/meet-ciscoinsiemes-recruiter">here</a> and <a href="http://siwdt.com/2012/03/22/new-spin-in-called-insiemi-a-framing-exercise/">here</a> (hat tip to Erik Smith).</p>
+</li>
+<li>
+<p>Speaking of Erik Smiththis post on <a href="http://brasstacksblog.typepad.com/brass-tacks/2012/09/a-problem-with-io-consolidation-and-network-virtualization.html">the impact of bit errors on I/O consolidation</a> is a great post. I learn something from just about every one of Erik&rsquo;s posts.</p>
+</li>
+<li>
+<p>Another great post by Jason Boche on <a href="http://www.boche.net/blog/index.php/2012/06/28/storage-starting-thin-and-staying-thin-with-vaai-unmap/">thin provisioning and VAAI UNMAP support</a>. He does a great job of pulling together resources and explaining how it all works, including some great practical advice for real-world usage.</p>
+</li>
+<li>
+<p>If storage is your thing&mdash;especially in VMware environments&mdash;I&rsquo;d recommend having a look at Cormac Hogan&rsquo;s blog for his series on vSphere 5.1 storage enhancements. It starts <a href="http://cormachogan.com/2012/09/04/vsphere-5-1-storage-enhancements-part-1-vmfs-5/">here</a>.</p>
+</li>
+<li>
+<p>There&rsquo;s an interesting write-up here on <a href="http://swiftstack.com/blog/2012/09/16/globally-distributed-openstack-swift-cluster/">a globally distributed OpenStack Swift cluster</a>. What wasn&rsquo;t clear to me&mdash;I guess I&rsquo;m just dense&mdash;was whether the functionality SwiftStack was describing in their post was actually in current releases of Swift (and, if so, is it only in their commercial Swift release, or the open source Swift versions) or if this was &ldquo;pie-in-the-sky&rdquo; thinking about functionality that should be added at some point in the future. Anyone have any clarification here?</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Need to add an alias to your vCloud Director cell? Jason Boche <a href="http://www.boche.net/blog/index.php/2012/07/05/adding-an-ip-alias-to-the-vcloud-director-cell-server/">shows you how</a>.</p>
+</li>
+<li>
+<p>This is kind of a nice feature in Hyper-V 3: DHCP Guard. According to <a href="http://www.techrepublic.com/blog/networking/disable-guest-dhcp-with-hyper-v-dhcp-guard/5812">this article</a> by Rick Vanover, this feature allows you to protect your network against rogue/unauthorized DHCP servers. Anyone actually tried this feature out yet (other than in a lab)?</p>
+</li>
+<li>
+<p>William Lam shows you <a href="http://www.virtuallyghetto.com/2012/06/how-to-copy-vms-directly-between-esxi.html">how to use ovftool to copy VMs directly between ESXi hosts</a>. That&rsquo;s pretty handy.</p>
+</li>
+<li>
+<p>Only a true geek would be interested in this, but here&rsquo;s some information on <a href="http://scie.nti.st/2009/10/4/running-openbsd-4-5-in-kvm-on-ubuntu-linux-9-04">running OpenBSD in KVM on Linux</a>. Given my past interest in OpenBSD and my present interest in KVM on Linux, this might be something I&rsquo;ll be trying myself soon. Sadly, it looks like that post is the author&rsquo;s last post in three yearsshame.</p>
+</li>
+<li>
+<p>I&rsquo;m not sure if this should be considered &ldquo;storage&rdquo; or &ldquo;virtualization,&rdquo; as the lines continue to blur every day. In any case, this article by Frank Denneman on <a href="http://frankdenneman.nl/2012/05/storage-drs-load-balance-frequency/">Storage DRS load balancing frequency</a> might be useful to you.</p>
+</li>
+<li>
+<p><a href="http://www.sebastien-han.fr/blog/2012/07/19/make-the-network-of-your-vms-fly-with-virtio-driver/">This post</a> describes some of the benefits of KVM&rsquo;s VirtIO driver and how to use VirtIO with OpenStack. You&rsquo;ll note, by the way, that Nova uses <a href="http://libvirt.org">libvirt</a> to manipulate KVM. This is one of the reasons I&rsquo;ve been spending some time with libvirt&mdash;as part of the &ldquo;glue&rdquo; between Nova and KVM, I think it&rsquo;s important to understand how libvirt works. (This is also why I&rsquo;ve been spending time with Open vSwitch, which is a critical construct in Quantum.)</p>
+</li>
+</ul>
+<p>I suppose I should wrap things up now. Feel free to speak up in the comments if you found something I included here useful, or if there&rsquo;s additional information that would benefit other readers. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/04/some-insight-into-open-vswitch-configuration/">Some Insight into Open vSwitch Configuration</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/10/vmworld-emea-day-2-keynote/">VMworld EMEA Day 2 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f05%2ftechnology-short-take-25%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f05%2ftechnology-short-take-25%2f&text=Technology%20Short%20Take%20%2325" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f05%2ftechnology-short-take-25%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/06/12/technology-short-take-23/">Technology Short Take #23</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

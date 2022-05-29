@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Thinking Out Loud: Is A dvFabric Closer Than We Think? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Thinking Out Loud: Is A dvFabric Closer Than We Think? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Thinking Out Loud: Is A dvFabric Closer Than We Think? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/02/08/thinking-out-loud-is-a-dvfabric-closer-than-we-think/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Thinking Out Loud: Is A dvFabric Closer Than We Think?</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;239 words (estimated 2 minutes to read)</span>
+  <p>This is a short post, but one that I hope will stir some discussion.</p>
+<p>Earlier this evening, I read Maish&rsquo;s blog post titled <a href="http://technodrone.blogspot.com/2012/02/my-wish-for-dvfabric-dvswitch-for.html">My Wish for dvFabric&mdash;a dvSwitch for Storage</a>. In that blog post Maish describes a self-configuring storage fabric that would simplify how we provision storage in a vSphere environment. Here&rsquo;s how Maish describes the dvFabric:</p>
+<blockquote>
+<p>So how do I envision this dvFabric? Essentially the same as a dvSwitch. A logical entity to which I attach my network cards (for iSCSI/NFS) or my HBAs (for FcoE or FC). I define which uplink goes to which storage, what the multi-pathing policy is for this uplink, how many ports should be used, what is the failover policy for which NIC, which NFS volumes to mount, which LUNS to add  I gather you see what I am getting at.</p>
+</blockquote>
+<p>It&rsquo;s a pretty interesting idea, and one with a great deal of merit. So here&rsquo;s the &ldquo;Thinking Out Loud&rdquo; part: is Target Driven Zoning (or Peer Zoning) the answer to a large part of Maish&rsquo;s dvFabric?</p>
+<p>If you don&rsquo;t know what Target Driven Zoning (TDZ) or Peer Zoning are, I recommend you go have a look at Erik Smith&rsquo;s <a href="http://brasstacksblog.typepad.com/brass-tacks/2012/01/introducing-target-driven-zoning-tdz.html">introductory blog post on Target Driven Zoning</a>. Based on Erik&rsquo;s description of TDZ, it certainly seems like it could be used to help on the block side of the house with Maish&rsquo;s dvFabric idea.</p>
+<p>So what do you think&mdash;am I way off here?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/tol">ToL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/02/06/recent-cisco-product-launch/">Recent Cisco Product Launch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/02/14/general-session-at-vmware-pex-2012-day-1/">General Session at VMware PEX 2012 Day 1</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f02%2f08%2fthinking-out-loud-is-a-dvfabric-closer-than-we-think%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f02%2f08%2fthinking-out-loud-is-a-dvfabric-closer-than-we-think%2f&text=Thinking%20Out%20Loud%3a%20Is%20A%20dvFabric%20Closer%20Than%20We%20Think%3f" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f02%2f08%2fthinking-out-loud-is-a-dvfabric-closer-than-we-think%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/01/20/technology-short-take-20/">Technology Short Take #20</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2011/08/25/technology-short-take-13/">Technology Short Take #13</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

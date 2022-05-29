@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Blades Won&#39;t Die, But They Will Change - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Blades Won&#39;t Die, But They Will Change - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Blades Won&#39;t Die, But They Will Change - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/06/29/blades-wont-die-but-they-will-change/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Blades Won&#39;t Die, But They Will Change</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;532 words (estimated 3 minutes to read)</span>
+  <p>I was going through my list of actions in OmniFocus, looking at my projects and actions and evaluating each of them. In my &ldquo;Potential Posts&rdquo; project, where I keep links to articles that I might use in a blog post, I found the URL for <a href="http://www.dabcc.com/article.aspx?id=9114">this article</a> by Steve Kaplan about virtualization, Cisco Nexus, and blade servers. The basic idea of his article is that virtualization and the Cisco Nexus&mdash;specifically, the unified fabric&mdash;are going to combine to kill blade servers.</p>
+<p>I do agree with Steve that there is no innate relationship that means running VMware on blades is somehow &ldquo;automagically&rdquo; better:</p>
+<blockquote>
+<p>It is amazing how frequently we hear IT managers talk about deploying blade servers as an integral component of their new virtual infrastructures - as if there were an obvious synergy between VMware and blade server architectures.</p>
+</blockquote>
+<p>Absolutely! Blades are an option, just like rack mounted servers, and it&rsquo;s up to the customer to choose (or us as consultants to recommend) the form factor that best meets the business needs. It might be blade servers, or it might be rack mounted servers. It just depends. So, on this one point, I agree with Steve.</p>
+<p>Yet, at the same time, I also disagree with this point that Steve makes in his article:</p>
+<blockquote>
+<p>Blade servers have always been an impediment to an optimal virtual infrastructure because they introduce limitations in efficiently utilizing power and cooling resources, budget, flexibility, manageability, bios and firmware updates, performance and troubleshooting.</p>
+</blockquote>
+<p>Here is where Steve and I start to disagree. In fact, this specific article was something of the catalyst for a series of posts, written by colleague and friend Aaron Delp, detailing how blade servers and virtualization work well together:</p>
+<p><a href="/2009/02/04/blades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing/">Blades and Virtualization Aren&rsquo;t Mutually Exclusive: Part One, HP Power Sizing</a><br>
+<a href="/2009/02/07/blades-and-virtualization-arent-mutually-exclusive-part-two-ibm-power-sizing/">Blades and Virtualization Aren&rsquo;t Mutually Exclusive: Part Two, IBM Power Sizing</a><br>
+<a href="/2009/02/13/blades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options/">Blades and Virtualization Aren&rsquo;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options</a><br>
+<a href="/2009/02/16/blades-and-virtualization-arent-mutually-exclusive-part-four-hp-traditional-expansion-options/">Blades and Virtualization Aren&rsquo;t Mutually Exclusive: Part Four, HP Traditional Expansion Options</a></p>
+<p>While this series of articles doesn&rsquo;t squarely address all of the arguments against blades and virtualization, the series does make it clear that blades <strong>can</strong> produce power savings vs. rack mounted servers, and that blades <strong>do</strong> offer enough expansion options to accommodate the majority of virtualization deployments.</p>
+<p>I also disagree with Steve about the value of the unified fabric, especially considering that right now unified fabric can exist only at the edge of the network and not at the core. That being the case, I find it hard to say that unified fabric is going to kill blade servers. So, again, I have to disagree with Steve&rsquo;s position.</p>
+<p>However, Steve&rsquo;s not entirely wrong&mdash;virtualization, FCoE and 10Gb Ethernet, and yes even unified fabric <em>will</em> change how blade servers are designed and deployed. Cisco&rsquo;s Unified Computing System (UCS) is one example of how blade servers are going to adapt to these agents of change, and I believe we&rsquo;ll see more examples from other leading vendors in the coming months and years. But will blades die away entirely? No, I don&rsquo;t think so.</p>
+<p>Think I&rsquo;m crazy? Think I&rsquo;m out of my mind? Feel free to speak up in the comments&mdash;courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/06/29/snapshot-issue-with-vmware-data-recovery/">Snapshot Issue with VMware Data Recovery</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/06/30/thinking-out-loud-why-deploy-fcoe/">Thinking Out Loud: Why Deploy FCoE?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f29%2fblades-wont-die-but-they-will-change%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f29%2fblades-wont-die-but-they-will-change%2f&text=Blades%20Won%27t%20Die%2c%20But%20They%20Will%20Change" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f29%2fblades-wont-die-but-they-will-change%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/05/28/vmware-this-is-wrong/">VMware, This is Wrong</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2009/04/03/a-collection-of-viewpoints-on-cisco-ucs/">A Collection of Viewpoints on Cisco UCS</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/03/18/cisco-ucs-virtualization-optimized-cnas/">Cisco UCS Virtualization-Optimized CNAs</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

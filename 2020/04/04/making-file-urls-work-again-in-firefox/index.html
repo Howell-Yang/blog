@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Making File URLs Work Again in Firefox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Making File URLs Work Again in Firefox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Making File URLs Work Again in Firefox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/04/04/making-file-urls-work-again-in-firefox/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Making File URLs Work Again in Firefox</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;283 words (estimated 2 minutes to read)</span>
+  <p>At some point in the last year or so&mdash;I don&rsquo;t know exactly when it happened&mdash;<a href="https://www.mozilla.org/en-US/firefox/">Firefox</a>, along with most of the other major browsers, stopped working with <code>file://</code> URLs. This is a shame, because I like <a href="/2017/03/07/linux-migration-creating-presentations/">using Markdown for presentations</a> (at least, when it&rsquo;s a presentation where I don&rsquo;t need to collaborate with others). However, using this sort of approach generally requires support for <code>file://</code> URLs (or requires running a local web server). In this post, I&rsquo;ll show you how to make <code>file://</code> URLs work again in Firefox.</p>
+<p>I tested this procedure using Firefox 74 on <a href="https://ubuntu.com/">Ubuntu</a>, but it should work on any platform on which Firefox is supported. Note that the locations of the <code>user.js</code> file will vary from OS to OS; see <a href="http://kb.mozillazine.org/Profile_folder_-_Firefox">this MozillaZine Knowledge Base entry</a> for more details.</p>
+<p>Here&rsquo;s the process I followed:</p>
+<ol>
+<li>
+<p>Create the <code>user.js</code> file (it doesn&rsquo;t exist by default) in the correct location for your Firefox profile. (Refer to the MozillaZine KB article linked above for exactly where that is on your OS.)</p>
+</li>
+<li>
+<p>In the <code>user.js</code>, add these entries:</p>
+<pre><code> // Allow file:// links
+ user_pref(&quot;capability.policy.policynames&quot;, &quot;localfilelinks&quot;);
+ user_pref(&quot;capability.policy.localfilelinks.sites&quot;, &quot;file://&quot;);
+ user_pref(&quot;capability.policy.localfilelinks.checkloaduri.enabled&quot;, &quot;allAccess&quot;);
+</code></pre>
+</li>
+<li>
+<p>In your Firefox configuration (accessible using <code>about:config</code> in a Firefox tab), change the value of <code>privacy.file_unique_origin</code> from <code>true</code> to <code>false</code>.</p>
+</li>
+<li>
+<p>Restart Firefox.</p>
+</li>
+</ol>
+<p>After you restart Firefox, you should be able to use <code>file://</code> URLs, but only from local HTML files on your system (as specified by the second line you added in step 2). It&rsquo;s possible this may expose an unknown security flaw or weakness that I haven&rsquo;t foreseen, so keep that in mind.</p>
+<p>If you&rsquo;re a fan of Markdown-based presentations displayed using your browser, they should work again.</p>
+<p>Hit <a href="https://twitter.com/scott_lowe">me on Twitter</a> if you have questions. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/firefox">Firefox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/04/03/installing-mmd6-on-ubuntu-1910/">Installing MultiMarkdown 6 on Ubuntu 19.10</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/04/10/using-postman-to-launch-ec2-instance-via-api-calls/">Using Postman to Launch an EC2 Instance via API Calls</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f04%2fmaking-file-urls-work-again-in-firefox%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f04%2fmaking-file-urls-work-again-in-firefox%2f&text=Making%20File%20URLs%20Work%20Again%20in%20Firefox" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f04%2fmaking-file-urls-work-again-in-firefox%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/02/01/technology-short-take-110/">Technology Short Take 110</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2018/11/30/technology-short-take-107/">Technology Short Take 107</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2018/04/27/technology-short-take-98/">Technology Short Take 98</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

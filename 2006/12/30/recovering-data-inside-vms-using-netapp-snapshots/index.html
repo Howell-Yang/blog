@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Recovering Data Inside VMs Using NetApp Snapshots - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Recovering Data Inside VMs Using NetApp Snapshots - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Recovering Data Inside VMs Using NetApp Snapshots - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Recovering Data Inside VMs Using NetApp Snapshots</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1047 words (estimated 5 minutes to read)</span>
+  <p><a href="http://www.netapp.com/">Network Appliance</a> <a href="http://www.netapp.com/products/software/snapshot.html">Snapshots</a>&mdash;point-in-time copies of a file system that can be created almost instantaneously and which generally require much smaller amounts of storage to keep&mdash;are an integral part of NetApp&rsquo;s value over other storage systems. These snapshots make it far easier and quicker to recover from data loss or corruption than a tape backup system.</p>
+<p>But how do we go about recovering individual files from a snapshot when those files are stored in a virtual disk (VMDK) file used by a VM? After all, <a href="http://www.vmware.com/">VMware</a> proponents tout the encapsulation property of virtualization as a benefit: &ldquo;One file to back up and you get a backup of your entire server!&rdquo; Fortunately, there&rsquo;s a way to continue to reap the benefits of encapsulation while still allowing for the ability to recover individual files from a snapshot of the VM&rsquo;s virtual disk file. Here&rsquo;s how.</p>
+<p>The trick here is to take advantage of <em>LUN cloning</em>, a feature on the NetApp storage systems that allows you to take a snapshot&mdash;which is a read-only point-in-time copy of the file system&mdash;and create a clone, which is a read-write point-in-time copy of the file system. This clone takes only seconds to create, like the snapshot on which it is based, and requires only enough storage to store the changed blocks, i.e., the &ldquo;deltas&rdquo; between the clone and the original. We can then present that clone back to <a href="http://www.vmware.com/products/vi/esx/">VMware ESX Server</a> to manipulate in whatever way we see fit.</p>
+<p>There are three parts to this process. First, we configure ESX Server to recognize snapshot LUNs on the SAN (this is a one-time configuration change). Then, we take the snapshot on the NetApp storage system, create a LUN clone from the snapshot, and present that LUN clone back to the ESX servers. Finally, we manipulate the LUN clone within ESX in order to retrieve the specific data we need.</p>
+<h3 id="enable-resignaturing-on-esx-server">Enable Resignaturing on ESX Server</h3>
+<p>In the ESX SAN Configuration Guide (found <a href="http://www.vmware.com/pdf/vi3_esx_san_cfg.pdf">here on VMware&rsquo;s site</a>), there is this blurb about resignaturing:</p>
+<blockquote>
+<p>VMFS volume resignaturing allows you to make a hardware snapshot of a VMFS volume and access that snapshot from an ESX Server system.</p>
+</blockquote>
+<p>This is the functionality that allows us to use LUN clones on the NetApp storage system in ESX Server. Without this functionality, the LUN clones aren&rsquo;t properly recognized by ESX Server and can&rsquo;t be utilized to allow us to perform data recovery.</p>
+<p>To enable VMFS volume resignaturing, set the <code>LVM.EnableResignature</code> option to 1 (on). This option can be set in VirtualCenter using these steps:</p>
+<ol>
+<li>
+<p>Set the ESX Server host for which you want to enable VMFS volume resignaturing.</p>
+</li>
+<li>
+<p>Go to the Configuration tab for that host, then select Advanced Settings.</p>
+</li>
+<li>
+<p>Change the LVM.EnableResignature to 1 (on). The default is off.</p>
+</li>
+</ol>
+<p>After this option is set, you&rsquo;ll be able to present LUN clones (or other hardware snapshots) to ESX Server and it will recognize them as such.</p>
+<p>Now we&rsquo;re ready to move to the NetApp storage system.</p>
+<h3 id="taking-a-snapshot-and-making-a-lun-clone">Taking a Snapshot and Making a LUN Clone</h3>
+<p>By default, snapshots are already enabled and scheduled, so unless you&rsquo;ve modified the configuration, the NetApp storage system is already taking snapshots of the volumes that hold the LUNs where the VMware VMFS partitions (and thus the VMDK virtual disk files) are stored.</p>
+<p>We can view the list of snapshots using <code>snap list vol_name</code>, where &ldquo;vol_name&rdquo; is the name of the volume. The output will look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>%/used    %/total     date          name
+</span></span><span style="display:flex;"><span>--------  ----------  ------------  --------
+</span></span><span style="display:flex;"><span>0% ( 0%)    0% ( 0%)  Dec 30 08:00  hourly.0
+</span></span><span style="display:flex;"><span>1% ( 0%)    0% ( 0%)  Dec 30 00:00  nightly.0
+</span></span><span style="display:flex;"><span>1% ( 0%)    0% ( 0%)  Dec 29 20:00  hourly.1
+</span></span><span style="display:flex;"><span>1% ( 0%)    0% ( 0%)  Dec 29 16:00  hourly.2
+</span></span><span style="display:flex;"><span>1% ( 0%)    0% ( 0%)  Dec 29 12:00  hourly.3
+</span></span><span style="display:flex;"><span>2% ( 1%)    0% ( 0%)  Dec 29 08:00  hourly.4
+</span></span><span style="display:flex;"><span>2% ( 0%)    0% ( 0%)  Dec 29 00:00  nightly.1
+</span></span><span style="display:flex;"><span>3% ( 0%)    0% ( 0%)  Dec 28 20:00  hourly.5
+</span></span></code></pre></div><p>Now, we can make a LUN clone from one of these snapshots and map it to an igroup (this would normally all be on a single line, but I&rsquo;ve wrapped it here for readability):</p>
+<pre><code>lun clone create /vol/vol_name/lun0_clone -b /vol/vol_name/lun0_vmfs nightly.1  
+lun map /vol/vol_name/lun0_clone igroup_name 0
+</code></pre>
+<p>The LUN clone has now been created and presented back to the igroup named &ldquo;igroup_name&rdquo; as LUN ID 0. A rescan of the storage adapters in ESX Server (iSCSI was being used in this case) will now show the LUN clone as &ldquo;snap-00000001-lun0_vmfs&rdquo; (the number will change depending upon how many snapshot LUNs have been presented to the server farm). Now that we have access to the VMFS, we can do any number of things:</p>
+<ul>
+<li>
+<p>We can create a new VM with the same configuration as the original VM and boot it up to recover data from the VM in that manner (be cautious of networking issues, such as duplicate IP addresses). You&rsquo;ll just need to select the existing VMDK (or VMDKs, if there are more than one) on the snapshot VMFS LUN instead of creating a new virtual disk file when creating the VM.</p>
+</li>
+<li>
+<p>We can attach the VMDK(s) to an existing VM running the same operating system (or an operating system that will read the file system used inside the VMDKs in question) and then browse the file system to retrieve data stored inside the VM.</p>
+</li>
+<li>
+<p>We could shut down the original VM and boot up the clone VM instead. This might be helpful if you needed to recover data but also needed network connectivity, or if the two VMs couldn&rsquo;t be running at the same time. (In theory, this might work for <a href="http://www.microsoft.com/exchange/default.mspx">Microsoft Exchange</a>, if you aren&rsquo;t using <a href="http://www.netapp.com/products/software/snapmanager-exchange.html">SnapManager for Exchange</a>.)</p>
+</li>
+</ul>
+<p>As you can see, this allows us to take full advantage of encapsulating the server in the VMDK file(s) but also allows us to retrieve individual files or groups of files from a snapshot of the VMDK file(s).</p>
+<p>In future articles, I&rsquo;ll touch on restoring entire VMs using NetApp snapshots, as well as talk about getting consistent snapshots of the VMs.</p>
+<h3 id="other-information">Other Information</h3>
+<p>This process was performed on a Network Appliance FAS810 running Data ONTAP 7.1.1.1 and servers running VMware ESX Server (both 3.0.0 and 3.0.1) with the software iSCSI initiator. VMs running Windows Server 2003 R2 were used for testing.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ontap">ONTAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/snapshot">Snapshot</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/snapshots">Snapshots</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/12/30/happy-new-year/">Happy New Year!</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/01/03/bookmark-spam/">Bookmark Spam?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f30%2frecovering-data-inside-vms-using-netapp-snapshots%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f30%2frecovering-data-inside-vms-using-netapp-snapshots%2f&text=Recovering%20Data%20Inside%20VMs%20Using%20NetApp%20Snapshots" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f12%2f30%2frecovering-data-inside-vms-using-netapp-snapshots%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/12/15/iscsi-from-netapp-to-esx-server/">iSCSI from NetApp to ESX Server</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/12/27/ssh-from-esx-server-to-data-ontap/">SSH from ESX Server to Data ONTAP</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

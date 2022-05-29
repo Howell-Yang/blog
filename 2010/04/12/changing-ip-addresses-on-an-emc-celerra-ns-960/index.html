@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Changing IP Addresses on an EMC Celerra NS-960 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Changing IP Addresses on an EMC Celerra NS-960 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Changing IP Addresses on an EMC Celerra NS-960 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/04/12/changing-ip-addresses-on-an-emc-celerra-ns-960/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Changing IP Addresses on an EMC Celerra NS-960</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;968 words (estimated 5 minutes to read)</span>
+  <p>Changing the IP addresses on an EMC Celerra unified storage array is generally a pretty straightforward process. EMC supplies a script called <code>clariion_mgmt</code> that you can use to change the IP addresses on the back-end CLARiiON storage processors (SPs). In the large majority of cases, the process for changing the IP addresses on an EMC Celerra using this script looks something like this:</p>
+<ol>
+<li>
+<p>Change the IP address of the Control Station using Celerra Manager.</p>
+</li>
+<li>
+<p>Use the <code>clariion_mgmt</code> script to update the IP addresses on the back-end CLARiiON SPs.</p>
+</li>
+</ol>
+<p>As with all things in the IT field, this straightforward process sometimes becomes a bit more convoluted. If you are attempting to change the IP addresses on an EMC Celerra using the <code>clariion_mgmt</code> script and having some problems, I hope that the information provided in this post is helpful to you. I gathered this information during an instance in which I ran into a series of problems changing the IP addresses on a partner&rsquo;s EMC NS-960 after they re-addressed their lab.</p>
+<p>The first step is to change the IP address of the Control Station. This is readily accomplished using Celerra Manager, but remember that you will need to authenticate as &ldquo;root&rdquo; and not as &ldquo;nasadmin&rdquo;. Otherwise, you won&rsquo;t have the right to modify the IP address. Also keep in mind that because the Control Station is separate from the network interfaces on the data movers, changing the IP address on the Control Station won&rsquo;t affect network connectivity to/from the data movers.</p>
+<p>Once the Control Station&rsquo;s IP address has been changed, the next step would be to use the <code>clariion_mgmt</code> script. The general use of the <code>clariion_mgmt</code> script involves the use of the &ldquo;modify&rdquo; parameter to change the IP addresses on the back-end CLARiiON SPs. Instead of using the &ldquo;modify&rdquo; parameter, the only <a href="http://whughgriffin.wordpress.com/2009/07/15/how-to-modify-the-sp-ip-addresses-for-an-emc-celerra-ns-proxy-arp-implementation/">blog post</a> I found on this process recommended the use of the &ldquo;stop&rdquo; parameter, like this:</p>
+<pre><code>/nasmcd/sbin/clariion_mgmt -stop
+</code></pre>
+<p>This command resets the IP addresses on the CLARiiON SPs back to their default IP addresses (out of the 128.221.x.x range). From there, the next step is supposed to be using the <code>clariion_mgmt</code> script again like this:</p>
+<pre><code>/nasmcd/sbin/clariion_mgmt -start -spa_ip _A.B.C.D_ -spb_ip _W.X.Y.Z_ -use_proxy_arp
+</code></pre>
+<p>If this command works&mdash;and it usually does&mdash;you&rsquo;re good to go. Of course, it didn&rsquo;t work in my case. This is where things start to get interesting. Assuming that the <code>clariion_mgmt -stop</code> command worked, you now have two SPs that are not reachable from the network. In order to change their IP addresses, you need to connect to them over the network. Obviously, you can see the problem. EMC provides two answers to this potential problem:</p>
+<ol>
+<li>
+<p>You can use the EMC-supplied serial cable to establish a PPP over serial connection to the SP. Devang (aka <a href="http://twitter.com/storagenerve">@StorageNerve</a>) has an article that provides more details on the <a href="http://storagenerve.com/2008/08/15/clariion-cx-cx3-cx4-settings-for-dailup-ppp-into-the-clariion-machines/">settings for dialup PPP into a CLARiiON</a>. Once you&rsquo;ve connected via PPP over serial, you can access the SP using <code>http://192.168.1.1/setup</code> in a web browser. This will take you to a screen where you can set the SP&rsquo;s IP address.</p>
+</li>
+<li>
+<p>Every CLARiiON SP also has a LAN service port to which you can connect using a standard straight-through Ethernet cable. The default IP addresses for the LAN service ports are 128.221.1.250 for SP A and 128.221.1.251 for SP B. (These are documented on EMC PowerLink; see EMC Knowledgebase article emc199379.) Once you&rsquo;ve connected using the LAN service port, then you can access the SP using <code>http://&lt;default LAN service port address&gt;/setup</code> to change the SP&rsquo;s IP address. (Changing the IP address of the SP does not affect the IP address of the LAN service port, so your own network connectivity is not affected.)</p>
+</li>
+</ol>
+<p>In this particular case, I was able to successfully connect to SP A using PPP over serial and change the IP address. For some reason, SP B would not establish a PPP over serial connection, so I had to use the LAN service port. It took only a couple of minutes to change the IP address on my laptop so that I could connect via the LAN service port and change SP B&rsquo;s IP address as well.</p>
+<p>Because the <code>clariion_mgmt</code> script didn&rsquo;t work, I now needed to update some configuration files on the Celerra so that it would know how to communicate with the back-end CLARiiON SPs. (The <code>clariion_mgmt</code> script does this for you.) The specific information on which files need to be modified and the changes that need to be made are found in EMC Knowledgebase articles emc196029. I found that by following all the steps <em>except step 6</em> I was able to get the Celerra talking to the back-end CLARiiON SPs. I verified this by using the <code>clariion_mgmt</code> script again as follows:</p>
+<pre><code>/nasmcd/sbin/clariion_mgmt -info
+</code></pre>
+<p>The script returned a correct proxy ARP configuration. In addition, the SPs were pingable both from the Celerra Control Station as well as across the network, and Navisphere worked as expected when accessing the SPs directly via a web browser.</p>
+<p>The final step was to verify that the Celerra was properly configured for the updated back-end CLARiiON SPs. To do that, I used information found in EMC Knowledgebase article emc220238; specifically, I used the <code>nas_storage</code> command to rediscover back-end storage and ensure that no errors were reported. (By the way, emc220238 also contains information on which files on the Celerra Control Station need to be modified when the back-end SPs have their addresses changed.)</p>
+<p>Remember, in the majority of cases the <code>clariion_mgmt</code> script will work just fine and it is the preferred method of changing the IP addresses on an integrated Celerra like the NS-960. These other steps are only necessary when the <code>clariion_mgmt</code> script does not work, or when you find yourself needing to recover a botched IP address change.</p>
+<p>Additional information from those familiar with these technologies and processes is always welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/celerra">Celerra</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/clariion">CLARiiON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/04/06/congrats-to-the-script-o-mania-winners/">Congrats to the Script-O-Mania Winners</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/04/12/some-emc-data-domain-announcements-today/">Some EMC Data Domain Announcements Today</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f12%2fchanging-ip-addresses-on-an-emc-celerra-ns-960%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f12%2fchanging-ip-addresses-on-an-emc-celerra-ns-960%2f&text=Changing%20IP%20Addresses%20on%20an%20EMC%20Celerra%20NS-960" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f12%2fchanging-ip-addresses-on-an-emc-celerra-ns-960%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/01/31/emc-celerra-optimizations-for-vmware-on-nfs/">EMC Celerra Optimizations for VMware on NFS</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

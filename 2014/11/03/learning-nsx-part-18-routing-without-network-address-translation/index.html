@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NSX, Part 18: Routing Without Network Address Translation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NSX, Part 18: Routing Without Network Address Translation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NSX, Part 18: Routing Without Network Address Translation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/11/03/learning-nsx-part-18-routing-without-network-address-translation/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NSX, Part 18: Routing Without Network Address Translation</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;884 words (estimated 5 minutes to read)</span>
+  <p>This is part 18 of the Learning NSX blog series, in which I talk about using layer 3 (L3) routing with VMware NSX but without network address translation (NAT). This post describes a configuration that offers yet another connectivity option for OpenStack cloud administrators and operators.</p>
+<p>In <a href="/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">part 6</a>, I showed you how to add a gateway appliance to your NSX installation. <a href="/2014/02/26/learning-nsx-part-9-adding-a-gateway-service/">Part 9</a> leveraged the gateway appliances to create a L3 gateway service, which&mdash;as I explained in <a href="/2014/07/16/learning-nsx-part-15-nsx-gateways-gateway-services-and-logical-routers/">part 15</a>&mdash;provides the functionality for logical routers in OpenStack. (Logical routing was covered in <a href="/2014/06/20/learning-nsx-part-14-using-logical-routing/">part 14</a>.) <a href="/2014/10/13/learning-nsx-part-16-routing-to-multiple-external-vlans/">Part 16</a> expanded the routing configuration to support multiple external networks. This post expands the options again by showing you how to do logical routing without using network address translation (NAT). Of course, it would probably be helpful to read the entire series; links to all posts can be found on the <a href="/learning-nvp-nsx/">Learning NVP/NSX page</a>.</p>
+<p>As I mentioned, so far you&rsquo;ve seen three different external connectivity options:</p>
+<ul>
+<li>
+<p>Routing (layer 3 connectivity) to a single external network</p>
+</li>
+<li>
+<p>Routing (layer 3 connectivity) to multiple external networks using VLANs</p>
+</li>
+<li>
+<p>Bridging (layer 2 connectivity) between a logical network and a physical broadcast domain</p>
+</li>
+</ul>
+<p>Both of the routed connectivity options you&rsquo;ve seen so far have involved the use of NAT (specifically, source NAT, or SNAT) on the logical router in order to establish outbound connectivity. You&rsquo;ve had to use floating IP addresses to establish inbound connectivity to instances. However, NSX is absolutely capable of supporting routed connectivity options that do not involve NAT, allowing cloud administrators and operators to use fully routable IP address spaces inside NSX logical networks.</p>
+<p>Assuming that you already have logical routing working, the steps to establish a no-NAT routing configuration are pretty straightforward. Note that because the IP address space used in the logical network must interoperate with the IP addressing scheme used on the public network, this configuration is typically set up by a cloud administrator and not by a tenant.</p>
+<p>To set up a no-NAT configuration, follow these steps (all commands are assumed to be run using admin credentials):</p>
+<ol>
+<li>
+<p>Store the tenant&rsquo;s ID in an environment variable, as you&rsquo;ll be needing it quite a bit over the next few minutes. You can do that using <code>keystone tenant-list</code> and <code>awk</code>. For example, if the tenant&rsquo;s name was blue, then you could use <code>keystone tenant-list | awk '/\ blue\ / {print $2}'</code> to find the tenant ID and assign it to an environment variable. The following commands will assume you&rsquo;ve stored the tenant&rsquo;s ID as <code>$TID</code>.</p>
+</li>
+<li>
+<p>Create a logical router and assign it to the tenant. The command to do this is <code>neutron router-create --tenant-id $TID &lt;Name of router&gt;</code>. It <em>might</em> be possible to re-use an existing logical router, but you&rsquo;re really much better off just creating another logical router for this purpose.</p>
+</li>
+<li>
+<p>Create a logical network on behalf of the tenant, using <code>neutron net-create --tenant-id $TID &lt;Name of network&gt;</code>.</p>
+</li>
+<li>
+<p>Create a subnet and associate it with the new logical network you just created. You can do that with this command: <code>neutron subnet-create --tenant-id $TID --name &lt;Subnet name&gt; --gateway &lt;IP address for logical router&gt; &lt;Name of network&gt; &lt;CIDR&gt;</code>.</p>
+</li>
+<li>
+<p>Attach the logical router to the logical network and associated subnet with <code>neutron router-interface-add &lt;Router ID&gt; &lt;Subnet name&gt;</code>. The IP address of this interface will be the IP address provided to the <code>--gateway</code> parameter when you created the subnet.</p>
+</li>
+<li>
+<p>Attach the logical router to the external network that will serve as its uplink. <em>This is where you&rsquo;ll tell Neutron and NSX that NAT should not be active.</em> The command to use is <code>neutron router-gateway-set --disable-snat &lt;Router ID&gt; &lt;External network ID&gt;</code>.</p>
+</li>
+</ol>
+<p>You&rsquo;re almost done&mdash;you now have a logical network using IP addresses from a subnet that is routable within your larger network without any use of NAT. However, you still need to let the rest of the network know about this new subnet, and as NSX in multi-hypervisor environments doesn&rsquo;t yet support dynamic routing via protocols like OSPF and BGP, then you&rsquo;ll need to do static routing.</p>
+<p>To do static routing, you&rsquo;ll need the IP address assigned to the router during step 6 above. <code>neutron port-list</code> will show you the list of ports in Neutron; depending on the size of your installation, this list might be quite sizable. This command might help:</p>
+<pre><code>neutron port-list -c id -c fixed_ips -c device_owner | awk '/network:router_gateway/'
+</code></pre>
+<p>This will show you only the ports that are acting as router gateway ports. In large environments, even this list may not be short enough to know for sure which IP address is assigned to the router. For now, though, let&rsquo;s assume that you&rsquo;re able to determine the IP address assigned to the logical router on the external network.</p>
+<p>Once you have this address, then it&rsquo;s just a simple matter of adding that route to other network devices. Often, this is some form of <code>ip route add</code>; the specific commands and syntax will depend on the network device and are outside the scope of this article. Once you get the IP routing table(s) updated on the other network devices, then you&rsquo;re ready to roll!</p>
+<p>I hope you find this article (and this series) helpful. As always, if you have any questions, corrections, clarifications, or concerns, I invite you to speak up in the comments below. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/10/27/learning-nsx-part-17-adding-external-l2-connectivity/">Learning NSX, Part 17: Adding External L2 Connectivity</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/11/06/setting-up-the-tools-for-contributing-to-openstack-documentation/">Setting up the Tools for Contributing to OpenStack Documentation</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f03%2flearning-nsx-part-18-routing-without-network-address-translation%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f03%2flearning-nsx-part-18-routing-without-network-address-translation%2f&text=Learning%20NSX%2c%20Part%2018%3a%20Routing%20Without%20Network%20Address%20Translation" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f03%2flearning-nsx-part-18-routing-without-network-address-translation%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/10/27/learning-nsx-part-17-adding-external-l2-connectivity/">Learning NSX, Part 17: Adding External L2 Connectivity</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2014/10/13/learning-nsx-part-16-routing-to-multiple-external-vlans/">Learning NSX, Part 16: Routing to Multiple External VLANs</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2014/07/16/learning-nsx-part-15-nsx-gateways-gateway-services-and-logical-routers/">Learning NSX, Part 15: NSX Gateways, Gateway Services, and Logical Routers</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

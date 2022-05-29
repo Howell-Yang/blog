@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Future of NetApp - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Future of NetApp - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Future of NetApp - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/06/18/the-future-of-netapp/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Future of NetApp</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;611 words (estimated 3 minutes to read)</span>
+  <p>As I was sitting in London&rsquo;s Heathrow Airport this morning catching up on RSS feeds before boarding my plane back to the United States, an article headline caught my eye: <a href="http://siliconangle.com/blog/2010/06/17/why-netapp-must-seek-acquisition/">Why NetApp Must Seek Acquisition</a>.</p>
+<p>I can&rsquo;t tell you how glad I am to see this article published, because it gives me the opportunity to share something I&rsquo;ve been thinking about for a while, even before I joined EMC. I&rsquo;m sure that everything I have to say about NetApp will be colored by the fact that I now work for EMC, and&mdash;whether I like it or not&mdash;all comments about any other storage vendor or technology are immediately suspect. Recent comments to <a href="/2010/06/07/a-deeper-look-at-vplex/">my VPLEX article</a> proved that point; it will take time to re-establish objectivity and prove to my readers that I&rsquo;m not an EMC shill.</p>
+<p>But I digress; back to the article. In the article, the author (&ldquo;secretcto&rdquo;) states why he believes that NetApp must seek acquisition in order to survive. The crux of his article is this:</p>
+<blockquote>
+<p>Now lets take a look at the market cap of each of these players.  A company&rsquo;s market cap is a good place start in order to identify which of these companies will have money to invest in tomorrow.  I am not saying that &lsquo;cloud&rsquo; is the IT of tomorrow, but if it is the direction of tomorrow, then one thing is certain, the folks in that list that have more of the necessary &lsquo;cloud&rsquo; pieces (or the money to invest in building out a portfolio of integrated cloud components) will be the most successful competitors.</p>
+</blockquote>
+<p>The author states that NetApp has a few key problems:</p>
+<ul>
+<li>
+<p>NetApp only owns one component (storage) of the multiple components (the others being servers, networking, software, and security) necessary to continue to be a key competitor moving forward.</p>
+</li>
+<li>
+<p>NetApp doesn&rsquo;t own any software that drives customers to its products.</p>
+</li>
+<li>
+<p>NetApp lacks the bankroll to acquire the technologies necessary to build out their portfolio in order to compete with more &ldquo;full-featured&rdquo; competitors.</p>
+</li>
+<li>
+<p>NetApp has a history of difficulty integrating their acquisitions. Even if the bankroll was present, there is no indication that additionsl to their portfolio could be successfully integrated into the company.</p>
+</li>
+</ul>
+<p>I would add an additional weakness. Being on the outside&mdash;and not only on the outside, but working for a competitor that NetApp fiercely detests&mdash;I lack any inside knowledge of what might be going on at NetApp. I know they have a <strong>ton</strong> of very smart, talented folks over there, and those smart folks have engineered the heck out of their WAFL and snapshot technologies. But the reality is that NetApp is a one-trick pony. Look at their products: every single one is in some way based on the same underlying technologies. Kudos to them for getting as much mileage about of these technologies as they have; that&rsquo;s a huge testament to the skill of their engineering staff.</p>
+<p>However, it appears to me (again, lacking any inside knowledge I could be completely wrong) that they have reached <strong><em>the end of the road</em></strong>. I get the feeling that NetApp has done everything they possibly could do with WAFL and snapshots, and now that they have no more mileage with this pony and no more ponies in the stable, where does that leave them?</p>
+<p>Again, I&rsquo;m sure that everyone will take these comments as me bashing NetApp. My intent here is most definitely not to bash NetApp, but to simply state my observations. I&rsquo;d love to hear others&rsquo; thoughts on the matter; my only request is that you fully disclose your affiliations. Speak up in the comments and let me know what you think! All courteous comments are welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/snapshot">Snapshot</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/wafl">WAFL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/06/13/the-vmotion-reality/">The vMotion Reality</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/06/19/hiatus/">Hiatus</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f18%2fthe-future-of-netapp%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f18%2fthe-future-of-netapp%2f&text=The%20Future%20of%20NetApp" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f18%2fthe-future-of-netapp%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/04/08/3010-a-multistore-primer/">3010: A MultiStore Primer</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2008/12/03/2031-enhancements-to-netapp-cloning-technology/">2031: Enhancements to NetApp Cloning Technology</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2007/12/05/managing-lun-space-requirements-with-netapp-storage/">Managing LUN Space Requirements with NetApp Storage</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

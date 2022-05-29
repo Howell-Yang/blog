@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Updating Ubuntu Cloud Archive Support with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Updating Ubuntu Cloud Archive Support with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Updating Ubuntu Cloud Archive Support with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/12/17/updating-ubuntu-cloud-archive-support-with-puppet/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Updating Ubuntu Cloud Archive Support with Puppet</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;223 words (estimated 2 minutes to read)</span>
+  <p>Some time ago, I showed you <a href="/2013/10/04/using-puppet-for-ubuntu-cloud-archive-support/">how to use Puppet to add Ubuntu Cloud Archive support</a> to your Ubuntu installation. Since that time, <a href="http://www.openstack.org/">OpenStack</a> has had a new release (the Havana release) and the Ubuntu Cloud Archive repository has been updated with new packages to support the Havana release. In this post, I&rsquo;ll show you an updated snippet of code to take advantage of these newer packages in the Ubuntu Cloud Archive repository.</p>
+<p>For reference, <a href="https://gist.github.com/scottslowe/6827241">here&rsquo;s the original Puppet code</a> I posted in the first article. This code points your Ubuntu installation to the Grizzly packages.</p>
+<p>Here&rsquo;s updated code that will point your installation to the appropriate packages to support OpenStack&rsquo;s Havana release:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#a6e22e">apt</span>::<span style="color:#a6e22e">source</span> { <span style="color:#e6db74">&#39;ubuntu-cloud&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">location</span>          <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;http://ubuntu-cloud.archive.canonical.com/ubuntu&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">repos</span>             <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;main&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">release</span>           <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;precise-updates/havana&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">include_src</span>       <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">false</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">required_packages</span> <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;ubuntu-cloud-keyring&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/7949509">here</a> for this code snippet as a GitHub Gist.)</p>
+<p>As you can see, there is only one small change between the two code snippets: changing &ldquo;precise-updates/grizzly&rdquo; in the first to &ldquo;precise-updates/havana&rdquo; in the second. (Naturally, this assumes you&rsquo;re using Ubuntu 12.04, the latest LTS release as of this writing.) I know this seems like a pretty simple thing to post, but I wanted to include it here for the sake of completeness and the benefit of future readers.</p>
+<p>Feel free to speak up in the comments with any questions, suggestions, or corrections.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/12/16/an-interview-with-jesse-proudman/">An Interview with Jesse Proudman</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/12/18/managing-open-vswitch-with-puppet/">Managing Open vSwitch with Puppet</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f17%2fupdating-ubuntu-cloud-archive-support-with-puppet%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f17%2fupdating-ubuntu-cloud-archive-support-with-puppet%2f&text=Updating%20Ubuntu%20Cloud%20Archive%20Support%20with%20Puppet" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f17%2fupdating-ubuntu-cloud-archive-support-with-puppet%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/10/04/using-puppet-for-ubuntu-cloud-archive-support/">Using Puppet for Ubuntu Cloud Archive Support</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/10/14/installing-open-vswitch-on-ubuntu-with-puppet/">Installing Open vSwitch on Ubuntu with Puppet</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Enabling an Apple MBP Wireless Adapter with Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Enabling an Apple MBP Wireless Adapter with Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Enabling an Apple MBP Wireless Adapter with Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/01/18/apple-mbp-wifi-fedora/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Enabling an Apple MBP Wireless Adapter with Fedora 25</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;278 words (estimated 2 minutes to read)</span>
+  <p>In this article, I want to share with you the steps I took to enable wireless networking on an older (mid-2011) 13&quot; MacBook Pro running <a href="https://getfedora.org">Fedora</a> 25. This is driven by a continued need to evaluate Fedora 25, as I&rsquo;ve run into a few potential roadblocks with <a href="https://www.ubuntu.com">Ubuntu</a> 16.04 as my primary laptop OS. Using Fedora 25 instead <em>may</em> help resolve some of these issues, which primarily center around corporate collaboration.</p>
+<p>First, you&rsquo;ll want to enable the <a href="https://rpmfusion.org/">RPM Fusion</a> repositories. This is pretty well documented on the RPM Fusion web site. <a href="https://rpmfusion.org/Configuration">This link</a> will take you to the configuration page, which will provide links for graphical setup via your browser as well as CLI commands.</p>
+<p>Once the RPM Fusion repositories (both Free and Nonfree) repositories are enabled, then it&rsquo;s just a matter of installing a few packages:</p>
+<ol>
+<li>
+<p>First, install the &ldquo;kernel-devel&rdquo; package appropriate for your current kernel. The command to use is:</p>
+<pre><code> sudo dnf install &quot;kernel-devel-uname-r == $(uname -r)&quot;
+</code></pre>
+<p>This could be user error on my part, but I&rsquo;ve found that it&rsquo;s necessary to use the full package (including version) instead of just &ldquo;kernel-devel&rdquo;. Otherwise, Fedora seems to have a tendency to install the latest package, which may not match the current kernel you&rsquo;re actually running.</p>
+</li>
+<li>
+<p>Next, install the &ldquo;akmods&rdquo; and &ldquo;broadcom-wl&rdquo; packages:</p>
+<pre><code> sudo dnf install akmods broadcom-wl
+</code></pre>
+</li>
+<li>
+<p>After these packages have been installed, build the kernel modules with <code>sudo akmods</code>. This will take a moment, then it should return you to the terminal prompt after an &ldquo;OK&rdquo; message.</p>
+</li>
+</ol>
+<p>Once you reboot, you should have a new network adapter (on my particular MBP, it was identified as &ldquo;wlp3s0&rdquo;), and you can join the wireless network of your choice.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/01/16/opml-to-markdown-script/">OPML-to-Markdown Conversion Script</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/01/19/technology-short-take-76/">Technology Short Take #76</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f18%2fapple-mbp-wifi-fedora%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f18%2fapple-mbp-wifi-fedora%2f&text=Enabling%20an%20Apple%20MBP%20Wireless%20Adapter%20with%20Fedora%2025" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f18%2fapple-mbp-wifi-fedora%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/06/30/technology-short-take-68/">Technology Short Take #68</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/04/22/technology-short-take-65/">Technology Short Take #65</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

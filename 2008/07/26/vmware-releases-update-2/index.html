@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware Releases Update 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware Releases Update 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware Releases Update 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/07/26/vmware-releases-update-2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware Releases Update 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;361 words (estimated 2 minutes to read)</span>
+  <p>VMware has released Update 2 for VMware Infrastructure 3 version 3.5, which includes updates to VMware ESX, VMware ESXi, VirtualCenter, and VMware Consolidated Backup (VCB). Check the <a href="http://www.vmware.com/support/vi3/doc/vi3_esx35u2_vc25u2_rel_notes.html">Release Notes</a> for the full details; I won&rsquo;t reproduce them here, but instead I&rsquo;ll just point out the particularly interesting details.</p>
+<p>Also reporting this information (at the time of this writing) are <a href="http://vmblog.com/archive/2008/07/26/vmware-releases-update-2-for-esx-3-5.aspx">David from VMblog.com</a>, <a href="http://vmetc.com/2008/07/26/esx-35-update-2-released-with-new-fixes-and-new-features/#more-546">Rich from VM /ETC</a>, and <a href="http://www.yellow-bricks.com/2008/07/26/esx-35-update-2-available-now/">Duncan at Yellow Bricks</a>. Rich&rsquo;s post also highlights in red the features that he finds most significant.</p>
+<p>Some of the features and/or functionality added in Update 2 that I find most notable include:</p>
+<ul>
+<li>
+<p>The biggest, in my mind, is VSS quiescing support. This allows VMware snapshots to leverage VSS for more consistent snapshots. Microsoft had been using the lack of VSS support as a key argument against VMware; this tackles that issue head-on. Also surf over to Duncan&rsquo;s site and see his post about <a href="http://www.yellow-bricks.com/2008/07/26/vss-snapshots/">enabling VSS snapshot support</a> in VMware Tools.</p>
+</li>
+<li>
+<p>Users can now hot extend a virtual disk (extend a virtual disk while the VM is running).</p>
+</li>
+<li>
+<p>Users can clone a virtual machine while it is up and running (live cloning). There is now no need to shut down a VM in order to clone it. I suspect this functionality will have some very interesting repercussions from an operational perspective, and may serve as the basis for future functionality as well.</p>
+</li>
+<li>
+<p>VMware now officially introduces Enhanced VMotion Compatibility (EVC), which leverages Intel FlexMigration and AMD-V Extended Migration support. This functionality automatically configures CPUs within a cluster to be VMotion-compatible and won&rsquo;t allow you to add hosts to a cluster that can&rsquo;t be configured via EVC to be compatible.</p>
+</li>
+</ul>
+<p>This doesn&rsquo;t even touch on any of the other numerous features that are supported. Again, go check the Release Notes or one of the linked blogs above for complete details.</p>
+<p>The introduction of new features that reduce service interruption&mdash;namely, hot extending virtual disks and live VM cloning&mdash;is exactly the move that VMware needs to take to further differentiate their virtualization solution from competitors&rsquo; solutions. I&rsquo;ve stated time and time again that innovation in the virtualization space will continue to set VMware apart from the competition.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/snapshots">Snapshots</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcb">VCB</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/07/25/my-take-on-free-esxi/">My Take on Free ESXi</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/07/26/openssh-with-kerberos-and-active-directory/">OpenSSH with Kerberos and Active Directory</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f07%2f26%2fvmware-releases-update-2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f07%2f26%2fvmware-releases-update-2%2f&text=VMware%20Releases%20Update%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f07%2f26%2fvmware-releases-update-2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/07/25/my-take-on-free-esxi/">My Take on Free ESXi</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2008/06/26/virtualization-short-take-11/">Virtualization Short Take #11</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2008/05/29/netapp-ossv-with-vmware-esx-server/">NetApp OSSV with VMware ESX Server</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Trying iTerm2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Trying iTerm2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Trying iTerm2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/06/17/trying-iterm2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Trying iTerm2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;288 words (estimated 2 minutes to read)</span>
+  <p>In 2007 I posted <a href="/2007/06/26/giving-iterm-a-try/">an article about iTerm</a>, an open source terminal application for Mac OS X. At that time, I gave up on iTerm and switched back to the Apple-supplied Terminal.app. For a while, it seemed as if iTerm was stagnating and development had stalled.</p>
+<p>However, I recently learned that some developers forked the original iTerm to create <a href="http://www.iterm2.com/">iTerm2</a>. Like the original iTerm, iTerm2 supports AppleScript and tabbed terminals. The tabbed terminals I don&rsquo;t really care about (I don&rsquo;t use tabs, generally speaking), but I do like AppleScript support (in case you hadn&rsquo;t picked that up already). There are also some other interesting features: split panes, a Visor-like window accessible via hotkey, and <a href="http://growl.info/">Growl</a> support.</p>
+<p>So I installed the latest build of iTerm2, and so far it&rsquo;s been very stable. My only complaint has been that you can&rsquo;t configure iTerm2 to spawn new windows instead of new tabs by default. Key point: I started using <a href="https://github.com/skurfer/RemoteHosts-qsplugin">the Remote Hosts plug-in for Quicksilver</a> (great plug-in, by the way). Once I reconfigured iTerm2 as the handler for <code>ssh://</code> URIs, the plug-in stopped spawning Terminal.app windows and starting spawning iTerm2 tabs instead. Unfortunately, I haven&rsquo;t been able to figure out how to tell it to spawn a new iTerm2 window instead. (Feel free to chime in with ideas.)</p>
+<p>I also whipped up a quick AppleScript that I can invoke with <a href="http://www.red-sweater.com/fastscripts/">FastScripts</a>; the purpose of this script is to open a new iTerm2 terminal window at the same directory as the frontmost Finder window.</p>
+<p>I&rsquo;m going to continue to work with iTerm2 as my primary terminal application for a while to see how it works. If anyone has any tips or tricks to share, please add them in the comments below. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/06/16/using-vaai-to-maintain-control/">Using VAAI to Maintain Control?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/06/17/my-cisco-live-2011-schedule/">My Cisco Live 2011 Schedule</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f06%2f17%2ftrying-iterm2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f06%2f17%2ftrying-iterm2%2f&text=Trying%20iTerm2" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f06%2f17%2ftrying-iterm2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/10/20/shortening-urls-via-bitly-from-the-cli/">Shortening URLs via bit.ly from the CLI</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2010/01/11/a-couple-geektool-scripts/">A Couple GeekTool Scripts</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2007/10/21/apparently-im-ahead-too/">Apparently, I&#39;m Ahead Too</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

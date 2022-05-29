@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Authenticating to Cisco IOS via Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Authenticating to Cisco IOS via Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Authenticating to Cisco IOS via Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/07/02/authenticating-to-cisco-ios-via-active-directory/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Authenticating to Cisco IOS via Active Directory</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;666 words (estimated 4 minutes to read)</span>
+  <p>The following configuration will enable you to authenticate login requests to <a href="http://www.cisco.com/">Cisco</a> equipment running IOS against Active Directory. This would, for example, allow you to centralize the authentication of your Cisco-based network infrastructure against Active Directory.</p>
+<h2 id="configuring-the-cisco-equipment">Configuring the Cisco Equipment</h2>
+<p>The equipment I used in this configuration was a <a href="http://www.cisco.com/en/US/products/hw/switches/ps5528/index.html">Cisco Catalyst 3560G</a> switch running IOS 12.2(25); please note that the commands listed here may be different in different versions of IOS. The commands should be roughly equivalent, however, across hardware platforms.</p>
+<p>First, we must enable the external authentication mechanisms, then we&rsquo;ll specify the external authentication servers we&rsquo;re going to use. This is listed below:</p>
+<ol>
+<li>
+<p>First, to enable external authentication on the switch, use the <code>aaa new model</code> and <code>aaa authentication login default group radius local</code> commands in global configuration mode. This enables the authentication of login requests by RADIUS first, then by a local database (just in case network connectivity is down). We specify &ldquo;local&rdquo; as well because this configuration applies to both telnet requests as well as physical console requests.</p>
+</li>
+<li>
+<p>Next, we specify the external authentication servers that the switch should use. This is done via the <code>radius-server host &lt;host IP address&gt; auth-port &lt;host auth-port&gt; acct-port &lt;host acct-point&gt; key &lt;shared secret&gt;</code> command.  Best practices dictate that you should have at least two RADIUS servers for redundancy. Note that the &ldquo;auth-port&rdquo; and &ldquo;acct-port&rdquo; parameters are only necessary if you are using nonstandard ports. Since Microsoft&rsquo;s IAS (Internet Authentication Service, which provides the RADIUS interface to Active Directory) uses both sets of standard ports (1645/1812 and 1646/1813) you won&rsquo;t need to specify these parameters. The &ldquo;key&rdquo; parameter is a shared secret key between the RADIUS client (the switch) and the RADIUS server.</p>
+</li>
+</ol>
+<p>Now we&rsquo;re ready to move to configuring the Windows servers that we&rsquo;ll use for RADIUS authentication.</p>
+<h2 id="configuring-internet-authentication-service-ias">Configuring Internet Authentication Service (IAS)</h2>
+<p>Configuring IAS is rather simple. I&rsquo;ve discussed the use of IAS before (here in discussing <a href="/2005/11/22/cisco-pix-vpn-and-active-directory-integration/">Cisco PIX-AD integration</a> and here regarding <a href="/2005/12/06/watchguard-firebox-vpn-and-active-directory-integration/">WatchGuard Firebox-AD integration</a>), and I&rsquo;ll refer you back to those articles for some of the basics on setting up and configuring IAS.</p>
+<p>Note that these instructions are based on the version of IAS included with <a href="http://www.microsoft.com/windowsserver/default.mspx">Windows Server 2003 R2</a>; different versions may behave slightly differently.</p>
+<p>To configure IAS in this instance (once it has been installed and registered with Active Directory), we&rsquo;ll do the following:</p>
+<ul>
+<li>
+<p>Add the Cisco Catalyst switch as a RADIUS client. We&rsquo;ll need to be sure to specify the same shared secret as used in the switch configuration above. You can specify the Cisco switch either by DNS name (if it is registered in DNS) or by IP address.</p>
+</li>
+<li>
+<p>Create a new remote access policy that grants remote access permission. The conditions on the policy should be &ldquo;NAS-IP-Address&rdquo; (set to the IP address of the Cisco equipment) and &ldquo;Windows-Groups&rdquo; (set to whatever group should be allowed to authenticate to the switch; I created a group called &ldquo;Cisco Admins&rdquo; and used it).</p>
+</li>
+<li>
+<p>Configure the profile to use only PAP authentication and no encryption.</p>
+</li>
+</ul>
+<p>Repeat this process on the second Windows server running IAS (you did configure two for redundancy, didn&rsquo;t you?).</p>
+<p>That&rsquo;s it! At this point, you should be able to telnet to the Cisco switch (or whatever IOS-based equipment you&rsquo;ve configured) and log in with your Active Directory username and password. Once logged in, you can use your <code>enable</code> or <code>enable secret</code> password to enter privileged exec mode.</p>
+<p>Now, before you go any farther, add a local account to use in case the network connectivity to the RADIUS server is lost:</p>
+<pre><code>s1(config)#username localaccount password password123
+</code></pre>
+<p>(Obviously, you&rsquo;ll want to use a secure password!) This will ensure that if you lose network connectivity to the equipment, you can still get in through the serial console connection. Be warned: without this local account, you can be locked out of the equipment completely if the RADIUS server(s) are inaccessible!</p>
+<p><a href="http://www.cisco.com/en/US/tech/tk59/technologies_tech_note09186a0080093c81.shtml">This Cisco document</a> offers some additional information on AAA configurations, so I&rsquo;ll refer you there for more detailed descriptions of the commands involved. Enjoy!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/06/29/esx-iscsi-basic-configuration-from-the-cli/">ESX iSCSI Basic Configuration from the CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/07/02/mac-usenet-applications/">Mac Usenet Applications</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f02%2fauthenticating-to-cisco-ios-via-active-directory%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f02%2fauthenticating-to-cisco-ios-via-active-directory%2f&text=Authenticating%20to%20Cisco%20IOS%20via%20Active%20Directory" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f02%2fauthenticating-to-cisco-ios-via-active-directory%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2005/11/22/cisco-pix-vpn-and-active-directory-integration/">Cisco PIX VPN and Active Directory Integration</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2007/06/13/cisco-link-aggregation-and-netapp-vifs/">Cisco Link Aggregation and NetApp VIFs</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

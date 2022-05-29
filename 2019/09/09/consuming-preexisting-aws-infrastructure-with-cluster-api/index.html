@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Consuming Pre-Existing AWS Infrastructure with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Consuming Pre-Existing AWS Infrastructure with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Consuming Pre-Existing AWS Infrastructure with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Consuming Pre-Existing AWS Infrastructure with Cluster API</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;962 words (estimated 5 minutes to read)</span>
+  <p>All the posts I&rsquo;ve published so far about <a href="https://kubernetes.io/">Kubernetes</a> <a href="https://github.com/kubernetes-sigs/cluster-api">Cluster API (CAPI)</a> assume that the underlying infrastructure needs to be created. This is fine, because generally speaking that&rsquo;s part of the value of CAPI&mdash;it will create new cloud infrastructure for every Kubernetes cluster it instantiates. In the case of AWS, this includes VPCs, subnets, route tables, Internet gateways, NAT gateways, Elastic IPs, security groups, load balancers, and (of course) EC2 instances. But what if you <em>didn&rsquo;t</em> want CAPA to create AWS infrastructure? In this post, I&rsquo;ll show you how to consume pre-existing AWS infrastructure with Cluster API for AWS (CAPA).</p>
+<p>Why would one <em>not</em> want CAPA to create the necessary AWS infrastructure? There are a variety of reasons, but the one that jumps to my mind immediately is that an organization may have established/proven expertise and a process around the use of infrastructure-as-code (IaC) tooling like <a href="https://www.terraform.io/">Terraform</a>, <a href="https://aws.amazon.com/cloudformation/">CloudFormation</a>, or <a href="https://www.pulumi.com/">Pulumi</a>. In cases like this, such organizations would very likely prefer to continue to use the tooling they already know and with which they are already familiar, instead of relying on CAPA. Further, the use of third-party IaC tooling may allow for greater customization of the infrastructure than CAPA would allow.</p>
+<p>Fortunately, CAPA makes it reasonably straightforward to use pre-existing infrastructure. The key here is the <code>networkSpec</code> object in a Cluster definition. Readers who read the post on <a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">highly available clusters on AWS with Cluster API</a> saw how to use the <code>networkSpec</code> object to tell CAPA how to create subnets across multiple availability zones (AZs) for greater availability. The <code>networkSpec</code> object can <em>also</em> be used to tell CAPA how to use pre-existing infrastructure.</p>
+<p>For this second use case (having CAPA use pre-existing infrastructure), users will need to add a <code>networkSpec</code> object to the Cluster definition that provides the IDs of the VPC and the subnets within the VPC that CAPA should use. Here&rsquo;s an example (this example assumes CAPI v1alpha1; the full &ldquo;path&rdquo; to where <code>networkSpec</code> should be specified changes in CAPI v1alpha2):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">providerSpec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">value</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">networkSpec</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">vpc</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">id</span>: <span style="color:#ae81ff">vpc-0425c335226437144</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">subnets</span>:
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-07758a9bc904d06af</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-0a3507a5ad2c5c8c3</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-02ad6429dd0532452</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-02b300779e9d895cf</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-03d8f353b289b025f</span>
+</span></span><span style="display:flex;"><span>          - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-0a2fe03b0d88fa078</span>
+</span></span></code></pre></div><p>This example provides CAPA with the ID of a VPC to use, as well as the IDs for public and private subnets across three different AZs. Note that these need to be fully functional subnets, so users need to be sure to have created not only the VPC and the subnets but also the necessary Internet gateways (for public subnets), NAT gateways (for private subnets), Elastic IP addresses (for the NAT gateways), route tables, and route table associations. Cluster API will take care of security groups, load balancers, and EC2 instances; these do not need to be created in advance.</p>
+<p>In addition to ensuring that the infrastructure is fully functional, users must be sure that the appropriate AWS tags are added to all objects. When CAPI creates an AWS infrastructure object, it adds the <code>sigs.k8s.io/cluster-api-provider-aws/cluster/&lt;cluster-name&gt;</code> tag, with a value of &ldquo;managed&rdquo;, and the <code>sigs.k8s.io/cluster-api-provider-aws/role</code> tag, with a value of &ldquo;common.&rdquo; Users will want to ensure whatever tooling they are using to create the infrastructure to be consumed by CAPA has those tags, although the values may be different (it&rsquo;s not required to use &ldquo;managed&rdquo; and &ldquo;common&rdquo;, respectively).</p>
+<p>With the infrastructure created and tagged, and the <code>networkSpec</code> information in place, applying the Cluster YAML definition against the management cluster using <code>kubectl</code> will generate a new Kubernetes cluster that will leverage the specified VPC and subnets instead of creating a new VPC and subnets. (Users could also use a configuration like this with <code>clusterctl</code> when creating a new management cluster.)</p>
+<p>Users who are configuring CAPA to consume pre-existing infrastructure still have the option of instructing CAPA to distribute EC2 instances across multiple availability zones (AZs) for greater availability (as described <a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">here</a>). In this case, users have two options for providing CAPA with the necessary information to distribute the instances across multiple AZs:</p>
+<ol>
+<li>By specifying an AZ in the Machine specification</li>
+<li>By specifying a subnet ID in the Machine specification</li>
+</ol>
+<p>The first option is exactly as described in <a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">the previous post on HA clusters</a>, so I won&rsquo;t repeat it here.</p>
+<p>The second option is only available in the case of having CAPA consume pre-existing infrastructure, because only in such cases will the subnet IDs be known in advance. To add the subnet ID to the Machine YAML specification would look something like this (this example is for CAPI v1apha1; the full &ldquo;path&rdquo; in the YAML manifest changes for CAPI v1alpha2):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">providerSpec</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">value</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">subnet</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">id</span>: <span style="color:#ae81ff">subnet-0a3507a5ad2c5c8c3</span>
+</span></span></code></pre></div><p>This is a bit more tedious than specifying AZ; here, the user must manually look up the subnet IDs and determine in which AZ each subnet resides. Further, since both public and private subnets are needed, users must manually determine which subnet IDs belong to public subnets and which belong to private subnets.(As noted in <a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">this post</a>, placing instances across multiple AZs is not the answer for all availability needs&mdash;see the &ldquo;Disclaimer&rdquo; portion of the post.)</p>
+<p>Finally, users will need to provide their &ldquo;own&rdquo; bastion host for accessing the EC2 instances that CAPA places on private subnets. When configuring CAPA to use pre-existing infrastructure, CAPA will <em>not</em> create a bastion host automatically.</p>
+<p>If anyone has any feedback, corrections, or suggestions for improving this post, please feel free to <a href="https://twitter.com/scott_lowe">contact me via Twitter</a>. All feedback is welcome!</p>
+<p><strong>UPDATE 13 September 2019:</strong> I&rsquo;ve updated this post to point out that the examples provided are based on CAPI v1alpha1. The examples will work with CAPI v1alpha2, but the &ldquo;path&rdquo; within the YAML manifest changes with CAPI v1alpha2.</p>
+<p><strong>UPDATE 22 April 2020:</strong> The <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/master/docs/existing-aws-infrastructure.md">upstream documentation for using existing AWS infrastructure</a> has been updated and should be considered the authoritative source of information on this topic.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/pulumi">Pulumi</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">Highly Available Kubernetes Clusters on AWS with Cluster API</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/09/13/an-introduction-to-kustomize/">An Introduction to Kustomize</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f09%2fconsuming-preexisting-aws-infrastructure-with-cluster-api%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f09%2fconsuming-preexisting-aws-infrastructure-with-cluster-api%2f&text=Consuming%20Pre-Existing%20AWS%20Infrastructure%20with%20Cluster%20API" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f09%2fconsuming-preexisting-aws-infrastructure-with-cluster-api%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/06/21/technology-short-take-115/">Technology Short Take 115</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2019/05/17/technology-short-take-114/">Technology Short Take 114</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

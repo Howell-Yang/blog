@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/04/29/virtualization-short-take-6/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #6</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;429 words (estimated 3 minutes to read)</span>
+  <p>This one is a short one, since I&rsquo;m out of town on business and don&rsquo;t have a great deal of time. Nevertheless, I wanted to post my thoughts on a couple of items that have passed in front of me over the last few days.</p>
+<ul>
+<li>
+<p>Andrew Kutz has released the <a href="http://code.lostcreations.com/wiki/vmware/vitoolkitfordotnet">VI Toolkit for .NET</a>. Quoting from the e-mail he sent me, the VI Toolkit for .NET &ldquo;makes connecting to VI, finding a VM, and getting its properties a snap!&rdquo;. If you&rsquo;re a developer that is interested in developing tools and/or scripts for the VI environment, this seems like it would be a tool that would be useful.</p>
+</li>
+<li>
+<p>VKernel let me know that they&rsquo;ve joined the VMware Certified Virtual Appliance program with their Chargeback Virtual Appliance.</p>
+</li>
+<li>
+<p>Rich over at VM /ETC has published some information on <a href="http://vmetc.com/2008/04/29/use-the-vi-client-to-bulk-upgrade-vm-tools/">using the VI Client to upgrade VMware Tools</a>. The particularly helpful portion of this article is the information on using the CLI from the VirtualCenter server to upgrade VMware Tools.</p>
+</li>
+<li>
+<p>Duncan shares some information from one of his readers about a <a href="http://www.yellow-bricks.com/2008/04/29/vcb-and-solaris-32-bit-vms/">bug in the VMware Tools for Solaris 10</a>. This particular issue can prevent VCB from working properly. Fortunately, Duncan also shares a workaround.</p>
+</li>
+<li>
+<p>Via Alessandro, it looks like Microsoft is upping the heat on VMware with <a href="http://www.virtualization.info/2008/04/microsoft-opens-scvmm-2008-beta-manages.html">the release of a beta of SCVMM 2008</a>. One of the most intriguing features to be included in the next version is management from SCVMM of VMware ESX Server. When you&rsquo;re a company like Microsoft, you can afford to wage a battle on two fronts&mdash;in this case, on both the hypervisor front and the hypervisor management front.</p>
+</li>
+<li>
+<p>Again via Duncan, it looks like there&rsquo;s an <a href="http://www.yellow-bricks.com/2008/04/28/pegasus-error-after-installing-esx-35-update-1/">error with ESX 3.5 Update 1</a> with the Pegasus installation. I ran into this error myself when installing Update 1 right after it was released, but then marked it up as a symptom of the whole snafu with the wrong version of the ISO being posted. Looks like it was more than that.</p>
+</li>
+<li>
+<p>Rich has some <a href="http://vmetc.com/2008/04/28/determine-esx-and-virtualcenter-version-compatibility/">good information on ESX-VirtualCenter compatibility</a>. (Yes, I do read more blogs than just Rich&rsquo;s and Duncan&rsquo;s. Honest!)</p>
+</li>
+<li>
+<p>OK, this may not be necessarily virtualization related, but a pretty good storage-related blog, which does address some VMware-specific issues, has sprouted up <a href="http://21stcenturystorage.cebis.net/">here</a>.</p>
+</li>
+<li>
+<p>SearchVMware.com has published an interesting article by David Davis about <a href="http://searchvmware.techtarget.com/tip/0,289483,sid179_gci1310729,00.html?track=NL-923&amp;ad=635967&amp;asrc=EM_NLN_3523276&amp;uid=1425534">using ESX to help with an Exchange migration or Exchange upgrade</a>.</p>
+</li>
+<li>
+<p>If you have any questions about networking performance on ESX, just check out <a href="http://www.vmware.com/resources/techresources/1041?elq=32D28E76B9154C9AA242D21F81277A72">this document</a>, last revised close to the end of February of this year.</p>
+</li>
+</ul>
+<p>Well, that&rsquo;s it for now. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/04/29/intro-to-io-virtualization/">Intro to I/O Virtualization</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/05/05/vmware-partner-exchange-starts-tomorrow/">VMware Partner Exchange Starts Tomorrow</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f29%2fvirtualization-short-take-6%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f29%2fvirtualization-short-take-6%2f&text=Virtualization%20Short%20Take%20%236" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f29%2fvirtualization-short-take-6%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/04/25/my-thoughts-on-the-live-migration-quick-migration-discussion/">My Thoughts on the Live Migration-Quick Migration Discussion</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2008/04/24/book-review-vmware-esx-server-in-the-enterprise/">Book Review: VMware ESX Server in the Enterprise</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2008/04/04/virtualization-short-take-5/">Virtualization Short Take #5</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Removing Unnecessary Complexity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Removing Unnecessary Complexity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Removing Unnecessary Complexity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/01/16/removing-unnecessary-complexity/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Removing Unnecessary Complexity</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1085 words (estimated 6 minutes to read)</span>
+  <p>Recently, I&rsquo;ve been working to remove unnecessary complexity from my work environment. I wouldn&rsquo;t say that I&rsquo;m going full-on minimalist (not that there&rsquo;s anything wrong with that), but I was beginning to feel like maintaining this complexity was taking focus, willpower, and mental capacity away from other, more valuable, efforts. Additionally, given the challenges I know lie ahead of me this year (see <a href="/2019/12/30/new-year-new-adventure/">here</a> for more information), I suspect I&rsquo;ll need all the focus, willpower, and mental capacity I can get!</p>
+<p>When I say &ldquo;unnecessary complexity,&rdquo; by the way, I&rsquo;m referring to added complexity that doesn&rsquo;t bring any real or significant benefit. Sometimes there&rsquo;s no getting around the complexity, but when that complexity doesn&rsquo;t create any value, it&rsquo;s unnecessary in my definition.</p>
+<p>Primarily, this &ldquo;reduction in complexity&rdquo; shows up in three areas:</p>
+<ol>
+<li>My computing environment</li>
+<li>My home office setup</li>
+<li>My lab resources</li>
+</ol>
+<h2 id="my-computing-environment">My Computing Environment</h2>
+<p>Readers who have followed me for more than a couple years know that I migrated away from macOS for about 9 months in 2017 (see <a href="/2017/10/25/linux-migration-wrap-up/">here</a> for a wrap-up of that effort), then again in 2018 when I joined Heptio (some details are available in <a href="/2018/12/31/linux-migration-december-2018-progress-report/">this update</a>). Since switching to <a href="https://getfedora.org/">Fedora</a> on a Lenovo X1 Carbon when I joined Heptio, I was using Linux on the desktop full-time. (<a href="/2018/12/23/the-linux-migration-series/">This post</a> contains links to all the posts I wrote about my Linux migration.)</p>
+<p>About a month ago, though, I switched back to macOS (macOS Mojave, specifically). Why? Although I was making Linux work for me, there was just enough &ldquo;extra friction&rdquo; in daily tasks to make it more of a chore than I felt it needed to be:</p>
+<ul>
+<li>E-mail connectivity to Office 365 was a challenge (my employer shut down IMAP/SMTP access to e-mail).</li>
+<li>Calendaring was difficult, at best, and the shared calendar for my team totally confused most solutions I tried.</li>
+<li>Interoperability between LibreOffice and Office 365 remained subpar (at best) for all but the most basic documents, unfortunately.</li>
+</ul>
+<p>Contrast that with macOS, where in a matter of minutes I had full connectivity to e-mail, full calendar access (including the shared team calendar), and a working version of Office 365. I also had multi-lingual support working with relative ease, something with which I suspect Linux desktop environments would&rsquo;ve struggled.</p>
+<p>Although I had workable solutions (use a Windows 10 desktop on VMware View for some things, use the Office web applications for other aspects), these solutions still introduced what I felt was unnecessary complexity. So, to remove this unnecessary complexity, I switched back to macOS full-time.</p>
+<p>I also switched back to iOS (I bought an iPhone 11 Pro) from Android (I&rsquo;d been using a Google Pixel). Given that I was moving back into the Apple ecosystem, and given that using an Android-powered phone had made it a bit more difficult to stay in touch with my wife when I was traveling, it didn&rsquo;t seem to make sense to continue down that path. There was no significant benefit in exchange for the added friction.</p>
+<h2 id="my-home-office-setup">My Home Office Setup</h2>
+<p>In addition to simplifying my computing environment, I also set out to simplify my home office setup. For years, I&rsquo;d used both a 2012-era Mac Pro (one of the classic aluminum tower systems, which I&rsquo;d purchased to help with video rendering) and a laptop, and used tools like <a href="https://symless.com/synergy">Synergy</a> (to have a single shared keyboard and mouse across both systems) and <a href="https://www.cis.upenn.edu/~bcpierce/unison/">Unison</a> (to keep files synchronized across both systems). In reality, though, I didn&rsquo;t <em>need</em> the Mac Pro as a desktop system; I really needed it more like a server system to which I could offload rendering tasks.</p>
+<p>Around the same time I switched back to macOS, I also switched back to a single-computer setup. I no longer use Synergy to share a keyboard and mouse across multiple systems; instead, I have only my 2017 13&quot; MacBook Pro. It uses a USB-C port replicator to connect to an external monitor (the same 34&quot; 21:9 ultra-wide monitor I&rsquo;d been using previously), external keyboard, external microphone and webcam, and USB-based headset for Zoom meetings. I use a small application named <a href="https://www.controlplaneapp.com/">ControlPlane</a> to automatically adjust settings based on whether the laptop is &ldquo;docked&rdquo; or not. Plug the laptop in, and it reconfigures itself; unplug it, and it automatically adapts.</p>
+<p>The Mac Pro sits off to the side; I&rsquo;m still working out details on exactly how I&rsquo;ll utilize it. It&rsquo;s still running Linux (Fedora, specifically), and will most likely continue to do so; since it isn&rsquo;t being used as a desktop system I see little value in moving back to macOS on that hardware. It&rsquo;ll probably take over tasks from an aging Mac mini as well as helping with video rendering tasks, once I figure out the specific details on the best way to make that work.</p>
+<h2 id="my-lab-resources">My Lab Resources</h2>
+<p>Making mention of the aging Mac mini naturally leads me into the last area, my lab resources. This effort actually started a few years ago when I moved into my current home. Prior to that, I ran a full-fledged home lab: eight dual-socket Dell servers as hypervisors (a mix of KVM and ESXi), 10Gb and 40Gb Ethernet with multiple VLANs, multiple VMs running for a variety of purposes. When I moved into the current house, though, I did away with <em>all</em> of it except the Mac mini and an Apple Time Capsule. Moving &ldquo;up the stack&rdquo; to focus on things like Linux containers and <a href="https://kubernetes.io/">Kubernetes</a> meant there wasn&rsquo;t as much value in running all this hardware, and why spend time managing all that complexity if I didn&rsquo;t really need to?</p>
+<p>Instead, I started leveraging ephemeral instances in AWS for everything I needed when it came to &ldquo;lab resources.&rdquo; Over the last few years, I&rsquo;ve used that approach to strengthen and expand my skills around infrastructure-as-code. My current approach leverages <a href="https://www.pulumi.com/">Pulumi</a> to manage a base set of AWS resources in multiple regions. Additional capacity is spun up on-demand, and shut down when it&rsquo;s no longer actively needed. Since it&rsquo;s almost exclusively Kubernetes I&rsquo;m using, I leverage <code>kubeadm</code> and <a href="https://github.com/kubernetes-sigs/cluster-api">Cluster API</a> to create and destroy Kubernetes clusters as needed. Yes, there are some limitations, but for the most part this arrangement has worked reasonably well.</p>
+<p>Anyone else undertaken a similar journey? I&rsquo;d be interested to hear from you, and perhaps learn of some additional ways I may be able to simplify and eliminate unnecessary complexity. Feel free to <a href="https://twitter.com/scott_lowe">reach out to me on Twitter</a>, or drop me an e-mail (my e-mail address isn&rsquo;t hard to find, to be honest). Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/personal">Personal</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/01/01/looking-back-2019-project-report-card/">Looking Back: 2019 Project Report Card</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/01/17/technology-short-take-123/">Technology Short Take 123</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f01%2f16%2fremoving-unnecessary-complexity%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f01%2f16%2fremoving-unnecessary-complexity%2f&text=Removing%20Unnecessary%20Complexity" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f01%2f16%2fremoving-unnecessary-complexity%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/12/06/technology-short-take-121/">Technology Short Take 121</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2018/12/21/technology-short-take-108/">Technology Short Take 108</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2017/01/19/technology-short-take-76/">Technology Short Take #76</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

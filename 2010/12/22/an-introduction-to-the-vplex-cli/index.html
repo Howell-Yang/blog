@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>An Introduction to the VPLEX CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="An Introduction to the VPLEX CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="An Introduction to the VPLEX CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/12/22/an-introduction-to-the-vplex-cli/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">An Introduction to the VPLEX CLI</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;815 words (estimated 4 minutes to read)</span>
+  <p>The VPLEX command line interface (CLI) is a bit different than a lot of other CLIs with which I&rsquo;ve worked. In some respects, it&rsquo;s similar to the scope-based CLI that Cisco uses with Unified Computing System (UCS). In this post, I&rsquo;d like to explore the VPLEX CLI a bit and provide a brief introduction to the VPLEX CLI. Keep in mind that this is just an introduction&mdash;for a complete reference to the VPLEX CLI, I&rsquo;ll refer you to the VPLEX product area on EMC PowerLink where a complete VPLEX CLI User&rsquo;s Guide is available in PDF.</p>
+<p>In my opinion, there are two things to know about the VPLEX CLI that will help you understand how to use it:</p>
+<ol>
+<li>
+<p>First, the CLI is a lot like navigating a directory tree, except that you&rsquo;re navigating through <em>contexts</em> instead of directories. In the VPLEX CLI, you move between contexts using the <code>cd</code> command and list the contents of a context using the <code>ls</code> and <code>ll</code> commands. Just as with a typical filesystem, if you&rsquo;re in the right context, you can just run a command (say, like the <code>unclaim</code> command). If you&rsquo;re not in the right context, you simply specify the full context before the command (I&rsquo;ll show you some examples later in this post).</p>
+</li>
+<li>
+<p>Second, the VPLEX CLI supports wildcards and <em>globbing</em>, much like a typical filesystem. Use the asterisk (*) character to represent anything in a context, and use the double asterisk (**) to represent multiple matches across multiple contexts. You can use regular expressions as well.</p>
+</li>
+</ol>
+<p>With these concepts in mind, the real key to using the VPLEX CLI is simply learning where all the various objects reside. For example, in an earlier post on <a href="/2010/12/13/a-quick-review-of-vplex-storage-objects/">VPLEX storage objects</a>, I discussed the building blocks of storage in a VPLEX environment: storage volumes, extents, devices, and virtual volumes. These reside in different places in the VPLEX contextual tree:</p>
+<p>Storage volumes: <code>/clusters/&lt;cluster name&gt;/storage-elements/storage-volumes</code></p>
+<p>Extents: <code>/clusters/&lt;cluster name&gt;/storage-elements/extents</code></p>
+<p>Devices: <code>/clusters/&lt;cluster name&gt;/devices</code></p>
+<p>Distributed devices: <code>/distributed-storage/distributed-devices</code></p>
+<p>Virtual volumes: <code>/clusters/&lt;cluster name&gt;/virtual-volumes</code></p>
+<p>Within each of these contexts, you can use the <code>ls</code> and <code>ll</code> commands to view the contents of that context. The <code>help</code> command will show you what other commands are available in each context.</p>
+<p>Here&rsquo;s my first example. When you first log into the VPLEX CLI, you&rsquo;ll get dropped into a &ldquo;root context&rdquo;. Running <code>ls</code> here will produce output something like this:</p>
+<pre><code>VPlexcli:/&gt; ls  
+clusters data-migrations distributed-storage engines management-server  
+monitoring notifications system-defaults
+</code></pre>
+<p>Let&rsquo;s take a look at a few more examples. For example, the following two sets of commands will produce the same output:</p>
+<pre><code>cd /clusters  
+ll
+</code></pre>
+<p>and</p>
+<pre><code>ll /clusters
+</code></pre>
+<p>Remember that specifying the context in the command is the same as changing into that context and then running the command. That is why these two commands produce the same output.</p>
+<p>To view the list of directors in a cluster:</p>
+<pre><code>ll /engines/*/directors
+</code></pre>
+<p>This is an example of using the asterisk to represent a wildcard that matches all entries in that context.</p>
+<p>Let&rsquo;s look at another example of two different commands that produce the same output. To view the status of the ports on a particular director in a cluster, you could use either of these two commands:</p>
+<pre><code>ll /engines/&lt;engine name&gt;/directors/&lt;director name&gt;/hardware/ports
+</code></pre>
+<p>or</p>
+<pre><code>cd /engines/&lt;engine name&gt;/directors/&lt;director name&gt;/hardware/ports  
+ll
+</code></pre>
+<p>By the way, if you haven&rsquo;t figured it out yet, you can easily get the names of the engines (or the directors) by simply running the <code>ll</code> command against the <code>engines</code> context or the <code>directors</code> context within a specific engine.</p>
+<p>But what if you wanted to see the status of the ports across multiple directors? Now you won&rsquo;t want to use the <code>cd</code> command. You&rsquo;ll want to use globbing with wildcards instead, like this:</p>
+<pre><code>ll /engines/**/ports
+</code></pre>
+<p>While the single asterisk matches anything within a context, the double asterisk matches across multiple contexts. So, in this case, it ends up matching multiple engines and directors within those engines.</p>
+<p>And if you wanted to see only some of the front-end ports on all directors:</p>
+<pre><code>ls /engines/**/hardware/ports/*1-FC0[0-3]
+</code></pre>
+<p>In some cases, you might need to set an attribute on an object within a context. For example, you might need to enable a port by setting the enabled attribute on that port to True. Here&rsquo;s how you would do that:</p>
+<pre><code>set /engines/&lt;engine name&gt;/directors/&lt;director name&gt;/hardware/ports/A0-FC00::enabled true
+</code></pre>
+<p>If you think about it, you could easily combine some globbing to enable multiple ports at the same time:</p>
+<pre><code>set /engines/**/hardware/ports/A0-FC0[0-3]::enabled true
+</code></pre>
+<p>You can then verify the operation by using the <code>-t</code> parameter to the <code>ls</code> command, which instructs it to include attributes:</p>
+<pre><code>ls -t /engines/**/hardware/ports/A0-FC0[0-3]::enabled
+</code></pre>
+<p>There are many, many more examples I could share with you, but this should get you started for now. I hope to have a post up soon with a CLI guide to setting up storage volumes, extents, devices, and virtual volumes.</p>
+<p>As usual, feel free to speak up in the comments if you have any questions or clarifications. Thank you!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vplex">VPLEX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/12/20/using-vplex-and-data-replication-together/">Using VPLEX and Data Replication Together</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/12/25/merry-christmas-3/">Merry Christmas!</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f22%2fan-introduction-to-the-vplex-cli%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f22%2fan-introduction-to-the-vplex-cli%2f&text=An%20Introduction%20to%20the%20VPLEX%20CLI" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f22%2fan-introduction-to-the-vplex-cli%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/12/20/using-vplex-and-data-replication-together/">Using VPLEX and Data Replication Together</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2010/12/13/a-quick-review-of-vplex-storage-objects/">A Quick Review of VPLEX Storage Objects</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2010/11/10/technology-short-take-6/">Technology Short Take #6</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

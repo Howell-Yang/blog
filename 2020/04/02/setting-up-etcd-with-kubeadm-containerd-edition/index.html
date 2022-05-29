@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up etcd with Kubeadm, containerd Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up etcd with Kubeadm, containerd Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up etcd with Kubeadm, containerd Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/04/02/setting-up-etcd-with-kubeadm-containerd-edition/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up etcd with Kubeadm, containerd Edition</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;614 words (estimated 3 minutes to read)</span>
+  <p>In late 2018, I wrote a couple of blog posts on using <code>kubeadm</code> to set up an etcd cluster. The first one was <a href="/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/">this post</a>, which used <code>kubeadm</code> only to generate the TLS certs but ran etcd as a systemd service. I followed up that up a couple months later with <a href="/2018/10/29/more-on-setting-up-etcd-with-kubeadm/">this post</a>, which used <code>kubeadm</code> to run etcd as a static Pod on each system. It&rsquo;s that latter post&mdash;running etcd as a static Pod on each system in the cluster&mdash;that I&rsquo;ll be revisiting in this post, only this time using <a href="https://containerd.io/">containerd</a> as the container runtime instead of Docker.</p>
+<p>This post assumes you&rsquo;ve already created the VMs/instances on which etcd will run, that an appropriate version of Linux is installed (I&rsquo;ll be using Ubuntu LTS 18.04.4), and that the appropriate packages have been installed. This post also assumes that you&rsquo;ve already made sure that the correct etcd ports have been opened between the VMs/instances, so that etcd can communicate properly.</p>
+<p>Finally, this post builds upon the official Kubernetes documentation on <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/setup-ha-etcd-with-kubeadm/">setting up an etcd cluster using <code>kubeadm</code></a>. The official guide assumes the use of Docker, whereas this post will focus on using containerd as the container runtime instead of Docker. The sections below outline the <em>changes</em> required to the official documentation in order to make it work with containerd.</p>
+<h2 id="configuring-kubelet">Configuring Kubelet</h2>
+<p>The official documentation provides a systemd drop-in to configure the Kubelet to operate in a &ldquo;stand-alone&rdquo; mode. Unfortunately, this drop-in won&rsquo;t work with containerd. Here is a replacement drop-in for containerd:</p>
+<pre tabindex="0"><code>[Service]
+ExecStart=
+ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests --cgroup-driver=systemd --container-runtime=remote --runtime-request-timeout=15m --container-runtime-endpoint=unix:///run/containerd/containerd.sock
+Restart=always
+</code></pre><p>The changes here are the addition of the <code>--container-runtime</code>, <code>--runtime-remote</code>, and <code>--container-runtime-endpoint</code> parameters. These parameters configure the Kubelet to talk to containerd instead of Docker.</p>
+<p>As instructed in the official documentation, put this into a systemd drop-in (like the suggested <code>20-etcd-service-manager.conf</code>) and copy it into the <code>/etc/systemd/system/kubelet.service.d</code> directory. Once the file is in place, run <code>systemctl daemon-reload</code> so that systemd will pick up the changes.</p>
+<h2 id="create-the-manifests-directory">Create the Manifests Directory</h2>
+<p>Although this is not included in the official documentation, I saw problems with the Kubelet starting up if the manifests directory doesn&rsquo;t exist. I suggest manually creating the <code>/etc/kubernetes/manifests</code> directory to avoid any such issues.</p>
+<h2 id="bootstrap-the-etcd-cluster">Bootstrap the etcd Cluster</h2>
+<p>Aside from the changes/differences described above, the rest of the process is as outlined in the official documentation. At a high-level, that means:</p>
+<ol>
+<li>Use <code>kubeadm init phase certs etcd-ca</code> to generate the etcd CA certificate and key.</li>
+<li>Use <code>kubeadm init phase certs</code> to generate the etcd server, peer, health check, and API server client certificates.</li>
+<li>Distribute the certificates to the etcd nodes.</li>
+<li>Use <code>kubeadm init phase etcd local</code> to generate the Pod manifests for the etcd static Pods.</li>
+</ol>
+<p>One final note: the <code>docker</code> command at the end of the official documentation won&rsquo;t work in this case, since containerd is the container runtime instead of Docker. I&rsquo;m still working on the correct containerd equivalent command to test the health of the cluster.</p>
+<h2 id="how-i-tested">How I Tested</h2>
+<p>I used <a href="https://www.pulumi.com/">Pulumi</a> to create a test environment in AWS for testing the instructions in this article. The TypeScript code that I wrote for use with Pulumi creates an environment suitable for use with Kubernetes Cluster API, including a VPC, both public and private subnets, an Internet gateway, NAT gateways for the private subnets, all associated route tables and route table associations, and the necessary security groups. I hope to publish this code for others to use soon; look for an update here.</p>
+<p>If you have any questions, concerns, or corrections, please contact me. You can reach <a href="https://twitter.com/scott_lowe">me on Twitter</a>, or contact me on <a href="https://kubernetes.slack.com">the Kubernetes Slack instance</a>. I&rsquo;d love to hear from you, and all constructive feedback is welcome.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/etcd">etcd</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubeadm">Kubeadm</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/03/26/ha-kubernetes-clusters-on-aws-with-cluster-api-v1alpha3/">HA Kubernetes Clusters on AWS with Cluster API v1alpha3</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/04/03/installing-mmd6-on-ubuntu-1910/">Installing MultiMarkdown 6 on Ubuntu 19.10</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f02%2fsetting-up-etcd-with-kubeadm-containerd-edition%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f02%2fsetting-up-etcd-with-kubeadm-containerd-edition%2f&text=Setting%20up%20etcd%20with%20Kubeadm%2c%20containerd%20Edition" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f02%2fsetting-up-etcd-with-kubeadm-containerd-edition%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/10/29/more-on-setting-up-etcd-with-kubeadm/">More on Setting up etcd with Kubeadm</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2019/08/15/reconstructing-the-join-command-for-kubeadm/">Reconstructing the Join Command for Kubeadm</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

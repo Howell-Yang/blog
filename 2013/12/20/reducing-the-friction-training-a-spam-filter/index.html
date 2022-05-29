@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Reducing the Friction: Training a Spam Filter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Reducing the Friction: Training a Spam Filter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Reducing the Friction: Training a Spam Filter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/12/20/reducing-the-friction-training-a-spam-filter/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Reducing the Friction: Training a Spam Filter</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;496 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;m back with another &ldquo;Reducing the Friction&rdquo; blog post, this time to talk about training an e-mail spam filter. As you may recall if you read one of the earlier posts (may I suggest <a href="/2013/06/21/reducing-the-friction-processing-e-mail/">this one</a> and <a href="/2013/07/19/reducing-the-friction-processing-e-mail-part-2/">this one</a>?), I use the phrase &ldquo;reducing the friction&rdquo; to talk about streamlining and simplifying commonly-performed tasks so as to allow you to improve your own personal efficiency and/or adopt more efficient habits or workflows.</p>
+<p>I recently moved my e-mail services off Google and onto <a href="http://www.fastmail.fm/">Fastmail</a>. (I described the reasons why I made this move in <a href="/2013/12/04/divorcing-google/">this post</a>.) Fastmail has been <em>great</em>&mdash;I find their e-mail service to be much faster than what I was seeing with Google. The one drawback, though, has been an increase in spam. Not a huge increase, mind you, but enough to notice. Fastmail recommends that you help train your personal spam filter by moving messages into a folder you designate, and then telling their systems to consider everything in that folder to be spam. While that&rsquo;s not hard, it&rsquo;s also not very streamlined, so I took up the task of making it even easier and faster.</p>
+<p>(Note that, as a Mac user, most of my tips focus on Mac applications. If you&rsquo;re a user of another platform, I do apologize&mdash;but I can only speak about what I use myself.)</p>
+<p>To help make this easier, I came up with a bit of AppleScript:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-applescript" data-lang="applescript"><span style="display:flex;"><span><span style="color:#75715e">-- This script moves messages to a spam training folder</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- Set some default values to be used later in the script; not all values may be used</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">property</span> destMailbox : <span style="color:#e6db74">&#34;Spam Training&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">property</span> destAccount : <span style="color:#e6db74">&#34;example.com&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">-- Handler called when running script from script menu</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">on</span> run
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">tell</span> application <span style="color:#e6db74">&#34;Mail&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">set</span> theSelectedMessages <span style="color:#66d9ef">to</span> selection
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> ((count <span style="color:#66d9ef">of</span> theSelectedMessages) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>            beep
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#66d9ef">if</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">repeat</span> <span style="color:#66d9ef">with</span> theMessage <span style="color:#66d9ef">in</span> theSelectedMessages
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span> (read status <span style="color:#66d9ef">of</span> theMessage) <span style="color:#f92672">is</span> <span style="color:#66d9ef">false</span> <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">set</span> read status <span style="color:#66d9ef">of</span> theMessage <span style="color:#66d9ef">to</span> <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">end</span> <span style="color:#66d9ef">if</span>
+</span></span><span style="display:flex;"><span>            move theMessage <span style="color:#66d9ef">to</span> mailbox destMailbox <span style="color:#66d9ef">of</span> account destAccount
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">end</span> <span style="color:#66d9ef">repeat</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">end</span> <span style="color:#66d9ef">tell</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span> run
+</span></span></code></pre></div><p>You can download this script <a href="https://gist.github.com/scottslowe/7990921">from GitHub</a>, if that&rsquo;s helpful.</p>
+<p>To make this work on your system, all you need to do is just change the two <code>property</code> declarations at the top. Set them to the correct values for your system.</p>
+<p>As you can tell by the comments in the code, this script was designed to be run from within Apple&rsquo;s Mail app itself. To make that easy, I use a fantastic tool called <a href="http://www.red-sweater.com/fastscripts/">FastScripts</a> (<em>highly recommended!</em>). Using FastScripts, I can easily designate an application-specific shortcut key (I use Ctrl-Cmd-S) to invoke the script from within Apple Mail. Boom! Just like that, you now have a super-easy way to both help speed up processing your e-mail as well as helping train your personal spam filter. (Note: if you are also a FastMail customer, refer to the FastMail help screens while logged in to get more details on marking a folder for spam learning.)</p>
+<p>I hope this helps someone out there!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/personal">Personal</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/12/18/managing-open-vswitch-with-puppet/">Managing Open vSwitch with Puppet</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/01/03/looking-back-2013-project-report-card/">Looking Back: 2013 Project Report Card</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f20%2freducing-the-friction-training-a-spam-filter%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f20%2freducing-the-friction-training-a-spam-filter%2f&text=Reducing%20the%20Friction%3a%20Training%20a%20Spam%20Filter" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f12%2f20%2freducing-the-friction-training-a-spam-filter%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/07/19/reducing-the-friction-processing-e-mail-part-2/">Reducing the Friction: Processing E-Mail, Part 2</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2013/06/21/reducing-the-friction-processing-e-mail/">Reducing the Friction: Processing E-Mail</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2013/06/14/reducing-the-friction-using-keyboard-shortcuts/">Reducing the Friction: Using Keyboard Shortcuts</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2012 Day 1 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2012 Day 1 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2012 Day 1 Summary and Thoughts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/09/12/idf-2012-day-1-summary-and-thoughts/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2012 Day 1 Summary and Thoughts</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;618 words (estimated 3 minutes to read)</span>
+  <p>I just completed day 1 of Intel Developer Forum (IDF) 2012 in San Francisco. I tried to blog about as much as I possibly could. Here are the links to what I was able to capture during the day:</p>
+<p><a href="/2012/09/11/idf-2012-keynote-day-1/">IDF 2012 Day 1 Keynote</a></p>
+<p><a href="/2012/09/11/spcs001-intel-next-generation-haswell-microarchitecture/">Next-Generation Microarchitecture, code-named &ldquo;Haswell&rdquo;</a></p>
+<p><a href="/2012/09/11/coms002-next-generation-cloud-infrastructure-with-data-plane-virtualization/">Data Plane Virtualization</a></p>
+<p><a href="/2012/09/11/clds001-odca-and-usage-models-for-cloud-computing/">ODCA and Cloud Usage Models</a></p>
+<p>One thing that really stuck out to me was an announcement made during a data center-focused press briefing directly after lunch. While the announcements made during the keynote were nice, they were consumer-oriented. The announcements during the press briefing, on the other hand, were much more enterprise data center-focused. The one thing that really stuck out to me was Intel&rsquo;s announcement of their Seacliff Trail reference platform.</p>
+<p>The Seacliff Trail reference platform is a 1U top of rack (ToR) switch sporting 48 10 Gigabit Ethernet (GbE) ports and four 40 GbE ports. The platform supports OpenFlow (has been optimized for OpenFlow, in fact), and has hardware support for overlay encapsulations like VXLAN and NVGRE. Advanced networking technologies like TRILL, Shortest Path Bridging (SPB), Edge Virtual Bridging (EVB), and FCoE are also supported. Switching latency for cut-through switching is about 400 ns. Essentially, this is a reference platform for a pretty full-featured L2/L3 10 GbE/40 GbE ToR switch that can compete reasonably well with the &ldquo;Tier 1&rdquo; networking vendors like Cisco, Juniper, Arista, and others&mdash;presumably at a far lower cost.</p>
+<p>Why did this stick out to me? To me, the introduction of mass-produced merchant silicon and an Intel reference platform for this sort of ToR switch sounds the death knell for networking vendors who differentiate themselves through hardware. It&rsquo;s the same thing that happened in the server hardware space. In the grander scheme of things, a Cisco UCS server is by and large the same as an HP ProLiant server and a Dell PowerEdge server. (Sorry, guys.) Sure, there are minor tweaks here and there from each of the major vendors, but these are mostly inconsequential. Now Intel is preparing to do the same to the 1U ToR network switch space, and it creates a lot of questions in my mind:</p>
+<ul>
+<li>
+<p>What does this mean for the hardware-differentiated network vendors of the world? How do they continue to compete in this space? Does all of the innovation shift to software? If so, who among the &ldquo;top tier&rdquo; vendors is best poised to take advantage of this shift in development priorities?</p>
+</li>
+<li>
+<p>This switch has built-in support for OpenFlow. What does this mean for the adoption of the OpenFlow protocol? Who will emerge as the dominant supplier of OpenFlow controllers for all these OF-enabled ToR switches?</p>
+</li>
+<li>
+<p>This switch has hardware support for next-generation overlay protocols like VXLAN and NVGRE. What impact will that have on the uptake of these protocols in modern data centers?</p>
+</li>
+</ul>
+<p>Obviously, the answers to many (if not all) of these questions will be determined by the success (or failure) of the Seacliff Trail reference platform and the OEMs/ODMs that take up the reference platform. If Seacliff Trail becomes hugely successful, it could end up having quite an impact.</p>
+<p>There are also other discussions that result from the Seacliff Trail announcement around convergence, but I&rsquo;m going to hold on those discussions for the time being until I&rsquo;ve had a bit more time to research and reflect. In the meantime, feel free to speak up in the comments below with your thoughts about what Seacliff Trail and Intel&rsquo;s move into the networking hardware space means to you. Please be sure to provide industry/employer affiliations where appropriate.</p>
+<p><em>(My disclosure: I work for EMC, but I&rsquo;m attending IDF at the request of Intel. Intel is covering my expenses and provided a pass for the show.)</em></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2012">IDF2012</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/09/12/clds006-exploring-new-xeon-e5-optimizations-for-10-gb-ethernet/">CLDS006: Exploring New Xeon E5 Optimizations for 10 Gb Ethernet</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/09/12/idf-2012-day-2-summary-and-thoughts/">IDF 2012 Day 2 Summary and Thoughts</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fidf-2012-day-1-summary-and-thoughts%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fidf-2012-day-1-summary-and-thoughts%2f&text=IDF%202012%20Day%201%20Summary%20and%20Thoughts" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fidf-2012-day-1-summary-and-thoughts%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/09/12/clds006-exploring-new-xeon-e5-optimizations-for-10-gb-ethernet/">CLDS006: Exploring New Xeon E5 Optimizations for 10 Gb Ethernet</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/09/11/coms002-next-generation-cloud-infrastructure-with-data-plane-virtualization/">COMS002: Next Generation Cloud Infrastructure with Data Plane Virtualization</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/09/11/spcs001-intel-next-generation-haswell-microarchitecture/">SPCS001: Intel Next-Generation Haswell Microarchitecture</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

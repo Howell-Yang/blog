@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Configuring Linux Policy Routing using Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Configuring Linux Policy Routing using Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Configuring Linux Policy Routing using Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/06/16/configuring-linux-policy-routing-ansible/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Configuring Linux Policy Routing using Ansible</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;637 words (estimated 3 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to talk about using <a href="http://www.ansible.com/">Ansible</a> to configure policy routing on Linux. If you&rsquo;re not familiar with Linux policy routing, have a look at <a href="/2013/05/29/a-quick-introduction-to-linux-policy-routing/">this post</a>, and also review <a href="/2013/05/30/a-use-case-for-policy-routing-with-kvm-and-open-vswitch/">this post</a> for one potential use case (I&rsquo;m sure there are a number of other quite valuable use cases).</p>
+<p>As you may recall from the policy routing introductory post, there are three steps involved in configuring policy routing:</p>
+<ol>
+<li>You must define the new routing table in <code>/etc/iproute2/rt_tables</code></li>
+<li>You must add routes to the new routing tables</li>
+<li>You must define rules for when the new routing table is consulted</li>
+</ol>
+<p>All three of these tasks can be handled via Ansible.</p>
+<p>To address step #1, you can use Ansible&rsquo;s &ldquo;lineinfile&rdquo; module to add a reference to the new routing table in <code>/etc/iproute2/rt_tables</code>. For example, consider this Ansible task:</p>
+<pre tabindex="0"><code>- lineinfile: dest=/etc/iproute2/rt_tables line=&#34;200 eth1&#34;
+</code></pre><p>This snippet of Ansible code would add the line &ldquo;200 eth1&rdquo; to the end of the <code>etc/iproute2/rt_tables</code> file (if the line does not already exist). This takes care of task #1.</p>
+<p>For tasks #2 and #3, you can use a Jinja2 template. Because the creation of the policy routing rule and the routing table entries can be performed via the interface configuration file, we can write a Jinja2 template that will generate an interface configuration file with the appropriate <code>ip rule</code> and <code>ip route</code> statements.</p>
+<p>Consider this Jinja2 template:</p>
+<pre tabindex="0"><code class="language-liquid" data-lang="liquid">{% raw %}
+{% if item.bootproto == &#39;static&#39; %}
+auto {{ item.device }}
+iface {{ item.device }} inet static
+{% if item.address is defined %}
+address {{ item.address }}
+{% endif %}
+{% if item.netmask is defined %}
+netmask {{ item.netmask }}
+{% endif %}
+{% if item.gateway is defined %}
+gateway {{ item.gateway }}
+{% else %}
+{% if item.iface_gw is defined %}
+up ip route add default via {{ item.iface_gw }} dev {{ item.device }} table {{ item.device }}
+up ip rule add from {{ item.address }} table {{ item.device }}
+down ip route del default table {{ item.device }}
+{% endif %}
+{% endif %}
+{% endif %}
+
+{% if item.bootproto == &#39;dhcp&#39; %}
+auto {{ item.device }}
+iface {{ item.device }} inet dhcp
+{% endif %}
+
+{% if item.bootproto == &#39;manual&#39; %}
+auto {{ item.device }}
+iface {{ item.device }} inet manual
+pre-up ip link set {{ item.device }} up
+post-down ip link set {{ item.device }} down
+{% endif %}
+{% endraw %}
+</code></pre><p>To render this template into an actual interface configuration file, use this snippet (or something like it) in an Ansible playbook:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Use Jinja2 template to create interface config file</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">src</span>: <span style="color:#e6db74">&#34;ifcfg.j2&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">dest</span>: <span style="color:#e6db74">&#34;/etc/network/interfaces.d/ifcfg-{{ item.device }}&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">with_items</span>: <span style="color:#ae81ff">network_interfaces</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">when</span>: <span style="color:#ae81ff">network_interfaces is defined</span>
+</span></span></code></pre></div><p>This snippet only runs when the variable <code>network_interfaces</code> is defined, which you can handle with this bit of YAML in an Ansible variables file (either as a host variable, a group variable, or a role variable):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">network_interfaces</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">device</span>: <span style="color:#ae81ff">eth1</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">bootproto</span>: <span style="color:#ae81ff">static</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">address</span>: <span style="color:#ae81ff">192.168.100.101</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">netmask</span>: <span style="color:#ae81ff">255.255.255.0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">iface_gw</span>: <span style="color:#ae81ff">192.168.100.254</span>
+</span></span></code></pre></div><p>With this setup in place&mdash;the Jinja2 template, the <code>template</code> task in an Ansible playbook, and the <code>network_interfaces</code> variable defined with the appropriate values&mdash;then it all comes together to dynamically build an interface configuration file that looks something like this (this is the file that would be created using the information supplied in this article):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>auto eth1
+</span></span><span style="display:flex;"><span>address 192.168.100.101
+</span></span><span style="display:flex;"><span>netmask 255.255.255.0
+</span></span><span style="display:flex;"><span>up ip route add default via 192.168.100.254 dev eth1 table eth1
+</span></span><span style="display:flex;"><span>up ip rule add from 192.168.100.101 table eth1
+</span></span><span style="display:flex;"><span>down ip route del default table eth1
+</span></span></code></pre></div><p>Obviously, the beauty of this solution is that it&rsquo;s automated: you simply edit the variables file to contain the information you wish, and Ansible will take care of the rest. There&rsquo;s a lot of stuff I didn&rsquo;t list here, like flushing routes and such, that you&rsquo;d want to add, but this should give you a pretty good starting point.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/06/03/technology-short-take-67/">Technology Short Take #67</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/06/20/dockercon-2016-day-1-keynote/">DockerCon 2016 Day 1 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f16%2fconfiguring-linux-policy-routing-ansible%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f16%2fconfiguring-linux-policy-routing-ansible%2f&text=Configuring%20Linux%20Policy%20Routing%20using%20Ansible" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f06%2f16%2fconfiguring-linux-policy-routing-ansible%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/05/13/technology-short-take-66/">Technology Short Take #66</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2016/04/22/technology-short-take-65/">Technology Short Take #65</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2016/03/24/learning-tools-updates/">Learning Tools Updates</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

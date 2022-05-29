@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Adding Metadata to the Arista vEOS Vagrant Box - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Adding Metadata to the Arista vEOS Vagrant Box - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Adding Metadata to the Arista vEOS Vagrant Box - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/02/24/adding-metadata-arista-veos-vagrant-box/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Adding Metadata to the Arista vEOS Vagrant Box</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;409 words (estimated 2 minutes to read)</span>
+  <p>This post addresses a (mostly) cosmetic issue with the current way that Arista distributes its <a href="https://www.vagrantup.com/">Vagrant</a> box for vEOS. I say &ldquo;mostly cosmetic&rdquo; because while the Vagrant box for vEOS is perfectly functional if you use it <a href="https://eos.arista.com/using-veos-with-vagrant-and-virtualbox/">via Arista&rsquo;s instructions</a>, adding metadata as I explain here provides a small bit of additional flexibility should you need multiple versions of the vEOS box on your system.</p>
+<p>If you follow Arista&rsquo;s instructions, then you&rsquo;ll end up with something like this when you run <code>vagrant box list</code>:</p>
+<pre tabindex="0"><code>arista-veos-4.18.0    (virtualbox, 0)
+bento/ubuntu-16.04    (virtualbox, 2.3.1)
+centos/6              (virtualbox, 1611.01)
+centos/7              (virtualbox, 1611.01)
+centos/atomic-host    (virtualbox, 7.20170131)
+coreos-stable         (virtualbox, 1235.9.0)
+debian/jessie64       (virtualbox, 8.7.0)
+</code></pre><p>Note that the version of the vEOS box is embedded in the name. Now, you <em>could</em> not put the version in the name, but because there&rsquo;s no metadata&mdash;which is why it shows <code>(virtualbox, 0)</code> on that line&mdash;you wouldn&rsquo;t have any way of knowing which version you had. Further, what happens when you want to have multiple versions of the vEOS box?</p>
+<p>Fortunately, there&rsquo;s an easy fix (inspired by the way CoreOS distributes their Vagrant box). Just create a file with the following contents:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;arista-veos&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Arista vEOS&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;versions&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;4.18.0&#34;</span>,
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;providers&#34;</span>: [
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;virtualbox&#34;</span>,
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">&#34;url&#34;</span>: <span style="color:#e6db74">&#34;file:///home/slowe/Downloads/vEOS-lab-4.18.0-virtualbox.box&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>      ]
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Obviously, you&rsquo;ll want to make sure the &ldquo;version&rdquo; value is correct for whatever version of the vEOS box you&rsquo;re using, and you&rsquo;ll want to update the &ldquo;url&rdquo; value to the correct location of the file you downloaded according to <a href="https://eos.arista.com/using-veos-with-vagrant-and-virtualbox/">Arista&rsquo;s instructions</a>. Save this file (using a name like &ldquo;arista-veos.json&rdquo; or similar), then follow these steps:</p>
+<ol>
+<li>
+<p>If you&rsquo;ve already added the box using <code>vagrant box add</code>, remove it using <code>vagrant box remove</code>.</p>
+</li>
+<li>
+<p>Re-add the box using <code>vagrant box add arista-veos.json</code> (substituting the name you gave the JSON file you just created, naturally).</p>
+</li>
+</ol>
+<p>Vagrant will re-add the box, but this time using metadata from the JSON file you created. When you run <code>vagrant box list</code>, you&rsquo;ll see something like this:</p>
+<pre tabindex="0"><code>arista-veos           (virtualbox, 4.18.0)
+bento/ubuntu-16.04    (virtualbox, 2.3.1)
+centos/6              (virtualbox, 1611.01)
+centos/7              (virtualbox, 1611.01)
+centos/atomic-host    (virtualbox, 7.20170131)
+coreos-stable         (virtualbox, 1235.9.0)
+debian/jessie64       (virtualbox, 8.7.0)
+</code></pre><p>Ah, much better! Not only is it cosmetically better, but you can now have multiple versions of the vEOS Vagrant box on your system, all with the same name and differentiated only by version. This, in turn, simplifies your ability to test the same Vagrant environment with different vEOS versions.</p>
+<p>Mostly, though, I like it because it <em>looks</em> better.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/02/21/launching-open-source-book-project/">Launching an Open Source Book Project</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/01/linux-migration-other-users-stories-pt1/">The Linux Migration: Other Users&#39; Stories, Part 1</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f24%2fadding-metadata-arista-veos-vagrant-box%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f24%2fadding-metadata-arista-veos-vagrant-box%2f&text=Adding%20Metadata%20to%20the%20Arista%20vEOS%20Vagrant%20Box" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f24%2fadding-metadata-arista-veos-vagrant-box%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/11/18/technology-short-take-73/">Technology Short Take #73</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/01/19/technology-short-take-76/">Technology Short Take #76</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2016/12/09/technology-short-take-74/">Technology Short Take #74</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

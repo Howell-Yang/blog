@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Enabling Enhanced VMXNet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Enabling Enhanced VMXNet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Enabling Enhanced VMXNet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/12/15/enabling-enhanced-vmxnet/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Enabling Enhanced VMXNet</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;368 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;ve been doing some additional digging into jumbo frames and other networking configurations, and along the way I came across references to VMware&rsquo;s Enhanced VMXNet network adapters. These were apparently introduced in VMware ESX 3.5 and are necessary in order for virtual machines to take advantage of features like TCP Segmentation Offload (TSO) or jumbo frames.</p>
+<p>The funny thing is this: even though the Enhanced VMXNet adapters are supported on both 32-bit and 64-bit versions of Windows Server 2003 and a few different flavors of Linux, the only way to be able to specify that you want to use an Enhanced VMXNet driver is if the virtual machine is configured as 64-bit Windows Server 2003 Enterprise Edition. This is outlined in <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1007195">this VMware KB article</a> describing to how enable enhanced VMXNet drivers in Windows Server 2003.</p>
+<p>Fortunately, there&rsquo;s a way to also do this in the .VMX file. You&rsquo;ll need to remove the VM from the VirtualCenter inventory (right-click, Remove From Inventory), then edit the .VMX file to add these entries:</p>
+<pre><code>ethernet0.virtualDev = &quot;vmxnet&quot;  
+ethernet0.features = &quot;15&quot;
+</code></pre>
+<p>Once these lines have been added&mdash;changing ethernet0 to ethernet1 or whatever the appropriate value is for the VM&mdash;you can use the Datastore Browser to add the VM back into the inventory. The NICs will now be listed as &ldquo;Enhanced vmxnet&rdquo;. In addition, Windows itself will now recognize greater offload functionality. The two screenshots below show the output of the command <code>netsh int ip show offload</code>; the first one is from a non-Enhanced VMXNet adapter:</p>
+<p><img src="/public/img/offload-regvmxnet.png" alt=""></p>
+<p>Now for the output of the same command from a VM configured with an Enhanced VMXNet adapter:</p>
+<p><img src="/public/img/offload-enhvmxnet.png" alt=""></p>
+<p>This technique allows you to preserve the &ldquo;integrity&rdquo; of the guest OS selection by enabling Enhanced VMXNet without requiring users to change their guest OS selection to 64-bit Windows Server 2003 Enterprise Edition. Once the Enhanced VMXNet adapter is enabled, then users are free to begin working with jumbo frames and TSO. More on that in a future post&hellip;</p>
+<p><strong>UPDATE:</strong> I learned that in vCenter 2.5 Update 3, the option to select Enhanced VMXNet is now a selectable option for various flavors of Windows and Linux. I guess this information isn&rsquo;t really needed any longer. Thanks for the information, Wade!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/12/15/youve-got-to-be-kidding-me/">You&#39;ve Got to be Kidding Me</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/12/16/using-vmware-vim-cmd-to-modify-a-portgroup/">Using vmware-vim-cmd to Modify a Portgroup</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fenabling-enhanced-vmxnet%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fenabling-enhanced-vmxnet%2f&text=Enabling%20Enhanced%20VMXNet" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fenabling-enhanced-vmxnet%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/12/15/youve-got-to-be-kidding-me/">You&#39;ve Got to be Kidding Me</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2008/11/19/virtualization-short-take-23/">Virtualization Short Take #23</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2008/10/08/more-on-vmware-esx-nic-utilization/">More on VMware ESX NIC Utilization</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

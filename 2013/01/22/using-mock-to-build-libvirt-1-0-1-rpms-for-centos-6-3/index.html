@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/01/22/using-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;874 words (estimated 5 minutes to read)</span>
+  <p>In this third post on using Mock to build RPMs for CentOS 6.3, I&rsquo;m going to show you how to use Mock to build RPMs for Libvirt 1.0.1 that you can install on CentOS. As you&rsquo;ll see later, this post builds on the previous two posts (one on <a href="/2013/01/22/using-mock-to-build-sanlock-2-4-rpms-for-centos-6-3/">using Mock to build RPMs for sanlock 2.4</a> and one on <a href="/2013/01/22/using-mock-to-build-libssh2-1-4-1-rpms-for-centos-6-3/">using Mock to build RPMs for libssh2 1.4.1</a>).</p>
+<p>Here&rsquo;s a quick overview of the process:</p>
+<ol>
+<li>
+<p>Set up Mock and the environment.</p>
+</li>
+<li>
+<p>Install prerequisites into the Mock environment.</p>
+</li>
+<li>
+<p>Build the Libvirt RPMs.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a closer look at each of these steps.</p>
+<h2 id="setting-up-mock-and-the-environment">Setting Up Mock and the Environment</h2>
+<p>The first phase in the process is to set up Mock and the environment for building the RPMs. Fortunately, this is relatively simple.</p>
+<p>First, activate EPEL. My preferred method for activating the EPEL repository is to download the RPM, then use <code>yum localinstall</code> to install it, like this:</p>
+<pre><code>wget http://fedora.mirrors.pair.com/epel/6/i386/\
+epel-release-6-8.noarch.rpm
+yum localinstall epel-release-6-8.noarch.rpm
+</code></pre>
+<p>(Note that I&rsquo;ve line-wrapped the URL with a backslash to make it more readable. That line-wrapped command actually works just as it is in the shell as well.)</p>
+<p>Next, you&rsquo;ll need to install Mock and related RPM-building tools:</p>
+<pre><code>yum install fedora-packager
+</code></pre>
+<p>Third, create a dedicated user for building RPMs. I use &ldquo;makerpm&rdquo; as my username, but you could use something else. Just make sure that the name makes sense to you, and that the new user is a member of the <code>mock</code> group:</p>
+<pre><code>useradd makerpm -G mock
+passwd makerpm
+</code></pre>
+<p>From this point on, you&rsquo;ll want to be running as this user you just created, so switch to that user with <code>su - makerpm</code>. This ensures that the RPMs are built under this dedicated user account.</p>
+<p>The final step in setting up Mock and the build environment is to run the following command while running as the dedicated user you created:</p>
+<pre><code>rpmdev-setuptree
+</code></pre>
+<p>Now you&rsquo;re ready to move on to the next phase: installing prerequisites into the Mock environment.</p>
+<h2 id="installing-prerequisites-into-the-mock-environment">Installing Prerequisites Into the Mock Environment</h2>
+<p>One of the great things about Mock is that it creates an isolated chroot into which it installs all the necessary prerequisites for a particular package. This helps ensure that the package&rsquo;s dependencies are managed correctly. However, if you are trying to build a package where dependencies don&rsquo;t exist in the repositories, then you have to take a few additional steps. When you&rsquo;re trying to build libvirt 1.0.1 RPMs for use with CentOS 6.3, you&rsquo;ll find yourself in <em>exactly</em> this situation. Libvirt has dependencies on newer versions of sanlock-devel and libssh2-devel than are available in the repositories.</p>
+<p>Fortunately, there is a workaround&mdash;and here&rsquo;s where those other posts on Mock will come in handy. Use the instructions posted <a href="/2013/01/22/using-mock-to-build-sanlock-2-4-rpms-for-centos-6-3/">here</a> to build RPMs for sanlock 2.4, and use the instructions <a href="/2013/01/22/using-mock-to-build-libssh2-1-4-1-rpms-for-centos-6-3/">here</a> to build RPMs for libssh2 1.4.1.</p>
+<p>Once the RPMs are built (and they should build without any major issues, based on my testing), then use these commands to get them into the isolated Mock environment (I&rsquo;ve line-wrapped here with backslashes for readability):</p>
+<pre><code>mock -r epel-6-x86_64 --init
+mock -r epel-6-x86_64 --install \
+~/rpmbuild/RPMS/sanlock-lib-2.4-3.el6.x86_64.rpm \
+~/rpmbuild/RPM/sanlock-devel-2.4-3.el6.x86_64.rpm \
+~/rpmbuild/RPMS/libssh2-1.4.1-2.el6.x86_64.rpm \
+~/rpmbuild/RPMS/libssh2-devel-1.4.1-2.el6.x86_64.rpm
+</code></pre>
+<p>This will install these packages into the Mock environment, <strong>not onto the general Linux installation.</strong></p>
+<p>Once you&rsquo;ve gotten these packages compiled and installed, then you&rsquo;re ready for the final phase: building the libvirt RPMs.</p>
+<h2 id="building-the-libvirt-rpms">Building the Libvirt RPMs</h2>
+<p>As in my earlier post on <a href="/2013/01/16/building-libvirt-1-0-1-rpms-for-centos-6-3/">compiling Libvirt 1.0.1 RPMs for CentOS 6.3</a>, this final step is almost anti-climactic. That&rsquo;s good, though, because it means you&rsquo;ve done all the previous steps perfectly.</p>
+<p>First, fetch the source RPM from the libvirt HTTP server:</p>
+<pre><code>wget http://libvirt.org/sources/libvirt-1.0.1-1.fc17.src.rpm
+</code></pre>
+<p>Next, move the source RPM into the <code>~/rpmbuild/SRPMS</code> directory:</p>
+<pre><code>mv libvirt-1.0.1-1.fc17.src.rpm ~/rpmbuild/SRPMS
+</code></pre>
+<p>Finally, run Mock to rebuild the RPMs:</p>
+<pre><code>mock -r epel-6-x86_64 --no_clean \
+~/rpmbuild/SRPMS/libvirt-1.0.1-1.fc17.src.rpm
+</code></pre>
+<p>Note that the <code>--no-clean</code> parameter is required here to prevent Mock from cleaning out the chroot and getting rid of the packages you installed into the environment earlier.</p>
+<p>This command should run without any errors or problems, and produce a set of RPMs (typically) found in <code>/var/lib/mock/epel-6-x86_64/results</code>. You can then take these RPMs and install them on another CentOS 6.3 system using <code>yum localinstall</code>.</p>
+<h2 id="testing-the-rpms">Testing the RPMs</h2>
+<p>To verify that everything worked as expected, I tested the RPMs using these steps:</p>
+<ol>
+<li>
+<p>Using a clean CentOS 6.3 VM (built using the &ldquo;Minimal Desktop&rdquo; option), I used <code>yum groupinstall</code> to install the Virtualization, Virtualization Client, Virtualization Platform, and Virtualization Tools groups. This installed version 0.9.10 of libvirt.</p>
+</li>
+<li>
+<p>I then installed the updated version of libvirt using <code>yum localinstall</code>. I had to specify the dependencies manually on the command line; I anticipate that had I been using a real repository, this would not have been the case. The updated libvirt, sanlock, and libssh2 packages all installed correctly.</p>
+</li>
+<li>
+<p>I started the libvirtd service (it worked), and ran <code>virsh --version</code>. It returned version 1.0.1.</p>
+</li>
+</ol>
+<p>I imagine there might be more comprehensive/better ways of testing the RPMs that I built, but they seemed to work fine on my end. If anyone has any other suggestions for how we can double-check to ensure the packages are working correctly, feel free to speak up in the comments below. I also welcome any other corrections, suggestions, or questions in the comments. Courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/01/22/using-mock-to-build-libssh2-1-4-1-rpms-for-centos-6-3/">Using Mock to Build libssh2 1.4.1 RPMs for CentOS 6.3</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/01/23/how-i-build-the-technology-short-takes/">How I Build the Technology Short Takes</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f22%2fusing-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f22%2fusing-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3%2f&text=Using%20Mock%20to%20Build%20Libvirt%201.0.1%20RPMs%20for%20CentOS%206.3" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f22%2fusing-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/01/16/building-libvirt-1-0-1-rpms-for-centos-6-3/">Building Libvirt 1.0.1 RPMs for CentOS 6.3</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2012/09/06/compiling-libvirt-0-10-1-on-centos-6-3/">Compiling libvirt 0.10.1 on CentOS 6.3</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/01/22/using-mock-to-build-libssh2-1-4-1-rpms-for-centos-6-3/">Using Mock to Build libssh2 1.4.1 RPMs for CentOS 6.3</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

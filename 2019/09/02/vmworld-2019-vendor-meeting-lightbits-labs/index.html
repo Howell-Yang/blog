@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMworld 2019 Vendor Meeting: Lightbits Labs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMworld 2019 Vendor Meeting: Lightbits Labs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMworld 2019 Vendor Meeting: Lightbits Labs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/09/02/vmworld-2019-vendor-meeting-lightbits-labs/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMworld 2019 Vendor Meeting: Lightbits Labs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;445 words (estimated 3 minutes to read)</span>
+  <p>Last week at <a href="https://www.vmworld.com/">VMworld</a>, I had the opportunity to meet with <a href="https://www.lightbitslabs.com/">Lightbits Labs</a>, a relatively new startup working on what they called &ldquo;disaggregated storage.&rdquo; As it turns out, their product is actually quite interesting, and has relevance not only in &ldquo;traditional&rdquo; VMware vSphere environments but also in environments more focused on cloud-native technologies like <a href="https://kubernetes.io/">Kubernetes</a>.</p>
+<p>So what is &ldquo;disaggregated storage&rdquo;? It&rsquo;s one of the first questions I asked the Lightbits team. The basic premise behind Lightbits&rsquo; solution is that by taking the storage out of nodes&mdash;by decoupling storage from compute and memory&mdash;they can provide more efficient scaling. Frankly, it&rsquo;s the same basic premise behind storage area network (SANs), although I think Lightbits wants to distance themselves from that terminology.</p>
+<p>Instead of Fibre Channel, Fibre Channel over Ethernet (FCoE), or iSCSI, Lightbits uses NVMe over TCP. This provides good performance over 25, 50, or 100Gbps links with low latency (typically less than 300 microseconds). Disks appear &ldquo;local&rdquo; to the node, which allows for some interesting concepts when used in conjunction with hyperconverged platforms (more on that in a moment).</p>
+<p>Lightbits has their own operating system, LightOS, which runs on industry-standard x64 servers from Dell, HP, Lenovo, etc. To further enhance the performance of a server running LightOS (a &ldquo;brick&rdquo; in their terminology), Lightbits also offers a hardware acceleration card called the LightField. This card offers a number of benefits:</p>
+<ul>
+<li>100Gbps compression/decompression at wire speed</li>
+<li>NVMe/TCP acceleration</li>
+<li>Global FTL (Flash Translation Layer) acceleration</li>
+<li>Encryption</li>
+<li>Deduplication</li>
+</ul>
+<p>Lightbits is currently working on certifying their NVMe/TCP implementation for vSphere, at which point vSphere users would be able to  use Lightbits bricks as storage for vSphere hypervisors. The Lightbits folks also discussed the idea of using Lightbits with vSAN in what was called &ldquo;disaggregated hyperconverged storage.&rdquo; (How&rsquo;s that for a marketing term!) In this arrangement, the disks used by vSAN would actually be volumes from a Lightbits brick (not local disks). It solves the storage portion of the basic problem behind hyperconverged platforms, which is the inability to independently scale compute, memory, and storage. I must admit, however, that it took a bit of head-scratching to understand what immediately seems to be a counter-intuitive arrangement.</p>
+<p>With regard to Kubernetes, Lightbits offers a CSI plugin, which allows Kubernetes clusters to directly access and provision Persistent Volumes (PVs) on a Lightbits brick. The Lightbits team stated that NVMe/TCP support is already present in the upstream Linux kernel, although I haven&rsquo;t verified this and I don&rsquo;t have any information as to what version of the kernel added this support.</p>
+<p>More information is available from <a href="https://www.lightbitslabs.com/">the Lightbits Labs web site</a>.</p>
+<p>Feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> if you have any questions or comments.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2019">VMworld2019</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/08/27/bootstrapping-a-kubernetes-cluster-on-aws-with-clusterapi/">Bootstrapping a Kubernetes Cluster on AWS with Cluster API</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">Highly Available Kubernetes Clusters on AWS with Cluster API</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f02%2fvmworld-2019-vendor-meeting-lightbits-labs%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f02%2fvmworld-2019-vendor-meeting-lightbits-labs%2f&text=VMworld%202019%20Vendor%20Meeting%3a%20Lightbits%20Labs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f02%2fvmworld-2019-vendor-meeting-lightbits-labs%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/08/23/technology-short-take-118/">Technology Short Take 118</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2019/02/01/technology-short-take-110/">Technology Short Take 110</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

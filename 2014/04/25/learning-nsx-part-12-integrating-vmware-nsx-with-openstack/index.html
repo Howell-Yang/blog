@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NSX, Part 12: Integrating VMware NSX with OpenStack - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NSX, Part 12: Integrating VMware NSX with OpenStack - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NSX, Part 12: Integrating VMware NSX with OpenStack - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NSX, Part 12: Integrating VMware NSX with OpenStack</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1494 words (estimated 8 minutes to read)</span>
+  <p>Welcome to part 12 of the Learning NSX blog series, in which I continue the discussion around integration between <a href="http://openstack.org/">OpenStack</a> and VMware NSX, and in which I&rsquo;ll provide more details about how exactly to integrate them.</p>
+<p>If you are just now joining the series, I encourage you to visit <a href="/learning-nvp-nsx/">the Learning NVP/NSX page</a>, where you can find links to all the posts in the series. While you&rsquo;ll want to be caught up on all the posts (they do build on one another in various ways), in particular you&rsquo;ll want to make sure you&rsquo;ve read part 11. Part 11 covers <a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">the basics of VMware NSX-OpenStack integration</a>, and explains how the various components of OpenStack Neutron and VMware NSX will interact.</p>
+<p>Once you understand how the different components of Neutron and NSX will interact, getting NSX integrated into OpenStack Neutron isn&rsquo;t too terribly difficult. The basic steps look like this:</p>
+<ol>
+<li>
+<p>Install the VMware NSX plugin for Neutron.</p>
+</li>
+<li>
+<p>Configure VMware NSX for Neutron.</p>
+</li>
+<li>
+<p>Configure Neutron for VMware NSX.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a more in-depth look at each of these steps.</p>
+<h1 id="installing-the-vmware-nsx-plugin-for-neutron">Installing the VMware NSX plugin for Neutron</h1>
+<p>VMware distributes a set of compiled binary packages for OpenStack Neutron plus the VMware NSX plugin from the VMware NSX support portal (available to VMware NSX customers). Source code is also available, if you&rsquo;d prefer that. These builds provided by VMware represent the latest fixes to both Neutron and NSX based off the &ldquo;official&rdquo; OpenStack Neutron releases. A single download contains all the different components of Neutron that you need (it&rsquo;s a tarred and gzipped file that you just unpack).</p>
+<p>Once you have the packages (I&rsquo;ll assume you&rsquo;re using Ubuntu and therefore have downloaded and will use the Debian packages), then you can just use <code>dpkg -i</code> to install the appropriate package(s) on the appropriate node(s). Recall from <a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">part 11</a> that when implementing Neutron with VMware NSX, you&rsquo;ll need both a Neutron server as well as a network node running the DHCP and metadata agents. Here&rsquo;s a breakdown of which packages need to be installed on which nodes:</p>
+<ul>
+<li>
+<p>On the Neutron server, you&rsquo;d install <code>neutron-common</code>, <code>neutron-server</code>, <code>python-neutron</code>, and <code>neutron-plugin-nicira</code>.</p>
+</li>
+<li>
+<p>On the Neutron network node, you&rsquo;d install (at a minimum) <code>neutron-common</code>, <code>neutron-dhcp-agent</code>, and <code>neutron-metadata-agent</code>. If you wanted LBaaS support, you&rsquo;d also install <code>neutron-lbaas-agent</code>. You could optionally install the Python client with <code>python-neutron</code> as well.</p>
+</li>
+</ul>
+<p>From here, you would proceed with setting up OpenStack Neutron as outlined in a variety of places, including <a href="http://docs.openstack.org/havana/install-guide/install/apt/content/neutron-install-network-node.html">the official OpenStack docs</a>. If you do choose to use the official docs to get Neutron configured, here&rsquo;s how the breakdown of the instructions map to the setup you&rsquo;d need to build for use with VMware NSX:</p>
+<ul>
+<li>
+<p>The &ldquo;Installing networking support on a dedicated controller node&rdquo; section contains information for setting up Neutron on an OpenStack controller that does not run any of the underlying agents. Typically, this system would also run the API servers for some of the other OpenStack services as well (like Nova, Cinder, or Glance).</p>
+</li>
+<li>
+<p>The &ldquo;Installing networking support on a dedicated network node&rdquo; section contains the information for setting up a network node that would run the DHCP and metadata agents. Recall that you don&rsquo;t need the L3 agent, since that is handled by NSX. It might include the LBaaS agent, if you need that functionality.</p>
+</li>
+<li>
+<p>The &ldquo;Installing networking support on a dedicated compute node&rdquo; section has the information for setting up your OpenStack compute nodes to interact with Neutron appropriately. Note that you <em>don&rsquo;t</em> need to install an agent on the compute nodes; adding the compute nodes to NSX (as described in <a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">part 4</a>) establishes the necessary communication between the NSX controllers and the compute nodes.</p>
+</li>
+</ul>
+<p>This helps you get Neutron up and running; in the &ldquo;Configuring Neutron for VMware NSX&rdquo; section below, I&rsquo;ll provide additional specifics around how to configure Neutron to communicate with VMware NSX. For now, let&rsquo;s make sure that VMware NSX is ready for Neutron.</p>
+<h1 id="configuring-vmware-nsx-for-neutron">Configuring VMware NSX for Neutron</h1>
+<p>VMware NSX was designed to be cloud platform-agnostic, so there isn&rsquo;t a whole lot that needs to be done here. There are, however, a few tasks you&rsquo;ll want to make sure you&rsquo;ve done inside VMware NSX:</p>
+<ol>
+<li>
+<p>You&rsquo;ll want to ensure that you&rsquo;ve added at least one NSX gateway appliance to your installation. (<a href="/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">Part 6</a> describes how to add an NVP/NSX gateway appliance.)</p>
+</li>
+<li>
+<p>You&rsquo;ll want to ensure that you&rsquo;ve added an L3 gateway service, as described in <a href="/2014/02/26/learning-nsx-part-9-adding-a-gateway-service/">part 9</a> of the series. The L3 gateway service replaces the L3 agent in OpenStack Neutron and is therefore necessary to provide routed/NAT&rsquo;d connectivity into or out of logical (tenant) networks. Use NSX Manager to get the UUID of the L3 gateway service you&rsquo;ve added; you&rsquo;ll need that when you configure Neutron.</p>
+</li>
+<li>
+<p>You&rsquo;ll need to make sure you&rsquo;ve already created a transport zone, as described in <a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">part 4</a> and explained in greater detail in <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">part 5</a>. Use NSX Manager to get the UUID of the transport zone that you want Neutron to use when creating overlay networks; you&rsquo;ll need that when configuring the NSX plugin for Neutron.</p>
+</li>
+</ol>
+<h1 id="configuring-neutron-for-vmware-nsx">Configuring Neutron for VMware NSX</h1>
+<p>Now, let&rsquo;s get into some nitty gritty specifics on how we configure OpenStack Neutron to interact with VMware NSX.</p>
+<p>Most of the configuration is done within the NSX-specific configuration files, but there are two settings in <code>neutron.conf</code> on the controller node (where the Neutron API server is running) that you&rsquo;ll want to set:</p>
+<ul>
+<li>
+<p>You&rsquo;ll absolutely want to set the <code>core_plugin</code> value to <code>neutron.plugins.nicira.NeutronPlugin.NvpPluginV2</code>. (Note that in future releases of the NSX plugin, the name will change from &ldquo;nicira&rdquo; and &ldquo;Nvp&rdquo; to &ldquo;vmware&rdquo; and &ldquo;Nsx&rdquo;.)</p>
+</li>
+<li>
+<p>You&rsquo;ll probably also want to set <code>allow_overlapping_ips</code> to True so that Nova metadata works as you would expect. (I&rsquo;ll have more on that in a moment.)</p>
+</li>
+</ul>
+<p>The bulk of the rest of the configuration is found in <code>nvp.ini</code>, which is typically found in the <code>/etc/neutron/plugins/nicira</code> directory (the name of this directory will change to <code>/etc/neutron/plugins/vmware</code> in the future). Here are the relevant settings that you&rsquo;ll want to configure:</p>
+<ul>
+<li>
+<p>You&rsquo;ll want to set <code>nvp_user</code> and <code>nvp_password</code> appropriately for your VMware NSX installation.</p>
+</li>
+<li>
+<p>Populate the <code>nvp_controllers</code> line with the addresses of the NSX controllers in your environment, in the form &ldquo;W.X.Y.Z:443&rdquo;. Separate the controllers&rsquo; IP addresses with commas.</p>
+</li>
+<li>
+<p>Place the UUID of the transport zone that you want Neutron to use when creating overlay networks as the value for <code>default_tz_uuid</code>.</p>
+</li>
+<li>
+<p>Place the UUID of the L3 gateway service that you want Neutron to use when creating logical routers with external gateways as the value for the <code>default_l3_gw_service_uuid</code> entry.</p>
+</li>
+<li>
+<p>In the <code>[database]</code> section, make sure there is an appropriate MySQL connection entry for the Neutron database (assuming you are using MySQL). An example connection entry might look like <code>mysql://neutron:neutron@192.168.100.1/neutron</code> (or similar).</p>
+</li>
+<li>
+<p>There are a couple different ways to provide Nova metadata to the instances; I prefer using a special metadata access network (I&rsquo;ll likely talk more about that in a future post). To use this configuration, set <code>metadata_mode</code> to &ldquo;access_network&rdquo; and set <code>enable_metadata_access_network</code> to True. (You may also need to set <code>metadata_dhcp_host_route</code> to False.)</p>
+</li>
+</ul>
+<p>That should be all the settings you need on the controller node. However, you&rsquo;ll also need to slightly configure the DHCP and metadata agents on the network node:</p>
+<ul>
+<li>
+<p>In the <code>dhcp_agent.ini</code> file, set <code>enable_isolated_metadata</code> and <code>enable_metadata_network</code> to True. If your Linux distribution supports network namespaces (Ubuntu does), then also set <code>use_namespaces</code> to True.</p>
+</li>
+<li>
+<p>The metadata agent does not require any special configuration above and beyond what is needed to get Neutron running.</p>
+</li>
+</ul>
+<p>Once you restart all relevant services so that they pick up the new settings, you should have Neutron talking to VMware NSX correctly. To test if everything is working correctly, use the Neutron CLI to create a logical network:</p>
+<pre><code>neutron net-create test-network
+</code></pre>
+<p>In my environment (running OpenStack Havana and NSX 4.0.0), that produced output that looked like this:</p>
+<p><img src="/public/img/neutron-cli-output.png" alt="Neutron CLI output"></p>
+<p>If all is working as expected, then you should see a matching logical switch listed in NSX Manager:</p>
+<p><a href="/public/img/nsx-manager-logical-switch.png"><img src="/public/img/nsx-manager-logical-switch-small.png" alt="Logical switches in NSX Manager"></a></p>
+<p>(Click the image above for a larger version.)</p>
+<p>It may be obvious, but you&rsquo;ll note that the ID returned by the <code>neutron net-create</code> command matches the UUID listed in NSX Manager. You&rsquo;ll also note that the <code>os_tid</code> tag assigned to the logical switch in NSX Manager matches the tenant ID of the tenant who owns the logical switch in OpenStack. Finally, you&rsquo;ll note that the bound transport zone&rsquo;s UUID will match the UUID you specified in <code>nvp.ini</code> as I outlined earlier.</p>
+<p>That&rsquo;s it&mdash;you now have VMware NSX integrated with OpenStack Neutron!</p>
+<p>In the next post, I&rsquo;ll revisit the topic of logical networking and logical switches within VMware NSX, something I first discussed fairly early in the series. Once I&rsquo;ve reviewed some concepts and established a firm foundation, future posts will take a look at how to take advantage of a very cool feature within VMware NSX: the distributed logical router.</p>
+<p>In the meantime, feel free to post any questions, clarifications, or thoughts in the comments below. Please include any vendor affiliations, where applicable; otherwise, all courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvp">NVP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/04/24/technology-and-travel/">Technology and Travel</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/04/28/learning-nsx-part-13-revisiting-logical-networking/">Learning NSX, Part 13: Revisiting Logical Networking</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f25%2flearning-nsx-part-12-integrating-vmware-nsx-with-openstack%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f25%2flearning-nsx-part-12-integrating-vmware-nsx-with-openstack%2f&text=Learning%20NSX%2c%20Part%2012%3a%20Integrating%20VMware%20NSX%20with%20OpenStack" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f25%2flearning-nsx-part-12-integrating-vmware-nsx-with-openstack%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">Learning NSX, Part 11: Reviewing OpenStack Integration Basics</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2014/02/27/learning-nsx-part-10-adding-a-service-node/">Learning NSX, Part 10: Adding a Service Node</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2014/03/07/technology-short-take-39/">Technology Short Take #39</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

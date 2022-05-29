@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Network Overlays vs. Network Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Network Overlays vs. Network Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Network Overlays vs. Network Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/04/16/network-overlays-vs-network-virtualization/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Network Overlays vs. Network Virtualization</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;357 words (estimated 2 minutes to read)</span>
+  <p>Dan Wendlandt said something today in the NVP deep dive session (liveblog of the session <a href="/2013/04/15/openstack-summit-2013-nicira-nvp-deep-dive/">here</a>) that really crystallized something for me. I thought perhaps I might be the only one that was seeing a trend, but Dan&rsquo;s comment leads me to believe there are others seeing this trend as well. Here&rsquo;s the quote, taken from my liveblog of the session:</p>
+<blockquote>
+<p>It is important to note, as Dan does, that a tunneling protocol alone is not network virtualization.</p>
+</blockquote>
+<p>There&rsquo;s a lot of buzz in the industry about network virtualization and network overlays, and often those terms are used interchangeably. People talk about the need for multi-tenancy and address space isolation, point to network overlays like VXLAN, NVGRE, and STT as the answer to all our problems, and in so doing they (inadvertently) conflate network overlays with network virtualization. Network overlays and network virtualization aren&rsquo;t the same thing, and people that use them interchangeably probably don&rsquo;t fully understand what&rsquo;s involved.</p>
+<p>&lt;aside&gt;By the way, if you&rsquo;re not familiar with the idea of network overlays, I&rsquo;d recommend reading <a href="/2011/12/02/examining-vxlan/">this</a>, <a href="/2011/12/07/revisiting-vxlan-and-layer-3-connectivity/">this</a>, and <a href="/2012/03/12/some-thoughts-and-questions-about-stt/">this</a> to get you started. There&rsquo;s plenty more out there, but those three articles will at least prime the pump, I think.&lt;/aside&gt;</p>
+<p>Network overlays are great for address space isolation (for example, isolating duplicate MAC addresses, duplicate IP addresses, or duplicate VLAN IDs). As such, network overlays can be an important part of network virtualization. You need more than a network overlay, though, to have network virtualization; you also need virtualized network services (like NAT, firewalls, ACLs, QoS, routing, and the like) and you need a control plane (else how would you coordinate the various pieces within the network virtualization solution?). The overlay protocol is just one piece of the puzzle, so using &ldquo;network overlay&rdquo; interchangeably with &ldquo;network virtualization&rdquo; is incorrect.</p>
+<p>As always, I welcome the input of those more educated/knowledgeable than I am. If you&rsquo;re a networking expert (or a virtual networking expert), feel free to speak up in the comments and correct my misunderstanding or misconceptions (please disclose vendor affiliations). I&rsquo;m always open to deepening my knowledge&mdash;and helping others with their understanding and knowledge along the way.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/04/15/openstack-summit-2013-building-ha-openstack-with-puppet-in-20-minutes/">OpenStack Summit 2013: Building HA OpenStack with Puppet in 20 Minutes</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/04/16/openstack-summit-2013-openstack-capacity-planning/">OpenStack Summit 2013: OpenStack Capacity Planning</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f16%2fnetwork-overlays-vs-network-virtualization%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f16%2fnetwork-overlays-vs-network-virtualization%2f&text=Network%20Overlays%20vs.%20Network%20Virtualization" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f16%2fnetwork-overlays-vs-network-virtualization%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/01/10/technology-short-take-28/">Technology Short Take #28</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2012/12/11/examining-some-networking-virtualization-chimeras/">Examining Some Networking-Virtualization Chimeras</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

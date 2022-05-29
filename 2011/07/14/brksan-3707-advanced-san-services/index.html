@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BRKSAN-3707: Advanced SAN Services - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BRKSAN-3707: Advanced SAN Services - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BRKSAN-3707: Advanced SAN Services - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/14/brksan-3707-advanced-san-services/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BRKSAN-3707: Advanced SAN Services</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 149 May 141414 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1359 words (estimated 7 minutes to read)</span>
+  <p>This is BRKSAN-3707, Advanced SAN Services, presented by Mike Dunn.</p>
+<p>According to TIP&rsquo;s Storage Research, the top five storage initiatives are deduplication, technology refresh, tiered storage build-out, archiving, and consolidation.</p>
+<p>The three main sections of the presentation are SAN consolidation with virtualization, tiered storage and backup design, and Fibre Channel over Ethernet (FCoE).</p>
+<p>The presentation starts with SAN consolidation using virtualization. This is really a discussion of virtual SANs (VSANs), which allow you to consolidate SANs onto the same hardware but still providing logical separation of fabrics. In order to move between VSANs, you need to use Inter-VSAN Routing (IVR).</p>
+<p>When is IVR needed? When an initiator in one VSAN needs to talk to a target in another VSAN. IVR maintains isolation while allowing for resource sharing.</p>
+<p>A common use for IVR is to provide common SAN services, like a shared tape library. IVR would allow media servers in individual VSANs to talk to a shared tape library in a &ldquo;common&rdquo; VSAN.</p>
+<p>Setting up IVR involves creating an IVR topology. This means you need to manually define the VSANs that will be used for IVR on each switch (all switches that perform IVR will need identical configuration). After defining the IVR topology, you activate it. Then you create your IVR zones and IVR zoneset, just like creating regular zones and zoneset.</p>
+<p>IVR works by creating a virtual domain in each VSAN that represents the other VSANs in the topology. Likewise, it creates virtual devices in each VSAN that represent the devices in the other VSANs. This means that logically the initiator thinks the target is in the same VSAN.</p>
+<p>Keep in mind that IVR doesn&rsquo;t perform FC ID translation, so domain IDs have to be unique across all VSANs.</p>
+<p>IVR does have a Network Address Translation (NAT) mode (IVR NAT). With IVR NAT, the virtual switch is given a randomly available domain ID; this means that you don&rsquo;t need unique domain IDs across all VSANs. IVR NAT is the preferred method of IVR moving forward.</p>
+<p>Some operating systems or devices need persistent FC IDs, so IVR NAT allows for static definitions of domain IDs and FC IDs.</p>
+<p>Another use case for IVR is SAN extension. You can use IVR to isolate the &ldquo;remote site&rdquo; VSAN from the production VSAN, limiting edge VSAN events to only that VSAN. The recommended configuration uses a transit VSAN that connects the two data centers. This keeps the VSANs in each data center isolated to only that data center. (Think of it like a /30 network between two routers.)</p>
+<p>A question was asked about using FCIP and whether IVR is needed in this sort of situation. In this case, IVR would not be necessary.</p>
+<p>Mike next launches into a quick review of SAN designs. In a core-edge design, there are core switches where storage is attached and edge switches where hosts are attached. This sort of design generally tops out at about 1,700 devices.</p>
+<p>For larger environments, you can use an edge-core-edge design. Storage devices have their own edge switches, as do servers, and the edge-to-edge traffic passes through the core. This sort of design tops out at about 4,200 devices.</p>
+<p>That discussion was a lead-in to a discussion of NPV/NPIV. This is a topic I&rsquo;ve covered previously, so I didn&rsquo;t take notes on this section.</p>
+<p>Mike did share some good information on the maximum number of logins per port (42 in switch mode, 114 in NPV mode&mdash;watch this value if you are using nested NPIV, which is the term for NPIV hosts connecting to an NPV mode switch) and logins per switch (MDS 9124/9124e/9134/9148).</p>
+<p>After discussing NPV/NPIV, Mike moves on to discuss a feature called FlexAttach. FlexAttach resolves the issue of needing to modify zoning and zonesets when an HBA or server needs to be replaced. Basically, any host connecting to an F-port configured as a FlexAttach port will assume the virtual WWPN assigned to that F-port. This eliminates the need to reconfigure zones or zonesets if you replace the server or HBA connected to that F-port. If you&rsquo;re familiar with the behavior of HP VirtualConnect, this appears to be very similar in behavior. FlexAttach is supported on the MDS platform, but is not supported on the Nexus platform.</p>
+<p>(Side question: Is FlexAttach leveraged in UCS for vHBA configurations?)</p>
+<p>That wraps up the first section; Mike now moves into a discussion of tiered storage and backup design. In this section he will discuss Data Mobility Manager (DMM), SANTap, and Storage Media Encryption (SME).</p>
+<p>To perform data migrations, there are different approaches:</p>
+<ul>
+<li>
+<p>Server/software-based</p>
+</li>
+<li>
+<p>Array-based</p>
+</li>
+<li>
+<p>Appliance-based</p>
+</li>
+</ul>
+<p>Each of these approaches has advantages and disadvantages. Cisco&rsquo;s solution is DMM, which is a SAN-based migration solution. DMM does both online and offline data migration, uses FC redirects to allow transparent insertion/removal, and is very fast (4.2TB/hr).</p>
+<p>FC Redirect is a target-based mechanism for transparently redirecting traffic to a target. With regard to DMM specifically, when using DMM for data migration, FC redirect is used to redirect traffic to the DMM process itself. DMM then sends the I/Os to both the original (source) and destination locations on the SAN. In this regard, it sounds like DMM is performing a form of write-splitting.</p>
+<p>In synchronous mode, when handling I/Os to a &ldquo;migrated&rdquo; area of the LUN, writes are mirrored. If I/Os are to a &ldquo;in process&rdquo; area, writes are queued temporarily until the region has been migrated. For I/Os to &ldquo;unmigrated&rdquo; areas are simply sent directly to the source LUN.</p>
+<p>In a dual-fabric configuration, each fabric requires its own DMM. Each DMM can handle multiple VSANs.</p>
+<p>DMM can also run in an asynchronous mode. In this mode, DMM uses Modified Region Logs (MRLs) to track changes to the source LUN. Any &ldquo;dirty region&rdquo; in the MRL is copied across to the target. There is no write penalty as there is with synchronous mode described earlier.</p>
+<p>A question was raised about what happens when the data migration is complete. At that point, you&rsquo;ll halt the I/O on the server, complete the job in DMM, and then rezone the fabric to point your host(s) to the new storage target.</p>
+<p>You can use the DMM asynchronous mode to migrate data between data centers as well. To prevent having to span a VSAN to the remote site (generally not recommended), you can add another VSAN (a replication VSAN) and a third MSM (a module in the FC switch that runs DMM) to handle the inter-site traffic.</p>
+<p>The 120 day evaluation licenses within NX-OS will enable DMM with full functionality for 120 days.</p>
+<p>The presentation next shifts to Storage Media Encryption (SME). SME encrypts media for SAN-attached tapes, VTLs, and disk arrays. It uses AES-256 encryption and it is FIPS 140-2 certified. The solution can use a Cisco key management solution or RSA Key Manager. SME is a licensed feature and is only supported on certain platforms (requires certain modules, i.e., the MSM-18/4 or the SSN16).</p>
+<p>SME uses FC redirects to transparently insert itself into the data stream to perform encryption.</p>
+<p>Cisco&rsquo;s key management solution, Key Management Center, is part of Cisco Fabric Manager. It handles archiving, replicating, recovering, and purging media keys.</p>
+<p>Encrypting disks using SME will be available in NX-OS 5.2(1).</p>
+<p>The next topic up is SANTap, which as many readers already know is leveraged by EMC RecoverPoint for heterogeneous storage replication. SANTap is a licensed feature but does not use FC redirects. Instead, SANTap uses a host VSAN and a target VSAN. In the host VSAN, SANTap creates a DVT (Data Virtual Target), which uses the WWPN of the real target port. In the target VSAN, SANTap creates a VI (Virtual Initiator), which uses the WWPN of the real host port. SANTAp issues I/Os (or splits I/Os) from the host to the DVT and passes a copy to an additional fabric-based appliance (i.e., a RecoverPoint appliance).</p>
+<p>Mike did not have any information on SANTap support for the SCSI commands used by VMware for the VAAI/VAAIv2 offloads in vSphere 4 and vSphere 5. (Bummer!)</p>
+<p>The last section of the presentation was on Fibre Channel over Ethernet (FCoE). The information contained in this section was review and stuff that I&rsquo;ve already covered elsewhere.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ciscolive2011">CiscoLive2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/07/14/brkdct-3060-deployment-considerations-with-interconnecting-dcs/">BRKDCT-3060: Deployment Considerations with Interconnecting DCs</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/14/brkdct-9131-mobility-and-virtualization-with-lisp-and-otv/">BRKDCT-9131: Mobility and Virtualization with LISP and OTV</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrksan-3707-advanced-san-services%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrksan-3707-advanced-san-services%2f&text=BRKSAN-3707%3a%20Advanced%20SAN%20Services" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrksan-3707-advanced-san-services%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/12/15/fcoe-through-a-nexus-to-a-mds-attached-storage-array/">FCoE through a Nexus to a MDS-Attached Storage Array</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2010/11/30/san-port-channels-from-nexus-5010-to-mds-9134/">SAN Port Channels from Nexus 5010 to MDS 9134</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2010/12/08/using-device-aliases-on-a-cisco-mds/">Using Device Aliases on a Cisco MDS</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

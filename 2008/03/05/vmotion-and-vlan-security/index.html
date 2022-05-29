@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMotion and VLAN Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMotion and VLAN Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMotion and VLAN Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/03/05/vmotion-and-vlan-security/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMotion and VLAN Security</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1020 words (estimated 5 minutes to read)</span>
+  <p>Xensploit, as it&rsquo;s called, is the <a href="http://www.eecs.umich.edu/techreports/cse/2007/CSE-TR-539-07.pdf">recently demonstrated exploit</a> that allows virtual machines (VMs) that are &ldquo;in flight&rdquo; during a live migration (XenMotion in <a href="http://citrix.com/English/ps2/products/product.asp?contentID=683148">Citrix XenServer</a>, VMotion in <a href="http://www.vmware.com/products/vi/esx/">VMware ESX Server</a>) to be manipulated. If you haven&rsquo;t yet read the PDF that describes Xensploit, I highly encourage that you take a look at it. It&rsquo;s very enlightening as to exactly what <em>can</em> be done to an in-flight VM.</p>
+<p>Naturally, the best way to protect against this particular problem is to guard the integrity of the live migration network. For simplicity&rsquo;s sake, I&rsquo;ll refer to this as the VMotion network from this point on, but keep in mind that it is equally applicable to any network connections on any virtualization platform that uses live migration.</p>
+<p>The most surefire way to protect the VMotion network is to place it on its own dedicated, physically separate network, using separate physical NICs plugged into separate physical switches that do not possess any connections to production networks. This will ensure that unauthorized access to the VMotion network is prevented, but comes with disadvantages as well: this configuration requires more physical NICs and more physical switches than other configurations.</p>
+<p>In implementations with limited numbers of physical NICs, however, this isn&rsquo;t really an option. In these cases, the use of Layer 2 VLANs and  multiple port groups on a single ESX Server vSwitch to allow VMotion traffic to share the same physical NICs and the same physical switches as other traffic is a very common solution. In fact, it&rsquo;s a solution that I&rsquo;ve recommended many, many times. But does this configuration provide enough protection for the VMotion network?</p>
+<p>The real question is, does a simple Layer 2 VLAN offer enough protection? That question, in turn, spawns other questions: what kinds of attacks are there against Layer 2 VLANs? Is it possible for traffic to hop across VLAN boundaries?</p>
+<p>Armed with those questions, I set out to do some research. You can see some links in my del.icio.us bookmarks that pertain to the research I did. Basically, I found that Layer 2 VLAN attacks boil down to two basic types:</p>
+<ol>
+<li>
+<p>The first type involves a malicious host pretending to be a switch and forming a 802.1Q VLAN trunk with the real switch, which then passes traffic from all VLANs across to the malicious host.</p>
+</li>
+<li>
+<p>The second type involves double-tagged 802.1Q frames and the native VLAN, whereby traffic can, under specific circumstances, hop from one VLAN to another without any Layer 3 routing involved.</p>
+</li>
+</ol>
+<p>(Network and security gurus out there feel free to elaborate or correct me on this information.)</p>
+<p>The best way to address attack vector #1 is to explicitly disable automatic trunk negotiation on all ports that don&rsquo;t need to be trunks. From my research and my (relatively) limited knowledge of Cisco IOS, this command should do it:</p>
+<pre><code>switchport mode access
+</code></pre>
+<p>This explicitly forces the switchport into a state where it will not negotiate an 802.1Q VLAN trunk with another device, hence killing attack vector #1 dead in its tracks. Again, this should only be done on the ports that are <em>not</em> connected to the ESX Servers; otherwise, you&rsquo;re shooting yourself in the foot. Keep in mind that uplinks to other switches, ports going out to IP phones, etc., may also need to be configured as VLAN trunks. Really, the issue is about controlling the creation of unauthorized VLAN trunks in order to control VLAN leakage. One of the CCIEs at the office mentioned a <code>switchport noneg</code> command, but I&rsquo;m not familiar with that one; anyone have more details?</p>
+<p>Addressing attack vector #2 is also relatively straightforward. Since the VLAN hopping exploit takes advantage of the nature of the native VLAN (which I&rsquo;ve discussed before <a href="/2007/11/13/esx-server-and-the-native-vlan/">here</a>), setting the native VLAN on the trunk ports connecting to the ESX Servers to a VLAN that is not used anywhere else in the network will prevent VLAN hopping. For example:</p>
+<pre><code>switchport trunk native vlan 4094
+</code></pre>
+<p>From my <a href="/2006/12/04/esx-server-nic-teaming-and-vlan-trunking/">NIC teaming and VLAN trunking article</a> (one of the most popular articles on the site, by the way), you&rsquo;ll see that I recommended at that time the creation of a VLAN that is used only as the native VLAN for 802.1Q trunks. At that time, I didn&rsquo;t fully understand why; now, after additional research, I understand why I needed to do that and I also recognize that the suggested configuration provides a layer of protection against VLAN hopping attacks.</p>
+<p>To summarize:</p>
+<ul>
+<li>
+<p>To protect against malicious hosts forming unauthorized 802.1Q trunks, disable automatic trunk negotiation and explicitly/manually create trunks. The key here is to ensure that VLANs don&rsquo;t inadvertently &ldquo;leak&rdquo; beyond where they should (also see note below about specifying the allowed VLANs).</p>
+</li>
+<li>
+<p>To protect against VLAN hopping, create a VLAN that is used only as the native VLAN on the 802.1Q trunks connecting to the ESX Servers. This VLAN <em>must not</em> be used anywhere else in the LAN. Set this VLAN as the native VLAN on the trunks into the ESX Servers.</p>
+</li>
+</ul>
+<p>In addition, my networking mentors also recommended the &ldquo;switchport trunk allowed vlan&rdquo; command to specify which VLANs are allowed to cross 802.1Q VLAN trunks. This will help ensure that VMotion traffic is limited to only those switches that absolutely must carry it; again, we&rsquo;re seeking to control VLAN leakage.</p>
+<p>With these configurations in place, using a Layer 2 VLAN to carry VMotion traffic on the same physical NICs and same physical switches as other types of traffic is fairly well-protected against malicious interference. While it is not as secure as a physical separate, dedicated network, it is secure enough for most organizations and the reduction in infrastructure needs generally outweighs the risks.</p>
+<p>More information and discussion about Xensploit&mdash;and protecting against Xensplot&mdash;at the following links:</p>
+<p><a href="http://blogs.vmware.com/security/2008/02/keeping-your-vm.html">Keeping Your VMotion Traffic Secure</a></p>
+<p><a href="http://www.scmagazineus.com/Two-vulnerabilities-found-in-VMware-virtualization-products/article/107207/">Two vulnerabilities found in VMware virtualization products</a></p>
+<p><a href="http://www.darkreading.com/document.asp?doc_id=146647&amp;f_src=darkreading_gnews">&lsquo;Live&rsquo; VMs at Risk While in Transit</a></p>
+<p><a href="http://rationalsecurity.typepad.com/blog/2008/02/news-flash-if-y.html">News Flash: If You Don&rsquo;t Follow Suggested Security Hardening Guidelines, Bad Things Can Happen&hellip;</a></p>
+<p><strong>UPDATE:</strong> I&rsquo;ve updated the wording above to more properly reflect the goal behind the use of the <code>switchport mode access</code> command, and when it should be used. Colin, thanks for the feedback and clarification!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/03/05/e-mail-subscriptions-now-available/">E-Mail Subscriptions Now Available</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/03/06/activesync-on-the-iphone/">ActiveSync on the iPhone</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f05%2fvmotion-and-vlan-security%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f05%2fvmotion-and-vlan-security%2f&text=VMotion%20and%20VLAN%20Security" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f05%2fvmotion-and-vlan-security%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/11/13/esx-server-and-the-native-vlan/">ESX Server and the Native VLAN</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2007/03/14/virtual-security-concerns/">Virtual Security Concerns</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2006/12/04/esx-server-nic-teaming-and-vlan-trunking/">ESX Server, NIC Teaming, and VLAN Trunking</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

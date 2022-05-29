@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Link Aggregation and LACP with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Link Aggregation and LACP with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Link Aggregation and LACP with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Link Aggregation and LACP with Open vSwitch</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;957 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you how to use link aggregation (via the Link Aggregation Control Protocol, or LACP) with Open vSwitch (OVS). First, though, let&rsquo;s cover some basics.</p>
+<p>In the virtualization space, it&rsquo;s extremely common to want to use multiple physical network connections in your hypervisor hosts to support guest (virtual machine) traffic. The problem is that modern-day networking is&mdash;for now&mdash;largely constrained by the presence of Spanning Tree Protocol (STP), which limits the use of multiple connections between network devices (especially switches). Since most hypervisors have some form of virtual switch to support guest traffic, and since users don&rsquo;t want to be constrained by STP the hypervisors have had to find workarounds.</p>
+<p>VMware works around STP by causing their virtual switches to operate in what is called &ldquo;end-host mode,&rdquo; meaning that the virtual switch does not participate in STP (newer versions of vSphere can, in fact, block STP BPDUs from being emitted), the virtual switch does not forward frames received on one uplink back out another uplink, and traffic from VMs is statically assigned (pinned) to an uplink. (This behavior is, of course, configurable.) Because of these default behaviors, users in VMware environments simply connect multiple links to their hosts and off they go.</p>
+<p>Other environments behave differently. Environments using Open vSwitch (OVS), for example, need to use other methods to work around the presence of STP, especially considering that OVS is more a full-featured virtual switch than the standard VMware vSwitch. In most cases, the workaround involves the use of link aggregation; specifically, the use of Link Aggregation Control Protocol (LACP), a standardized protocol that allows devices to automatically negotiate the configuration and use of link aggregates comprised of multiple physical links.</p>
+<p>Now that you have the background, let&rsquo;s dive into the details of how to make this work. These instructions on using LACP with OVS do make a few assumptions:</p>
+<ol>
+<li>
+<p>First, I assume that OVS is already installed and working.</p>
+</li>
+<li>
+<p>I assume that the management traffic to/from your host is <em>not</em> running through OVS, and thus won&rsquo;t be interrupted by any configurations you do here. If this is not the case, and you do have management traffic running through OVS, you might want to exercise some additional caution to ensure you don&rsquo;t accidentally cut your connectivity to the host.</p>
+</li>
+<li>
+<p>I assume that you know how to configure your physical switch(es) to support LACP on the links coming in from OVS. The configuration will vary from switch vendor to switch vendor; refer to your vendor&rsquo;s documentation for details.</p>
+</li>
+</ol>
+<p>This post was written using Ubuntu 12.04.1 LTS and Open vSwitch 1.4.0 (installed using <code>apt-get</code> directly from the Precise Pangolin repositories). The use of a different Linux distribution and/or a different version of OVS might make this process slightly different.</p>
+<p>The first step is to add a bridge (substitute your desired bridge name for <code>ovsbr1</code> in the following command):</p>
+<pre><code>ovs-vsctl add-br ovsbr1
+</code></pre>
+<p>Once the bridge is established, then you&rsquo;ll need to create a bond. This is the actual link aggregate on OVS. The syntax for adding a bond looks something like this:</p>
+<pre><code>ovs-vsctl add-bond &lt;bridge name&gt; &lt;bond name&gt; &lt;list of interfaces&gt;
+</code></pre>
+<p>So, if you wanted to add a bond to <code>ovsbr1</code> using physical interfaces <code>eth1</code> and <code>eth3</code>, your command would look something like this:</p>
+<pre><code>ovs-vsctl add-bond ovsbr1 bond0 eth1 eth3
+</code></pre>
+<p>However, there&rsquo;s a problem with this configuration: by default, LACP isn&rsquo;t enabled on a bond. To fix this, you have two options.</p>
+<ol>
+<li>
+<p>Change the command use to create the bond, so that LACP is enabled when the bond is created.</p>
+</li>
+<li>
+<p>Enable LACP after the bond is created.</p>
+</li>
+</ol>
+<p>For option #1, you&rsquo;ll simply append <code>lacp=active</code> to the command to create the bond, like so:</p>
+<pre><code>ovs-vsctl add-bond ovsbr1 bond0 eth1 eth3 lacp=active
+</code></pre>
+<p>For option #2, you&rsquo;d use <code>ovs-vsctl set</code> to modify the properties of the bond. Here&rsquo;s an example:</p>
+<pre><code>ovs-vsctl set port bond0 lacp=active
+</code></pre>
+<p>Once the bond is created and LACP is enabled, you can check the configuration and/or status of the bond. Assuming that you&rsquo;ve already configured your physical switch correctly, your bond should be working and passing traffic. You can use this command to see the status of the bond:</p>
+<pre><code>ovs-appctl bond/show &lt;bond name&gt;
+</code></pre>
+<p>The output from that command will look something like this:</p>
+<pre><code>bond_mode: balance-slb
+bond-hash-algorithm: balance-slb
+bond-hash-basis: 0
+updelay: 0 ms
+downdelay: 0 ms
+next rebalance: 6415 ms
+lacp_negotiated: true
+
+slave eth4: enabled
+    active slave
+    may_enable: true
+
+slave eth3: enabled
+    may_enable: true
+
+slave eth1: enabled
+    may_enable: true
+
+slave eth2: enabled
+    may_enable: true
+</code></pre>
+<p>This command will show more detailed LACP-specific information:</p>
+<pre><code>ovs-appctl lacp/show &lt;bond name&gt;
+</code></pre>
+<p>This command returns a great deal of information; here&rsquo;s a quick snippet:</p>
+<pre><code>---- bond0 ----
+    status: active negotiated
+    sys_id: 00:22:19:bd:db:dd
+    sys_priority: 65534
+    aggregation key: 4
+    lacp_time: fast
+
+slave: eth1: current attached
+    port_id: 4
+    port_priority: 65535
+
+    actor sys_id: 00:22:19:bd:db:dd
+    actor sys_priority: 65534
+    actor port_id: 4
+    actor port_priority: 65535
+    actor key: 4
+    actor state: activity timeout aggregation synchronized collecting&lt;br&gt;&lt;/br&gt;distributing
+
+    partner sys_id: 00:12:f2:cc:6d:40
+    partner sys_priority: 1
+    partner port_id: 12
+    partner port_priority: 1
+    partner key: 10000
+    partner state: activity aggregation synchronized collecting&lt;br&gt;&lt;/br&gt;distributing
+</code></pre>
+<p>You can also use this command to view the configuration details of the bond:</p>
+<pre><code>ovs-vsctl list port bond0
+</code></pre>
+<p>The output from this command will look something like this:</p>
+<pre><code>_uuid               : ae7eb7ca-e3e0-4166-bcfb-4348071799e0
+bond_downdelay      : 0
+bond_fake_iface     : false
+bond_mode           : []
+bond_updelay        : 0
+external_ids        : {}
+fake_bridge         : false
+interfaces          : [9963381b-6a7d-4a8f-acf8-86150361530e,&lt;br&gt;&lt;/br&gt;bee2df86-ed14-456b-8f3a-25fb00fa6040, daf5ac51-4135-4e3c-a937-c62dfc4b5e9f,&lt;br&gt;&lt;/br&gt;fcd2d6ef-9a18-452a-9a79-1c97e5a95ef2]
+lacp                : active
+mac                 : []
+name                : &quot;bond0&quot;
+other_config        : {lacp-time=fast}
+qos                 : []
+statistics          : {}
+status              : {}
+tag                 : []
+trunks              : []
+vlan_mode           : []
+</code></pre>
+<p>In learning how to use LACP with OVS, I found <a href="http://brezular.com/2011/12/04/openvswitch-playing-with-bonding-on-openvswitch/">this article</a> to be extremely helpful.</p>
+<p>If you have questions, or have additional information to share with me and/or other readers, please speak up in the comments. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/18/thinking-out-loud-ovs-and-the-enterprise/">Thinking Out Loud: OVS and the Enterprise</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/19/vlans-with-open-vswitch-fake-bridges/">VLANs with Open vSwitch Fake Bridges</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2flink-aggregation-and-lacp-with-open-vswitch%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2flink-aggregation-and-lacp-with-open-vswitch%2f&text=Link%20Aggregation%20and%20LACP%20with%20Open%20vSwitch" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2flink-aggregation-and-lacp-with-open-vswitch%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/05/technology-short-take-25/">Technology Short Take #25</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2012/10/04/some-insight-into-open-vswitch-configuration/">Some Insight into Open vSwitch Configuration</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2012/10/18/thinking-out-loud-ovs-and-the-enterprise/">Thinking Out Loud: OVS and the Enterprise</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

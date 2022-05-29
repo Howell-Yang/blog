@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Managing Your E-mail Inbox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Managing Your E-mail Inbox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Managing Your E-mail Inbox - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/11/managing-your-e-mail-inbox/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Managing Your E-mail Inbox</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;570 words (estimated 3 minutes to read)</span>
+  <p>I <a href="https://twitter.com/scott_lowe/status/256282631484878848">tweeted earlier today</a> that I managed to achieve &ldquo;Inbox Zero&rdquo; (an empty e-mail inbox) while at a major industry conference (I&rsquo;m in Spain for VMworld EMEA). A follower on Twitter asked if I would share my &ldquo;inbox secret&rdquo;. It&rsquo;s not a secret, really, but I thought I&rsquo;d share it here just in case others are interested in trying to emulate a similar methodology (or are just interested in getting control of your e-mail inbox).</p>
+<p>First, you&rsquo;ll need some infrastructure:</p>
+<ul>
+<li>
+<p>Get yourself some sort of &ldquo;to do&rdquo; system. I don&rsquo;t care if you use Getting Things Done (GTD), or just make notes in a plain text file&mdash;but find a system and use it. I mean, really USE it. Be ruthless in putting your actions (tasks, &ldquo;to do&rsquo;s&rdquo;) in the system. Personally, I use <a href="http://www.omnigroup.com/products/omnifocus/">OmniFocus</a>, but ultimately you&rsquo;ll need to find the right tool that works for you.</p>
+</li>
+<li>
+<p>Determine an archiving strategy. In other words, what are you going to do with e-mails that have information you might need later, but don&rsquo;t represent something you need to do? There are a variety of strategies here; some people have a complex hierarchy of folders while others just dump all their messages into one big archival folder. Personally, I use a time-based approach&mdash;I archive messages I might need later into an annual folder. So, I have folders for 2012, 2011, 2010, etc., all the way back to 2004.</p>
+</li>
+<li>
+<p>(Optional, but recommended) Find an automation tool. What do I mean by &ldquo;an automation tool&rdquo;? You&rsquo;re looking for some sort of macro/scripting tool that can help streamline common tasks for you. Simply creating (or customizing) some keyboard shortcuts within your e-mail application might be sufficient. Personally, I use AppleScript and a tool called <a href="http://www.red-sweater.com/fastscripts/">FastScripts</a> to allow me to execute those scripts via application-specific or global keyboard shortcuts.</p>
+</li>
+</ul>
+<p>Once you&rsquo;ve accomplished those three tasks, then we get to the actual work of managing your inbox. Here&rsquo;s how it works. For every message that comes into your inbox, one of four things happens (this is your DECISION TREE):</p>
+<ol>
+<li>
+<p>If the message represents something you can do and get done in just a few minutes (a quick reply or an action you can complete), <strong>do it</strong> and then delete or archive the message.</p>
+</li>
+<li>
+<p>If the message represents something that will take some additional time (a more lengthy reply or an action/series of actions that will take time to complete), <strong>create a task/&ldquo;to do&rdquo; entry</strong> in your system and then delete or archive the message.</p>
+</li>
+<li>
+<p>If the message represents something that is not an action but contains information you might need later, <strong>archive it.</strong></p>
+</li>
+<li>
+<p>If the message doesn&rsquo;t match any of the above rules, <strong>delete it.</strong></p>
+</li>
+</ol>
+<p>It&rsquo;s really a simple system, but it requires discipline. You have to school yourself not to use your inbox as a task/&ldquo;to do&rdquo; system&mdash;that&rsquo;s why you find/use a system. And finding an automation tool (as I suggested) helping remove friction or resistance to the system by making it easier to archive messages or create task/&ldquo;to do&rdquo; actions. For example, using FastScripts, I have a single keyboard shortcut (Ctrl-Cmd-A) to archive a message to the current year&rsquo;s archive folder. So, when I&rsquo;m done with a message in my Inbox&mdash;after I&rsquo;ve responded or created an action&mdash;I can archive it with a quick keyboard shortcut.</p>
+<p>Hopefully some of this information helps. Feel free to speak up with additional tips, suggestions, or questions in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/personal">Personal</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/10/vmworld-emea-day-2-keynote/">VMworld EMEA Day 2 Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/16/openstack-summit-day-1-recap-links/">OpenStack Summit Day 1 Recap Links</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f11%2fmanaging-your-e-mail-inbox%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f11%2fmanaging-your-e-mail-inbox%2f&text=Managing%20Your%20E-mail%20Inbox" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f11%2fmanaging-your-e-mail-inbox%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/10/05/content-creation-and-mind-mapping/">Content Creation and Mind Mapping</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2011/09/07/switching-to-eaglefiler/">Switching to EagleFiler</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2010/05/02/my-current-getting-things-done-setup/">My Current Getting Things Done Setup</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

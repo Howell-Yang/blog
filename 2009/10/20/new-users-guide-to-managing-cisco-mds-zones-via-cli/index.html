@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>New User&#39;s Guide to Managing Cisco MDS Zones via CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="New User&#39;s Guide to Managing Cisco MDS Zones via CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="New User&#39;s Guide to Managing Cisco MDS Zones via CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/10/20/new-users-guide-to-managing-cisco-mds-zones-via-cli/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">New User&#39;s Guide to Managing Cisco MDS Zones via CLI</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;495 words (estimated 3 minutes to read)</span>
+  <p>Toward the end of August 2009, I posted an article on <a href="/2009/08/24/new-users-guide-to-configuring-cisco-mds-zones-via-cli/">how to configure Cisco MDS zones via the command-line interface (CLI)</a>. This article is a follow-up to that article; in this post, I&rsquo;ll review some commands that are helpful in <em>managing</em> those zones.</p>
+<p>As with the first post, this post probably won&rsquo;t be very helpful to users who are well-versed with the Cisco MDS family of Fibre Channel switches. Hence, why I&rsquo;ve tagged it as a &ldquo;new user&rsquo;s&rdquo; post. Similarly, I&rsquo;m not going into the need for zones, as that is covered amply elsewhere.</p>
+<p>First, I find it extremely handy to be able to rename Fibre Channel aliases using the <code>fcalias rename</code> command like this (replace &ldquo;_XXX_&rdquo; with the appropriate VSAN number for your environment):</p>
+<pre><code>switch(config)# fcalias rename &lt;old alias&gt; &lt;new alias&gt; vsan _XXX_
+</code></pre>
+<p>You can also rename zones:</p>
+<pre><code>switch(config)# zone rename &lt;old zone name&gt; &lt;new zone name&gt; vsan _XXX_
+</code></pre>
+<p>And you can rename zonesets:</p>
+<pre><code>switch(config)# zoneset rename &lt;old zoneset name&gt; &lt;new zoneset name&gt; vsan _XXX_
+</code></pre>
+<p>In my earlier article I talked about the <code>zoneset clone</code> command, but you can also clone aliases and individual zones. I&rsquo;m not yet convinced of the value of being able to clone an individual alias, and if you are using single initiator/single target zoning I&rsquo;m not 100% sure how helpful it will be to clone a specific zone. Still, the functionality is there if you need it.</p>
+<p>Adding a new alias, zone, or zoneset is similar to modifying an existing alias, zone, or zoneset. For example, to add a new alias to an existing zone, you would use these commands:</p>
+<pre><code>switch(config)# zone name existing-zone-name-here vsan _XXX_  
+switch(config-zone)# member fcalias new-alias-to-add  
+switch(config-zone)# exit
+</code></pre>
+<p>Likewise, adding a new zone to an existing zoneset is similar to defining a new zoneset:</p>
+<pre><code>switch(config)# zoneset name existing-zoneset-name vsan _XXX_  
+switch(config-zoneset)# member new-zone-to-add  
+switch(config-zoneset)# member another-new-zone  
+switch(config-zoneset)# exit
+</code></pre>
+<p>Managing zones via the CLI can be a bit daunting; as the number of aliases and zones increases, it becomes more difficult to work with all of them and find only the ones in which you are interested at the moment. Here, using the <code>include</code> keyword can be rather handy. Consider this command:</p>
+<pre><code>switch# show zone | include server-name  
+zone name **server-name**-storage vsan _XXX_  
+fcalias name **server-name** vsan _XXX_  
+zone name **server-name**-storage2 vsan _XXX_  
+fcalias name **server-name** vsan _XXX_
+</code></pre>
+<p>I&rsquo;ve marked the matching text in asterisks, so that you can see that the <code>include</code> keywords acts like a bit like <code>grep</code>. This makes it much easier to filter out only the zones you want or need to see, instead of having to wade through all the currently defined zones. This is not an MDS-specific trick; it&rsquo;s also applicable in IOS and NX-OS as well. And it works not only with zones, but also with zonesets, FC aliases, etc.</p>
+<p>Cisco MDS experts, feel free to post additional suggestions on managing zones via the CLI in the comments below so that all readers can benefit. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/10/04/vmware-lab-manager-design-considerations/">VMware Lab Manager Design Considerations </a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/10/22/io-virtualization-and-the-double-edged-sword/">I/O Virtualization and the Double-Edged Sword</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f20%2fnew-users-guide-to-managing-cisco-mds-zones-via-cli%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f20%2fnew-users-guide-to-managing-cisco-mds-zones-via-cli%2f&text=New%20User%27s%20Guide%20to%20Managing%20Cisco%20MDS%20Zones%20via%20CLI" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f20%2fnew-users-guide-to-managing-cisco-mds-zones-via-cli%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/08/24/new-users-guide-to-configuring-cisco-mds-zones-via-cli/">New User&#39;s Guide to Configuring Cisco MDS Zones via CLI</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2009/07/30/correction-there-might-be-an-end-to-end-fcoe-solution/">Correction: There Might be an End-to-End FCoE Solution</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

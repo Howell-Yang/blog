@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing Ansible 2.x in a Python Virtualenv on OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing Ansible 2.x in a Python Virtualenv on OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing Ansible 2.x in a Python Virtualenv on OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/04/30/installing-ansible-in-virtualenv/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing Ansible 2.x in a Python Virtualenv on OS X</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;500 words (estimated 3 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to walk you through the steps to install <a href="https://www.ansible.com/">Ansible</a> 2.x into a <a href="https://www.python.org/">Python</a> virtual environment (virtualenv) on <a href="http://www.apple.com/osx/">OS X</a>. There&rsquo;s nothing terribly hard or unusual about this process, but I wanted to document it here for folks who might be new to the process (or who might be interested in <em>why</em> using this approach could be beneficial).</p>
+<p>I&rsquo;m stumbled into this process because I had been using Ansible 1.9.x and wanted to upgrade to Ansible 2.x so that I could use some of the new <a href="http://www.openstack.org/">OpenStack</a>-related modules. (These are modules that allow you to manipulate OpenStack-based resources, like instances or networks, using Ansible playbooks, and they were introduced with the release of Ansible 2.x.) The new modules had some additional Python dependencies, and installing these Python dependencies on OS X can be challenging at times (due to <a href="https://en.wikipedia.org/wiki/System_Integrity_Protection">System Integrity Protection</a> [SIP]). For example, installing the <code>shade</code> module on my OS X El Capitan system ran afoul of SIP.</p>
+<p>The answer is to use Python virtual environments (aka &ldquo;virtualenvs&rdquo;). Virtualenvs provide a mechanism whereby you can isolate Python dependencies between different Python-based projects. You create a Python virtualenv, then you install the Python module <em>into</em> that virtualenv. All other environments&mdash;including other virtualenvs and the system environment&mdash;are left untouched. Handy, right? Ansible, as a Python-based project, can be run inside a virtualenv so that you can isolate Ansible&rsquo;s dependencies away from the rest of the system.</p>
+<p>Here&rsquo;s what the process looks like:</p>
+<ol>
+<li>
+<p>First, you&rsquo;ll need to install support for Python virtualenvs. Although some folks have said <strong>not</strong> to use <code>sudo</code> when installing via Pip, I found it necessary:</p>
+<pre><code> sudo -H pip install virtualenv
+</code></pre>
+<p>Note that you might need to install Pip first, which&mdash;fortunately&mdash;is pretty straightforward (<code>easy_install pip</code>).</p>
+</li>
+<li>
+<p>Once you have virtualenv support installed, then create a virtualenv into which you&rsquo;ll install the Ansible dependencies:</p>
+<pre><code> virtualenv --system-site-packages ansible
+</code></pre>
+<p>This will create a virtualenv called &ldquo;ansible&rdquo; in a directory named &ldquo;ansible&rdquo; in the current working directory. I used the <code>--system-site-packages</code> flag to allow this virtualenv to have access to the system site packages. I saw various recommendations both for and against this approach; my line of thinking was that this would help prevent some duplication of modules.</p>
+</li>
+<li>
+<p>Activate the virtualenv by running <code>source ansible/bin/activate</code> (if you used a name other than &ldquo;ansible&rdquo;, substitute that in the command). This will modify your prompt so that the name of the virtualenv is shown in parentheses before the prompt.</p>
+</li>
+<li>
+<p>Now install Ansible using <code>pip install ansible</code>, along with any other necessary dependencies. In my case, I wanted to use the OpenStack modules, so I also ran <code>pip install shade</code>.</p>
+</li>
+<li>
+<p>When you&rsquo;re done with the virtualenv, run <code>deactivate</code>. You&rsquo;ll see your prompt revert to normal.</p>
+</li>
+</ol>
+<p>Now, anytime you want to run Ansible, activate the &ldquo;ansible&rdquo; virtualenv (see step #3). This will put you into the appropriate virtualenv with all the necessary modules and dependencies. When you&rsquo;re done, simply deactivate the virtualenv (see step #5) and go on about your day. Easy as cake!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/python">Python</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/04/25/prayer-time-austin-summit/">Prayer Time at the Austin Summit</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/05/04/building-vmw-cumulus-vx-box/">Building a VMware-Formatted Cumulus VX Vagrant Box</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f30%2finstalling-ansible-in-virtualenv%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f30%2finstalling-ansible-in-virtualenv%2f&text=Installing%20Ansible%202.x%20in%20a%20Python%20Virtualenv%20on%20OS%20X" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f30%2finstalling-ansible-in-virtualenv%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/03/28/adding-git-docker-machine-awareness-osx/">Adding Git and Docker Machine Awareness to OS X</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2016/03/09/full-stack-journey-ep003/">Full Stack Journey Episode #3: Jonathan Frappier</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2015/12/24/running-ansible-through-ssh-bastion-host/">Running Ansible Through an SSH Bastion Host</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

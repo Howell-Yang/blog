@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: Introduction to Managed Database Services on AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: Introduction to Managed Database Services on AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: Introduction to Managed Database Services on AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/11/30/intro-managed-db-services/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: Introduction to Managed Database Services on AWS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;976 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of the AWS re:Invent session titled &ldquo;Introduction to Managed Database Services on AWS&rdquo; (DAT307). The speakers for the session are Steve Hunt, Alan Murray, and Robin Spira, all of FanDuel; and Darin Briskman, from AWS Database Services.</p>
+<p>Briskman kicks off the session with a quick review of AWS&rsquo; managed database offerings. These fall into four categories, which Briskman reviewed so quickly I couldn&rsquo;t capture. I think they were SQL, NoSQL, data warehousing, and something else. Why use managed databases? Because this allows AWS to take over the responsibility for OS maintenance, DB maintenance, high availability, scalability, etc. All you have to worry about it is the application that runs on the database.</p>
+<p>What are the managed relational database services that AWS offers?</p>
+<ul>
+<li><em>Amazon RDS (Relational Database Service):</em> The oldest service, now supporting MySQL, MariaDB, PostgreSQL, Microsoft SQL Server, and Oracle</li>
+<li><em>Amazon Aurora:</em> MySQL-compatible (and now PostgreSQL-compatible per the announcement today) with greater scalability, better performance, transparent encryption, high availability, and integration with AWS Lambda</li>
+</ul>
+<p>Relational databases are really helpful in many cases, but sometimes NoSQL databases would be more helpful. AWS also offers DynamoDB, which is a managed NoSQL database service. DynamoDB is always clustered, and automatically shards/partitions as needed based on size and/or throughput.</p>
+<p>Amazon ElastiCache leverages one of two engines&mdash;either Memcached or Redis&mdash;for high-speed in-memory key/value stores. Like the other database offerings, it&rsquo;s fully managed. You can use ElastiCache as a primary data store, but it is more commonly used as a cache in front of other database offerings (managed or unmanaged).</p>
+<p>For analytics in a data warehousing environment, Amazon offers Amazon RedShift. RedShift is a PostgreSQL-based solution. It&rsquo;s massively parallel and operates at a petabyte scale. Again, it&rsquo;s fully managed by Amazon.</p>
+<p>Also in the analytics space is Amazon Elasticsearch Service, which is a managed service with Elasticsearch and Kibana. You could use this to pull in CloudWatch and CloudTrail logs and visualize them using this service.</p>
+<p>Finally, there&rsquo;s Amazon EMR. This includes MapReduce, Spark, and Presto, and is a managed service that allows customers to pull data from S3, HDFS, or MapR to do analysis without having to worry about the details of managing and optimizing a cluster. One popular use pattern has organizations employing spot instances with Amazon EMR.</p>
+<p>At this point, Briskman turns the stage over to Robin Spira from FanDuel. FanDuel offers online fantasy sports (think fantasy football). After a brief introduction, Spira hands it over to Alan Murray. Murray shares some additional information about FanDuel&rsquo;s growth and the challenges that resulted from that growth.</p>
+<p>In the first generation version of the application, it was a LAMP stack with PHP code running on MySQL. Challenges faced here led FanDuel to re-architect to the next-generation architecture.</p>
+<p>In 2010, FanDuel migrated to a cloud provider (not AWS); issues experienced there forced FanDuel to migrate to AWS in 2011. The web server layer was refactored to enable some level of horizontal scaling, but the monolithic database persisted.</p>
+<p>In 2011, FanDuel migrated entirely to AWS, but scaling issues due to application architecture persisted.</p>
+<p>In 2012, FanDuel moved the architecture toward SOA, introducing message queues to decouple services. FanDuel started to use Puppet to help with configuration management, and they started evaluating the use of Elastic Load Balancers (ELBs) and Auto Scaling Groups (ASGs) to help with scaling. However, the monolithic database remained, and was now running on one of Amazon&rsquo;s largest EC2 instances (but was still running hot).</p>
+<p>2013 saw the introduction of a REST-based API layer (to help support a new iOS mobile client), continued work on the back-end services, but FanDuel (along with many other daily fantasy sports [DFS] vendors) saw a major outage. This led to immediate work on improving FanDuel&rsquo;s scalability and DR position.</p>
+<p>By 2014, FanDuel&rsquo;s business volumes were now &gt;3,000x the original volume. The core monolithic database survived the season, but FanDuel did see a Redis degradation failure.</p>
+<p>In 2015, business volume soared another order of magnitude, the road to SOA continued, and FanDuel moved from a self-managed MySQL instance to a MySQL RDS instance. This made database-related tasks far easier by pushing them off to Amazon.</p>
+<p>Where is FanDuel&rsquo;s application now? The service is pretty reliable, and performance is pretty good with headroom to grow yet. FanDuel remains on a MySQL RDS instance, not yet having migrated to Aurora or DynamoDB. (Murray did not indicate whether they are using ElastiCache Redis instead of a self-managed Redis cluster.)</p>
+<p>Murray spends the next few minutes going into a more detailed discussion of FanDuel&rsquo;s application and some of the specific challenges involved in providing their DFS applications/services. He also shares a number of graphs that depict the volumes of entries, lineups, viewing events, live scoring events, etc., with which FanDuel&rsquo;s application must deal.</p>
+<p>Murray finally gets to the point where he discusses FanDuel&rsquo;s early experiences with Aurora. Moving to Aurora completely removed the replication lag they&rsquo;d been seeing with read replicas, and performance generally improved by 3x to 5x. Murray also briefly discussed the move from self-managed Redis to ElastiCache Redis. The key benefits were greater operational simplicity and faster master failover.</p>
+<p>At this point, Murray hands over to Steve Hunt to discuss the migration(s) that FanDuel experienced along the way. This was a pretty straightfoward, if time-consuming process, using standard MySQL tools like <code>mysqldump</code> to dump the data from the source and import it into the target, setting up replication to re-sync the source and target, verifying consistency, demote source/promote target, and then switch the application.</p>
+<p>Murray now takes the stage again to quickly summarize FanDuel&rsquo;s experience with managed database services on AWS. Those benefits include automated failover, managed backups, no more replication lag with read replicas, common interfaces and tooling, and operational cost reduction.</p>
+<p>Murray hands the stage back over to Briskman, who quickly wraps up the session (which is already running late).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2016">reInvent2016</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/11/30/centralized-governance-policy-mgmt/">Liveblog: How News UK Centralized Cloud Governance</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/12/01/aws-reinvent-keynote-werner-vogels/">AWS re:Invent 2016 Keynote with Werner Vogels</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fintro-managed-db-services%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fintro-managed-db-services%2f&text=Liveblog%3a%20Introduction%20to%20Managed%20Database%20Services%20on%20AWS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fintro-managed-db-services%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/11/30/centralized-governance-policy-mgmt/">Liveblog: How News UK Centralized Cloud Governance</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/11/30/automating-cloud-mgmt-deployment/">Liveblog: Automating Cloud Mgmt and Deployment</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/11/30/aws-reinvent-keynote-andy-jassy/">AWS re:Invent 2016 Keynote with Andy Jassy</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

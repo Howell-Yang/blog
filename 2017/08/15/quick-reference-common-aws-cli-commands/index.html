@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Quick Reference to Common AWS CLI Commands - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Quick Reference to Common AWS CLI Commands - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Quick Reference to Common AWS CLI Commands - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/08/15/quick-reference-common-aws-cli-commands/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Quick Reference to Common AWS CLI Commands</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;983 words (estimated 5 minutes to read)</span>
+  <p>This post provides an extremely basic &ldquo;quick reference&rdquo; to some commonly-used <a href="https://aws.amazon.com/cli/">AWS CLI</a> commands. It&rsquo;s not intended to be a deep dive, nor is it intended to serve as any sort of comprehensive reference (the <a href="http://docs.aws.amazon.com/cli/latest/reference/">AWS CLI docs</a> nicely fill that need).</p>
+<p>This post does make a couple of important assumptions:</p>
+<ol>
+<li>
+<p>This post assumes you already have a basic understanding of the key AWS concepts and terminology, and therefore doesn&rsquo;t provide any definitions or explanations of these concepts.</p>
+</li>
+<li>
+<p>This post assumes the AWS CLI is configured to output in JSON. (If you&rsquo;re not familiar with JSON, see <a href="/2013/11/08/a-non-programmers-introduction-to-json/">this introductory article</a>.) If you&rsquo;ve configured your AWS CLI installation to output in plain text, then you&rsquo;ll need to adjust these commands accordingly.</p>
+</li>
+</ol>
+<p>I&rsquo;ll update this post over time to add more &ldquo;commonly-used&rdquo; commands, since each reader&rsquo;s definition of &ldquo;commonly used&rdquo; may be different based on the AWS services consumed.</p>
+<p>To list SSH keypairs in your default region:</p>
+<pre><code>aws ec2 describe-key-pairs
+</code></pre>
+<p>To use <code>jq</code> to grab the name of the first SSH keypair returned:</p>
+<pre><code>aws ec2 describe-key-pairs | jq -r '.KeyPairs[0].KeyName'
+</code></pre>
+<p>To store the name of the first SSH keypair returned in a variable for use in later commands:</p>
+<pre><code>KEY_NAME=$(aws ec2 describe-key-pairs | jq -r '.KeyPairs[0].KeyName')
+</code></pre>
+<p>More information on the use of <code>jq</code> can be found in <a href="/2015/11/11/handy-cli-tool-json/">this article</a> or via <a href="https://stedolan.github.io/jq/">the <code>jq</code> homepage</a>, so this post doesn&rsquo;t go into any detail on the use of <code>jq</code> in conjunction with the AWS CLI. Additionally, for all remaining command examples, I&rsquo;ll leave the assignment of output values into a variable as an exercise for the reader.</p>
+<p>To grab a list of instance types in your region, I recommend referring to Rodney &ldquo;Rodos&rdquo; Haywood&rsquo;s post on <a href="http://rodos.haywood.org/2016/03/which-instances-are-available-in-my.html">determining which instances are available in your region</a>.</p>
+<p>To list security groups in your default region:</p>
+<pre><code>aws ec2 describe-security-groups
+</code></pre>
+<p>To retrieve security groups from a specific region (us-west-1, for example):</p>
+<pre><code>aws --region us-west-1 describe-security-groups
+</code></pre>
+<p>To use the <code>jp</code> tool to grab the security group ID of the group named &ldquo;internal-only&rdquo;:</p>
+<pre><code>aws ec2 describe-security-groups | jp &quot;SecurityGroups[?GroupName == 'internal-only'].GroupId&quot;
+</code></pre>
+<p>The <code>jp</code> command was created by the same folks who work on the AWS CLI; see <a href="https://github.com/jmespath/jp">this site</a> for more information.</p>
+<p>To list the subnets in your default region:</p>
+<pre><code>aws ec2 describe-subnets
+</code></pre>
+<p>To grab the subnet ID for a subnet in a particular Availability Zone (AZ) in a region using <code>jp</code>:</p>
+<pre><code>aws ec2 describe-subnets | jp &quot;Subnets[?AvailabilityZone == 'us-west-2b'].SubnetId&quot;
+</code></pre>
+<p>To describe the Amazon Machine Images (AMIs) you could use to launch an instance:</p>
+<pre><code>aws ec2 describe-images
+</code></pre>
+<p>This command alone isn&rsquo;t all that helpful; it returns too much information. Filtering the information is pretty much required in order to make it useful.</p>
+<p>To filter the list of images by owner:</p>
+<pre><code>aws ec2 describe-instances --owners 099720109477
+</code></pre>
+<p>To use server-side filters to further restrict the information returned by the <code>aws ec2 describe-images</code> command (this example finds Ubuntu 14.04 &ldquo;Trusty Tahr&rdquo; AMIs in your default region):</p>
+<pre><code>aws ec2 describe-images --owners 099720109477 --filters Name=root-device-type,Values=ebs Name=architecture,Values=x86_64 Name=name,Values='*ubuntu-trusty-14.04*' Name=virtualization-type,Values=hvm
+</code></pre>
+<p>To combine server-side filters and a JMESPath query to further refine the information returned by the <code>aws ec2 describe-images</code> command (this example returns the latest Ubuntu 14.04 &ldquo;Trusty Tahr&rdquo; AMI in your default region):</p>
+<pre><code>aws ec2 describe-images --owners 099720109477 --filters Name=root-device-type,Values=ebs Name=architecture,Values=x86_64 Name=name,Values='*ubuntu-trusty-14.04*' Name=virtualization-type,Values=hvm --query 'sort_by(Images, &amp;Name)[-1].ImageId'
+</code></pre>
+<p>Naturally, you can manipulate the filter values to find other types of AMIs. To find the latest CentOS Atomic Host AMI in your default region:</p>
+<pre><code>aws ec2 describe-images --owners 410186602215 --filter Name=name,Values=&quot;*CentOS Atomic*&quot; --query 'sort_by(Images,&amp;CreationDate)[-1].ImageId'
+</code></pre>
+<p>To find the latest CoreOS Container Linux AMI from the Stable channel (in your default region):</p>
+<pre><code>aws ec2 describe-images --filters Name=name,Values=&quot;*CoreOS-stable*&quot; Name=virtualization-type,Values=hvm --query 'sort_by(Images,&amp;CreationDate)[-1].ImageId'
+</code></pre>
+<p>Further variations on these commands for other AMIs is left as an exercise for the reader.</p>
+<p>To launch an instance in your default region (assumes you&rsquo;ve populated the necessary variables using other AWS CLI commands):</p>
+<pre><code>aws ec2 run-instances --image-id $IMAGE_ID --count 1 --instance-type t2.micro --key-name $KEY_NAME --security-group-ids $SEC_GRP_ID --subnet-id $SUBNET_ID
+</code></pre>
+<p>To list the instances in your default region:</p>
+<pre><code>aws ec2 describe-instances
+</code></pre>
+<p>To retrieve information about instances in your default region and use <code>jq</code> to return only the Instance ID and public IP address:</p>
+<pre><code>aws ec2 describe-instances | jq '.Reservations[].Instances[] | {instance: .InstanceId, publicip: .PublicIpAddress}'
+</code></pre>
+<p>To terminate one or more instances:</p>
+<pre><code>aws ec2 terminate-instances --instance-ids $INSTANCE_IDS
+</code></pre>
+<p>To remove a rule from a security group:</p>
+<pre><code>aws ec2 revoke-security-group-ingress --group-id $SEC_GROUP_ID --protocol &lt;tcp|udp|icmp&gt; --port &lt;value&gt; --cidr &lt;value&gt;
+</code></pre>
+<p>To add a rule to a security group:</p>
+<pre><code>aws ec2 authorize-security-group-ingress --group-id $SEC_GROUP_ID --protocol &lt;tcp|udp|icmp&gt; --port &lt;value&gt; --cidr &lt;value&gt;
+</code></pre>
+<p>To create an Elastic Container Service (ECS) cluster:</p>
+<pre><code>aws ecs create-cluster [default|--cluster-name &lt;value&gt;]
+</code></pre>
+<p>If you use a name other than &ldquo;default&rdquo;, you&rsquo;ll need to be sure to add the <code>--cluster &lt;value&gt;</code> parameter to all other ECS commands. This guide assumes a name other than &ldquo;default&rdquo;.</p>
+<p>To delete an ECS cluster:</p>
+<pre><code>aws ecs delete-cluster --cluster &lt;value&gt;
+</code></pre>
+<p>To add container instances (instances running ECS Agent) to a cluster:</p>
+<pre><code>aws ec2 run-instances --image-id $IMAGE_ID --count 3 --instance-type t2.medium --key-name $KEY_NAME --subnet-id $SUBNET_ID --security-group-ids $SEC_GROUP_ID --user-data file://user-data --iam-instance-profile ecsInstanceRole
+</code></pre>
+<p>The example above assumes you&rsquo;ve already created the necessary IAM instance profile, and that the file <code>user-data</code> contains the necessary instructions to prep the instance to join the ECS cluster. Refer to the Amazon ECS documentation for more details.</p>
+<p>To register a task definition (assumes the JSON filename referenced contains a valid ECS task definition):</p>
+<pre><code>aws ecs register-task-definition --cli-input-json file://&lt;filename&gt;.json --cluster &lt;value&gt;
+</code></pre>
+<p>To create a service:</p>
+<pre><code>aws ecs create-service --cluster &lt;value&gt; --service-name &lt;value&gt; --task-definition &lt;family:task:revision&gt; --desired-count 2
+</code></pre>
+<p>To scale down ECS services:</p>
+<pre><code>aws ecs update-service --cluster &lt;value&gt; --service &lt;value&gt; --desired-count 0
+</code></pre>
+<p>To delete a service:</p>
+<pre><code>aws ecs delete-service --cluster &lt;value&gt; --service &lt;value&gt;
+</code></pre>
+<p>To de-register container instances (instances running ECS Agent):</p>
+<pre><code>aws ecs deregister-container-instance --cluster &lt;value&gt; --container-instance $INSTANCE_IDS --force
+</code></pre>
+<p>If there are additional AWS CLI commands you think I should add here, feel free to hit me up on Twitter. Try to keep them as broadly applicable as possible, so that I can maximize the benefit to readers. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/08/14/using-odrive-cloud-storage-linux/">Using ODrive for Cloud Storage on Linux</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/08/25/technology-short-take-86/">Technology Short Take 86</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f15%2fquick-reference-common-aws-cli-commands%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f15%2fquick-reference-common-aws-cli-commands%2f&text=Quick%20Reference%20to%20Common%20AWS%20CLI%20Commands" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f15%2fquick-reference-common-aws-cli-commands%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/10/information-recent-site-migration/">Information on the Recent Site Migration</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/06/01/centos-atomic-host-customization-using-cloud-init/">CentOS Atomic Host Customization Using cloud-init</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2017/05/25/container-deployment-demos/">Container Deployment Demos from Interop ITX</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

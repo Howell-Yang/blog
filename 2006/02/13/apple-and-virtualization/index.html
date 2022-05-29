@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Apple and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Apple and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Apple and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/02/13/apple-and-virtualization/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Apple and Virtualization</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;383 words (estimated 2 minutes to read)</span>
+  <p>Ever since the announcement that <a href="http://www.apple.com/">Apple</a> was transitioning its entire product line to Intel-based processors, there has been one thing primarily on my mind as the &ldquo;I-really-want-this&rdquo; item. Sure, now that the first Intel-based Macs have been announced and specs published, I&rsquo;m looking forward to fast dual-core CPUs, higher FSB speeds, etc. But there is still this one thing that I&rsquo;m really, really hoping to see: virtualization.</p>
+<p>We all know and love Microsoft&rsquo;s <a href="http://www.microsoft.com/mac/products/virtualpc/virtualpc.aspx?pid=virtualpc">Virtual PC for the Mac</a>, which allows PowerPC-based Macs to run Microsoft Windows (which, of course, does not run natively on the PowerPC, despite its Windows NT roots&mdash;keep in mind that the PowerPC was one of the four architectures targeted by Windows NT in its early releases). Because Windows only runs in x86-compatible CPUs, Virtual PC has to perform processor emulation, and that really kills performance. Even so, it&rsquo;s the only way to run those few legacy Windows applications that can&rsquo;t be replaced by a native <a href="http://www.apple.com/macosx/">Mac OS X</a> application. (You can run Linux this way, too, but Microsoft doesn&rsquo;t support it.)</p>
+<p>Ah, but now the Macs are running on Intel-based processors, so the need for processor emulation has suddenly disappeared. This opens the door not only for <a href="http://www.microsoft.com/">Microsoft</a> (with Virtual PC) but also for <a href="http://www.vmware.com/">VMware</a> (with VMware Workstation and/or VMware Player) to bring full virtualization (including virtualization of hardware and the base OS) to the Macintosh world. This would, in turn, mean the ability to run Linux, BSD, Windows, or Mac OS X on a gorgeous dual-core laptop, with only minor performance impacts for non-Apple operating systems.</p>
+<p>And this scenario doesn&rsquo;t even take into account the very likely possibility that Intel will add hardware virtualization support to the Core Solo and Core Duo processors in the near future.</p>
+<p>This scenario is not mine alone; this recent article theorizes that Apple has the ability to <a href="http://blogs.zdnet.com/Ou/wp-trackback.php?p=158">double their marketshare through support for virtualization</a> (building on many of the same points I mentioned above&mdash;thanks to <a href="http://www.virtualization.info/2006/02/can-virtualization-double-apples.html">virtualization.info</a> for the pointer to the article!). Think about it: if you could run your choice of operating system (even multiple operating systems simultaneously) on a laptop designed by Apple, wouldn&rsquo;t you? After all, you won&rsquo;t be able to run Mac OS X on any other hardware besides Apple&rsquo;s.</p>
+<p>It&rsquo;s a sweet scenario. I can hardly wait.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macintosh">Macintosh</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/02/07/update-on-vmware-server/">Update on VMware Server</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/02/13/open-source-blackberry-workaround/">Open Source Blackberry Workaround?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f02%2f13%2fapple-and-virtualization%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f02%2f13%2fapple-and-virtualization%2f&text=Apple%20and%20Virtualization" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f02%2f13%2fapple-and-virtualization%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/02/04/brief-thoughts-on-virtual-server-2005/">Brief Thoughts on Virtual Server 2005</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2006/01/04/mac-os-x-and-local-domains/">Mac OS X and .local Domains</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2006/02/07/update-on-vmware-server/">Update on VMware Server</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

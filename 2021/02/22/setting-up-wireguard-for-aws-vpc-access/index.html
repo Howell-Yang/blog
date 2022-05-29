@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up WireGuard for AWS VPC Access - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up WireGuard for AWS VPC Access - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up WireGuard for AWS VPC Access - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/02/22/setting-up-wireguard-for-aws-vpc-access/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up WireGuard for AWS VPC Access</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1493 words (estimated 8 minutes to read)</span>
+  <p>Seeking more streamlined access to AWS EC2 instances on private subnets, I recently implemented <a href="https://www.wireguard.com/">WireGuard</a> for VPN access. WireGuard, if you&rsquo;re not familiar, is a relatively new solution that is baked into recent Linux kernels. (There is also support for other OSes.) In this post, I&rsquo;ll share what I learned in setting up WireGuard for VPN access to my AWS environments.</p>
+<p>Since the configuration of the clients and the servers is largely the same (especially since both client and server are Linux), I haven&rsquo;t separated out the two configurations. At a high level, the process looks like this:</p>
+<ol>
+<li>Installing any necessary packages/software</li>
+<li>Generating WireGuard private and public keys</li>
+<li>Modifying the AWS environment to allow WireGuard traffic</li>
+<li>Setting up the WireGuard interface(s)</li>
+<li>Activating the VPN</li>
+</ol>
+<p>The first thing to do, naturally, is install the necessary software.</p>
+<h2 id="installing-packagessoftware">Installing Packages/Software</h2>
+<p>On recent versions of Linux&mdash;I&rsquo;m using <a href="https://getfedora.org/">Fedora</a> (32 and 33) and <a href="https://ubuntu.com/">Ubuntu</a> 20.04&mdash;kernel support for WireGuard ships with the distribution. All that&rsquo;s needed is to install the necessary userspace tools.</p>
+<p>On Fedora, that&rsquo;s done with <code>dnf install wireguard-tools</code>. On Ubuntu, the command is <code>apt install wireguard-tools</code>. (You can also install the <code>wireguard</code> meta-package, if you&rsquo;d prefer.) Apple&rsquo;s macOS, for example, has <a href="https://apps.apple.com/us/app/wireguard/id1451685025?mt=12">a WireGuard app on the Mac App Store</a>.</p>
+<p><a href="https://www.wireguard.com/install/">This page on the WireGuard site</a> has full instructions for a variety of operating systems. macOS, for example, has an app in the App Store for WireGuard support.</p>
+<p>Once the necessary WireGuard software is installed, then it&rsquo;s time to start with the configuration of WireGuard. From here forward, I&rsquo;ll focus only on Linux, as the instructions will vary fairly widely from OS to OS. (For information on using WireGuard with macOS, see <a href="/2021/04/01/using-wireguard-on-macos/">here</a>.)</p>
+<h2 id="generating-private-and-public-keys">Generating Private and Public Keys</h2>
+<p>This step must be done on both sides of the connection. The installation of the &ldquo;wireguard-tools&rdquo; package provided a <code>wg</code> binary that you can use to generate the necessary keys. The steps below will generate a public and private key for you.</p>
+<ol>
+<li>Become root using <code>sudo su -</code>.</li>
+<li>Switch to the <code>/etc/wireguard</code> directory.</li>
+<li>Run <code>wg genkey | tee privatekey | wg pubkey &gt; publickey</code>. This creates the public and private keys used by WireGuard.</li>
+</ol>
+<p>With the public keys now generated, you&rsquo;re ready to move on to setting up the WireGuard interfaces.</p>
+<h2 id="modifying-the-aws-environment">Modifying the AWS Environment</h2>
+<p>By default, WireGuard uses UDP port 51280 as the listening port for the WireGuard interface. If you want or need to use multiple WireGuard interfaces, you&rsquo;ll need either separate network interfaces or use multiple ports. Modify the security group(s) to allow UDP port 51280 to the instance(s) that will have defined WireGuard interfaces.</p>
+<p>Additionally, if you are going to route traffic through the VPN instance instead of masquerade traffic (use network address translation), then you&rsquo;ll need to disable the source/destination check for the VPN instance. This can be accomplished fairly easily using the AWS CLI:</p>
+<pre><code>aws ec2 modify-instance-attribute --no-source-dest-check --instance-id &lt;instance-id&gt;
+</code></pre>
+<h2 id="setting-up-the-wireguard-interfaces">Setting up the WireGuard Interfaces</h2>
+<p>There are a couple different ways (at least) to set up the WireGuard interfaces. I&rsquo;ll show you how to do it from the terminal with a configuration file (suitable for a headless server running in AWS) and how to do it from the GNOME user interface (an approach well-suited for a workstation being used to access resources in AWS).</p>
+<h3 id="using-a-configuration-file-from-the-cli">Using a Configuration File from the CLI</h3>
+<p>Most of the WireGuard tutorials I saw focused only on this approach, so you&rsquo;re likely to find other articles out there that share similar (or the same) information.</p>
+<p>To set up a WireGuard interface using a configuration file from the CLI, create a <code>wg&lt;X&gt;.conf</code> file in <code>/etc/wireguard</code>, where <code>&lt;X&gt;</code> is the number of the interface. Typically you&rsquo;d start with <code>wg0</code> for the first VPN interface, but I&rsquo;m not aware of any requirement to start with <code>wg0</code>. In this file, place the following contents:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#66d9ef">[Interface]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">PrivateKey</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&lt;private key for this machine&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Address</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&lt;IP address for WireGuard interface&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">PostUp</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">PostDown</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ListenPort</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">51280</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[Peer]</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">PublicKey</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&lt;public key for peer machine&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">AllowedIPs</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&lt;IP address for peer WireGuard interface&gt;, &lt;additional CIDRs&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">PersistentKeepalive</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">25</span>
+</span></span></code></pre></div><p>There are a few notes I want to make about this configuration file:</p>
+<ul>
+<li>With regard to the IP address: you&rsquo;ll have to decide whether <em>all</em> your WireGuard peers will share a common subnet, or whether you&rsquo;ll have separate interfaces (and therefore separate subnets) for each peer. There are pros and cons to each approach. I decided to go with a common subnet among peers.</li>
+<li>If you used an interface name <em>other</em> than <code>wg0</code>, be sure to adjust the <code>PostUp</code> and <code>PostDown</code> lines accordingly. Note that this configuration uses NAT to make the VPN traffic appear to the rest of the VPC as if it&rsquo;s coming from the VPN instance; this avoids the need for disabling the source/destination check or updating routing tables.</li>
+<li>Because my client devices are behind a NAT, I included the <code>PersistentKeepalive</code> setting. You may not need this (but I suspect many people will).</li>
+<li>With regard to the <code>&lt;additional CIDRs&gt;</code> notation above: if you want other IP addresses from the peer&rsquo;s network to be able to route through this connection, specify those addresses/networks here. This is perhaps more important on the &ldquo;client&rdquo; side configuration, where you&rsquo;re funneling all traffic for a VPC (or group of VPCs) through a single WireGuard node.</li>
+<li>You&rsquo;ll need a separate <code>[Peer]</code> section for each VPN peer. In my case, I had three different systems from which I wanted VPN access, so there needed to be three separate <code>[Peer]</code> sections.</li>
+</ul>
+<p>Once the interface is configured, then you can activate the interface using <code>wg-quick up wg0</code> (or whatever interface name you&rsquo;re using).</p>
+<h3 id="using-the-gnome-user-interface">Using the GNOME User Interface</h3>
+<p>Using the CLI to configure the WireGuard interface(s) on a server is acceptable, especially in a use case like mine (establishing connectivity to EC2 instances). From the desktop, however, users may prefer using a graphical tool instead of the CLI. In this section, I&rsquo;ll show what it looks like to use the GNOME Network Connections applet to configure your WireGuard interface(s).</p>
+<p>First, you&rsquo;d run <code>nm-connection-editor</code> to launch the GNOME Network Connections applet, which would look something like this (you&rsquo;d have different connections with different names, naturally):</p>
+<p><img src="/public/img/nm-connections-editor.png" alt="GNOME Network Connections window"></p>
+<p>Clicking on the <code>+</code> symbol in the lower left corner of the window will bring up a dialog to select the type of connection to add:</p>
+<p><img src="/public/img/new-interface-dialog.png" alt="New interface selection dialog"></p>
+<p>Selecting &ldquo;WireGuard&rdquo; from this dialog and clicking &ldquo;Create&hellip;&rdquo; brings up the WireGuard page for the new connection:</p>
+<p><img src="/public/img/new-conn-wireguard-page.png" alt="WireGuard properties page"></p>
+<p>On this page, you&rsquo;ll need to supply the following bits of information:</p>
+<ul>
+<li>An interface name (like <code>wg0</code> or <code>wg1</code>)</li>
+<li>The private key generated earlier</li>
+<li>Check the &ldquo;Add peer routes&rdquo; to have the routing table updated with routes from this connection</li>
+<li>Peer information</li>
+</ul>
+<p>Click on &ldquo;Add&rdquo; under Peers to add a peer connection with this dialog box:</p>
+<p><img src="/public/img/wg-peer-properties.png" alt="WireGuard peer properties"></p>
+<p>Here you&rsquo;ll need to provide:</p>
+<ul>
+<li>The public key for the peer that was generated earlier.</li>
+<li>The IP addresses and address ranges that will be routed across this connection. As you can see in the screenshot above, for &ldquo;Allowed IPs&rdquo; you&rsquo;ll want to not only specify the IP address of the peer WireGuard interface but also the IP range of the VPC behind the VPN gateway.</li>
+<li>The endpoint (IP address and port) for the VPN gateway. As mentioned earlier, make sure this traffic is allowed through security groups, Network Access Control Lists, and other network traffic controls.</li>
+<li>You can also set the persistent keepalive interval.</li>
+</ul>
+<p>Click &ldquo;Apply&rdquo; to commit the changes to the peer configuration. You can use the &ldquo;Add&rdquo; button again to add additional properties.png</p>
+<p>If you want the VPN connection to come up automatically, flip over to the General page and check &ldquo;Connect automatically with priority&rdquo;:</p>
+<p><img src="/public/img/new-conn-general-page.png" alt="General properties page"></p>
+<p>The last thing to do is assign an IP address to the interface, which is done via the &ldquo;IPv4 Settings&rdquo; and/or the &ldquo;IPv6 Settings&rdquo; pages. Here&rsquo;s the &ldquo;IPv4 Settings&rdquo; page:</p>
+<p><img src="/public/img/new-conn-ipv4-page.png" alt="IPv4 properties page"></p>
+<p>The IP address you assign needs to be on the same subnet as the IP address given to/specified for the peer. As I mentioned earlier, this could be a common subnet (like a /29 or similar) among all the WireGuard peers, or it could be a separate subnet for each peer. Fill in the other sections as needed.</p>
+<p>Click &ldquo;Save&rdquo; whenever you&rsquo;re finished, and your new WireGuard VPN connection should be good to go!</p>
+<h2 id="activating-the-vpn">Activating the VPN</h2>
+<p>After the interfaces have been activated, the VPN connection(s) are automatically active. No additional steps are necessary to establish the VPN connections; the peer interfaces defined on each end automatically negotiate a connection among themselves. You should be able to almost immediately start accessing resources in the remote VPC.</p>
+<p>I hope this write-up proves useful to someone out there. If you have any questions, or if you feel something I&rsquo;ve written is incorrect or inaccurate, please contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Thanks for reading!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/02/13/closing-out-the-tokyo-assignment/">Closing out the Tokyo Assignment</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/03/02/deploying-a-cni-automatically-with-a-clusterresourceset/">Deploying a CNI Automatically with a ClusterResourceSet</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f22%2fsetting-up-wireguard-for-aws-vpc-access%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f22%2fsetting-up-wireguard-for-aws-vpc-access%2f&text=Setting%20up%20WireGuard%20for%20AWS%20VPC%20Access" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f02%2f22%2fsetting-up-wireguard-for-aws-vpc-access%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/01/15/technology-short-take-136/">Technology Short Take 136</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2017/09/22/technology-short-take-87/">Technology Short Take 87</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2020/08/21/technology-short-take-130/">Technology Short Take 130</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

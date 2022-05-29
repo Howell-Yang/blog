@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Scraping Envoy Metrics Using the Prometheus Operator - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Scraping Envoy Metrics Using the Prometheus Operator - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Scraping Envoy Metrics Using the Prometheus Operator - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/02/01/scraping-envoy-with-prometheus-operator/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Scraping Envoy Metrics Using the Prometheus Operator</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;784 words (estimated 4 minutes to read)</span>
+  <p>On a recent customer project, I recommended the use of <a href="https://github.com/heptio/contour">Heptio Contour</a> for ingress on their Kubernetes cluster. For this particular customer, Contour&rsquo;s support of the IngressRoute CRD and the ability to delegate paths via IngressRoutes made a lot of sense. Of course, the customer wanted to be able to scrape metrics using <a href="https://prometheus.io/">Prometheus</a>, which meant I not only needed to scrape metrics from Contour but <em>also</em> from <a href="https://www.envoyproxy.io/">Envoy</a> (which provides the data plane for Contour). In this post, I&rsquo;ll show you how to scrape metrics from Envoy using the Prometheus Operator.</p>
+<p>First, I&rsquo;ll assume that you&rsquo;ve already installed and configured Prometheus using the Prometheus Operator, a task which is already fairly well-documented and well-understood. If this is something you think would be helpful for me to write a blog post on, please <a href="https://twitter.com/scott_lowe">contact me on Twitter</a> and let me know.</p>
+<p>The overall process looks something like this:</p>
+<ol>
+<li>Modify the Envoy DaemonSet (or Deployment, depending on your preference) to add a sidecar container and expose additional ports.</li>
+<li>Modify the Service for the Envoy DaemonSet/Deployment to expose the ports you added in step 1.</li>
+<li>Add a ServiceMonitor object (a CRD added by the Prometheus Operator) to tell Prometheus to scrape the metric from Envoy.</li>
+</ol>
+<p>Let&rsquo;s take a closer look at each of these steps.</p>
+<h2 id="modifying-the-envoy-daemonsetdeployment">Modifying the Envoy DaemonSet/Deployment</h2>
+<p>The first step is to modify the Envoy DaemonSet (or Deployment) to include a sidecar container and expose some additional ports. I found it helpful to use <a href="https://github.com/heptio/gimbal/blob/master/deployment/contour/03-envoy.yaml">this example DaemonSet configuration from the Heptio Gimbal repository</a> as a guide. There are three sets of changes you need to make:</p>
+<ol>
+<li>Add port 8002 to the Envoy container.</li>
+<li>Add a sidecar container for the statsd-exporter.</li>
+<li>Modify the Contour initContainer to add the <code>--statsd-enabled</code> flag.</li>
+</ol>
+<p>The first set of changes&mdash;adding port 8002&mdash;isn&rsquo;t reflected in the linked Gimbal example because that configuration assumes Prometheus has a scrape configuration that finds the annotations. From everything I&rsquo;ve been able to find so far, the Prometheus Operator doesn&rsquo;t use that sort of configuration, so you&rsquo;ll have to manually add the necessary ports. So add port 8002 to the list of ports for the Envoy container using something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">containerPort</span>: <span style="color:#ae81ff">8002</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">hostPort</span>: <span style="color:#ae81ff">8002</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">metrics</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span></code></pre></div><p>Next, add a sidecar container for the statsd-exporter. You can see this in <a href="https://github.com/heptio/gimbal/blob/master/deployment/contour/03-envoy.yaml#L52-#L64">lines 52 through 64</a> in the example configuration from Gimbal. You&rsquo;ll also need to add a reference to a ConfigMap (see <a href="https://github.com/heptio/gimbal/blob/master/deployment/contour/03-envoy.yaml#L88-#L90">lines 88 through 90</a>); the ConfigMap itself can be found <a href="https://github.com/heptio/gimbal/blob/master/deployment/contour/02-statsd.yaml">here</a>. Note that the Gimbal example uses the name &ldquo;metrics&rdquo; for port 9102 on the sidecar container; I chose to differentiate this using the name &ldquo;statsd-exporter&rdquo;.</p>
+<p>The final change is reflected <a href="https://github.com/heptio/gimbal/blob/master/deployment/contour/03-envoy.yaml#L75">on line 75</a> of the Gimbal example.</p>
+<p>Once all these changes have been made, you&rsquo;re ready to proceed to the next step.</p>
+<h2 id="modifying-the-envoy-service">Modifying the Envoy Service</h2>
+<p>The changes here are pretty straightforward; you&rsquo;re just going to add a couple additional ports on the service:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">ports</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">port</span>: <span style="color:#ae81ff">8002</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">metrics</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">port</span>: <span style="color:#ae81ff">9102</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">statsd-exporter</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">protocol</span>: <span style="color:#ae81ff">TCP</span>
+</span></span></code></pre></div><p>These should be the only changes to the Service that are needed.</p>
+<h2 id="creating-a-servicemonitor">Creating a ServiceMonitor</h2>
+<p>Finally, we can create the Prometheus ServiceMonitor to tell Prometheus to scrape the newly-exposed ports to gather metrics. Here&rsquo;s an example ServiceMonitor definition you could use:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">monitoring.coreos.com/v1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ServiceMonitor</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">prometheus</span>: <span style="color:#ae81ff">kube-prometheus</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">envoy</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">monitoring</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">app</span>: <span style="color:#ae81ff">envoy</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">namespaceSelector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchNames</span>:
+</span></span><span style="display:flex;"><span>      - <span style="color:#ae81ff">ingress</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">endpoints</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">targetPort</span>: <span style="color:#ae81ff">8002</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30s</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">path</span>: <span style="color:#ae81ff">/stats/prometheus</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">targetPort</span>: <span style="color:#ae81ff">9102</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">interval</span>: <span style="color:#ae81ff">30s</span>
+</span></span></code></pre></div><p>There are a few changes you might need to make to <em>your</em> ServiceMonitor definition:</p>
+<ul>
+<li>Under <code>metadata.labels</code>, you&rsquo;ll want to change the value of the <code>prometheus</code> label to point to the Prometheus Operator instance in your cluster.</li>
+<li>You may need to specify a different namespace.</li>
+<li>Under <code>spec.selector.MatchLabels</code> and <code>spec.namespaceSelector</code>, you&rsquo;ll most likely need to specify different values here. <em>Make sure</em> the labels listed under <code>spec.selector.MatchLabels</code> matches the label(s) on the Envoy Service, not the Envoy Pods.</li>
+<li>Note that the path of &ldquo;/stats/prometheus&rdquo; under <code>spec.endpoints</code> for port 8002 is <em>required</em>.</li>
+</ul>
+<p>If you are using NetworkPolicies in your Kubernetes cluster, you&rsquo;ll want to be sure that your policies allow the appropriate traffic from Prometheus to the Envoy Pods.</p>
+<h2 id="applying-the-changes">Applying the Changes</h2>
+<p>With all the changes in place, you&rsquo;re ready to use <code>kubectl</code> to apply the changes to the DaemonSet/Deployment and the Service, and then to create the ServiceMonitor. Assuming you don&rsquo;t have any typos (I almost always do!), you should be able to browse the Prometheus web interface and see your Envoy instances show up as targets for Prometheus. Now you&rsquo;re good to go!</p>
+<p>If you have any questions or run into issues, feel free to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a> and I&rsquo;ll do my best to help you out.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/prometheus">Prometheus</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/envoy">Envoy</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/02/01/technology-short-take-110/">Technology Short Take 110</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/">Kubernetes, Kubeadm, and the AWS Cloud Provider</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f01%2fscraping-envoy-with-prometheus-operator%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f01%2fscraping-envoy-with-prometheus-operator%2f&text=Scraping%20Envoy%20Metrics%20Using%20the%20Prometheus%20Operator" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f01%2fscraping-envoy-with-prometheus-operator%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2019/02/01/technology-short-take-110/">Technology Short Take 110</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2019/01/11/technology-short-take-109/">Technology Short Take 109</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

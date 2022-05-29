@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Very High Quality vs. Just Good Enough - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Very High Quality vs. Just Good Enough - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Very High Quality vs. Just Good Enough - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/06/25/very-high-quality-vs-just-good-enough/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Very High Quality vs. Just Good Enough</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;454 words (estimated 3 minutes to read)</span>
+  <p>In a recent article discussing <a href="http://www.linux-watch.com/news/NS3936063204.html">Novell&rsquo;s leadership change</a>, one analyst was quoted regarding the change as being positive for <a href="http://www.novell.com/">Novell</a> in that they (Novell) could stop building very high quality products and instead build products that are just good enough. I don&rsquo;t know about you, but this spirit of mediocrity is exactly the wrong kind of thinking for IT vendors.</p>
+<p>Specifically, the quote stated this:</p>
+<blockquote>
+<p>&ldquo;Ron Hovsepian appears to be an astute business person, one who will be able to quickly take stock of the environment and Novell&rsquo;s position within that environment. This, I hope, will help Novell move from its current position of very slowly building extremely high quality products to quickly building and marketing products that are good enough to satisfy the market,&rdquo; concluded Kusnetzky.</p>
+</blockquote>
+<p>So what is he (Dan Kusnetzky) proposing then? It sounds to me that Dan thinks IT software vendors should make their products just good enough to pass muster, instead of making them the best that they can be.</p>
+<p>In my opinion, this spirit of mediocrity&mdash;this willingness to accept products that are knowingly released with imperfections and flaws because they are &ldquo;good enough&rdquo;&mdash;is exactly what brought the industry to where it is today. This mediocrity is what brought SQL Slammer, Blaster, and Melissa. This is the view that accepts that rebooting your computer a few times a day is just a part of life, and that our operating systems and applications shouldn&rsquo;t be expected to be stable and reliable. Just good enough? When was the last time you recommended a product, service, or vendor because they were &ldquo;just good enough&rdquo;? No, just good enough <em>isn&rsquo;t good enough.</em></p>
+<p>Every major IT vendor out there&mdash;from <a href="http://www.hp.com/">HP</a>, <a href="http://www.ibm.com/">IBM</a>, and <a href="http://www.sun.com/">Sun</a>, to <a href="http://www.apple.com/">Apple</a>, <a href="http://www.microsoft.com/">Microsoft</a>, and <a href="http://www.redhat.com/">Red Hat</a>&mdash;should be held accountable for the quality of the products they release. Hey, I understand that companies may make mistakes, and miss errors. That&rsquo;s understandable. But any company that knowingly releases a product that&rsquo;s &ldquo;just good enough&rdquo; when it could have been better is not a company we should be praising. We should be supporting those companies that emphasize quality over &ldquo;just good enough&rdquo;.</p>
+<p>Perhaps I&rsquo;m overreacting. Perhaps the analyst&rsquo;s comments were merely directed at the speed with which Novell releases their products, and was instead trying to state that Novell needed to release competing products more quickly. Even so, any vendor that values speed over quality is bound to get bitten sooner or later. Microsoft got bitten, and changed their priorities (somewhat). Apple will get bitten, too, if they start letting the quality of <a href="http://www.apple.com/macosx/">Mac OS X</a> releases slide in favor of shorter development cycles. The same goes for all the other vendors.</p>
+<p>What about you? I&rsquo;d love to hear your comments on the matter.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ibm">IBM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/novell">Novell</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/redhat">RedHat</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sun">Sun</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/06/24/apache-as-an-owa-front-end/">Apache as an OWA Front-End</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/06/25/new-apple-store/">New Apple Store</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f25%2fvery-high-quality-vs-just-good-enough%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f25%2fvery-high-quality-vs-just-good-enough%2f&text=Very%20High%20Quality%20vs.%20Just%20Good%20Enough" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f25%2fvery-high-quality-vs-just-good-enough%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/04/03/xen-momentum-growing/">Xen Momentum Growing</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2006/04/25/windows-and-os-x/">Windows and OS X</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2006/06/06/mcafee-mac-os-x-whitepaper/">McAfee Mac OS X Whitepaper</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Introduction to &#34;Nehalem&#34; CPUs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Introduction to &#34;Nehalem&#34; CPUs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Introduction to &#34;Nehalem&#34; CPUs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/07/introduction-to-nehalem-cpus/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Introduction to &#34;Nehalem&#34; CPUs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;442 words (estimated 3 minutes to read)</span>
+  <p><em>By Aaron Delp</em></p>
+<p>Hello everyone! It&rsquo;s Aaron again. Im sorry for falling off the radar for a bit. A new generation of Intel processors is upon us and I felt the need to come out of seclusion to share some recent findings regarding the new architecture. Todays article will explore the new processor offerings. I will be following this up with one (or more depending on the length) about the memory architecture and interconnects.</p>
+<p>There is one simple reason why I wrote this article. You can no longer pick a processor based on clock speed. The Nehalem processors have levels now and each level provides additional features and functionality lacking in the lower levels. You will need to be careful when choosing a processor if you are looking for certain features. Here is a quick table listing the models and the features:</p>
+<table>
+<thead>
+<tr>
+<th>CPU and Speed</th>
+<th>Watts</th>
+<th>Max Mem Speed</th>
+<th>Turbo Mode/Hyper-Threading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X5570 (2.93GHz)</td>
+<td>95W</td>
+<td>1333 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>X5560 (2.80GHz)</td>
+<td>95W</td>
+<td>1333 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>X5550 (2.66GHz)</td>
+<td>95W</td>
+<td>1333 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>E5540 (2.53GHz)</td>
+<td>80W</td>
+<td>1066 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>E5530 (2.40GHz)</td>
+<td>80W</td>
+<td>1066 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>E5520 (2.26GHz)</td>
+<td>80W</td>
+<td>1066 MHz</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>E5506 (2.13GHz)</td>
+<td>80W</td>
+<td>800 MHz</td>
+<td>No</td>
+</tr>
+<tr>
+<td>E5504 (2.00GHz)</td>
+<td>80W</td>
+<td>800 MHz</td>
+<td>No</td>
+</tr>
+<tr>
+<td>E5502 (1.66GHz)</td>
+<td>80W</td>
+<td>800 MHz</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>I find the Max Memory Speed particularly interesting. As you will see in the next article, memory speed can get pretty complex very quickly. The more memory that is installed in the system, the lower the clock speed on the memory. The days of installing in matched pairs and forgetting about it are gone.</p>
+<p>What is Turbo Mode and Hyper-Threading you ask? Hyper-Threading as far as I can tell (please leave feedback if this incorrect!) is the same old Hyper-Threading we knew and loved from past chipsets. Turbo mode is interesting though. Think of it as Burst Mode for processors. If your OS supports it, the CPU will increase the clock speed as long as you are within the thermal/power thresholds for the chip. The ability to go into Turbo mode depends on the number of active cores. If you are using most of the cores, the chip will be less likely to go into Turbo mode.</p>
+<p>UPDATE: Keith from Intel has provided a great explanation of Turbo mode from a hardware perspective in the comments section. I wanted to include it here as a direct quote. Thanks Keith!</p>
+<blockquote>
+<p>Turbo mode is mostly independent of OS support. On CPUs that support Turbo, it is implemented as the P0 p-state in the CPU. It looks &amp; smells like a CPU that is simply running in the highest-frequency P-state. The PCU (power control unit) in Nehalem handles the rest.</p>
+</blockquote>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nehalem">Nehalem</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/guestpost">GuestPost</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/07/hps-proliant-g6-servers/">HP&#39;s ProLiant G6 Servers</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/08/3010-a-multistore-primer/">3010: A MultiStore Primer</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f07%2fintroduction-to-nehalem-cpus%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f07%2fintroduction-to-nehalem-cpus%2f&text=Introduction%20to%20%22Nehalem%22%20CPUs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f07%2fintroduction-to-nehalem-cpus%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/02/16/blades-and-virtualization-arent-mutually-exclusive-part-four-hp-traditional-expansion-options/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Four, HP Traditional Expansion Options</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2009/02/13/blades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2009/02/07/blades-and-virtualization-arent-mutually-exclusive-part-two-ibm-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Two, IBM Power Sizing</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

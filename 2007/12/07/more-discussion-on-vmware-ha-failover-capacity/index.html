@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>More Discussion on VMware HA Failover Capacity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="More Discussion on VMware HA Failover Capacity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="More Discussion on VMware HA Failover Capacity - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/12/07/more-discussion-on-vmware-ha-failover-capacity/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">More Discussion on VMware HA Failover Capacity</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;412 words (estimated 2 minutes to read)</span>
+  <p>A few other bloggers have picked up VMwarewolf&rsquo;s article about <a href="http://www.vmwarewolf.com/ha-failover-capacity/">calculating VMware HA failover capacity</a>, which I <a href="/2007/12/04/calculating-vmware-ha-failover-capacity/">wrote about</a> a few days ago.</p>
+<p>Thomas Bishop over at scalethemind.com (a fellow Planet V12n blogger) has this to say in <a href="http://scalethemind.com/2007/12/how-vmware-ha-failover-capacity-is.html">his blog posting</a>:</p>
+<blockquote>
+<p>As I would expect, HA errors on the side of caution when determining the capacity (uses the host with the least amount of RAM and the guest with the most amount of RAM as the basis of the calculation).</p>
+</blockquote>
+<p>I can certainly see his point; after all, VMware HA is all about planning for <em>unexpected</em> downtime. How is VMware HA going to know which VM is going to fail, and which hosts&mdash;if any&mdash;will have capacity to run the failed VM(s)? From that perspective, VMware HA almost <em>must</em> take a worst-case scenario approach in order to be prepared for a situation in which the VM with the largest amount of configured or reserved memory must be restarted on a host with the least amount of physical RAM.</p>
+<p>Unfortunately, the white paper to which Thomas linked (found <a href="http://www.vmware.com/pdf/vmware_ha_wp.pdf">here</a> on VMware&rsquo;s web site) doesn&rsquo;t do a very good job of providing any additional detail on the calculation of VMware HA failover capacity; in fact, it seems to contradict VMwarewolf&rsquo;s settings to a certain extent. For example, take this statement from the tech doc:</p>
+<blockquote>
+<p>When computing required failover capacity, HA first considers the host with the largest capacity to run virtual machines with the highest resource requirements.</p>
+</blockquote>
+<p>Unless I&rsquo;m reading that statement incorrectly, that flies directly in the face of VMwarewolf&rsquo;s posting, which states just the opposite. However, the document goes on to say:</p>
+<blockquote>
+<p>HA might therefore be quite conservative in its estimates if the hosts in your cluster have a wide variance in the individual resources they provide.</p>
+</blockquote>
+<p>In addition, the tech doc recommends the use of more uniform systems in HA clusters, so as to avoid issues such as what we&rsquo;ve been discussing (where a 32GB host might be treated as a 16GB host for the purposes of calculating VMware HA failover &ldquo;slots&rdquo;). Otherwise, organizations may find themselves <a href="http://www.savagenomads.net/2007/12/05/calculating_vmware_ha_failover_capacity/">in this boat</a> and VMware HA won&rsquo;t be able to accurately protect them against physical host failure.</p>
+<p>I&rsquo;ll be sure to post more information here as soon as I have anything new to share. Likewise, if anyone can shed some definitive information to corroborate VMwarewolf&rsquo;s statements&mdash;just to validate them and ensure us that we aren&rsquo;t creating a storm of discussion over nothing&mdash;that would be great.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/12/07/new-vlan-article-at-searchvmwarecom/">New VLAN Article at SearchVMware.com</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/12/11/ok-i-had-to-comment-on-this/">OK, I Had to Comment on This</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f07%2fmore-discussion-on-vmware-ha-failover-capacity%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f07%2fmore-discussion-on-vmware-ha-failover-capacity%2f&text=More%20Discussion%20on%20VMware%20HA%20Failover%20Capacity" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f07%2fmore-discussion-on-vmware-ha-failover-capacity%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/12/04/calculating-vmware-ha-failover-capacity/">Calculating VMware HA Failover Capacity</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2007/10/05/troubleshooting-vmware-ha-isolation-response/">Troubleshooting VMware HA Isolation Response</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2007/11/13/esx-server-and-the-native-vlan/">ESX Server and the Native VLAN</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Git Difftool and Meld as a Flatpak - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Git Difftool and Meld as a Flatpak - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Git Difftool and Meld as a Flatpak - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2022/05/27/git-difftool-and-meld-as-a-flatpak/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Git Difftool and Meld as a Flatpak</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;230 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;ve recently started migrating many of the applications on my <a href="https://getfedora.org/">Fedora</a> 36 laptop to their <a href="https://www.flatpak.org/">Flatpak</a> versions. For the most part, this has been pretty straightforward, although there isn&rsquo;t really any method for migrating configuration and data. Today I ran into a problem with <a href="https://meldmerge.org/">Meld</a>, a graphical diff utility, and using it with the <code>git difftool</code> command. Below I&rsquo;ll share how I worked around this problem.</p>
+<p>Normally, the integration between Git and Meld&mdash;which is what enables you to run <code>git difftool</code> and have the results show up in Meld&mdash;would look something like this (this is from <code>~/.gitconfig</code>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">merge</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">diff</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prompt</span> = <span style="color:#a6e22e">no</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">mergetool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">usr</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">bin</span><span style="color:#960050;background-color:#1e0010">/</span><span style="color:#a6e22e">meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span></code></pre></div><p>However, when Meld is installed as a Flatpak, <code>/usr/bin/meld</code> doesn&rsquo;t exist. In order to continue using Meld with the <code>git difftool</code> command, you must change the Git configuration to look like this instead:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-toml" data-lang="toml"><span style="display:flex;"><span>[<span style="color:#a6e22e">merge</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">diff</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">tool</span> = <span style="color:#a6e22e">meld</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">prompt</span> = <span style="color:#a6e22e">no</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">difftool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#a6e22e">flatpak</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">org</span>.<span style="color:#a6e22e">gnome</span>.<span style="color:#a6e22e">Meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span><span style="display:flex;"><span>[<span style="color:#a6e22e">mergetool</span> <span style="color:#e6db74">&#34;meld&#34;</span>]
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">cmd</span> = <span style="color:#a6e22e">flatpak</span> <span style="color:#a6e22e">run</span> <span style="color:#a6e22e">org</span>.<span style="color:#a6e22e">gnome</span>.<span style="color:#a6e22e">Meld</span> <span style="color:#e6db74">&#34;$LOCAL&#34;</span> <span style="color:#e6db74">&#34;$REMOTE&#34;</span>
+</span></span></code></pre></div><p>After you make these changes, using Meld with <code>git difftool</code> should work as expected again.</p>
+<p>This is a pretty straightforward change, but hopefully documenting it here will prove helpful to someone. If you have any questions, feel free to contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2022/05/27/technology-short-take-155/">Technology Short Take 155</a>
+  
+  
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2022%2f05%2f27%2fgit-difftool-and-meld-as-a-flatpak%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2022%2f05%2f27%2fgit-difftool-and-meld-as-a-flatpak%2f&text=Git%20Difftool%20and%20Meld%20as%20a%20Flatpak" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2022%2f05%2f27%2fgit-difftool-and-meld-as-a-flatpak%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/04/02/technology-short-take-139/">Technology Short Take 139</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2020/08/21/technology-short-take-130/">Technology Short Take 130</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2020/06/19/technology-short-take-128/">Technology Short Take 128</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

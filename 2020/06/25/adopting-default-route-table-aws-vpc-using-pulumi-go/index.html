@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Adopting the Default Route Table of an AWS VPC using Pulumi and Go - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Adopting the Default Route Table of an AWS VPC using Pulumi and Go - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Adopting the Default Route Table of an AWS VPC using Pulumi and Go - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/06/25/adopting-default-route-table-aws-vpc-using-pulumi-go/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Adopting the Default Route Table of an AWS VPC using Pulumi and Go</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;554 words (estimated 3 minutes to read)</span>
+  <p>Up until now, when I used <a href="https://www.pulumi.com/">Pulumi</a> to create infrastructure on AWS, my code would create all-new infrastructure: a new VPC, new subnets, new route tables, new Internet gateway, etc. One thing bothered me, though: when I created a new VPC, that new VPC automatically came with a default route table. My code, however, would create a new route table and then explicitly associate the subnets with that new route table. This seemed less than ideal. (What can I say? I&rsquo;m a stickler for details.) While building a <a href="https://golang.org/">Go</a>-based replacement for my existing TypeScript code, I found a way to resolve this duplication of resources. In this post, I&rsquo;ll show you how to &ldquo;adopt&rdquo; the default route table of an AWS VPC so that you can manage it in your Pulumi code.</p>
+<p>Let&rsquo;s assume you are creating a new VPC using code that looks something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">vpc</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">NewVpc</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;testvpc&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">VpcArgs</span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">CidrBlock</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;10.100.0.0/16&#34;</span>),
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Tags</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">StringMap</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#e6db74">&#34;Name&#34;</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;testvpc&#34;</span>),
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">k8sTag</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;shared&#34;</span>),
+</span></span><span style="display:flex;"><span>	},
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p><em>(Note that this snippet of code doesn&rsquo;t show anything happening with the return values of the <code>ec2.NewVpc</code> function, which Go will complain about. Make sure you are either using those values or discarding them. The same goes for the other code snippets found below.)</em></p>
+<p>If you&rsquo;d like to now bring the default route table that automatically gets created with a new VPC into Pulumi, then you can do this with this snippet of code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">defrt</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">NewDefaultRouteTable</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;defrt&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">DefaultRouteTableArgs</span>{
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DefaultRouteTableId</span>: <span style="color:#a6e22e">vpc</span>.<span style="color:#a6e22e">DefaultRouteTableId</span>,
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">Tags</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">StringMap</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#e6db74">&#34;Name&#34;</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;defrt&#34;</span>),
+</span></span><span style="display:flex;"><span>		<span style="color:#a6e22e">k8sTag</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;shared&#34;</span>),
+</span></span><span style="display:flex;"><span>	},
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>The <a href="https://www.pulumi.com/docs/reference/pkg/aws/ec2/defaultroutetable/">Pulumi documentation for the <code>ec2.DefaultRouteTable</code> resource</a> indicates that all defined routes will be removed when the default route table. I took this to mean even the route for the VPC&rsquo;s own CIDR (the &ldquo;10.100.0.0/16&rdquo; shown in the <code>ec2.NewVpc</code> code above), but that wasn&rsquo;t the behavior I observed. Perhaps they only meant separately defined routes? I don&rsquo;t know. The documentation also indicates that you can add routes as part of the adoption. Unfortunately, no example Go code exists, and the syntax/structure for adding routes is completely undocumented. I even tried using the syntax/structure from the <code>ec2.NewRouteTable</code> resource, but that didn&rsquo;t work. I never got it to work. Instead, I used a separate <code>ec2.NewRoute</code> resource, and simply specified the newly-adopted default route table:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#a6e22e">route</span>, <span style="color:#a6e22e">err</span> <span style="color:#f92672">:=</span> <span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">NewRoute</span>(<span style="color:#a6e22e">ctx</span>, <span style="color:#e6db74">&#34;inet-route&#34;</span>, <span style="color:#f92672">&amp;</span><span style="color:#a6e22e">ec2</span>.<span style="color:#a6e22e">RouteArgs</span> {
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">RouteTableId</span>: <span style="color:#a6e22e">defrt</span>.<span style="color:#a6e22e">ID</span>(),
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">DestinationCidrBlock</span>: <span style="color:#a6e22e">pulumi</span>.<span style="color:#a6e22e">String</span>(<span style="color:#e6db74">&#34;0.0.0.0/0&#34;</span>),
+</span></span><span style="display:flex;"><span>	<span style="color:#a6e22e">GatewayId</span>: <span style="color:#a6e22e">gw</span>.<span style="color:#a6e22e">ID</span>(),
+</span></span><span style="display:flex;"><span>})
+</span></span></code></pre></div><p>The result? A new VPC with only a single route table, and routes for both the VPC&rsquo;s local CIDR as well as to the Internet through an Internet gateway. No explicit subnet-route table associations were necessary (unlike the previous approach), which reduces code to maintain and simplifies the overall code base (as well as simplifies the resources to manage on AWS).</p>
+<p>I hope this information is helpful to someone. I&rsquo;m finding there to be quite a dearth of documentation on using Pulumi with Go, and I hope that my beginner-level posts help alleviate that in some way. If you have questions&mdash;or if you have comments on how I can improve my Go code!&mdash;feel free to find <a href="https://twitter.com/scott_lowe/">me on Twitter</a> or on <a href="https://pulumi-community.slack.com/">the Pulumi Slack community</a>.</p>
+<p><strong>UPDATE 2020-07-01:</strong> I updated the code snippets to use <code>Pulumi.StringMap</code> for the tags instead of <code>Pulumi.Map</code>. The AWS provider used by Pulumi changed in version 2.11.0 to require string values in maps, hence the need to use <code>Pulumi.StringMap</code>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/go">Go</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/pulumi">Pulumi</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/06/24/getting-aws-availability-zones-using-pulumi-and-go/">Getting AWS Availability Zones using Pulumi and Go</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/07/01/creating-aws-security-group-using-pulumi-and-go/">Creating an AWS Security Group using Pulumi and Go</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f25%2fadopting-default-route-table-aws-vpc-using-pulumi-go%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f25%2fadopting-default-route-table-aws-vpc-using-pulumi-go%2f&text=Adopting%20the%20Default%20Route%20Table%20of%20an%20AWS%20VPC%20using%20Pulumi%20and%20Go" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f25%2fadopting-default-route-table-aws-vpc-using-pulumi-go%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/06/24/getting-aws-availability-zones-using-pulumi-and-go/">Getting AWS Availability Zones using Pulumi and Go</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2020/06/19/technology-short-take-128/">Technology Short Take 128</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2020/06/09/creating-multi-az-nat-gateway-with-pulumi/">Creating a Multi-AZ NAT Gateway with Pulumi</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Link State Tracking in Blade Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Link State Tracking in Blade Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Link State Tracking in Blade Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/06/22/link-state-tracking-in-blade-deployments/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Link State Tracking in Blade Deployments</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;679 words (estimated 4 minutes to read)</span>
+  <p>It&rsquo;s common in blade deployments to use multiple Ethernet switches in the blade chassis to provide network redundancy (I&rsquo;ll refer to these as &ldquo;in-chassis switches&rdquo; moving forward). For example, in both the <a href="http://www-03.ibm.com/systems/bladecenter/bladeh/">IBM BladeCenter H</a> and the <a href="http://h18004.www1.hp.com/products/blades/components/c-class-components.html">HP BladeSystem c-Class</a>, we can provision multiple in-chassis switches so that half of the NICs on the blades connect to one in-chassis switch and the other half connect to the other switch. Within the OS, we load NIC teaming software to provide automatic failover if one of the links goes down. In this scenario, if one of the in-chassis switches fails then traffic will automatically fail over to the other switch.</p>
+<p>In cases like this, everything works as advertised. But what about when the in-chassis switch stays up, but the uplink from that switch to the outside world goes down (perhaps the upstream switch went down or the link was unplugged)? In that case, the link from the in-chassis switch to the blade&rsquo;s NIC is still up, and therefore the NIC teaming software in the OS does not know that a problem has occurred and will not move the traffic to the other link. In situations like this, we need to implement <em>link state tracking</em>.</p>
+<p>&lt;aside&gt;Astute readers will recognize that link state tracking is actually applicable in any server deployment&mdash;not just a blade server deployment&mdash;where the servers connect to a distribution switch and not the core. I&rsquo;m just going to focus on blade server deployments here, but the configuration would be much the same, if not exactly the same, in non-blade server deployments.&lt;/aside&gt;</p>
+<p>Link state tracking is pretty easy to configure; you define one or more upstream ports and one or more downstream ports. The <em>upstream</em> port(s) are the ports that uplink to the rest of the network; in a blade server deployment, this would be the ports (or port groups) that connect to the network backbone. The <em>downstream</em> port(s) are the ports that connect back to the servers.</p>
+<p>Here&rsquo;s an example. We have a Cisco in-chassis switch that has a GigabitEtherChannel port group defined as an uplink out to the outside world:</p>
+<pre><code>interface Port-Channel1  
+description Uplink to network backbone  
+switchport trunk encapsulation dot1q  
+switchport trunk native vlan 2  
+switchport trunk allowed vlan 2-4094  
+switchport mode trunk  
+link state group 1 upstream
+</code></pre>
+<p>Note the <code>link state group 1 upstream</code> command, which marks this port channel as an upstream port. If all the links in this port channel go down (thus making the port channel itself go down), then the switch will notify downstream ports in the same group to mark themselves as down also.</p>
+<p>The member ports of this port channel would <strong>not</strong> have the <code>link state</code> command present:</p>
+<pre><code>interface GigabitEthernet0/18  
+description Port group member for uplink to network  
+switchport trunk encapsulation dot1q  
+switchport trunk native vlan 2  
+switchport trunk allowed vlan 2-4094  
+switchport mode trunk  
+channel-group 1 mode on
+</code></pre>
+<p>So for the ports on the same in-chassis switch that are connecting to the servers in the chassis, we have this configuration:</p>
+<pre><code>interface GigabitEthernet0/10  
+description Web server NIC  
+switchport access vlan 2  
+switchport mode access  
+link state group 1 downstream  
+spanning-tree portfast
+</code></pre>
+<p>Note the <code>link state group 1 downstream</code> command, which marks this port as a downstream port from the Port-Channel1 interface. If Port-Channel1 goes down (because all the member links in Port-Channel1 also went down), then GigabitEthernet0/10 will also go down. Because GigabitEthernet0/10 went down, the NIC teaming software running in the OS on the blade will fail the traffic over to a different NIC, presumably a NIC that connects to the redundant in-chassis switch.</p>
+<p>You&rsquo;ll also need the global <code>link state track 1</code> global command to enable link state tracking (thanks for the clarification, Matt!).</p>
+<p>Because of the nature of blade deployments, this sort of configuration is particularly applicable in blade deployments, but also applies in other situations as well (as mentioned earlier). I hope this is useful!</p>
+<p><strong>UPDATE:</strong> I&rsquo;ve changed from using &ldquo;chassis switch&rdquo; to &ldquo;in-chassis switch&rdquo; to help avoid confusion with products like the Cisco Catalyst 6500 series, which are commonly referred to as chassis switches. Thanks, James!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ibm">IBM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ios">IOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/06/21/cliff-ive-used-vmware-in-production/">Cliff, I&#39;ve Used VMware in Production</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/06/26/giving-iterm-a-try/">Giving iTerm a Try</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f22%2flink-state-tracking-in-blade-deployments%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f22%2flink-state-tracking-in-blade-deployments%2f&text=Link%20State%20Tracking%20in%20Blade%20Deployments" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f22%2flink-state-tracking-in-blade-deployments%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/06/02/bladecenter-h-woes/">BladeCenter H Woes</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2007/05/02/hp-c-class-training/">HP c-Class Training</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2006/12/07/8021x-integration-with-active-directory/">802.1x Integration with Active Directory</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Managing Information Flow - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Managing Information Flow - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Managing Information Flow - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/01/07/managing-information-flow/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Managing Information Flow</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/personal">Personal</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;603 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;m picking up a thread started by <a href="http://flickerdown.com/?p=397">Dave Graham</a>, his brother <a href="http://www.superawesomesauce.com/2009/01/06/streamlined-productivity-multiple-machines-multiple-displays/">Danny</a>, and <a href="http://nohype.tumblr.com/post/68222344/my-setup">Stu Miniman</a> regarding how they have organized their workspaces in order to help manage the flow of information. Here&rsquo;s how I work.</p>
+<p>Since my job has me both in and out of the office quite a bit, I&rsquo;ve had to adapt most of my processes to work with only my MacBook Pro&rsquo;s built-in display. While I do have a second monitor that I use when I&rsquo;m actually at the office, I&rsquo;ve grown quite accustomed to Exposé and the ability to quickly see all my windows (F9), only the windows for the application I&rsquo;m currently using (F10), or quickly gain access to my desktop (F11). Unlike Danny, this &ldquo;kool-aid drinking fan boy mactard&rdquo; actually doesn&rsquo;t mind the OS X UI in the least; in fact, I find that it tends to get out of my way the most. That&rsquo;s not a slight against Linux or Windows; the OS is a tool, just like any other, and users need to use the right tool for them. For me, the OS X UI makes sense and works well. Your mileage may vary, of course.</p>
+<p>I don&rsquo;t use Spaces, the Mac&rsquo;s virtual desktop functionality, because&hellip;well, it&rsquo;s awful. Besides, having gotten so accustomed to being able to quickly and easily navigate windows I&rsquo;ve found that I don&rsquo;t need the extra desktops. I used to be a huge virtual desktops fan (just read some old entries here in the &ldquo;macOS&rdquo;&mdash;formerly the &ldquo;Macintosh&rdquo;&mdash;category), but after getting the hang of using Exposé I just can&rsquo;t get back into using virtual desktops.</p>
+<p>Anyway, enough of that. In my efforts to manage the daily information flows, I use a few key applications:</p>
+<ul>
+<li>
+<p>Apple Mail with <a href="http://www.indev.ca/MailTags.html">MailTags</a> and <a href="http://www.indev.ca/MailActOn.html">Mail Act-On</a>: The combination of Apple Mail with MailTags and Mail Act-On allows me to quickly and easily process e-mail messages by tagging them and filing them with only a few keystrokes. In early 2008 I resolved to keep my Inbox empty, and these tools have been a key part of actually managing to do that.</p>
+</li>
+<li>
+<p><a href="http://www.newsgator.com/individuals/netnewswire/">NetNewsWire</a>: NNW manages all my RSS feed subscriptions. When I review new items in NNW, I only superficially scan the headlines across all the subscriptions. Items that look like they are worth a deeper investigation get added to my OmniFocus inbox for reading later. I currently don&rsquo;t track any Twitter searches via RSS, but that may change later. We&rsquo;ll see.</p>
+</li>
+<li>
+<p><a href="http://www.omnigroup.com/applications/omnifocus/">OmniFocus</a>: I use OF to manage all my obligations. Anything that takes more than a couple of minutes to handle gets dumped into OF for processing later. A couple of AppleScripts automate the process of getting items into OF from NNW (via a Quicksilver trigger) and from Apple Mail into OF (via Mail Act-On). This allows me to quickly and easily process only two inboxes&mdash;my e-mail inbox and my RSS inbox&mdash;and track everything inside OmniFocus. I also keep OF on my Mac synchronized with OmniFocus on my iPhone.</p>
+</li>
+<li>
+<p>For Twitter, I&rsquo;m using a program called <a href="http://www.natsulion.org/">NatsuLion</a>, which also has a matching iPhone application. I may dump this for another application, as I&rsquo;m looking now for an easier (read: more automated) way to share more information via Twitter. It would be great to be able to use an AppleScriptable Twitter client to which I could push an NNW headline, for example.</p>
+</li>
+</ul>
+<p>Along with those applications, I typically have several Remote Desktop sessions, a number of browser windows, iCal, my blogging client, TextMate, and Office 2008 running at any given moment. Between this core group of applications, I find that I&rsquo;m able to manage&mdash;and sometimes rise above&mdash;the information deluge.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/web">Web</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/01/07/virtualization-short-take-25/">Virtualization Short Take #25</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/01/08/windows-server-2008-r2-public-beta/">Windows Server 2008 R2 Public Beta</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f07%2fmanaging-information-flow%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f07%2fmanaging-information-flow%2f&text=Managing%20Information%20Flow" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f07%2fmanaging-information-flow%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/08/03/upgrade-and-new-look/">Upgrade and New Look</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2008/08/02/blog-aggregation-taken-too-far/">Blog Aggregation Taken Too Far</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2008/07/13/tracking-my-own-published-articles/">Tracking My Own Published Articles</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

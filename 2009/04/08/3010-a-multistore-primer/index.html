@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>3010: A MultiStore Primer - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="3010: A MultiStore Primer - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="3010: A MultiStore Primer - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/08/3010-a-multistore-primer/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">3010: A MultiStore Primer</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;938 words (estimated 5 minutes to read)</span>
+  <p>This session describes NetApp&rsquo;s MultiStore functionality. MultiStore is the name given to NetApp&rsquo;s functionality for secure logical partitioning of network and storage resources. The presenters for the session are Roger Weeks, TME with NetApp, and Scott Gelb with Insight Investments.</p>
+<p>When using MultiStore, the basic building block is the <em>vFiler</em>. A vFiler is a logical construct within Data ONTAP that contains a lightweight instance of the Data ONTAP multi-protocol server. vFilers provide the ability to securely partition both storage resources and network resources. Storage resources are partitioned at either the FlexVol or Qtree level; it&rsquo;s recommended to use FlexVols instead of Qtrees. (The presenters did not provide any further information beyond that recommendation. Do any readers have more information?) On the network side, the resources that can be logically partitioned are IP addresses, VLANs, VIFs, and IPspaces (logical routing tables).</p>
+<p>Some reasons to use vFilers would include storage consolidation, seamless data migration, simple disaster recovery, or better workload management. MultiStore integrates with SnapMirror to provide some of the functionality needed for some of these use cases.</p>
+<p>MultiStore uses vFiler0 to denote the physical hardware, and vFiler0 &ldquo;owns&rdquo; all the physical storage resources. You can create up to 64 vFiler instances, and active/active clustered configurations can support up to 130 vFiler instances (128 vFilers plus 2 vFiler0 instances) during a takeover scenario.</p>
+<p>Each vFiler stores its configuration in a separate FlexVol (it&rsquo;s own root vol, if you will). All the major protocols are supported within a vFiler context: NFS, CIFS, iSCSI, HTTP, and NDMP. Fibre Channel is not supported; you can only use Fibre Channel with vFiler0. This is due to the lack of NPIV support within Data ONTAP 7. (It&rsquo;s theoretically possible, then, that if/when NetApp adds NPIV support to Data ONTAP that Fibre Channel would be supported within vFiler instances.)</p>
+<p>Although it is possible to move resources between vFiler0 and a separate vFiler instance, doing so may impact client connections.</p>
+<p>Managing vFilers appears to be the current weak spot; you can manage vFiler instances using the Data ONTAP CLI, but vFiler instances don&rsquo;t have an interactive shell. Therefore, you have to direct commands to vFiler instances via SSH or RSH or using the vFiler context in vFiler0. You access the vFiler context by prepending the <code>vfiler</code> keyword to the commands at the CLI in vFiler0. Operations Manager 3.7 and Provisioning Manager can manage vFiler instances; FilerView can start, stop, or delete individual vFiler instances but cannot direct commands to an individual vFiler. If you need to manage CIFS on a vFiler instance, you can use the Computer Management MMC console to connect remotely to that vFiler instance to manage shares and share permissions, just as you can with vFiler0 (assuming CIFS is running within the vFiler, of course).</p>
+<p>IPspaces are a logical routing construct that allow each vFiler to have its own routing table. For example, you may have a DMZ vFiler and an internal vFiler, each with their own, separate routing table. Up to 101 IPspaces are supported per controller. You can&rsquo;t delete the default IPspace, as it&rsquo;s the routing table for vFiler0. It is recommended to use VLANs and/or VIFs with IPspaces as a best practice.</p>
+<p>One of the real advantages of using MultiStore and vFilers is the data migration and disaster recovery functionality that it enables when used in conjunction with SnapMirror. There are two sides to this:</p>
+<ul>
+<li>
+<p><code>vfiler migrate</code> allows you to move an entire vFiler instance, including all data and configuration, from one physical storage system to another physical storage system. You can keep the same IP address or change the IP address. All other network identification remains the same: NetBIOS name, host name, etc., so the vFiler should look exactly the same across the network after the migration as it did before the migration.</p>
+</li>
+<li>
+<p><code>vfiler dr</code> is similar to <code>vfiler migrate</code> but uses SnapMirror to keep the source and target vFiler instances in sync with each other.</p>
+</li>
+</ul>
+<p>It makes sense, but you can&rsquo;t use <code>vfiler dr</code> or <code>vfiler migrate</code> on vFiler0 (the physical storage system). My own personal thought regarding <code>vfiler dr</code>: what would this look like in a VMware environment using NFS? There could be some interesting possibilities there.</p>
+<p>With regard to security, a Matasano security audit was performed and the results showed that there were no vulnerabilities that would allow &ldquo;data leakage&rdquo; between vFiler instances. This means that it&rsquo;s OK to run a DMZ vFiler and an internal vFiler on the same physical system; the separation is strong enough.</p>
+<p>Other points of interest:</p>
+<ul>
+<li>
+<p>Each vFiler adds about 400K of system memory, so keep that in mind when creating additional vFiler instances.</p>
+</li>
+<li>
+<p>You can&rsquo;t put more load on a MultiStore-enabled system than a non-MultiStore-enabled system. The ability to create logical vFilers doesn&rsquo;t mean the physical storage system can suddenly handle more IOPS or more capacity.</p>
+</li>
+<li>
+<p>You can use FlexShare on a MultiStore-enabled system to adjust priorities for the FlexVols assigned to various vFiler instances.</p>
+</li>
+<li>
+<p>As of Data ONTAP 7.2, SnapMirror relationships created in a vFiler context are preserved during a &ldquo;vfiler migrate&rdquo; or &ldquo;vfiler dr&rdquo; operation.</p>
+</li>
+<li>
+<p>More enhancements are planned for Data ONTAP 7.3, including deduplication support, SnapDrive 5.0 or higher support for iSCSI with vFiler instances, SnapVault additions, and SnapLock support.</p>
+</li>
+</ul>
+<p>Some of the potential use cases for MultiStore include file services consolidation (allows you to preserve file server identification onto separate vFiler instances), data migration, and disaster recovery. You might also use MultiStore if you needed support for multiple Active Directory domains with CIFS.</p>
+<p><strong>UPDATE:</strong> Apparently, my recollection of the presenters&rsquo; information was incorrect, and FTP is not a protocol supported with vFilers. I&rsquo;ve updated the article accordingly.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/deduplication">Deduplication</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/insight2008">Insight2008</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ontap">ONTAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/wafl">WAFL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/07/introduction-to-nehalem-cpus/">Introduction to &#34;Nehalem&#34; CPUs</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/09/cloud-computing-interview-with-dave-malcom-cto-of-surgient/">Cloud Computing Interview with Dave Malcolm, CTO of Surgient</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f08%2f3010-a-multistore-primer%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f08%2f3010-a-multistore-primer%2f&text=3010%3a%20A%20MultiStore%20Primer" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f08%2f3010-a-multistore-primer%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/03/31/storage-alignment-document/">Storage Alignment Document</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2008/12/03/2031-enhancements-to-netapp-cloning-technology/">2031: Enhancements to NetApp Cloning Technology</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2008/10/23/virtualization-short-take-20/">Virtualization Short Take #20</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

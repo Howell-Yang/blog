@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Modifying QCOW Images with Guestfish - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Modifying QCOW Images with Guestfish - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Modifying QCOW Images with Guestfish - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/03/17/modifying-qcow-images-with-guestfish/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Modifying QCOW Images with Guestfish</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;689 words (estimated 4 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to talk about a way to modify QCOW2-based images without having to boot up a full-blown virtual machine based on the image. I found this process while trying to change the behavior of cloud-init on <a href="http://cloud-images.ubuntu.com">the official Ubuntu cloud images</a> from Canonical.</p>
+<p>While I had successfully built my own Ubuntu 12.04 LTS image for my <a href="http://openstack.org">OpenStack</a>-based home lab (and it worked just fine), I was keen to use Canonical&rsquo;s official cloud images as they were much smaller (around 250MB versus 1.5GB for my home-built image). Given that disk space is at a bit of a premium in my home lab, using the smaller images would be quite beneficial. The problem was that cloud-init wasn&rsquo;t configured to operate in a way that worked for my home lab environment.</p>
+<p>The question, of course, washow do I do this? I tried a couple different approaches:</p>
+<ol>
+<li>
+<p>I installed VirtualBox on one of my OS X systems, because I knew VirtualBox supported QCOW2 images. Unfortunately, trying to launch a VM using one of the official cloud images as a root disk failed. (I presume this is because the cloud images assume the use of the virtio block driver, which VirtualBox doesn&rsquo;t support.)</p>
+</li>
+<li>
+<p>Next, I installed a plain jane Ubuntu VM in VirtualBox and attached the official cloud image QCOW2 file as a second hard disk. That didn&rsquo;t work either; the Ubuntu VM refused to recognize the filesystem(s) on the QCOW2 image.</p>
+</li>
+</ol>
+<p>I was about at my wits&rsquo; end when I found <a href="https://ask.openstack.org/en/question/5531/defining-default-user-password-for-ubuntu-cloud-image/">this post</a>. Aha! I&rsquo;d heard of <code>guestfish</code> before, but I hadn&rsquo;t thought to try it in this instance. Guestfish is part of the larger <a href="http://libguestfs.org">libguestfs project</a>.</p>
+<p>So I tried the instructions in the post I&rsquo;d found. Unfortunately, it failed the first time I tried, but I later&mdash;thanks to <code>qemu-img check</code>&mdash;found that the Ubuntu 12.04 cloud image I&rsquo;d downloaded was somehow damaged/corrupted. Using a new download of the image was successful.</p>
+<p>Here are the steps I used to modify the contents of a QCOW2 disk image using <code>guestfish</code>:</p>
+<ol>
+<li>
+<p>Starting from a vanilla Ubuntu 12.04 LTS install, use <code>apt-get update</code> and <code>apt-get install guestfish</code> to install guestfish. (You&rsquo;ll probably need/want to use <code>sudo</code> with both of these commands.)</p>
+</li>
+<li>
+<p>During the installation of guestfish, you can select to create a &ldquo;virtual appliance&rdquo; that guestfish uses. If you choose not to do this during installation, you can always do it later with <code>sudo update-guestfs-appliance</code>.</p>
+</li>
+<li>
+<p>Once guestfish is installed and the virtual appliance is created/updated, launch guestfish itself with <code>sudo guestfish</code>. Note that if you don&rsquo;t have root privileges or don&rsquo;t use <code>sudo</code>, guestfish will still launch and act like everything is working&mdash;but it will fail. Once guestfish is up and running, you&rsquo;ll be sitting at a &ldquo;&gt; &lt;fs&gt;&rdquo; prompt.</p>
+</li>
+<li>
+<p>Type <code>add &lt;QCOW2 image filename&gt;</code> (obviously substituting the full path and correct filename for the QCOW2 image you&rsquo;d like to modify).</p>
+</li>
+<li>
+<p>Type <code>run</code> and press Enter. You&rsquo;ll see a progress bar that updates the status of the guestfs virtual appliance. Once it&rsquo;s complete, you&rsquo;ll be returned to the &ldquo;&gt; &lt;fs&gt;&rdquo; prompt.</p>
+</li>
+<li>
+<p>Enter <code>list-filesystems</code>. Guestfish should return a list of filesystems on the QCOW2 disk image. In the case of the official Canonical cloud images, only &ldquo;/dev/vda1&rdquo; is returned.</p>
+</li>
+<li>
+<p>To gain access to the filesystem in the QCOW2 image, enter <code>mount &lt;device specification&gt; &lt;guestfish mount point&gt;</code>. For example, when I was modifying the Canonical cloud images, I used <code>mount /dev/vda1 /</code>. Keep in mind you&rsquo;re not mounting to the system on which guestfish is running; you&rsquo;re mounting to the guestfish virtual appliance.</p>
+</li>
+<li>
+<p>Now just edit the files in the QCOW2 image using whatever method you prefer. In my case, I needed to edit <code>/etc/cloud/cloud.cfg</code>, so I just used vi to edit the file and make whatever changes were needed.</p>
+</li>
+<li>
+<p>When you&rsquo;re done, type <code>exit</code> to quit guestfish and commit changes to the QCOW2 image.</p>
+</li>
+</ol>
+<p>And that&rsquo;s it! Using this technique I was able to quickly and easily modify the Ubuntu cloud images so that cloud-init behaved in the way that I wanted.</p>
+<p>Hopefully this information helps someone else. If you have any questions or corrections, I invite you to share in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">Learning NSX, Part 11: Reviewing OpenStack Integration Basics</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/03/21/a-follow-up-on-linux-network-namespaces/">A Follow Up on Linux Network Namespaces</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f03%2f17%2fmodifying-qcow-images-with-guestfish%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f03%2f17%2fmodifying-qcow-images-with-guestfish%2f&text=Modifying%20QCOW%20Images%20with%20Guestfish" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f03%2f17%2fmodifying-qcow-images-with-guestfish%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/02/06/technology-short-take-38/">Technology Short Take #38</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

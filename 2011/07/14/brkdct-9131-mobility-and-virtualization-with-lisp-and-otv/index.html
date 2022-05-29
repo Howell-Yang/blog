@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BRKDCT-9131: Mobility and Virtualization with LISP and OTV - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BRKDCT-9131: Mobility and Virtualization with LISP and OTV - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BRKDCT-9131: Mobility and Virtualization with LISP and OTV - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/14/brkdct-9131-mobility-and-virtualization-with-lisp-and-otv/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BRKDCT-9131: Mobility and Virtualization with LISP and OTV</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 149 May 141414 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;786 words (estimated 4 minutes to read)</span>
+  <p>This is BRKDCT-9131, Mobility and Virtualization in the Data Center with LISP and OTV. This is one of the last, if not the last, session at Cisco Live 2011.</p>
+<p>The presenter, Victor Moreno, spends a few minutes at first talking about distributed data center clouds, the goals, and the challenges of building them. Some of the challenges or considerations include:</p>
+<ul>
+<li>
+<p>L2 domain elasticity (think FabricPath and LAN extensions)</p>
+</li>
+<li>
+<p>Fabric consolidation (think Unified Fabric, VDCs)</p>
+</li>
+<li>
+<p>Storage elasticity (think SAN extensions)</p>
+</li>
+<li>
+<p>IP localization (Route optimization and route portability)</p>
+</li>
+<li>
+<p>VM awareness (think VN-Link)</p>
+</li>
+</ul>
+<p>Victor next discusses why LAN extensions are necessary. From a virtualization perspective, it&rsquo;s because a live migration requires for the IP address of the VM to remain the same. He also discusses some non-routable L2 traffic that certain applications, but to me this seems far less likely/important than maintaining IP addresses.</p>
+<p>There are different ways of tackling LAN extensions; the <a href="/2011/07/14/brkdct-3060-deployment-considerations-with-interconnecting-dcs/">session blog from BRKDCT-3060</a> has more information on the various methods. This session is clearly slanted toward OTV, as the discussion of L2 VPNs focuses on the complexity of that solution as opposed to the benefits (like extremely fast convergence).</p>
+<p>The next section reviews the MAC-in-IP encapsulation mechanism that OTV uses to transport L2 frames across a routed transport. Victor also reviewed how the OTV control plane (which uses IS-IS) proactively advertises MAC reachability information, so that all OTV edge devices already know what MAC addresses are reachable via the overlay.</p>
+<p>Regardless of the method used to perform the LAN extension, this interferes with ingress routing. Subnet usually implies location, but with LAN extension this mechanism is obscured&mdash;the network doesn&rsquo;t know which side of the extension hosts the device to which we are communicating. This is the fundamental issue addressed by LISP.</p>
+<p>LISP is Location Identity Separation Protocol. The idea is to separate the use of the IP address as a means of making routing decisions from the use of the IP address as a means of indicating location. We want to &ldquo;split&rdquo; these purposes apart. By splitting these apart, we can allow workloads to move yet still make efficient routing decisions.</p>
+<p>So how does LISP operate? Consider this walkthrough:</p>
+<ol>
+<li>
+<p>The source endpoint performs a DNS lookup to find the destination.</p>
+</li>
+<li>
+<p>Traffic is remote, so traffic is sent to the branch router.</p>
+</li>
+<li>
+<p>The branch router doesn&rsquo;t know how to get to the destination&rsquo;s specific address, but it is LISP-enabled so it performs a LISP lookup to find a locator address.</p>
+</li>
+<li>
+<p>The LISP mapping database informs the branch router how to get to the one (or more) available addresses that can get it to the destination. The LISP mapping database can return priority and weight as part of this lookup, to help with traffic engineering/shaping.</p>
+</li>
+<li>
+<p>The branch router performs an IP-in-IP encapsulation and transmits the data out the appropriate interface based on standard IP routing decisions.</p>
+</li>
+<li>
+<p>The receiving LISP-enabled router receives the packet, decapsulates the packet, and forwards the packet to the final destination.</p>
+</li>
+</ol>
+<p>To support routers that are not LISP-enabled, you use proxy tunnel routers. Proxy tunnel routers will encapsulate or decapsulate traffic from or to routers that are not LISP-enabled.</p>
+<p>Some terminology of which you should be aware:</p>
+<ul>
+<li>
+<p>EID: End-point identifier (host IP or prefix)</p>
+</li>
+<li>
+<p>RLOC: Routing locator (IP address of routers in the backbone)</p>
+</li>
+<li>
+<p>Tunnel router: Edge devices that perform encapsulation/decapsulation</p>
+</li>
+<li>
+<p>ETR: Egress tunnel router</p>
+</li>
+<li>
+<p>ITR: Ingress tunnel router</p>
+</li>
+<li>
+<p>PxTR: Proxy tunnel router (gateway between LISP backbone and non-LISP-aware routers)</p>
+</li>
+<li>
+<p>EID to RLOC mapping DB: Contains all the EID-to-RLOC mapping, distributed across multiple map servers (MS)</p>
+</li>
+</ul>
+<p>LISP resolution (determining the appropriate ETR by an ITR) is performed by the MS, which forwards requests to ETRs that have registered with the MS as authoritative for a particular prefix. The ITR then caches the mapping for future use.</p>
+<p>Future revisions of the LISP standard will add extra security to prefix registrations, to avoid the malicious introduction of prefix registrations (I believe it&rsquo;s referred to as LISP-SEC).</p>
+<p>LISP enables on-demand routing. Rather than requiring that all routers maintain a full routing table, LISP routers will determine LISP prefix mappings on an as-needed basis.</p>
+<p>Some potential use cases for LISP:</p>
+<ul>
+<li>
+<p>IP portability</p>
+</li>
+<li>
+<p>Ingress traffic engineering without BGP</p>
+</li>
+<li>
+<p>IPv6 transition support (6-over-4, 4-over-6, etc.)</p>
+</li>
+<li>
+<p>Multitenancy and VPNs</p>
+</li>
+<li>
+<p>VM mobility</p>
+</li>
+</ul>
+<p>Victor now walks through some scenarios concerning the use of LISP with VM mobility use cases. One interesting note: using LISP to provide IP portability means that I could use SRM to failover to a DR site but <em>not</em> have to perform IP customization&mdash;LISP would handle the IP routing side of the house. That&rsquo;s a pretty cool combination.</p>
+<p>The session is still going, but I have to get back to the show floor and finish tearing down the EMC booth.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ciscolive2011">CiscoLive2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/otv">OTV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/07/14/brksan-3707-advanced-san-services/">BRKSAN-3707: Advanced SAN Services</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/15/summary-of-cisco-live-2011-blog-posts/">Summary of Cisco Live 2011 Blog Posts</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrkdct-9131-mobility-and-virtualization-with-lisp-and-otv%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrkdct-9131-mobility-and-virtualization-with-lisp-and-otv%2f&text=BRKDCT-9131%3a%20Mobility%20and%20Virtualization%20with%20LISP%20and%20OTV" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f14%2fbrkdct-9131-mobility-and-virtualization-with-lisp-and-otv%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/14/brkdct-3060-deployment-considerations-with-interconnecting-dcs/">BRKDCT-3060: Deployment Considerations with Interconnecting DCs</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2011/07/12/brkcom-3002-network-redundancy-and-load-balancing-designs-for-ucs-blade-servers/">BRKCOM-3002: Network Redundancy and Load Balancing Designs for UCS Blade Servers</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2011/07/14/brksan-3707-advanced-san-services/">BRKSAN-3707: Advanced SAN Services</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

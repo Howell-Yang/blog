@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Sample Makefile for Creating Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Sample Makefile for Creating Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Sample Makefile for Creating Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/27/sample-makefile-creating-blog-articles/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Sample Makefile for Creating Blog Articles</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;848 words (estimated 4 minutes to read)</span>
+  <p>In October of this year, I published a blog post talking about <a href="/2017/10/23/sample-makefile-publishing-blog-articles/">a sample <code>Makefile</code> for publishing blog articles</a>. That post focused on the use of <code>make</code> and a <code>Makefile</code> for automating the process of a publishing a blog post. This post is a companion to that post, and focuses on the use of a <code>Makefile</code> for automating the creation of blog posts.</p>
+<p>Since early 2015, this site has been running as a static site with the content created using Markdown. In its first iteration as a static site, the HTML was generated using <a href="https://jekyllrb.com/">Jekyll</a> and hosted on <a href="https://pages.github.com/">GitHub Pages</a>. In the current iteration, the HTML is generated using <a href="http://gohugo.io/">Hugo</a>, hosted on <a href="https://aws.amazon.com/s3/">Amazon S3</a>, and served via <a href="https://aws.amazon.com/cloudfront/">Amazon CloudFront</a>. In both cases, the use of Markdown as the content format also required specific front-matter to instruct the static site generator how to create the HTML. For Hugo, the front-matter looks something like this (I use YAML, but other formats are supported):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">author</span>: <span style="color:#ae81ff">slowe</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">categories</span>: <span style="color:#ae81ff">Explanation</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">date</span>: <span style="color:#e6db74">2017-11-27T12:00:00Z</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">tags</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">Writing</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">Blogging</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">Productivity</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">title</span>: <span style="color:#ae81ff">Sample Blog Post title</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">url</span>: <span style="color:#ae81ff">/2017/11/27/sample-blog-post-title/</span>
+</span></span><span style="display:flex;"><span>---
+</span></span></code></pre></div><p>There are obviously a lot of different ways to automate the creation of this front-matter (text expansion utilities, text editor snippets, macros, etc.). I chose to tackle this using a <code>Makefile</code> so that I had some level of independence from the specific editor or operating system I was using (<code>make</code> is easily accessible on both macOS and Linux). After some trial and error, I finally arrived at this <code>Makefile</code>:</p>
+<pre tabindex="0"><code>POST_TEMPLATE := ~/Templates/blog-post-template.md
+editor ?= /usr/local/bin/subl -n
+name ?= new-blog-post
+offset ?= +0d
+DDATE := $(shell date -v $(offset) +%Y-%m-%d)
+SDATE := $(shell date -v $(offset) +%Y/%m/%d)
+
+new:
+    @cat $(POST_TEMPLATE) | \
+    sed &#34;s/YYYY-MM-DD/$(DDATE)/g&#34; | \
+    sed &#34;s|YYYY/MM/DD|$(SDATE)|g&#34; | \
+    sed &#34;s|/title|/$(name)/|g&#34; &gt;&gt; $(DDATE)-$(name).md
+    @$(editor) $(DDATE)-$(name).md
+</code></pre><p>I&rsquo;m no expert with <code>make</code>, so there may be ways to optimize this (feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> with suggestions). This <code>Makefile</code> leverages two user-supplied values (default values are supplied in case the user doesn&rsquo;t provide these values on the command line):</p>
+<ul>
+<li>The first is <code>name</code>, which is used for both the filename and in the &ldquo;url&rdquo; value in the front-matter</li>
+<li>The second is <code>offset</code>, which is an offset (typically in days, like &ldquo;+1d&rdquo;) from the current date (more on this in a moment)</li>
+</ul>
+<p>With these two values, what the &ldquo;new&rdquo; target in this <code>Makefile</code> does is this:</p>
+<ol>
+<li>Sends the content of the <code>$(POST_TEMPLATE)</code> variable to STDOUT.</li>
+<li>STDOUT is piped into the the first <code>sed</code> command, which replaces the templated &ldquo;YYYY-MM-DD&rdquo; value for the &ldquo;date&rdquo; YAML front-matter with the current date, adjusted by the user-supplied <code>offset</code> variable (which is set to &ldquo;+0d&rdquo; if the user doesn&rsquo;t supply a value). This date value is taken from the <code>DDATE</code> variable defined at the top of the file.</li>
+<li>The output of the first <code>sed</code> command is piped into the second <code>sed</code> command, which performs the same date manipulation, but this time on the templated value of the &ldquo;url&rdquo; YAML front-matter entry. (The value is taken from the <code>SDATE</code> variable defined at the top of the file.)</li>
+<li>The output of the second <code>sed</code> command is piped into the third <code>sed</code> command, which replaces the final section of the templated &ldquo;url&rdquo; front-matter with the value of the <code>name</code> variable passed in by the user (or the default value, if the user doesn&rsquo;t supply a value).</li>
+<li>The final content is redirected into a file whose filename is constructed from the date (taken from the <code>DDATE</code> variable) and the value of <code>name</code>.</li>
+</ol>
+<p>Using this <code>Makefile</code> is pretty straightforward:</p>
+<ul>
+<li>If I type <code>make</code> or <code>make new</code> (no additional values), then it will take the current date and the default value of &ldquo;new-blog-post&rdquo;. For example, if I typed this today (Monday, 27 November), I&rsquo;d get a filename of <code>2017-11-27-new-blog-post.md</code>, and the YAML front-matter would have the appropriate values inserted. (In case you weren&rsquo;t aware, typing just <code>make</code> works because &ldquo;new&rdquo; is the first target.)</li>
+<li>If I type <code>make new name=specific-name-for-post</code>, then the resulting file generated with have the current date in the content and the filename, but the rest of the filename and the &ldquo;url&rdquo; YAML front-matter will use the value of <code>name</code> as provided on the command line. If I typed this today, I&rsquo;d get a filename of <code>2017-11-27-specific-name-for-post.md</code>.</li>
+<li>If I type <code>make new name=another-specific-name offset=+1d</code>, then the generated filename will use the value of <code>name</code> (as will the &ldquo;url&rdquo; YAML front-matter entry), but the date will be one day in the future&mdash;as specified by the value of <code>offset</code>. If I typed this today, the file generated would be named <code>2017-11-28-another-specific-name.md</code>.</li>
+</ul>
+<p>In all these examples, the file is immediately opened in <a href="http://www.sublimetext.com/">Sublime Text</a>, as instructed by the default value of <code>editor</code>. If I wanted to change that, I can just type <code>make new name=a-third-specific-name editor=atom</code> and it would open in <a href="https://atom.io/">Atom</a> instead. This provides some additional flexibility if needed.</p>
+<p>I&rsquo;ll continue to refine this <code>Makefile</code> as I learn more, and readers are encouraged to <a href="https://twitter.com/scott_lowe">hit me on Twitter</a> with suggestions for improvement. I hope this information proves useful to other bloggers using static site generators.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/25/installing-mmd6-on-fedora-27/">Installing MultiMarkdown 6 on Fedora 27</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/28/ipv6-in-cloud-protocol-service-overview/">Liveblog: IPv6 in the Cloud - Protocol and Service Overview</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f27%2fsample-makefile-creating-blog-articles%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f27%2fsample-makefile-creating-blog-articles%2f&text=A%20Sample%20Makefile%20for%20Creating%20Blog%20Articles" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f27%2fsample-makefile-creating-blog-articles%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/10/23/sample-makefile-publishing-blog-articles/">A Sample Makefile for Publishing Blog Articles</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2017/09/18/some-qa-about-migration-hugo/">Some Q&amp;A About the Migration to Hugo</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/08/10/information-recent-site-migration/">Information on the Recent Site Migration</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>An Update on Using Docker Machine with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="An Update on Using Docker Machine with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="An Update on Using Docker Machine with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/01/24/update-on-using-docker-machine-with-vagrant/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">An Update on Using Docker Machine with Vagrant</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;730 words (estimated 4 minutes to read)</span>
+  <p>As part of a project on which I&rsquo;m working, I&rsquo;ve been spending some time working with <a href="https://docs.docker.com/machine/overview/">Docker Machine</a> and <a href="https://www.vagrantup.com/">Vagrant</a> over the last few days. You may recall that I first wrote about <a href="/2015/08/04/using-vagrant-docker-machine-together/">using these two tools together</a> back in August 2015. As a result of spending some additional time with these tools&mdash;which I chose because I felt like they streamlined some work around this project&mdash;I&rsquo;ve uncovered some additional information that I wanted to share with readers.</p>
+<p>As a brief recap to <a href="/2015/08/04/using-vagrant-docker-machine-together/">the original article</a>, I showed how you could use Vagrant to quickly and easily spin up a VM, then use Docker Machine&rsquo;s <code>generic</code> driver to add it to Docker Machine, like this:</p>
+<pre><code>docker-machine create -d generic \
+--generic-ssh-user vagrant \
+--generic-ssh-key ~/.vagrant.d/insecure_private_key \
+--generic-ip-address &lt;IP address of VM&gt; \
+&lt;name of VM&gt;
+</code></pre>
+<p>This approach works fine <em>if the Vagrant-created VM is reachable without port forwarding</em>. What do I mean? In the past, the VMware provider for Vagrant used functionality in <a href="https://www.vmware.com/products/fusion.html">VMware Fusion</a> or <a href="https://www.vmware.com/products/workstation-pro.html">VMware Workstation</a> to provide an RFC 1918-addressed network that had external access via network address translation (NAT). In Fusion, for example, this was the default &ldquo;Share with my Mac&rdquo; network. Thus, when you created a VM using Vagrant and the VMware provider for Vagrant, the first network interface card (NIC) in the VM would be assigned to this default NAT network and get an RFC 1918-style private IP address (on my Mac Pro, this network uses the 192.168.70.0/24 network range, but I don&rsquo;t know if that&rsquo;s the default for all systems). As a result, when you would run <code>vagrant ssh-config</code> for such a VM, you&rsquo;d get something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Host coreos-01
+</span></span><span style="display:flex;"><span>  HostName 192.168.70.132
+</span></span><span style="display:flex;"><span>  User core
+</span></span><span style="display:flex;"><span>  Port 22
+</span></span><span style="display:flex;"><span>  UserKnownHostsFile /dev/null
+</span></span><span style="display:flex;"><span>  StrictHostKeyChecking no
+</span></span><span style="display:flex;"><span>  PasswordAuthentication no
+</span></span><span style="display:flex;"><span>  IdentityFile /Users/slowe/.vagrant.d/insecure_private_key
+</span></span><span style="display:flex;"><span>  IdentitiesOnly yes
+</span></span><span style="display:flex;"><span>  LogLevel FATAL
+</span></span></code></pre></div><p>With version 5 of the VMware provider for Vagrant (which is required in order to use the latest versions of Fusion and Workstation), this behavior <em>seems</em> to have changed, although it&rsquo;s not clear if this is intentional or not (there&rsquo;s <a href="https://github.com/hashicorp/vagrant/issues/9151">an open GitHub issue</a> about this change). Sometimes Vagrant will report connection information as shown above, but other times it will report using a forwarded port on the loopback address:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Host coreos-01
+</span></span><span style="display:flex;"><span>  HostName 127.0.0.1
+</span></span><span style="display:flex;"><span>  User core
+</span></span><span style="display:flex;"><span>  Port 2222
+</span></span><span style="display:flex;"><span>  UserKnownHostsFile /dev/null
+</span></span><span style="display:flex;"><span>  StrictHostKeyChecking no
+</span></span><span style="display:flex;"><span>  PasswordAuthentication no
+</span></span><span style="display:flex;"><span>  IdentityFile /Users/slowe/.vagrant.d/insecure_private_key
+</span></span><span style="display:flex;"><span>  IdentitiesOnly yes
+</span></span><span style="display:flex;"><span>  LogLevel FATAL
+</span></span></code></pre></div><p>This occurs, by the way, even when an actual RFC 1918-style private IP address has, in fact, been assigned to the VM and is functioning normally.</p>
+<p>This behavior is a big change from the previous behavior, but it does bring it in line with how Vagrant behaves when used with VirtualBox (which uses a forwarded port on the loopback address for connectivity). The Libvirt provider uses an approach similar to previous versions of the VMware provider (an RFC 1918-style private address instead of a forwarded port on the loopback address).</p>
+<p>All of this brings us to the original matter at hand: using Docker Machine and Vagrant together. If you&rsquo;re using a Vagrant provider that does <em>not</em> use a forwarded port on the loopback address, then the command I provided in the original article (and earlier in this article) will work just fine.</p>
+<p>If, on the other hand, you&rsquo;re using a provider that <em>does</em> use a forwarded port on the loopback address, then you&rsquo;ll need to amend the command slightly:</p>
+<pre><code>docker-machine create -d generic \
+--generic-ssh-user vagrant \
+--generic-ssh-key ~/.vagrant.d/insecure_private_key \
+--generic-ssh-port 2222 \
+--generic-ip-address 127.0.0.1 \
+&lt;name of VM&gt;
+</code></pre>
+<p>Naturally, you&rsquo;ll need to replace <code>2222</code> with the SSH port reported by <code>vagrant ssh-config</code>, since it may change when you&rsquo;re running multiple VMs under Vagrant. (You may also need to change the username specified via <code>--generic-ssh-user</code>, since some distributions&mdash;I&rsquo;m looking at you, <a href="https://coreos.com/os/docs/latest/">CoreOS Container Linux</a>&mdash;use a different username.)</p>
+<p>Additionally, you&rsquo;ll also need to forward port 2376 (the port that Docker uses to communicate across the network) in your <code>Vagrantfile</code> by adding a snippet like this:</p>
+<pre><code># Configure port forwarding to support remote access to Docker Engine
+config.vm.network &quot;forwarded_port&quot;, guest: 2376, host: 2376
+</code></pre>
+<p>With the forwarded port specified in the <code>Vagrantfile</code> and the updated <code>docker-machine</code> command that includes the correct SSH port, then you&rsquo;ll be able to use Vagrant to provision/manage the VM(s) and use Docker Machine to provision/manage the Docker Engine(s).</p>
+<p>If you have questions or corrections, feel free to drop me an email (my address isn&rsquo;t terribly hard to find) or <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualbox">VirtualBox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/01/19/technology-short-take-93/">Technology Short Take 93</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/01/25/using-docker-machine-with-azure/">Using Docker Machine with Azure</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f24%2fupdate-on-using-docker-machine-with-vagrant%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f24%2fupdate-on-using-docker-machine-with-vagrant%2f&text=An%20Update%20on%20Using%20Docker%20Machine%20with%20Vagrant" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f24%2fupdate-on-using-docker-machine-with-vagrant%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/11/technology-short-take-85/">Technology Short Take 85</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2017/04/07/technology-short-take-81/">Technology Short Take 81</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

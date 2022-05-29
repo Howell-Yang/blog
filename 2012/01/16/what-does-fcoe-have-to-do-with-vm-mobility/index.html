@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>What Does FCoE Have To Do With VM Mobility? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="What Does FCoE Have To Do With VM Mobility? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="What Does FCoE Have To Do With VM Mobility? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/01/16/what-does-fcoe-have-to-do-with-vm-mobility/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">What Does FCoE Have To Do With VM Mobility?</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;397 words (estimated 2 minutes to read)</span>
+  <p>I recently read over Stephen Foskett&rsquo;s <a href="http://blog.fosketts.net/2012/01/05/unresolved-questions-fcoe/">Eight Unresolved Questions About FCoE</a> article, in which he outlines eight topics that should be addressed/prioritized in order to make FCoE, in his words, &ldquo;truly world-class&rdquo;.</p>
+<p>One of these topics was virtual machine mobility. Here&rsquo;s what Stephen wrote under the heading &ldquo;How Do You Handle Virtual Machine Mobility?&rdquo;:</p>
+<blockquote>
+<p>As I described recently, virtual machine mobility is a major technical challenge for existing networks. The VMware proposal, the VXLAN, seems to be gaining traction right now. But this is only a solution for data networking. How will FCoE SANs handle virtual machine mobility? This remains unresolved as far as I can tell, though Ethernet switch vendors have come up with their own answers. Brocade demonstrated just such a solution at Networking Field Day 2, and I know that others have answers as well. But will there be an interoperable industry solution?</p>
+</blockquote>
+<p>My response to Stephen&rsquo;s question is pretty simple: VM mobility isn&rsquo;t a problem for FCoE. <strong>VM mobility is a problem for all storage, regardless of protocol.</strong></p>
+<p>In my view, tying VM mobility to FCoE is simply buzzword hype. Let&rsquo;s look at this from a technical perspective&mdash;what is so different about FCoE compared to FC, iSCSI, or NFS with regard to VM mobility? Nothing! Regardless of storage protocol, when you move a VM from one data center to another data center, the VM&rsquo;s storage is <em>still going to sit back in the original data center.</em> The protocol whereby we access that data doesn&rsquo;t change that fact.</p>
+<p>Yes, you can route the IP-based protocols (iSCSI and NFS), which might give you some additional flexibility. But the migrated VM&rsquo;s storage is <em>still going to sit in the original data center</em>&ndash;the only thing you&rsquo;ve accomplished is introduced some additional latency by adding routers into the mix.</p>
+<p>As you can see, VM mobility and storage isn&rsquo;t an FCoE problem&mdash;it&rsquo;s a storage problem, plain and simple. Protocols can&rsquo;t fix it. What&rsquo;s needed to fix it is a fundamental shift in how storage is designed. We need distributed file systems (not just clustered file systems), distributed caching algorithms, greater integration between the block storage and the distributed file systems, greater hypervisor awareness of the underlying storage topology, and more efficient data movement mechanisms. Until then, we can rage all we want about how this protocol or that protocol doesn&rsquo;t address VM mobility, but we&rsquo;re simply missing the mark.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/01/13/vsi-5-1-issue-and-fixes/">VSI 5.1 Issue and Fixes</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/01/20/technology-short-take-20/">Technology Short Take #20</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f01%2f16%2fwhat-does-fcoe-have-to-do-with-vm-mobility%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f01%2f16%2fwhat-does-fcoe-have-to-do-with-vm-mobility%2f&text=What%20Does%20FCoE%20Have%20To%20Do%20With%20VM%20Mobility%3f" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f01%2f16%2fwhat-does-fcoe-have-to-do-with-vm-mobility%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2011/08/25/technology-short-take-13/">Technology Short Take #13</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

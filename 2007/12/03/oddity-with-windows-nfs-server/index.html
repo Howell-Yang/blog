@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Oddity with Windows NFS Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Oddity with Windows NFS Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Oddity with Windows NFS Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/12/03/oddity-with-windows-nfs-server/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Oddity with Windows NFS Server</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;449 words (estimated 3 minutes to read)</span>
+  <p>I was reconfiguring NFS on the Windows Server 2003 R2-based file server providing both CIFS and NFS storage to the lab at the office when I ran into a strange issue.</p>
+<p>I had started configuring some NFS exports, testing them to ensure that they worked as I expected. Along the way, I decided I wanted to restructure the directory hierarchy I was using, so I deleted the folders and rebuilt them from scratch. When I went to re-export one of the folders via NFS, a very non-descriptive and non-helpful dialog box popped up, indicating only that &ldquo;the alias specified was already in use&rdquo;.</p>
+<p>I immediately suspected the NFS services, but no amount of restarting the services or the whole server would fix the issue. The NFS server management console was not useful; it does not provide a list of current exports so that you can see where you may have already exported a path and used an alias.</p>
+<p>After a few minutes of messing around, I recreated the original path. Upon immediately recreating the bottom-level folder, it immediately became an NFS export. What had happened was that I had created a folder, exported it, and then deleted the folder without removing the export. The export information stayed in the Registry (location below) even when the file system location was not present. In addition, the service did not log any information to the event logs indicating that a folder was missing or couldn&rsquo;t be found. The only error was the &ldquo;specified alias is already in use&rdquo; dialog box that appeared when attempting to export a different folder with the same name.</p>
+<p>Upon digging around in the Registry, I found this location for NFS export data:</p>
+<pre><code>HKEY_LOCAL_MACHINE\Software\Microsoft\Server for NFS\CurrentVersion\Exports
+</code></pre>
+<p>Under this key is a zero-based list&mdash;where the first export starts as 0&ndash;that contains the NFS export information. I deleted the key and now exporting the new folder with the original alias works as expected.</p>
+<p>I suppose this behavior is expected; after all, the NFS server can only export a single path with any given name. I just expected more information to be available somewhere along the way, be it a warning in the Event Log that states the exported path is no longer available, or a message in the dialog box that indicates what path is currently exported with the desired alias. If the export was created months or even years ago, or created by a different administrator, it would be impossible to know where to look or where to go without digging into the Registry. If Microsoft wants to continue to warn users about directly modifying the Registry, then they&rsquo;d probably better provide some non-Registry tools to manage this stuff.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/11/27/some-notes-on-solaris-ad-integration/">Some Notes on Solaris-AD Integration</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/12/04/centos-5-active-directory-integration-problem/">CentOS 5 Active Directory Integration Problem</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f03%2foddity-with-windows-nfs-server%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f03%2foddity-with-windows-nfs-server%2f&text=Oddity%20with%20Windows%20NFS%20Server" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f03%2foddity-with-windows-nfs-server%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/10/06/various-odds-and-ends/">Various Odds and Ends</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2007/11/16/customizing-the-sysprepinf-created-by-virtualcenter/">Customizing the Sysprep.inf Created by VirtualCenter</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2007/11/06/microsoft-update-troubles-again/">Microsoft Update Troubles Again</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

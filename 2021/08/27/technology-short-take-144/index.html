@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 144 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 144 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 144 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/08/27/technology-short-take-144/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 144</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;884 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #144! I have a fairly diverse set of links for readers this time around, covering topics from microchips to improving your writing, with stops along the way in topics like Kubernetes, virtualization, Linux, and the popular JSON-parsing tool <code>jq</code>. I hope you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>A short while ago I was helping someone (an acquaintance of a friend) with some odd DNS issues. I never found the root cause, but we did find a workaround; however, along the way, someone shared <a href="https://evancordell.com/posts/kube-apis-crds/">this article</a> with me. I thought it was useful, so now I&rsquo;m sharing it with you.</li>
+<li>Michael Kashin shares the journey of <a href="https://networkop.co.uk/post/2021-05-cumulus-ignite/">containerizing NVIDIA Cumulus Linux</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li><a href="https://www.theverge.com/2021/7/23/22590001/arm-plasticarm-cheap-flexible-plastic-microchip-internet-of-everything">Plastic microchips</a>? That&rsquo;s kind of cool.</li>
+<li>Kevin Houston <a href="http://www.bladesmadesimple.com/2021/08/are-multi-node-systems-a-better-option-than-blade-servers/">explores</a> multi-node servers as an alternative to blade servers due to increasing thermal requirements from CPUs. (And since Kevin didn&rsquo;t define TDP&mdash;shame, shame!&mdash;see <a href="https://techgearoid.com/articles/what-is-tdp-in-cpu/">this post</a> for an explanation.)</li>
+<li>This is an interesting <a href="https://www.nextplatform.com/2021/04/19/deep-dive-into-intels-ice-lake-xeon-sp-architecture/">deep dive into Intel&rsquo;s &ldquo;Ice Lake&rdquo; Xeon SP architecture</a>.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><a href="https://www.bleepingcomputer.com/news/security/critical-microsoft-hyper-v-bug-could-haunt-orgs-for-a-long-time/">A severity score of 9.9 out of 10 for a Hyper-V vulnerability</a>? Ouch.</li>
+<li>Dan Lorenc&rsquo;s <a href="https://dlorenc.medium.com/policy-and-attestations-89650fd6f4fa">article on policy and attestations</a> does a great job of covering key concepts like signatures, attestations, and provenance. Well worth the read, in my opinion (unless you are already very well-versed in said concepts).</li>
+<li>Valentina Palmiotti discusses <a href="https://www.graplsecurity.com/post/kernel-pwning-with-ebpf-a-love-story">finding a local privilege escalation in the Linux kernel via eBPF</a>.</li>
+<li>Teri Radichel <a href="https://medium.com/cloud-security/cloud-security-defensive-strategies-58d7079535d9">uses some basketball analogies to explain</a> why defensive (proactive) security strategies are more desirable than reactive security strategies.</li>
+<li>Good to see <a href="https://www.nsa.gov/News-Features/Feature-Stories/Article-View/Article/2716980/nsa-cisa-release-kubernetes-hardening-guidance/">some Kubernetes hardening guidance</a> coming from the NSA/CISA.</li>
+<li>A bunch of home Wi-Fi routers are suspectible to attack; see <a href="https://www.tomsguide.com/news/arcadyan-router-malware">this article</a> for more details.</li>
+<li>Upgrading to Go 1.17 might be a good idea. See <a href="https://nvd.nist.gov/vuln/detail/CVE-2021-29923">here</a> for why.</li>
+<li>Sentinel Labs <a href="https://labs.sentinelone.com/massive-new-adload-campaign-goes-entirely-undetected-by-apples-xprotect/">outlines a major malware push</a> that is bypassing Apple&rsquo;s malware protections.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>I really enjoyed Evan Cordell&rsquo;s article on <a href="https://evancordell.com/posts/kube-apis-crds/">16 things you didn&rsquo;t know about Kubernetes APIs and CRDs</a>. Good stuff.</li>
+<li>Pablo Vidal Bouza <a href="https://segment.com/blog/infrastructure-access/">discusses</a> Segment&rsquo;s move from SSH bastion hosts to AWS Systems Manager Session Manager. (I was going to make a joke about AWS Systems Manager Session Manager and Corey Quinn, but I couldn&rsquo;t come up with anything. I&rsquo;ll leave the humorous snark to Corey.)</li>
+<li>Luciano Mammino&rsquo;s article on <a href="https://loige.co/provision-ubuntu-ec2-with-cdk/">provisioning an Ubuntu-based EC2 instance with CDK</a> is a great introduction to CDK for those who aren&rsquo;t already familiar. Plus, I also learned about using SSM parameters to look up Ubuntu AMIs. That&rsquo;s really handy!</li>
+<li>Murat Celep (along with Andy Knapp) wrote an article on <a href="https://itnext.io/expose-open-policy-agent-gatekeeper-constraint-violations-with-prometheus-and-grafana-6b7ac92ea07f">using Prometheus and Grafana to visually expose Gatekeeper constraint violations</a>.</li>
+<li>This article provides <a href="https://www.bschaatsbergen.com/behind-the-scenes-lambda">some great &ldquo;behind the scenes&rdquo; information on AWS Lambda</a>. (Also, I didn&rsquo;t know anything about the galois field in AES; read <a href="https://samiam.org/galois.html">this</a> if you&rsquo;re curious.)</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>This is a great article on <a href="https://medium.com/geekculture/my-jq-cheatsheet-34054df5b650">using <code>jq</code> with <code>kubectl</code></a>. It&rsquo;s not bad as a general introduction to <code>jq</code>, either. (<code>jq</code> is probably one of my favorite CLI tools. So useful.)</li>
+<li>Bozhidar Batsov <a href="https://metaredux.com/posts/2021/07/31/back-to-linux.html">shares the story</a> of how he left macOS for Linux and ended up on Windows 10 with WSL.</li>
+<li>I guess I&rsquo;m on a bit of a <code>jq</code> kick this time around. Here&rsquo;s a cool article by Fabian Keller on <a href="https://www.fabian-keller.de/blog/5-useful-jq-commands-parse-json-cli/">five useful <code>jq</code> commands for parsing JSON on the CLI</a>. I learned a couple of tricks from this article.</li>
+<li>Kudos to J. Austin Hughley for sticking it out through all the challenges and documenting <a href="https://www.starkandwayne.com/blog/converting-a-windows-gaming-pc-to-a-linux-docker-host/">how to use a Windows gaming PC as a (Linux) Docker host</a>.</li>
+<li>Alex Ellis shares some information on <a href="https://blog.alexellis.io/get-private-kubectl-access-anywhere/">how to use <code>kubectl</code> to access your private (Kubernetes) cluster</a>. Most of the information centers on the use of the Pro version of <code>inlets</code>, one of Alex&rsquo;s project. Nevertheless, there is some very useful information here.</li>
+<li>Blogger Mal shares <a href="https://sec.gd/blog/posts/1password-leak-takeover/">some &ldquo;privacy surprises&rdquo;</a> from well-known password manager 1Password.</li>
+<li>Jason Hall has some information on <a href="https://github.com/imjasonh/ImJasonH/tree/main/articles/oci-base-image-annotations">OCI base image annotations</a>.</li>
+<li>William Lam has a quick tip on <a href="https://williamlam.com/2021/07/quick-tip-setting-up-kubernetes-using-containerd-on-photon-os.html">setting up Kubernetes using <code>containerd</code> on PhotonOS</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Chris Bergeron has an interesting (and kind of geeky) post on <a href="https://chrisbergeron.com/2021/07/25/Ultra-fast-Thunderbolt-NAS-with-Apple-M1-and-Linux/">connecting to a NAS with Thunderbolt</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Anthony Spiteri <a href="https://anthonyspiteri.net/first-look-deploying-kubevirt-with-platform9/">looks at deploying KubeVirt with Platform9</a>. KubeVirt, if you&rsquo;re not aware, is a set of controllers and custom resources to allow Kubernetes to manage virtual machines (VMs).</li>
+<li>Rudi Martinsen has an article on <a href="https://rudimartinsen.com/2021/08/11/nsx-alb-change-license/">changing the Avi load balancer license tier</a> (this is in the context of using it with vSphere with Tanzu).</li>
+<li>Eric Sloof has information on <a href="https://www.ntpro.nl/blog/archives/3633-How-to-Disable-VMware-Plugins-in-vCenter-Server.html">how to disable VMware plugins in vCenter Server</a> (the context of the article is security vulnerabilities disclosed in plugins).</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Chad McElligott has a nice post on <a href="https://chadxz.dev/staying-in-touch/">resources for staying in touch with the tech community</a>.</li>
+<li>Julia Evans has <a href="https://jvns.ca/blog/confusing-explanations/">a list of patterns in confusing explanations</a>. I&rsquo;m sure I&rsquo;ve done most (if not all) of these things at some point in time, but as Julia points out it&rsquo;s useful to have the list so that it becomes easier to avoid these mistakes in the future.</li>
+</ul>
+<p>I guess I&rsquo;d better wrap up now! I hope you found something useful here. If you have any questions, comments, suggestions for improvement, or just want to say hello, feel free to reach out to me. You can find <a href="https://twitter.com/scott_lowe">me on Twitter</a>, and I&rsquo;m also active in a number of different Slack communities (Kubernetes, Kuma, Envoy, and Pulumi, to name a few.) I&rsquo;d love to hear from you!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/go">Go</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/08/26/establishing-vpc-peering-with-pulumi-and-go/">Establishing VPC Peering with Pulumi and Go</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/09/24/technology-short-take-145/">Technology Short Take 145</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f27%2ftechnology-short-take-144%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f27%2ftechnology-short-take-144%2f&text=Technology%20Short%20Take%20144" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f27%2ftechnology-short-take-144%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/10/23/technology-short-take-132/">Technology Short Take 132</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2017/08/11/technology-short-take-85/">Technology Short Take 85</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2021/06/18/technology-short-take-141/">Technology Short Take 141</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

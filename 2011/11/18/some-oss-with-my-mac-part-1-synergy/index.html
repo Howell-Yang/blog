@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some OSS with my Mac, Part 1: Synergy - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some OSS with my Mac, Part 1: Synergy - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some OSS with my Mac, Part 1: Synergy - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/11/18/some-oss-with-my-mac-part-1-synergy/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some OSS with my Mac, Part 1: Synergy</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;813 words (estimated 4 minutes to read)</span>
+  <p>(This is Part 1 of a two-part series on some open source software I&rsquo;ve incorporated into my home office setup, which is primarily Mac-based. Part 2 is <a href="/2011/11/21/some-oss-with-my-mac-part-2-unison/">here</a>.)</p>
+<p>Since my move to Denver a couple months ago, I&rsquo;ve had a home office large enough to do a full multi-computer setup. Space constraints in my home office in Raleigh-Durham had prevented me from being able to fully take advantage of the multiple laptops that I have. So, with the new space in Denver, I set out to go full-bore. At the time, I had a late 2006 era 15&quot; MacBook Pro, a mid-2009 MacBook Pro 15&quot;, and a Dell Latitude E6400 running Ubuntu Linux. (I&rsquo;ve since replaced the late 2006 15&quot; MacBook Pro with an early 2011 13&quot; MacBook Pro.)</p>
+<p>Of course, the real challenge with a multi-computer setup is the need for a shared keyboard and mouse, and that was the first challenge I had to tackle. The answer was found in <a href="http://synergy-foss.org/">Synergy</a>, an open source project that provides a shared keyboard and mouse across multiple computers.</p>
+<p>For those unfamiliar with Synergy, here&rsquo;s a little background: one computer (known as the &ldquo;server&rdquo;) hosts the keyboard and mouse. The server&rsquo;s keyboard and mouse are shared with other computers referred to as &ldquo;clients&rdquo;. The server/client designation makes sense to me now, but I recall at the time it seemed a bit odd.</p>
+<p>I messed around with a few different distributions or variations of Synergy (like <a href="http://sourceforge.net/projects/synergykm/">SynergyKM</a>) for a little while before realizing that only the &ldquo;real&rdquo; version of Synergy was going to give me the flexibility that I wanted. For example, I wanted a bit more control over how and when the cursor jumped from screen to screen, and none of the prepackaged versions of Synergy offered customizable controls, even though the underlying Synergy package did.</p>
+<p>From <a href="http://synergy-foss.org/download/">this Synergy downloads page</a>, I downloaded the Mac and Linux versions of the 1.4.x beta version of Synergy. Despite my best efforts, I could <em>not</em> make it work. Keystroke mappings were off, the screen switching was intermittent, and it was buggy. Finally, I dropped back to the latest stable release at the time (1.3.6). Using the exact same configuration files, the 1.3.6 release worked <em>flawlessly</em> the first time. Nice!</p>
+<p>Here&rsquo;s my setup:</p>
+<ul>
+<li>
+<p>One of the MacBook Pro laptops (the 15&quot; 2009 MBP originally, now the 13&quot; 2011 MBP) is the Synergy server. It sits in the &ldquo;center&rdquo; of the three computers on my desk. It has a 24&quot; Apple Cinema display, external keyboard, Bluetooth Magic Mouse, and Magic Trackpad.</p>
+</li>
+<li>
+<p>The other MBP (formerly the 15&quot; 2006 MBP, now the 15&quot; 2009 MBP) sits to the left of the Synergy server. It is, of course, a Synergy client.</p>
+</li>
+<li>
+<p>The Dell laptop running Ubuntu Linux sits to the right of the Synergy server and is a Synergy client.</p>
+</li>
+</ul>
+<p>With that in mind, here is a sanitized version of the <code>synergy.conf</code> file I use on the Synergy server (currently the 13&quot; 2011 MacBook Pro):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>section: screens
+</span></span><span style="display:flex;"><span>    center-laptop:
+</span></span><span style="display:flex;"><span>    left-laptop:
+</span></span><span style="display:flex;"><span>    right-laptop:
+</span></span><span style="display:flex;"><span>end
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>section: aliases
+</span></span><span style="display:flex;"><span>    center-laptop:
+</span></span><span style="display:flex;"><span>        center-laptop.domain.com
+</span></span><span style="display:flex;"><span>        center-laptop-wlan
+</span></span><span style="display:flex;"><span>        center-laptop-wlan.domain.com
+</span></span><span style="display:flex;"><span>    right-laptop:
+</span></span><span style="display:flex;"><span>        right-laptop.domain.com
+</span></span><span style="display:flex;"><span>        right-laptop-wlan
+</span></span><span style="display:flex;"><span>        right-laptop-wlan.domain.com
+</span></span><span style="display:flex;"><span>    left-laptop:
+</span></span><span style="display:flex;"><span>        left-laptop.domain.com
+</span></span><span style="display:flex;"><span>        left-laptop-wlan
+</span></span><span style="display:flex;"><span>        left-laptop-wlan.domain.com
+</span></span><span style="display:flex;"><span>end
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>section: links
+</span></span><span style="display:flex;"><span>    center-laptop:
+</span></span><span style="display:flex;"><span>        left = left-laptop
+</span></span><span style="display:flex;"><span>        right = right-laptop
+</span></span><span style="display:flex;"><span>    right-laptop:
+</span></span><span style="display:flex;"><span>        left = center-laptop
+</span></span><span style="display:flex;"><span>    left-laptop:
+</span></span><span style="display:flex;"><span>        right = center-laptop
+</span></span><span style="display:flex;"><span>end
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>section: options
+</span></span><span style="display:flex;"><span>    screenSaverSync = false
+</span></span><span style="display:flex;"><span>    switchCorners = bottom-right
+</span></span><span style="display:flex;"><span>    switchCornerSize = 20
+</span></span><span style="display:flex;"><span>    switchDoubleTap = 150
+</span></span><span style="display:flex;"><span>    keystroke(control+left) = switchInDirection(left)
+</span></span><span style="display:flex;"><span>    keystroke(control+right) = switchInDirection(right)
+</span></span><span style="display:flex;"><span>end
+</span></span></code></pre></div><p>The <a href="http://synergy-foss.org/tracker/projects/synergy/wiki/Docs">documentation for Synergy</a> is pretty straightforward, so I&rsquo;d recommend you read the docs for more details on each of the directives and configuration options above and their function. What this configuration gives me:</p>
+<ul>
+<li>
+<p>I can use Control+Left Arrow to move one screen to the left, and Control+Right Arrow to move one screen to the right.</p>
+</li>
+<li>
+<p>The <code>switchDoubleTap</code> option allows me to have to &ldquo;double-tap&rdquo; the edge of the screen before it will switch to the next screen; this prevents me from accidentally switching screens when I didn&rsquo;t mean to.</p>
+</li>
+<li>
+<p>The Mac versions of Synergy didn&rsquo;t support synchronizing the screen saver, hence the <code>screenSaverSync = false</code> statement.</p>
+</li>
+<li>
+<p>Although it&rsquo;s not explicitly called out anywhere here, installing the stable 1.3.6 build of Synergy on my Ubuntu laptop was straightforward, and launching Synergy is as simple as <code>/path/to/synergyc center-laptop</code>.</p>
+</li>
+</ul>
+<p>On the Macs, launching Synergy (as either server or client) is handled via shell script called by <a href="http://controlplane.dustinrue.com/">ControlPlane</a>, a handy Mac application that is a fork of the older (and apparently abandoned) Marco Polo project. The shell script is quite simple; it checks to see if Synergy is running and launches it if it isn&rsquo;t. (Nothing special there.) On the Linux laptop, I launch it manually as needed.</p>
+<p>If you use multiple computers in your office, I&rsquo;d <strong>strongly</strong> recommend having a look at Synergy&mdash;I&rsquo;ve found it to be quite useful. If anyone has any other tips or tricks pertaining to Synergy or any of the other topics mentioned in this post, please feel free to speak up in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/11/14/some-vsphere-5-video-content/">Some vSphere 5 Video Content</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/11/18/exporting-outlines-as-markdown/">Exporting Outlines as Markdown</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f18%2fsome-oss-with-my-mac-part-1-synergy%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f18%2fsome-oss-with-my-mac-part-1-synergy%2f&text=Some%20OSS%20with%20my%20Mac%2c%20Part%201%3a%20Synergy" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f18%2fsome-oss-with-my-mac-part-1-synergy%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/05/23/strange-error-with-firefly-media-server-itunes-and-avahi/">Strange Error with Firefly Media Server, iTunes, and Avahi</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2008/12/26/openvpn-and-mt-daapd/">OpenVPN and mt-daapd</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2008/11/19/viscosity-a-mac-openvpn-client/">Viscosity, a Mac OpenVPN Client</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

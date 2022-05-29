@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Why a CLI for Dropbox on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Why a CLI for Dropbox on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Why a CLI for Dropbox on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/12/08/why-a-cli-for-dropbox-on-mac-os-x/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Why a CLI for Dropbox on Mac OS X</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;666 words (estimated 4 minutes to read)</span>
+  <p>I was thinking about a command-line interface (CLI) for <a href="http://www.dropbox.com/">Dropbox</a>, and how I personally would take advantage of such a feature. So, after failing to find any indication that the Mac OS X Dropbox client contained a CLI, tonight on Twitter I made <a href="https://twitter.com/scott_lowe/status/277598393314971648">this comment</a>:</p>
+<blockquote>
+<p>Too bad the #Mac version of @Dropbox doesn&rsquo;t have a CLI.</p>
+</blockquote>
+<p>Shortly thereafter, I received <a href="https://twitter.com/markmeulemans/status/277599284399054848">this response</a>:</p>
+<blockquote>
+<p>@scott_lowe @Dropbox What would you do with it if you did?</p>
+</blockquote>
+<p>I posted a response (which you can see if you follow either of the Twitter links above), but I realized that my response really needed a bit more background.</p>
+<p>Like many people in IT today, I&rsquo;m pretty mobile. I have a home office, but I also travel a fair amount. My laptop, a 2011 13&quot; MacBook Pro with 8GB of RAM and a 512GB SSD, is my primary computer. The problem is this: when I&rsquo;m in my home office, I want my laptop to be configured a certain way, but when I&rsquo;m traveling, I need it configured a different way. For example, when I&rsquo;m in my home office, I want Synergy running so that I can connect to <a href="/2012/04/30/updated-launchd-property-list-file-for-synergy/">the Synergy server on my Mac Pro workstation</a>. When I&rsquo;m not in the home office, Synergy should not be running. So how do I get the computer to automatically reconfigure itself? The answer is quite simple, actually: an app called <a href="http://www.controlplaneapp.com/">ControlPlane</a>.</p>
+<p>ControlPlane is a handy little application that performs a set of actions based on a context. A context is defined as a set of conditions, like (as in my situation) being connected to my 24&quot; Apple Cinema Display and being connected via Ethernet to a network using my home network&rsquo;s IP addressing scheme. If all those conditions are met, then it&rsquo;s quite likely I&rsquo;m in my home office&mdash;meaning I&rsquo;m in that particular context&mdash;and ControlPlane should perform a set of actions to reconfigure my laptop. Similarly, if those conditions aren&rsquo;t true, then it&rsquo;s quite likely I&rsquo;m not in my home office&mdash;meaning I&rsquo;m in a roaming or traveling context&mdash;and therefore my computer should be configured a different way. Handy, right?</p>
+<p>To put some specifics on this idea, then, here&rsquo;s how I use ControlPlane:</p>
+<ul>
+<li>
+<p>I have two contexts, one called Docked and one called Roaming. Docked is <em>only</em> for when I&rsquo;m connected to my 24&quot; Apple Cinema Display in my actual home office, wired up via Ethernet (not wireless), and have an IP address off my home network&rsquo;s subnet. When those conditions are true, I&rsquo;m &ldquo;docked&rdquo; and I need Synergy running so that I can share keyboard and mouse between my Mac Pro workstation and my laptop.</p>
+</li>
+<li>
+<p>Any other time, I&rsquo;m not &ldquo;docked&rdquo; and should be in the Roaming context. In the Roaming context, Synergy should not be running.</p>
+</li>
+<li>
+<p>When I enter the Docked context, ControlPlane should launch Synergy, if it&rsquo;s not already running, and then issue a <a href="http://growl.info">Growl</a> notification that the computer is entering the Docked context.</p>
+</li>
+<li>
+<p>When I leave the Docked context (meaning I&rsquo;m entering the Roaming context), then ControlPlane should kill Synergy (if it&rsquo;s running), and post a Growl notification.</p>
+</li>
+</ul>
+<p>ControlPlane is capable of much, much more, but (for now) this is sufficient. At some point in the future, I might have it mount network drives (or maybe <a href="/2012/11/23/using-encfs-with-dropbox-and-boxcryptor/">my EncFS filesystem</a>).</p>
+<p>I said all that to finally come back to the comment that started all this: if Dropbox had a CLI (or AppleScript support, but that&rsquo;s probably too much to ask for), then I could use ControlPlane to automate/manipulate the behavior of Dropbox as part of my contexts. For example, I could define another context&mdash;say, Disconnected&mdash;in which there are no active network interfaces. In that context, I&rsquo;d like Dropbox to pause syncing. Then, when I enter another context, either Roaming or Docked, then Dropbox should continue syncing. However, without some sort of non-GUI access to Dropbox, this isn&rsquo;t possible (to my knowledge).</p>
+<p>Anyway, that&rsquo;s what I was thinking. Courteous comments (or questions) are always invited and encouraged, so feel free to speak out below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/12/06/technology-short-take-27/">Technology Short Take #27</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/12/10/update-on-markdown-and-boxcryptor-on-ios/">Update on Markdown and BoxCryptor on iOS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f12%2f08%2fwhy-a-cli-for-dropbox-on-mac-os-x%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f12%2f08%2fwhy-a-cli-for-dropbox-on-mac-os-x%2f&text=Why%20a%20CLI%20for%20Dropbox%20on%20Mac%20OS%20X" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f12%2f08%2fwhy-a-cli-for-dropbox-on-mac-os-x%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/29/technology-short-take-26/">Technology Short Take #26</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2012/11/23/using-encfs-with-dropbox-and-boxcryptor/">Using EncFS with Dropbox and BoxCryptor</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

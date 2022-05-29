@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>AppleScripts for Yojimbo, Camino, and Skim - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="AppleScripts for Yojimbo, Camino, and Skim - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="AppleScripts for Yojimbo, Camino, and Skim - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/05/03/applescripts-for-yojimbo-camino-and-skim/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">AppleScripts for Yojimbo, Camino, and Skim</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;443 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;m not sure this post will be useful to many readers, but I do know that there are a fair number of readers who are also Mac users, and some have expressed interest in AppleScript and how I use it to &ldquo;glue&rdquo; some of my daily applications together for a more seamless workflow. If you&rsquo;re one of those readers, then read on. (If you&rsquo;re not, you can still keep reading. I might sway your mind.)</p>
+<p>I use <a href="http://www.barebones.com/products/yojimbo/">Yojimbo</a> as my &ldquo;catch all&rdquo; for any and all sorts or types of information that I find during the day: URLs, text snippets, PDF files, etc. Mostly it&rsquo;s URLs (what Yojimbo calls bookmarks), as I keep the majority of my PDF files in my Dropbox. Over the last month or so, I&rsquo;d found two little things about Yojimbo that bothered me and interrupted my workflow:</p>
+<ol>
+<li>
+<p>There is no easy way to open a group of bookmarks, especially from the keyboard.</p>
+</li>
+<li>
+<p>There is no easy way to open a PDF in Skim, my preferred PDF viewer, instead of Preview.</p>
+</li>
+</ol>
+<p>Fortunately, I was able to use AppleScript to fix both of these problems. First I wrote an AppleScript that takes the selected bookmarks in Yojimbo (it ignores selected items that aren&rsquo;t bookmarks) and opens them in <a href="http://www.caminobrowser.org/">Camino</a>, my browser of choice. You could, of course, easily modify the script to open the URLs in Safari. I built a foreground/background option into the script so that you can open the URLs but leave Yojimbo as the active application, if you so preferred.</p>
+<p>Next I wrote an AppleScript that grabs the selected PDF archives in Yojimbo (it ignores anything that&rsquo;s not a PDF archive item), exports them to a temporary folder on my laptop, and opens them in <a href="http://skim-app.sourceforge.net/">Skim</a>. As with the other script, I built a foreground/background option into this script as well, so you can control whether Skim will become the active, foreground application or not.</p>
+<p>To make both of these scripts easy to use and easy to access, I stored them in <code>~/Library/Scripts/Applications/Yojimbo</code>. This makes them easily accessible from the menu bar or via a keyboard shortcut using FastScripts. These two new scripts join an earlier script I wrote that allows me to easily post a bookmark stored in Yojimbo to Delicious.com via the Mac application <a href="http://codesorcery.net/pukka">Pukka</a>.</p>
+<p>If you&rsquo;d like a copy of the scripts to use for yourself or to modify for your own purposes, click <a href="/public/dl/yojimbo-skim-camino.zip">here</a>. Just remember that I am in no way liable for anything that may happen as a result of using any scripts or code that I post on my site, including increased productivity and greater enjoyment of your computing experience.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/05/02/a-month-with-localscope/">A Month with Localscope</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/05/04/a-few-references-for-ccna-certification/">A Few References for CCNA Certification</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f03%2fapplescripts-for-yojimbo-camino-and-skim%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f03%2fapplescripts-for-yojimbo-camino-and-skim%2f&text=AppleScripts%20for%20Yojimbo%2c%20Camino%2c%20and%20Skim" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f03%2fapplescripts-for-yojimbo-camino-and-skim%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/07/17/enabling-raid-1-on-a-mac-mini-server/">Enabling RAID 1 on a Mac Mini Server</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2009/03/27/my-current-mac-applications/">My Current Mac Applications</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/01/02/ubuntu-and-mac-os-x-integration/">Ubuntu and Mac OS X Integration</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

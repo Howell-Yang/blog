@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #26, Hyper-V Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #26, Hyper-V Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #26, Hyper-V Edition - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/02/07/virtualization-short-take-26-hyper-v-edition/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #26, Hyper-V Edition</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;402 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;ve been seeing an increasing amount of coverage on Hyper-V, especially with all the hype (sorry, no pun intended) surrounding Windows Server 2008 R2 and the next version of Hyper-V. Kudos to Ben Armstrong aka &ldquo;Virtual PC Guy&rdquo;, who pumped out almost all of these articles and is really generating some good content. I don&rsquo;t want this to be a blatant rip-off of his content, but I did want to share this information with my readers. All the credit goes to Ben!</p>
+<ul>
+<li>
+<p>Hyper-V and 3-D graphics in the parent partition apparently <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/07/bad-performance-with-high-end-graphics-and-hyper-v.aspx">don&rsquo;t mix</a>. There isn&rsquo;t really a workaround. You can&rsquo;t really fault Microsoft for this&mdash;Hyper-V wasn&rsquo;t intended to be a high-end graphics workstation.</p>
+</li>
+<li>
+<p>Having problems with a corrupted virtual hard disk? <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/07/how-do-i-fix-a-corrupted-virtual-hard-disk.aspx">This information</a> may help.</p>
+</li>
+<li>
+<p>If you use Windows Sidebar, you might find the <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/14/hyper-v-monitor-gadget-for-windows-sidebar-updated.aspx">Hyper-V Monitor Gadget</a> handy. I don&rsquo;t use Windows Sidebar&mdash;I don&rsquo;t even use Windows unless I have to&mdash;so I can&rsquo;t provide any direct feedback on this tool.</p>
+</li>
+<li>
+<p>This blog post has information on how to <a href="http://blog.networkfoo.org/?p=384">merge snapshots back into a single VHD</a>.</p>
+</li>
+<li>
+<p>If you&rsquo;re using Hyper-V on a laptop, I would first ask you, &ldquo;Why?&rdquo; Then I would point you to this article by Ben on how to <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/21/hyper-v-r2-changes-for-no-hypervisor-booting.aspx">enable/disable the Hyper-V hypervisor</a> so as to allow the laptop to sleep or hibernate. These functions are disabled when the hypervisor is active.</p>
+</li>
+<li>
+<p>Running Windows 7 on Hyper-V works, but creates some <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/02/04/windows-7-on-windows-server-2008-hyper-v-and-false-event-logs.aspx">spurious event log entries</a> that can be ignored.</p>
+</li>
+<li>
+<p>In this post, Ben provides more information on <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/22/upgrading-hyper-v-from-windows-server-2008-to-windows-server-2008-r2-beta.aspx">the upgrade path</a> from Windows Server 2008 to Windows Server 2008 R2, including Hyper-V.</p>
+</li>
+<li>
+<p>Here&rsquo;s a guide on <a href="http://technet.microsoft.com/en-us/library/dd296684.aspx">how to migrate virtual machines</a> from Virtual Server to Hyper-V (link <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/02/03/virtual-server-to-hyper-v-migration-guide.aspx">via Ben</a>, again!).</p>
+</li>
+<li>
+<p><a href="http://blogs.msdn.com/virtual_pc_guy/archive/2009/01/27/how-to-handle-a-missing-but-still-running-virtual-machine.aspx">Via Ben</a>, if you have a VM running Hyper-V but it&rsquo;s not showing up under the virtual machine list in the Hyper-V management console, restarting the virtual machine management service (VMMS) will likely correct the problem.</p>
+</li>
+<li>
+<p>For users looking forward to the live migration functionality included in Windows Server 2008 R2, Ben provides a link to this <a href="http://technet.microsoft.com/en-us/library/dd446679.aspx">step-by-step guide to setting up live migration</a>. There&rsquo;s in-depth information on configuring Cluster Shared Volumes (CSV) and setting up the cluster network for live migration.</p>
+</li>
+</ul>
+<p>That does it for now. Again, thanks to Ben Armstrong&mdash;and some of the other Microsoft bloggers who didn&rsquo;t make this list but whom I&rsquo;ve referenced before&mdash;for putting out good information on their virtualization products. Keep up the good work!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/02/04/blades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/02/07/blades-and-virtualization-arent-mutually-exclusive-part-two-ibm-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Two, IBM Power Sizing</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f07%2fvirtualization-short-take-26-hyper-v-edition%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f07%2fvirtualization-short-take-26-hyper-v-edition%2f&text=Virtualization%20Short%20Take%20%2326%2c%20Hyper-V%20Edition" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f07%2fvirtualization-short-take-26-hyper-v-edition%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/01/09/sanbolic-optimizes-melio-fs-adds-virtualization-support/">Sanbolic Optimizes Melio FS, Adds Virtualization Support</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2009/01/08/windows-server-2008-r2-public-beta/">Windows Server 2008 R2 Public Beta</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2009/01/07/virtualization-short-take-25/">Virtualization Short Take #25</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

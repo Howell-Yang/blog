@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #45 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #45 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #45 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/10/08/technology-short-take-45/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #45</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;866 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #45. As usual, I&rsquo;ve gathered a collection of links to various articles pertaining to data center-related technologies for your enjoyment. Here&rsquo;s hoping you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Cormac Hogan has a list of <a href="http://cormachogan.com/2014/09/12/some-useful-nsx-troubleshooting-tips/">a few useful NSX troubleshooting tips</a>.</p>
+</li>
+<li>
+<p>If you&rsquo;re not really a networking pro and need a &ldquo;gentle&rdquo; introduction to VXLAN, <a href="http://professionalvmware.com/2014/09/vxlan-concepts-operation-and-implementation-1-2-by-davidmirror/">this post</a> might be a good place to start.</p>
+</li>
+<li>
+<p>Also along those lines&mdash;perhaps you&rsquo;re a VMware administrator who wants to branch into networking with NSX, or you&rsquo;re a networking guru who needs to learn more about how this NSX stuff works. vBrownBag has been running a VCP-NV series covering various objectives from the VCP-NV exam. Check them out&ndash;<a href="http://professionalvmware.com/2014/09/4869/">objective 1</a>, <a href="http://professionalvmware.com/2014/09/vbrownbag-follow-up-vmware-vcp-nv-objective-2-with-ross-wynne-rosswynne/">objective 2</a>, <a href="http://professionalvmware.com/2014/09/vbrownbag-follow-up-vmware-vcp-nv-objective-3-with-rene-van-den-bedem-vcdx133/">objective 3</a>, and <a href="http://professionalvmware.com/2014/10/vbrownbag-follow-up-vmware-vcp-nv-objective-4-with-paul-mcsharry-pmcsharry/">objective 4</a> have been posted so far.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>I&rsquo;m going to go out on a limb and make a prediction: In a few years time (let&rsquo;s say 3-5 years), Intel SGX (Software Guard Extensions) will be regarded as important if not more important than the virtualization extensions. What is Intel SGX, you ask? See <a href="https://software.intel.com/en-us/blogs/2013/09/26/protecting-application-secrets-with-intel-sgx">here</a>, <a href="https://software.intel.com/en-us/blogs/2014/06/02/intel-sgx-for-dummies-part-2">here</a>, and <a href="https://software.intel.com/en-us/blogs/2014/09/01/intel-sgx-for-dummies-part-3">here</a> for a breakdown of the SGX design objectives. Let&rsquo;s be real&mdash;the ability for an application to protect itself (and its data) from rogue software (including a compromised or untrusted operating system) is <strong>huge.</strong></li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>CloudFlare (disclaimer: I am a CloudFlare customer) recently <a href="https://blog.cloudflare.com/announcing-keyless-ssl-all-the-benefits-of-cloudflare-without-having-to-turn-over-your-private-ssl-keys/">announced Keyless SSL</a>, a technique for allowing organizations to take advantage of SSL offloading <strong>without</strong> relinquishing control of private keys. CloudFlare followed that announcement with a <a href="https://blog.cloudflare.com/keyless-ssl-the-nitty-gritty-technical-details/">nitty gritty technical details post</a> that describes how it works. I&rsquo;d recommend reading the technical post just to get a good education on how encryption and TLS work, even if you&rsquo;re not a CloudFlare customer.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>William Lam spent some time working with some &ldquo;new age&rdquo; container cluster management tools (specifically, govmomi, govc CLI, and Kubernetes on vSphere) and documented his experience <a href="http://www.virtuallyghetto.com/2014/09/govmomi-vsphere-sdk-for-go-govc-cli-kubernetes-on-vsphere-part-1.html">here</a> and <a href="http://www.virtuallyghetto.com/2014/09/how-to-deploy-a-kubernetes-cluster-on-vsphere.html">here</a>. Excellent stuff!</p>
+</li>
+<li>
+<p>YAKA (Yet Another Kubernetes Article), this time looking at <a href="http://www.cloudssky.com/en/blog/Kubernetes-CoreOS-Cluster-On-Top-Of-OpenStack/">Kubernetes on CoreOS on OpenStack</a>. (How&rsquo;s that for buzzword bingo?)</p>
+</li>
+<li>
+<p>This <a href="http://www.symantec.com/connect/blogs/google-kubernetes-analytical-evaluation">analytical evaluation of Kubernetes</a> might be helpful as well.</p>
+</li>
+<li>
+<p>Stampede.io looks interesting; I got a chance to see it live at the recent DigitalOcean-CoreOS meetup in San Francisco. Here&rsquo;s <a href="http://www.ibuildthecloud.com/blog/2014/08/21/announcing-stampede-dot-io-a-hybrid-iaas-slash-docker-orchestation-platform-running-on-coreos/">the Stampede.io announcement post</a>.</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>Trying to wrap your head around the concept of &ldquo;microservices&rdquo;? Here&rsquo;s a write-up that attempts to provide <a href="http://nirmata.com/2014/07/cloud-native-software-microservices/">an introduction to microservices</a>. An earlier blog post on <a href="http://nirmata.com/2014/05/cloud-native-software-key-characteristics/">cloud native software</a> is pretty good, too.</p>
+</li>
+<li>
+<p>Here&rsquo;s a very nice <a href="http://www.nkode.io/2014/08/24/valuable-docker-links.html">collection of links about Docker</a>, ranging from how to use Docker to how to use the Docker API and how to containerize your application (just to name a few topics).</p>
+</li>
+<li>
+<p>Here&rsquo;a a great pair of articles (<a href="http://www.activestate.com/blog/2014/08/microservices-and-paas-part-i">part 1</a> and <a href="http://www.activestate.com/blog/2014/08/microservices-and-paas-part-ii">part 2</a>) on microservices and Platform-as-a-Service (PaaS). This is really good stuff, especially if you are trying to expand your boundaries learning about cloud application design patterns.</p>
+</li>
+<li>
+<p>This article by CenturyLink Labs&mdash;which has been doing some nice stuff around Docker and containers&mdash;talks about <a href="http://www.centurylinklabs.com/how-to-migrate-legacy-applications-into-docker-containers/">how to containerize your legacy applications</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a decent write-up on <a href="http://www.flockport.com/lxc-vs-docker/">comparing LXC and Docker</a>. There are also some decent LXC-specific articles on the site as well (see the sidebar).</p>
+</li>
+<li>
+<p>Service registration (and discovery) in a micro-service architecture can be challenging. Jeff Lindsay is attempting to help address some of the challenges with Registrator; more information is available <a href="http://progrium.com/blog/2014/09/10/automatic-docker-service-announcement-with-registrator/">here</a>.</p>
+</li>
+<li>
+<p>Unlike a lot of Docker-related blog posts, this post by RightScale on <a href="http://www.rightscale.com/blog/cloud-management-best-practices/docker-vs-vms-combining-both-cloud-portability-nirvana">combining VMs and containers for better cloud portability</a> is a well-written piece. The pros and cons of using containers are discussed fairly, without hype.</p>
+</li>
+<li>
+<p>Single-process containers or multi-process containers? <a href="http://phusion.github.io/baseimage-docker/">This site</a> presents a convincing argument for multi-process containers; have a look.</p>
+</li>
+<li>
+<p>Tired of hearing about containers yet? Oh, come on, you know you love them! You love them so much you want to run them on your OS X laptop. Well, read <a href="http://viget.com/extend/how-to-use-docker-on-os-x-the-missing-guide">this post</a> for all the gory details.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>The storage aspect of Docker isn&rsquo;t typically discussed in a lot of detail, other than perhaps focusing on the need for persistent storage via Docker volumes. However, <a href="http://developerblog.redhat.com/2014/09/30/overview-storage-scalability-docker/">this article</a> from Red Hat does a great job (in my opinion) of exploring storage options for Docker containers and how these options affect performance and scalability. Looks like OverlayFS is the clear winner; it will be great when OverlayFS is in the upstream kernel and supported by Docker. (Oh, and if you&rsquo;re interested in more details on the default device mapper backend, see <a href="https://github.com/docker/docker/blob/master/daemon/graphdriver/devmapper/README.md">here</a>.)</p>
+</li>
+<li>
+<p><a href="http://storagegaga.com/technology-prowess-of-riverbed-steelfusion/">This</a> is a nice write-up on Riverbed SteelFusion, aka &ldquo;Granite.&rdquo;</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Azure Site Recovery (ASR) is similar to vCloud Air&rsquo;s Disaster Recovery service, though obviously tailored toward Hyper-V and Windows Server (which is perfectly fine for organizations that are using Hyper-V and Windows Server). To help with the setup of ASR, the Azure team has a write-up on <a href="http://azure.microsoft.com/blog/2014/09/04/networking-infrastructure-setup-for-microsoft-azure-as-a-disaster-recovery-site/">the networking infrastructure setup for Microsoft Azure as a DR site</a>.</p>
+</li>
+<li>
+<p>PowerCLI in the vSphere Web Client, eh? Interesting. See <a href="http://www.virtu-al.net/2014/09/16/powercli-vsphere-web-clientannouncing-poweractions/">Alan Renouf&rsquo;s post</a> for full details.</p>
+</li>
+<li>
+<p>PernixData recently released version 2.0 of FVP; Frank Denneman has all the details <a href="http://frankdenneman.nl/2014/10/01/pernixdata-fvp-2-0-released/">here</a>.</p>
+</li>
+</ul>
+<p>That&rsquo;s it for this time, but be sure to visit again for future episodes. Until then, feel free to start (or join in) a discussion in the comments below. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssl">SSL</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/certification">Certification</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssl">SSL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/09/23/closing-comments-on-old-posts/">Closing Comments on Old Posts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/10/13/learning-nsx-part-16-routing-to-multiple-external-vlans/">Learning NSX, Part 16: Routing to Multiple External VLANs</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f10%2f08%2ftechnology-short-take-45%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f10%2f08%2ftechnology-short-take-45%2f&text=Technology%20Short%20Take%20%2345" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f10%2f08%2ftechnology-short-take-45%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/05/09/technology-short-take-41/">Technology Short Take #41</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2014/06/11/technology-short-take-42/">Technology Short Take #42</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

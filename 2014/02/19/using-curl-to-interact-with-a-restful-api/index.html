@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Curl to Interact with a RESTful API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Curl to Interact with a RESTful API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Curl to Interact with a RESTful API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/02/19/using-curl-to-interact-with-a-restful-api/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Curl to Interact with a RESTful API</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1432 words (estimated 7 minutes to read)</span>
+  <p>It seems as if APIs are popping up everywhere these days. While this isn&rsquo;t a bad thing, it does mean that IT professionals need to have a better understanding of how to interact with these APIs. In this post, I&rsquo;m going to discuss how to use the popular command line utility <code>curl</code> to interact with a couple of RESTful APIs&mdash;specifically, the OpenStack APIs and the VMware NSX API.</p>
+<p>Before I go any further, I want to note that to work with the OpenStack and VMware NSX APIs you&rsquo;ll be sending and receiving information in JSON (JavaScript Object Notation). If you aren&rsquo;t familiar with JSON, don&rsquo;t worry&mdash;I&rsquo;ve have <a href="/2013/11/08/a-non-programmers-introduction-to-json/">an introductory post on JSON</a> that will help get you up to speed. (Mac users might also find <a href="/2013/11/11/making-json-output-more-readable-with-bbedit/">this post</a> helpful as well.)</p>
+<p>Also, please note that this post is not intended to be a comprehensive reference to the (quite extensive) flexibility of <code>curl</code>. My purpose here is to provide enough of a basic reference to get you started. The rest is up to you!</p>
+<p>To make consuming this information easier (I hope), I&rsquo;ll break this information down into a series of examples. Let&rsquo;s start with passing some JSON data to a REST API to authenticate.</p>
+<h2 id="example-1-authenticating-to-openstack">Example 1: Authenticating to OpenStack</h2>
+<p>Let&rsquo;s say you&rsquo;re working with an OpenStack-based cloud, and you need to authenticate to OpenStack using OpenStack Identity (&ldquo;Keystone&rdquo;). Keystone uses the idea of tokens, and to obtain a token you have to pass correct credentials. Here&rsquo;s how you would perform that task using <code>curl</code>.</p>
+<p>You&rsquo;re going to use a couple of different command-line options:</p>
+<ul>
+<li>
+<p>The &ldquo;-d&rdquo; option allows us to pass data to the remote server (in this example, the remote server running OpenStack Identity). We can either embed the data in the command or pass the data using a file; I&rsquo;ll show you both variations.</p>
+</li>
+<li>
+<p>The &ldquo;-H&rdquo; option allows you to add an HTTP header to the request.</p>
+</li>
+</ul>
+<p>If you want to embed the authentication credentials into the command line, then your command would look something like this:</p>
+<pre><code>curl -d '{&quot;auth&quot;:{&quot;passwordCredentials&quot;:{&quot;username&quot;: &quot;admin&quot;,
+&quot;password&quot;: &quot;secret&quot;},&quot;tenantName&quot;: &quot;customer-A&quot;}}'
+-H &quot;Content-Type: application/json&quot; http://192.168.100.100:5000/v2.0/tokens
+</code></pre>
+<p>I&rsquo;ve wrapped the text above for readability, but on the actual command line it would all run together with no breaks. (So don&rsquo;t try to copy and paste, it probably won&rsquo;t work.) You&rsquo;ll naturally want to substitute the correct values for the username, password, tenant, and OpenStack Identity URL.</p>
+<p>As you might have surmised by the use of the &ldquo;-H&rdquo; header in that command, the authentication data you&rsquo;re passing via the &ldquo;-d&rdquo; parameter is actually JSON. (Run it through <code>python -m json.tool</code> and see.) Because it&rsquo;s actually JSON, you could just as easily put this information into a file and pass it to the server that way. Let&rsquo;s say you put this information (which you could format for easier readability) into a file named <code>credentials.json</code>. Then the command would look something like this (you might need to include the full path to the file):</p>
+<pre><code>curl -d @credentials.json -H &quot;Content-Type: application/json&quot; http://192.168.100.100:35357/v2.0/tokens
+</code></pre>
+<p>What you&rsquo;ll get back from OpenStack&mdash;assuming your command is successful&mdash;is a wealth of JSON. I highly recommend piping the output through <code>python -m json.tool</code> as it can be difficult to read otherwise. (Alternately, you could pipe the output into a file.) Of particular usefulness in the returned JSON is a section that gives you a token ID. Using this token ID, you can prove that you&rsquo;ve authenticated to OpenStack, which allows you to run subsequent commands (like listing tenants, users, etc.).</p>
+<h2 id="example-2-authenticating-to-vmware-nsx">Example 2: Authenticating to VMware NSX</h2>
+<p>Not all RESTful APIs handle authentication in the same way. In the previous example, I showed you how to pass some credentials in JSON-encoded format to authenticate. However, some systems use other methods for authentication. VMware NSX is one example.</p>
+<p>In this example, you&rsquo;ll need to use a different set of <code>curl</code> command-line options:</p>
+<ul>
+<li>
+<p>The &ldquo;&ndash;insecure&rdquo; option tells <code>curl</code> to ignore HTTPS certificate validation. VMware NSX controllers only listen on HTTPS (not HTTP).</p>
+</li>
+<li>
+<p>The &ldquo;-c&rdquo; option stores data received by the server (one of the NSX controllers, in this case) into a cookie file. You&rsquo;ll then re-use this data in subsequent commands with the &ldquo;-b&rdquo; option.</p>
+</li>
+<li>
+<p>The &ldquo;-X&rdquo; option allows you to specify the HTTP method, which normally defaults to GET. In this case, you&rsquo;ll use the POST method along the the &ldquo;-d&rdquo; parameter you saw earlier to pass authentication data to the NSX controller.</p>
+</li>
+</ul>
+<p>Putting all this together, the command to authenticate to VMware NSX would look something like this (naturally you&rsquo;d want to substitute the correct username and password where applicable):</p>
+<pre><code>curl --insecure -c cookies.txt -X POST -d 'username=admin&amp;password;=admin' https://192.168.100.50/ws.v1/login
+</code></pre>
+<h2 id="example-3-gathering-information-from-openstack">Example 3: Gathering Information from OpenStack</h2>
+<p>Once you&rsquo;ve gotten an authentication token from OpenStack as I showed you in example #1 above, then you can start using API requests to get information from OpenStack.</p>
+<p>For example, let&rsquo;s say you wanted to list the instances for a particular tenant. Once you&rsquo;ve authenticated, you&rsquo;d want to get the ID for the tenant in question, so you&rsquo;d need to ask OpenStack to give you a list of the tenants (you&rsquo;ll only see the tenants your credentials permit). The command to do that would look something like this:</p>
+<pre><code>curl -H &quot;X-Auth-Token: &lt;Token ID&gt;&quot; http://192.168.100.70:5000/v2.0/tenants
+</code></pre>
+<p>The value to be substituted for token ID in the above command is returned by OpenStack when you authenticate (that&rsquo;s why it&rsquo;s important to pay attention to the data being returned). In this case, the data returned by the command will be a JSON-encoded list of tenants, tenant IDs, and tenant descriptions. From that data, you can get the ID of the tenant for whom you&rsquo;d like to list the instances, then use a command like this:</p>
+<pre><code>curl -H &quot;X-Auth-Token: &lt;Token ID&gt;&quot; http://192.168.100.70:8774/v2/&lt;Tenant ID&gt;/servers
+</code></pre>
+<p>This will return a stream of JSON-encoded data that includes the list of instances and each instance&rsquo;s unique ID&mdash;which you could then use to get more detailed information about that instance:</p>
+<pre><code>curl -H &quot;X-Auth-Token: &lt;Token ID&gt;&quot; http://192.168.100.70:8774/v2/&lt;Tenant ID&gt;/servers/&lt;Server ID&gt;
+</code></pre>
+<p>By and large, the API is reasonably well-documented; you just need to be sure that you are pointing the API call against the right endpoint. For example, authentication has to happen against the server running Keystone, which may or may not be the same server that is running the Nova API services. (In the examples I just provided, Keystone and the Nova API services are running on the same host, which is why the IP address is the same in the command lines.)</p>
+<h2 id="example-4-creating-objects-in-vmware-nsx">Example 4: Creating Objects in VMware NSX</h2>
+<p>Getting information from VMware NSX using the RESTful API is very much like what you&rsquo;ve already seen in getting information from OpenStack. Of course, the API can also be used to create objects. To create objects&mdash;such as logical switches, logical switch ports, or ACLs&mdash;you&rsquo;ll use a combination of <code>curl</code> options:</p>
+<ul>
+<li>
+<p>You&rsquo;ll use the &ldquo;-b&rdquo; option to pass cookie data (stored when you authenticated to NSX) back for authentication.</p>
+</li>
+<li>
+<p>The &ldquo;-X&rdquo; option allows you to specify the HTTP method (in this case, POST).</p>
+</li>
+<li>
+<p>The &ldquo;-d&rdquo; option lets us transfer JSON-encoded data to form the request for the object we are going to create. We&rsquo;ll specify a filename here, preceded by the &ldquo;@&rdquo; symbol.</p>
+</li>
+<li>
+<p>The &ldquo;-H&rdquo; option adds an appropriate &ldquo;Content-Type: application/json&rdquo; header to the request, since we are passing JSON-encoded data to the NSX controller.</p>
+</li>
+</ul>
+<p>When you put it all together, it looks something like this (substituting appropriate values where applicable):</p>
+<pre><code>curl --insecure -b cookies.txt -d @new-switch.json 
+-H &quot;Content-Type: application/json&quot; -X POST https://192.168.100.50/ws.v1/lswitch
+</code></pre>
+<p>As I mentioned earlier, you&rsquo;re passing JSON-encoded data to the NSX controller; here are the contents of the <code>new-switch.json</code> file referenced in the above command example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;display_name&#34;</span>: <span style="color:#e6db74">&#34;test-lswitch&#34;</span>, 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;port_isolation_enabled&#34;</span>: <span style="color:#66d9ef">false</span>, 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;transport_zones&#34;</span>: [
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;zone_uuid&#34;</span>: <span style="color:#e6db74">&#34;dca3d854-b329-5458-b711-0df2d5762d7a&#34;</span>, 
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;binding_config&#34;</span>: {}, 
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&#34;transport_type&#34;</span>: <span style="color:#e6db74">&#34;stt&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>  ], 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;replication_mode&#34;</span>: <span style="color:#e6db74">&#34;source&#34;</span>, 
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;LogicalSwitchConfig&#34;</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/9103770">here</a> for this JSON data as a GitHub gist.)</p>
+<p>Once again, I recommend piping the output of this command through <code>python -m json.tool</code>, as what you&rsquo;ll get back on a successful call is some useful JSON data that includes, among other things, the UUID of the object (logical switch, in this case) that you just created. You can use this UUID in subsequent API calls to list properties, change properties, add logical switch ports, etc.</p>
+<p>Clearly, there is <em>much</em> more that can be done with the OpenStack and VMware NSX APIs, but this at least should give you a starting point from which you can continue to explore in more detail. If anyone has any corrections, clarifications, or questions, please feel free to post them in the comments section below. All courteous comments (with vendor disclosure, where applicable) are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/web">Web</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/02/10/installing-ubuntu-packages-from-a-specific-repository/">Installing Ubuntu Packages from a Specific Repository</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/02/26/learning-nsx-part-9-adding-a-gateway-service/">Learning NSX, Part 9: Adding a Gateway Service</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f02%2f19%2fusing-curl-to-interact-with-a-restful-api%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f02%2f19%2fusing-curl-to-interact-with-a-restful-api%2f&text=Using%20Curl%20to%20Interact%20with%20a%20RESTful%20API" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f02%2f19%2fusing-curl-to-interact-with-a-restful-api%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/02/06/technology-short-take-38/">Technology Short Take #38</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/12/06/technology-short-take-37/">Technology Short Take #37</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

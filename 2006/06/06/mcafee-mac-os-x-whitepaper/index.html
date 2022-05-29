@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>McAfee Mac OS X Whitepaper - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="McAfee Mac OS X Whitepaper - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="McAfee Mac OS X Whitepaper - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/06/06/mcafee-mac-os-x-whitepaper/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">McAfee Mac OS X Whitepaper</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;320 words (estimated 2 minutes to read)</span>
+  <p>Yesterday&rsquo;s edition of the &ldquo;Security Watch&rdquo; newsletter (also available <a href="http://mcpmag.com/columns/article.asp?EditorialsID=1360">online</a>) contained a brief blurb about a whitepaper recently released by McAfee that contained a statistic regarding <a href="http://www.apple.com/macosx/">Mac OS X</a> malware. Intrigued by the mention of this whitepaper, I hunted it down and read it myself.</p>
+<p>The whitepaper (available from <a href="http://download.nai.com/products/mcafee-avert/WhitePapers/NewAppleofMalwaresEye.pdf">McAfee&rsquo;s web site</a>) does indeed lead the user into thinking that security vulnerabilities from Mac OS X far outstrip those of Windows:</p>
+<blockquote>
+<p>The National Vulnerability Database shows an increase of 228 percent in the annual vulnerability rate for Apple&rsquo;s products from 2003 (45 vulnerabilities) to 2005 (143 vulnerabilities). In contrast, the annual discovery rate of vulnerabilities in Microsoft&rsquo;s products only grew 73 percent over the same period.</p>
+</blockquote>
+<p>What is failed to make completely clear is the <em>number</em> of vulnerabilities for each vendor. In 2003, Microsoft had 92 vulnerabilities and in 2005, Microsoft had 159 vulnerabilities. While this is explained via a footnote (does anyone ever really read the footnotes?), McAfee fails to properly contrast the numbers and the percentages, instead allowing this statistic to lead readers into believing that the state of Mac OS X security is in far worse shape than Microsoft&rsquo;s.</p>
+<p>I won&rsquo;t belabor the point, as Russ Cooper (the author of the Security Watch column mentioned above) does an excellent job of pointing out why raw statistics like the number or percentage of vulnerabilities are very poor indicators of overall security quality.</p>
+<p>All of this is <em>not</em> to say that Mac OS X is without security flaws and problems. This <a href="http://www.linux-watch.com/news/NS4575571479.html">article over at Linux-Watch.com</a> says it perfectly: &ldquo;Linux is insecure. Open source is insecure. Windows is insecure. All software is insecure. Deal with it.&rdquo; Anyone who says otherwise is just plain wrong, and time will prove that to be the case.</p>
+<p>So, while Mac OS X may not be &ldquo;immune&rdquo; to viruses and &ldquo;free&rdquo; of security flaws, at least you don&rsquo;t hear <a href="http://australianit.news.com.au/articles/0,7204,19345228%5E15865%5E%5Enbv%5E,00.html">stories like this one</a> about it.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macintosh">Macintosh</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/06/06/citrix-access-essentials-unsupported-features/">Citrix Access Essentials Unsupported Features</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/06/08/windows-phones-home/">Windows Phones Home</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f06%2fmcafee-mac-os-x-whitepaper%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f06%2fmcafee-mac-os-x-whitepaper%2f&text=McAfee%20Mac%20OS%20X%20Whitepaper" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f06%2fmcafee-mac-os-x-whitepaper%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/04/25/windows-and-os-x/">Windows and OS X</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/03/13/vista-on-intel-based-macs/">Vista on Intel-Based Macs</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

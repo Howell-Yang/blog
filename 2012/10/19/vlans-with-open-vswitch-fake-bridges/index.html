@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VLANs with Open vSwitch Fake Bridges - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VLANs with Open vSwitch Fake Bridges - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VLANs with Open vSwitch Fake Bridges - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/19/vlans-with-open-vswitch-fake-bridges/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VLANs with Open vSwitch Fake Bridges</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;840 words (estimated 4 minutes to read)</span>
+  <p>In other posts, I&rsquo;ve (briefly) talked about how to <a href="/2012/10/04/some-insight-into-open-vswitch-configuration/">configure</a> Open vSwitch (OVS) for use with VLANs. If you know the port to which a guest is connected, you can configure that particular port as a VLAN trunk like this:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; trunks=10,11,12
+</code></pre>
+<p>This configuration would pass the VLAN tags for VLANs 10, 11, and 12 all the way up to the guest, where&mdash;assuming the OS installed in the guest has VLAN support&mdash;you could configure network connectivity appropriately.</p>
+<p>Alternately, if you know the port to which a particular guest is connected, you could configure that port as a VLAN access port with a command like this:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; tag=15
+</code></pre>
+<p>This command makes the guest a member of VLAN 15, much like the use of the <code>switchport access vlan 15</code> command on a Cisco switch.</p>
+<p>These commands are all well and good, but there&rsquo;s a couple problems here:</p>
+<ol>
+<li>
+<p>First, you must know which port corresponds to which guest domain. Thus far, I have been unable to determine what set of commands will help me (you) establish the mapping between ports/interfaces and guest domains. (If you know how, please speak up in the comments!)</p>
+</li>
+<li>
+<p>Second, even if you do know which port corresponds to which guest, the settings are ephemeral. That is, when you power off the guest, the port&mdash;and its associated configuration&mdash;goes away. You&rsquo;d then need to reapply the configuration to the port when you start the guest domain again.</p>
+</li>
+</ol>
+<p>Clearly, this is not ideal. Fortunately, there is a workaround&mdash;a couple of them, actually. One workaround is to add OVS and VLAN support to <a href="http://libvirt.org">libvirt</a> (something that is actually mentioned <a href="http://www.siliconloons.com/?p=305">here</a>). This is a great idea&mdash;but it doesn&rsquo;t work just yet. On some systems (I use Ubuntu 12.04.1 LTS with libvirt 0.10.2), the libvirt-OVS-VLAN integration causes an error. A patch has been submitted to libvirt to fix this problem (great work Kyle!), but it hasn&rsquo;t (yet) made it into a release.</p>
+<p>Without OVS/VLAN support in libvirt, we have only one other workaround: OVS fake bridges. OVS fake bridges look and act like a bridge, but are tied to a particular VLAN ID. (I haven&rsquo;t seen/found a way to use a fake bridge to do VLAN trunking up to a guest domain. Anyone else know how?) In this post, I&rsquo;m going to show you how to use OVS fake bridges to add VLAN support to your OVS environment.</p>
+<p>This post was written using Ubuntu 12.04.1 LTS with Open vSwitch 1.4.0 (straight out of the Precise Pangolin repositories). Please note that the commands might be slightly different on other distributions or with other versions of OVS.</p>
+<p>To create a fake bridge, you&rsquo;ll use a modified form of the <code>ovs-vsctl add-br</code> command. The command is so subtly different that I missed it quite a few times when reading through the documentation for <code>ovs-vsctl</code>. Here&rsquo;s the command you&rsquo;ll need:</p>
+<pre><code>ovs-vsctl add-br &lt;fake bridge&gt; &lt;parent bridge&gt; &lt;VLAN&gt;
+</code></pre>
+<p>Let&rsquo;s look at an example. Suppose you had an existing OVS bridge named ovsbr0, and you wanted to add a fake bridge to support VLAN 100. You would use this command:</p>
+<pre><code>ovs-vsctl add-br vlan100 ovsbr0 100
+</code></pre>
+<p>When you create (or edit) a guest domain, you&rsquo;ll assign it to the new fake bridge (named <code>vlan100</code> in this example). So, looking at the libvirt XML code for a guest domain, it might look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;bridge&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;mac</span> <span style="color:#a6e22e">address=</span><span style="color:#e6db74">&#39;11:22:33:aa:bb:cc&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">bridge=</span><span style="color:#e6db74">&#39;vlan100&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;address</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;pci&#39;</span> <span style="color:#a6e22e">domain=</span><span style="color:#e6db74">&#39;0x0000&#39;</span> <span style="color:#a6e22e">bus=</span><span style="color:#e6db74">&#39;0x00&#39;</span> <span style="color:#a6e22e">slot=</span><span style="color:#e6db74">&#39;0x03&#39;</span> <span style="color:#a6e22e">function=</span><span style="color:#e6db74">&#39;0x0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span></code></pre></div><p>Naturally, you could also create a libvirt virtual network that corresponds to the fake bridge as well. (I&rsquo;ll likely post a separate article around that idea.)</p>
+<p>Then, when you powered up the guest domain and ran <code>ovs-vsctl show</code>, you&rsquo;d see something like this:</p>
+<pre><code>Bridge &quot;ovsbr0&quot;
+    Port &quot;bond0&quot;
+        Interface &quot;eth1&quot;
+        Interface &quot;eth2&quot;
+    Port &quot;ovsbr0&quot;
+        Interface &quot;ovsbr0&quot;
+            type: internal
+    Port &quot;vnet0&quot;
+        tag: 100
+        Interface &quot;vnet0&quot;
+    Port &quot;vlan100&quot;
+        tag: 100
+        Interface &quot;vlan100&quot;
+            type: internal
+</code></pre>
+<p>Note that the guest domain&rsquo;s port/interface are automatically given the fake bridge&rsquo;s VLAN tag, without any further interaction/configuration required by the user or administrator. Much better!</p>
+<p>Assuming you&rsquo;re using fake bridges (and if you&rsquo;re using OVS and VLANs, I&rsquo;m not sure how you wouldn&rsquo;t be), there are a couple other commands you might find helpful as well:</p>
+<ul>
+<li>
+<p>The <code>ovs-vsctl br-to-vlan</code> command will print the VLAN ID for a given bridge. If the bridge is a real bridge, the command returns 0; if the bridge is a fake bridge, it returns the VLAN ID.</p>
+</li>
+<li>
+<p>The <code>ovs-vsctl br-to-parent</code> command returns the parent bridge for a given fake bridge. If the specified bridge is a real bridge, it returns the real bridge.</p>
+</li>
+</ul>
+<p>Using fake bridges with link aggregation is also possible, as you can see from the snippet of OVS configuration above. More information on OVS with link aggregation is available <a href="/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">here</a>.</p>
+<p>I hope this information is useful. OVS is a really powerful piece of software, and I&rsquo;m enjoying learning more about it and how to use it. If anyone has any additional information, please feel free to speak up in the comments. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">Link Aggregation and LACP with Open vSwitch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2fvlans-with-open-vswitch-fake-bridges%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2fvlans-with-open-vswitch-fake-bridges%2f&text=VLANs%20with%20Open%20vSwitch%20Fake%20Bridges" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f19%2fvlans-with-open-vswitch-fake-bridges%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">Link Aggregation and LACP with Open vSwitch</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2012/10/05/technology-short-take-25/">Technology Short Take #25</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2012/10/04/some-insight-into-open-vswitch-configuration/">Some Insight into Open vSwitch Configuration</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

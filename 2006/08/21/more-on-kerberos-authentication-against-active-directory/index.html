@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>More on Kerberos Authentication Against Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="More on Kerberos Authentication Against Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="More on Kerberos Authentication Against Active Directory - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/08/21/more-on-kerberos-authentication-against-active-directory/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">More on Kerberos Authentication Against Active Directory</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1038 words (estimated 5 minutes to read)</span>
+  <p>I&rsquo;ll break the information down according by the article to which the information pertains. If the information pertains to all the articles equally, it is included in the &ldquo;All Articles&rdquo; portion. Links back to the original articles are included.</p>
+<h2 id="all-articles">All Articles</h2>
+<h3 id="user-accounts-vs-computer-accounts">User Accounts vs. Computer Accounts</h3>
+<p>One thing in common across all these articles is the need to create special accounts in Active Directory.  I originally recommended the use of computer accounts, but over the course of time additional integration tasks with Kerberos have led me to believe that the user of user accounts, <em>not</em> computer accounts, is the best way to handle this. In a <a href="/2005/07/18/minor-linux-ad-hiccup-fixed-hopefully/">very early Linux-AD integration article</a>, I discussed the use of computer accounts instead of user accounts, and the use of the <code>ktpass.exe</code> command to extract a keytab from a computer account. At that time, it seemed reasonable to recommend computer accounts&mdash;we were only discussing a single service principal (the host itself), and using a computer account <em>made sense</em>.</p>
+<p>However, because of the fact that additional accounts will have to be created for additional service principals (for example, if you are interested in using <a href="/2006/08/10/kerberos-based-sso-with-apache/">Kerberos-based SSO with Apache</a>) and because you can&rsquo;t have multiple computer accounts with the same name, it&rsquo;s just as well to use a user account with a naming convention that describes the purpose of each account. For example, something like &ldquo;host-fqdn&rdquo; for the host/fqdn@REALM service principal (used for scenarios involving pam_krb5 and &ldquo;native&rdquo; Kerberos/GSSAPI authentication), and &ldquo;http-fqdn&rdquo; for the HTTP/fqdn@REALM service principal (used by mod_auth_kerb for Apache-Kerberos integration). This provides an easy way to distinguish between these accounts, and allows for the multiple accounts that are required in these kinds of scenarios.</p>
+<p>Finally, the use of user accounts will eliminate some spurious error messages that <code>ktpass.exe</code> generates when run against a computer account. Note that these error messages are not substantive; things will still work with a computer account. It&rsquo;s just that <code>ktpass.exe</code> appears to have been intended to run against a user account.</p>
+<h3 id="updated-ktpassexe-command-line">Updated ktpass.exe Command Line</h3>
+<p>In addition, because of differences in the encryption types supported by Active Directory and many Unix/Linux implementations, I have found that using the &ldquo;+DesOnly&rdquo; switch with <code>ktpass.exe</code> seems to help.</p>
+<p>An updated <code>ktpass.exe</code>, accounting for the change to a user account and the desire to use DES encryption types, would look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>ktpass.exe -princ host/fqdn@REALM -mapuser DOMAIN\account 
+</span></span><span style="display:flex;"><span>-crypto des-cbc-md5 +DesOnly -pass Password123 -ptype KRB5_NT_PRINCIPAL 
+</span></span><span style="display:flex;"><span>-out c:\filename.keytab
+</span></span></code></pre></div><p>Please note that this command, particularly the service principal name (as specified by the &ldquo;-princ&rdquo; parameter) is <strong>CASE SENSITIVE.</strong> For example, the host SPN (i.e., &ldquo;host/fqdn@REALM&rdquo;) that is used by pam_krb5 and &ldquo;native&rdquo; Kerberos/GSSAPI authentication is lowercase. However, the HTTP SPN (used by mod_auth_kerb with Apache) needs to be <em>uppercase.</em> In both cases, the Kerberos realm (which should be equivalent to the Active Directory DNS domain name) must be in uppercase.</p>
+<h2 id="linux-ad-integration-pre-r2">Linux-AD Integration (Pre-R2)</h2>
+<p>The original article is found <a href="/2005/12/22/complete-linux-ad-authentication-details/">here</a>.</p>
+<p>In addition to the switch from a computer account to a user account as described above, the only real change to this article pertains to the <code>/etc/ldap.conf</code> file that configures the nss_ldap library. Remember that in almost all of these scenarios, we are using Kerberos for authentication and LDAP for account information, i.e., storing the information that would normally be stored in <code>/etc/passwd</code>.</p>
+<p>The original article calls for <code>/etc/ldap.conf</code> to include this line:</p>
+<pre><code>nss_base_group dc=mydomain,dc=com
+</code></pre>
+<p>To help optimize LDAP traffic against Active Directory, change the <code>/etc/ldap.conf</code> as follows:</p>
+<pre><code>nss_base_group dc=mydomain,dc=com?sub?
+&amp;(objectCategory=group)(gidnumber=*)
+</code></pre>
+<p>(This should all be on a single line.) This will help reduce the query load on Active Directory by limiting the types of objects for which searches will be issued; in addition, the &ldquo;objectCategory&rdquo; type is indexed, which also also greatly speed operations.</p>
+<p>Speaking of indexing, if the pam_login_attribute is not modified (it defaults to uid), you&rsquo;ll also need to index the uid attribute in order to avoid heavy CPU utilization and delays in responses from Active Directory. This was mentioned in the updated <a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux-AD R2 instructions</a>. Alternately, you can change the pam_login_attribute in <code>/etc/ldap.conf</code> to an indexed attribute, like sAMAccountName.</p>
+<p>Last, you may find it useful to edit <code>/etc/ldap.conf</code> and change the gecos field mapping from name to cn (i.e., use &ldquo;nss_map_attribute gecos cn&rdquo; instead of &ldquo;nss_map_attribute gecos name&rdquo;).</p>
+<h2 id="linux-ad-integration-r2">Linux-AD Integration (R2)</h2>
+<p>The latest version of these instructions are found <a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">posted here</a>.</p>
+<p>Again, other than the change to a user account instead of a computer account (as described above), the changes mentioned in the previous section also apply here:</p>
+<ul>
+<li>
+<p>Changing the nss_base_group in <code>/etc/ldap.conf</code></p>
+</li>
+<li>
+<p>Changing the nss_map_attribute for gecos in <code>/etc/ldap.conf</code></p>
+</li>
+<li>
+<p>Changing the pam_login_attribute to an indexed attribute in Active Directory (such as sAMAccountName) or indexing the uid attribute</p>
+</li>
+</ul>
+<p>Otherwise, the revised instructions are reasonably accurate and seem to work pretty well.</p>
+<h2 id="kerberos-based-sso-with-apache">Kerberos-Based SSO with Apache</h2>
+<p>This article is found <a href="/2006/08/10/kerberos-based-sso-with-apache/">here</a>, and already incorporates most of the changes mentioned in this posting. No suggested changes are needed at this time.</p>
+<h2 id="solaris-10-and-ad-integration">Solaris 10 and AD Integration</h2>
+<p>This article can be found posted <a href="/2006/08/15/solaris-10-and-active-directory-integration/">here</a>.</p>
+<p>This one is a pretty recent article (published within the last week or so), and so already incorporates most of the changes suggested here. The information that I don&rsquo;t have yet, however, is exactly <em>how</em> to incorporate some of the other suggested changes. For example, I&rsquo;m not yet sure how to use the <code>ldapclient</code> command to modify the LDAP client profile (Solaris 10 doesn&rsquo;t use nss_ldap by default) to include the refined group query. I suspect that this command would work correctly:</p>
+<pre><code>ldapclient mod -a serviceSearchDescriptor=group:dc=example,dc=com?sub
+?&amp;(objectCategory=group)(gidNumber=*)
+</code></pre>
+<p>Of course, the <code>ldapclient</code> command syntax would change depending upon if this was an initial setup or a change to an existing setup.</p>
+<p>Likewise, I&rsquo;m not sure which login attribute the Solaris LDAP libraries are looking for&mdash;uid, sAMAccountName, or something else entirely? If anyone with more Solaris 10 experience than me has the answers to these questions, I&rsquo;d love to know.</p>
+<p>As I continue to expand my knowledge of using Kerberos to integrate these various platforms and applications, I&rsquo;ll post additional information here. I know that a number of you have been posting questions in the comments for these various articles; keep the questions coming. I may not know the answer right away, but I&rsquo;ll sure do my best to find out!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apache">Apache</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/08/17/finding-duplicate-names-in-active-directory/">Finding Duplicate Names in Active Directory</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/08/21/native-kerberos-authentication-with-ssh/">Native Kerberos Authentication with SSH</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f21%2fmore-on-kerberos-authentication-against-active-directory%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f21%2fmore-on-kerberos-authentication-against-active-directory%2f&text=More%20on%20Kerberos%20Authentication%20Against%20Active%20Directory" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f21%2fmore-on-kerberos-authentication-against-active-directory%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/08/11/a-couple-cool-mac-discoveries/">A Couple Cool Mac Discoveries</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2005/07/22/linux-ad-integration-wrap-up/">Linux-AD Integration Wrap-Up</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

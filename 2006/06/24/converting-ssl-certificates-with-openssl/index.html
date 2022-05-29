@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Converting SSL Certificates with OpenSSL - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Converting SSL Certificates with OpenSSL - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Converting SSL Certificates with OpenSSL - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/06/24/converting-ssl-certificates-with-openssl/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Converting SSL Certificates with OpenSSL</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;508 words (estimated 3 minutes to read)</span>
+  <p>The <a href="http://www.openssl.org/">OpenSSL</a> toolkit is a veritable Swiss Army knife of SSL functionality. Among the many, many things that can be done using OpenSSL is converting SSL certificates between formats. This is particularly helpful in a heterogeneous environment where different platforms may require SSL certificates to be in different formats.</p>
+<p>A mixed Windows-Linux shop is one excellent example. Windows typically requires certificates in PFX format; Linux, on the other hand, typically needs PEM format. (See this <a href="http://en.wikipedia.org/wiki/X.509">X.509 article</a> for more information on the PFX and PEM formats.) Using the OpenSSL toolkit, we can pretty easily convert certificates from PFX to PEM. Here&rsquo;s how.</p>
+<p>Before we begin, we&rsquo;ll need to make sure we have the certificate in PFX format with the private key. In organizations that use the Windows Certificate Services as a CA, we can use the Certificates MMC snap-in to export the certificate and the corresponding private key to a PFX file. During this process, we&rsquo;ll be prompted for a passphrase; make note of it, as we&rsquo;ll need it later in the process.</p>
+<p>With our PFX file in hand, we start the conversion process:</p>
+<ol>
+<li>
+<p>At a command-line prompt, type <code>openssl pkcs12 -in _pfxfilename.pfx_ -out _tempfile.pem_</code>. This will convert the PFX file to a PEM file. The OpenSSL toolkit will prompt for the import passphrase; this will be the passphrase for the PFX file when the certificate and private key were exported (as mentioned above). OpenSSL will prompt for a new PEM passphrase; be sure to make note of this information as well.</p>
+</li>
+<li>
+<p>Using a text editor, split the PEM file into two separate files, one containing the certificate and one containing the encrypted private key. Remove all extra text from these files outside the lines with the dashes.</p>
+</li>
+<li>
+<p>Because many Linux-based applications will need the private key decrypted (or they will prompt for the passphrase during service start), we&rsquo;ll decrypt the private key. To decrypt the private key, use the command <code>openssl rsa -in _encryptedkey_ -out _decryptedkey_</code> (where <em>encryptedkey</em> is the file containing the RSA private key, as separated above, and <em>decryptedkey</em> is the file that will contain the decrypted RSA private key). The OpenSSL toolkit will prompt for the RSA key passphrase; this will be the PEM passphrase we specified when we first converted the certificate to PEM format above.</p>
+</li>
+<li>
+<p>If the application can use the certificate and the key in separate files, then we&rsquo;re finished. If we need to put them back into the same file, then use the command <code>cat _decryptedkey_ _certificatefile_ &gt; _finalfile.pem_</code> (on <a href="http://www.apple.com/macosx/">Mac OS X</a> or Linux) or the command <code>copy /b _decryptedkey_+_certificatefile_ _finalfile.pem_</code> (on Windows). This will combine the certificate and the decrypted private key into a single file. Using a text editor, add a blank line between the decrypted RSA private key and the certificate, and a blank line after the end of the certificate.</p>
+</li>
+</ol>
+<p>The final file is now ready for use with any number of Linux-based applications, such as <a href="http://stunnel.mirt.net/index.html">Stunnel</a>, <a href="http://httpd.apache.org/">Apache</a>, <a href="http://www.postfix.org/">Postfix</a>, or others.</p>
+<p><strong>UPDATE:</strong> It turns out this is a duplicate post, originally covered earlier <a href="/2005/12/02/certificate-conversion-using-openssl/">here</a>. Sorry!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssl">SSL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/06/23/weblog-moved-to-a-new-host/">Weblog Moved to a New Host</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/06/24/apache-as-an-owa-front-end/">Apache as an OWA Front-End</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f24%2fconverting-ssl-certificates-with-openssl%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f24%2fconverting-ssl-certificates-with-openssl%2f&text=Converting%20SSL%20Certificates%20with%20OpenSSL" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f06%2f24%2fconverting-ssl-certificates-with-openssl%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/02/19/details-on-transparent-rdp-tunneling/">Details on Transparent RDP Tunneling</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2005/12/02/certificate-conversion-using-openssl/">Certificate Conversion Using OpenSSL</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2005/11/22/cisco-pix-vpn-and-active-directory-integration/">Cisco PIX VPN and Active Directory Integration</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

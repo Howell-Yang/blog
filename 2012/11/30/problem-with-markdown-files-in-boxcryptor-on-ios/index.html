@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Problem with Markdown Files in BoxCryptor on iOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Problem with Markdown Files in BoxCryptor on iOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Problem with Markdown Files in BoxCryptor on iOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/11/30/problem-with-markdown-files-in-boxcryptor-on-ios/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Problem with Markdown Files in BoxCryptor on iOS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;412 words (estimated 2 minutes to read)</span>
+  <p>About a week ago, I published an article showing you how to <a href="/2012/11/23/using-encfs-with-dropbox-and-boxcryptor/">use EncFS and BoxCryptor to provide client-side encryption of Dropbox data</a>. After working with this configuration for a while, I&rsquo;ve run across a problem (at least, a problem for me&mdash;it might not be a problem for you). The problem lies on the iPad end of things.</p>
+<p>If you haven&rsquo;t read the earlier post, the basic gist of the idea is to use EncFS&mdash;an open source encrypting file system&mdash;and OSXFUSE to provide file-level encryption of Dropbox data on your OS X system. This is client-side encryption where you are in the control of the encryption keys. To access these encrypted files from your iPad, you&rsquo;ll use the <a href="https://www.boxcryptor.com/">BoxCryptor iOS client</a>, which is compatible with EncFS and decrypts the files.</p>
+<p>Sounds great, right? Well, it ismostly. The problem arises from the way that the iPad handles files. BoxCryptor uses the built-in document preview functionality of iOS, which in turn allows you to access the iPad&rsquo;s &ldquo;Open In&rdquo; functionality. The <strong>only</strong> way to get to the &ldquo;Open In&rdquo; menu is to first preview the document using the iOS document preview feature. Unfortunately, the iOS document preview functionality doesn&rsquo;t recognize a number of files and file types. Most notably for me, it doesn&rsquo;t recognize Markdown files (I&rsquo;ve tried several different file extensions and none of them seem to work). Since the preview feature doesn&rsquo;t recognize Markdown, then I can&rsquo;t get to &ldquo;Open In&rdquo; to open the documents in Byword (an iOS Markdown editor), and so I&rsquo;m essentially unable to access my content.</p>
+<p>To see if this was an iOS-wide problem or a problem limited to BoxCryptor, I tested accessing some non-encrypted files using the Dropbox iOS client. The Dropbox client will, at least, render Markdown and OPML files as plain text. The Dropbox iOS client still does not, unfortunately, know how to get the Markdown files into Byword. I even tried a MindManager mind map; the Dropbox client couldn&rsquo;t preview it (not surprisingly), but it did give me the option to open it in the iOS version of MindManager. The BoxCryptor client also worked with a mind map, but refuses to work with plain text-based files like Markdown and OPML.</p>
+<p>Given that I create the vast majority of my content in Markdown, this is a problem. If anyone has any suggestions, I&rsquo;d love to hear them in the comments. Otherwise, I&rsquo;ll post more here as soon as I learn more or find a workaround.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ios">iOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/privacy">Privacy</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/markdown">Markdown</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/11/30/why-i-might-leave-os-x/">Why I Might Leave OS X</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/12/05/posts-from-the-past-december-2012/">Posts From the Past, December 2012</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f30%2fproblem-with-markdown-files-in-boxcryptor-on-ios%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f30%2fproblem-with-markdown-files-in-boxcryptor-on-ios%2f&text=Problem%20with%20Markdown%20Files%20in%20BoxCryptor%20on%20iOS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f30%2fproblem-with-markdown-files-in-boxcryptor-on-ios%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/23/using-encfs-with-dropbox-and-boxcryptor/">Using EncFS with Dropbox and BoxCryptor</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2005/12/13/application-specific-vpns/">Application-Specific VPNs</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2005/12/02/certificate-conversion-using-openssl/">Certificate Conversion Using OpenSSL</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

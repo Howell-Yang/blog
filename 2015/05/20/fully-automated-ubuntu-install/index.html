@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Building a Fully Automated Ubuntu Installation Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Building a Fully Automated Ubuntu Installation Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Building a Fully Automated Ubuntu Installation Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/05/20/fully-automated-ubuntu-install/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Building a Fully Automated Ubuntu Installation Process</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1871 words (estimated 9 minutes to read)</span>
+  <p>Recently on Twitter, I mentioned that I had managed to successfully create a fully automated process for installing <a href="http://www.ubuntu.com/server">Ubuntu Server</a> 14.04.2, along with a method for bootstrapping <a href="http://www.ansible.com/home">Ansible</a>. In this post, I&rsquo;m going to describe the installation process I built and the components that went into making it work. I&rsquo;ll discuss the Ansible bootstrap process in a separate post. I significantly doubt that there is anything new or unique here, but hopefully this information will prove helpful to others facing similar challenges.</p>
+<p>Before I continue, allow me to briefly discuss why I didn&rsquo;t use a system like  <a href="http://cobbler.github.io/">Cobbler</a> instead of putting together my own system. Cobbler is a great tool. For me, though, this was also about deepening my own knowledge. I wanted to better understand the various components involved and how they interacted, and I didn&rsquo;t feel I would really be able to do that with a &ldquo;prebuilt&rdquo; system like Cobbler. If you are more interested in getting something up and running as opposed to learning more about how it works (and that&rsquo;s OK), then I&rsquo;d recommend you skip this post and go download Cobbler. If, on the other hand, you want to make this into more of a learning process, then read on!</p>
+<h2 id="overview">Overview</h2>
+<p>There are 3 major components to this automated installation process:</p>
+<ol>
+<li>PXE Boot Infrastructure</li>
+<li>Local HTTP source of the Ubuntu 14.04 installation files</li>
+<li>Ubuntu Preseed File</li>
+</ol>
+<p>I&rsquo;ll describe each of these below in varying levels of detail. All of these items are already reasonably well-documented elsewhere on the Internet, and I&rsquo;ll include resources that I found helpful in each section. However, to avoid mass duplication, I&rsquo;m going to try to keep this high-level, refer you to other useful resources, and point out the potholes I found along the way.</p>
+<h2 id="pxe-boot-infrastructure">PXE Boot Infrastructure</h2>
+<p>Getting the PXE boot infrastructure up and running is pretty straightforward; there aren&rsquo;t really a lot of &ldquo;gotchas&rdquo; to trip you up along the way. One article I personally found helpful was <a href="http://www.briancarpio.com/2012/04/04/system-automation-part-1/">this write-up by Brian Carpio</a> (I like the way he organized things in his configuration), but this is just one of many different articles that provide an overview of how to set up a PXE boot infrastructure.</p>
+<p>I chose to set up a new Ubuntu 14.04.2 VM that would run TFTP (via the <code>tftpd-hpa</code> package) and HTTP (via Apache). I already had an existing ISC DHCP server instance, so I modified that configuration to point to the PXE server (via the <code>filename</code> and <code>next-server</code> options in the DHCP configuration). On this server I set up the PXE boot files in a way that was similar to how Brian Carpio described in his post:</p>
+<ul>
+<li>Linux kernel and initial RAM disk image copied into the <code>pxe</code> subdirectory of the TFTP root directory (which on my system was <code>/var/lib/tftpboot</code>)</li>
+<li>The <code>pxelinux.0</code> file in the TFTP root directory</li>
+<li>A menu module (<code>vesamenu.c32</code>) and a menu configuration file (more on that in a moment) in the <code>pxelinux.cfg</code> folder off the TFTP root directory</li>
+</ul>
+<p>There are a lot of different examples of menu configuration files out there, but nothing that I found did a very good job of explaining the various options or how those options may (or may not) affect the Ubuntu installer. In the end, I found that there were a few options that <em>had</em> to be included in the menu configuration file&mdash;even if they were also in the preseed file, which I&rsquo;ll discuss in the next section&mdash;in order for the installation to be fully automated. Here&rsquo;s a snippet from the menu configuration file; this is for a generic Ubuntu 14.04 installation:</p>
+<pre><code>LABEL generic
+    MENU LABEL Install generic Ubuntu 14.04
+    KERNEL pxe/ubuntu/ubuntu-14.04-x86_64
+    IPAPPEND 1
+    APPEND initrd=pxe/ubuntu/ubuntu-14.04-x86_64.img ksdevice=eth0 \
+    locale=en_US.UTF-8 keyboard-configuration/layoutcode=us \
+    interface=eth0 hostname=unassigned \
+    url=http://192.168.100.240/preseed/14.04-generic-nolvm.cfg \
+    live-installer/net-image=http://192.168.100.240/ubuntu/14.04.2/install/filesystem.squashfs
+</code></pre>
+<p>(Note I&rsquo;ve line-wrapped and added backslashes to improve readability.)</p>
+<p>Let&rsquo;s break this down just a bit:</p>
+<ul>
+<li>The <code>LABEL</code> and <code>MENU LABEL</code> commands are used in building and displaying the menu</li>
+<li>The <code>KERNEL</code> line specifies the Linux kernel to be booted; this was copied to the PXE server (the path you see in this example is relative to the root path of the TFTP server)</li>
+<li>The <code>IPAPPEND 1</code> line passes some additional networking information to the installer.</li>
+</ul>
+<p>The <code>APPEND</code> line, though, is where it really gets complicated. Let&rsquo;s take a closer look:</p>
+<ul>
+<li>The <code>initrd=</code> portion points to the initial RAM disk image copied over from the install CD. I copied this into the same <code>pxe</code> subdirectory as the Linux kernel image.</li>
+<li><code>ksdevice=eth0</code> tells the installer to use eth0 for network connectivity.</li>
+<li>The <code>locale=en_US.UTF-8</code> and <code>keyboard-configuration/layoutcode=us</code> parameters were required to prevent the Ubuntu installer from prompting for those values.</li>
+<li>The <code>interface=eth0</code> parameter prevented the Ubuntu installer from prompting for the network interface to use. Specifying this in the preseed file wasn&rsquo;t enough.</li>
+<li>The <code>hostname=unassigned</code> parameter ensured the Ubuntu installer wouldn&rsquo;t prompt for hostname (even though the hostname was already provided in the preseed file, as you&rsquo;ll see shortly).</li>
+<li>The <code>url</code> value tells the installer where to get the preseed file (via HTTP, in this case).</li>
+<li>The <code>live-installer/net-image</code> parameter was a last-minute fix obtained from <a href="http://www.michaelm.info/blog/?p=1378">this site</a>. Without this parameter, the installation will error out and won&rsquo;t continue.</li>
+</ul>
+<p>Even though many of the options on the <code>APPEND</code> line were also included in the Ubuntu preseed file, I found it was still necessary to include them here in order to get a fully automated installation.</p>
+<p>In my particular environment, I wanted a fully customized installation routine for each server, so I customized the menu commands to provide specific hostnames and references to specific preseed files (this is in addition to the generic install routine shown above). This allows me to boot a server, select the appropriate configuration from the PXE boot menu, and in a few minutes have an appropriately configured Ubuntu 14.04.2 instance with the right hostname and other settings already baked in.</p>
+<h2 id="local-http-source">Local HTTP Source</h2>
+<p>At this point, you have a fully functional PXE boot environment, but no way of serving up the installation files. You could also use an existing HTTP server instance if you have one, and just adjust the URL provided in the menu command (see previous section) and the preseed file (see next section). I chose to install the Apache web server (via <code>apt-get install apache2</code>) on the same server that&rsquo;s providing the PXE boot infrastructure. Either way, once you have an HTTP server up and running, you need to make the installation files available via the web server.</p>
+<p>There&rsquo;s a couple of different ways to accomplish this task: you can copy the files from the installation media, or mount the installation media (ISO) at a mount point under the web server&rsquo;s document root. I chose the second path:</p>
+<pre><code>mount -o loop ubuntu-14.04.2-server-amd64.iso /var/www/html/ubuntu/14.04.2
+</code></pre>
+<p>Obviously, you&rsquo;ll want to provide the correct filenames and/or paths in that mount command, and you&rsquo;ll also want to edit <code>/etc/fstab</code> if you want the ISO mounted automatically when you (re)boot the server.</p>
+<h2 id="preseed-file">Preseed File</h2>
+<p>There&rsquo;s only one piece missing now: the preseed file that will automate the installation of Ubuntu. You&rsquo;ve built a PXE boot infrastructure and you&rsquo;ve got an HTTP server available to serve up both the preseed file (as provided by the <code>url</code> parameter in the PXE menu command) and the installation files.</p>
+<p>To keep this post from getting too much longer I&rsquo;ve created <a href="https://gist.github.com/scottslowe/9116c0bf80f931a5eca2">a GitHub Gist</a> that contains a sanitized version of the preseed file I&rsquo;m using. I do want to call out a few things about this preseed file:</p>
+<ul>
+<li>You&rsquo;ll note some duplication between information provided in the preseed file and the parameters on the <code>APPEND</code> line of the PXE menu command. This is not a mistake&mdash;I found that you actually had to include them in both places. (For example, lines 6-8 and line 15 are found in both places).</li>
+<li>Lines 12 and 13 tell the Ubuntu installer where to find the installation files. This should correspond to the information for the HTTP server you set up in the previous section (and where the installation files were made available on that HTTP server).</li>
+<li>Line 15 should again correspond to the correct URL (server and path) for where the initial filesystem is available.</li>
+<li>The partitioning recipe (lines 28 through 53) is for an LVM-based system. It creates a primary partition for /boot, followed by a logical volume for / and a logical volume for swap. There aren&rsquo;t a lot of great resources out there on the partitioning recipes, but I did find <a href="http://ftp.dc.volia.com/pub/debian/preseed/partman-auto-recipe.txt">this documentation</a> and <a href="https://wikitech.wikimedia.org/wiki/Partman_Recipes">this example</a> of how to create partitioning recipes. I settled on this particular recipe after a fair amount of trial and error. (This recipe is intended to be used with a small physical disk&mdash;in my case, a low-cost 32GB SSD).</li>
+<li>The <code>preseed/late_command</code> option also deserves a bit of explanation. When you PXE boot and install over HTTP from an internal server, the <code>/etc/apt/sources.list</code> file contains <em>only</em> references to the internal server&mdash;not to the &ldquo;usual&rdquo; repositories. The first <code>wget</code> command fixes that. The second <code>wget</code> command installs a customized <code>/etc/apt/apt.conf</code> that specifies an Apt proxy (using apt-cacher-ng).</li>
+</ul>
+<p>Clearly, you&rsquo;ll want to customize the preseed file to match your environment (for example, to provide the correct hostname, domain name, URLs, etc.). In my case, I created multiple, customized preseed files (one for each server I knew I wanted to build). Each preseed file has the correct hostname, volume group and logical volume names, etc. The various PXE menu commands (each server I wanted to build has its own PXE boot menu option) then reference the specific preseed for that particular server.</p>
+<p>You&rsquo;ll host these preseed files on the HTTP server you set up earlier.</p>
+<h2 id="pulling-it-all-together">Pulling it all Together</h2>
+<p>With the addition of the preseed file, you now have all the components you need for a fully automated installation. Let&rsquo;s see how all this comes together:</p>
+<ol>
+<li>You boot a new server, and it obtains an IP address from a DHCP server (which you&rsquo;ve configured, via the <code>filename</code> and <code>next-server</code> options, to direct the new server to the PXE server).</li>
+<li>The new server retrieves the Linux kernel and initial RAM disk image (via TFTP using the network device specified in the <code>ksdevice</code> option) and boots up.</li>
+<li>The installer retrieves the preseed file from the internal HTTP server (using the URL provided in the <code>url</code> parameter of the <code>APPEND</code> line) and parses the preseed file to see how the installation should proceed.</li>
+<li>The preseed file tells the installer to retrieve the installation files from the internal HTTP server (via the <code>d-i mirror/http/hostname</code> and <code>d-i mirror/http/directory</code> directives).</li>
+<li>The installer installs the system, using the internal HTTP server as the source mirror and using the preseed file to answer any questions along the way.</li>
+<li>At the end of the installation, the <code>preseed/late-command</code> runs and copies over two files (hosted on the internal HTTP server) to the newly-built Ubuntu installation.</li>
+<li>When the installer completes, the new server reboots. You&rsquo;re done!</li>
+</ol>
+<h2 id="summary">Summary</h2>
+<p>In this post I&rsquo;ve tried to describe some of the lessons I learned in building a fully automated Ubuntu installation process. Hopefully this post proves helpful to others seeking to accomplish the same task. In a future post I will describe the method I created to take newly-built servers installed using this process and bootstrap them into Ansible.</p>
+<p>Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/05/11/using-pxe-with-virt-install/">Using PXE with virt-install</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/05/21/using-apt-proxy/">Using an Apt Proxy</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f20%2ffully-automated-ubuntu-install%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f20%2ffully-automated-ubuntu-install%2f&text=Building%20a%20Fully%20Automated%20Ubuntu%20Installation%20Process" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f20%2ffully-automated-ubuntu-install%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2014/01/23/automatically-connecting-lxc-to-open-vswitch/">Automatically Connecting LXC to Open vSwitch</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2014/01/03/looking-back-2013-project-report-card/">Looking Back: 2013 Project Report Card</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

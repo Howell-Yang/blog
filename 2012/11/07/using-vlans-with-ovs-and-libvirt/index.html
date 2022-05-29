@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using VLANs with OVS and libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using VLANs with OVS and libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using VLANs with OVS and libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/11/07/using-vlans-with-ovs-and-libvirt/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using VLANs with OVS and libvirt</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1083 words (estimated 6 minutes to read)</span>
+  <p>In previous posts, I&rsquo;ve shown you how to use <a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">Open vSwitch (OVS) with VLANs through fake bridges</a>, as well as how to <a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">wrap libvirt virtual networks around OVS fake bridges</a>. Both of these techniques are acceptable for configuring VLANs with OVS, but in this post I want to talk about using VLANs with OVS via a greater level of <a href="http://libvirt.org">libvirt</a> integration. This has been talked about <a href="http://www.siliconloons.com/?p=305">elsewhere</a>, but I wasn&rsquo;t able to make it work until libvirt 1.0.0 was released. (<strong>Update:</strong> I was able to make it work with an earlier version. See <a href="/2012/11/12/libvirt-ovs-integration-revisited/">here</a>.)</p>
+<p>First, let&rsquo;s recap what we know so far. If you know the port to which a particular domain (guest VM) is connected, you can configure that particular port as a VLAN trunk like this:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; trunks=10,11,12
+</code></pre>
+<p>This configuration would pass the VLAN tags for VLANs 10, 11, and 12 all the way up to the domain, where&mdash;assuming the OS installed in the domain has VLAN support&mdash;you could configure network connectivity appropriately. (I hope to have a blog post up on this soon.)</p>
+<p>Along the same lines, if you know the port to which a particular domain is connected, you could configure that port as a VLAN access port with a command like this:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; tag=15
+</code></pre>
+<p>This command makes the domain a member of VLAN 15, much like the use of the <code>switchport access vlan 15</code> command on a Cisco switch. (I probably don&rsquo;t need to state that this isn&rsquo;t the <em>only</em> way&mdash;see the other OVS/VLAN related posts above for more techniques to put a domain into a particular VLAN.)</p>
+<p>These commands work perfectly fine and are all well and good, but there&rsquo;s a problem here&mdash;the VLAN information <em>isn&rsquo;t</em> contained in the domain configuration. Instead, it&rsquo;s in OVS, attached to an ephemeral port&mdash;meaning that when the domain is shut down, the port <strong>and the associated configuration</strong> disappears. What I&rsquo;m going to show you in this post is how to use VLANs with OVS in conjunction with libvirt for persistent VLAN configurations.</p>
+<p>This document was written using Ubuntu 12.04.1 LTS and Open vSwitch 1.4.0 (installed straight from the Precise Pangolin repositories using <code>apt-get</code>). Libvirt was compiled manually (see instructions <a href="/2012/11/05/compiling-libvirt-1-0-0-on-ubuntu-12-04-and-12-10/">here</a>). Due to some bugs, it appears you need at least version 1.0.0 of libvirt. Although the Silicon Loons article I referenced earlier mentions an earlier version of libvirt, I was not able to make it work until the 1.0.0 release. Your mileage may vary, of course&mdash;I freely admit that I might have been doing something wrong in my earlier testing.</p>
+<p>To make VLANs work with OVS and libvirt, two things are necessary:</p>
+<ol>
+<li>
+<p>First, you must define a libvirt virtual network that contains the necessary portgroup definitions.</p>
+</li>
+<li>
+<p>Second, you must include the portgroup reference to the virtual network in the domain (guest VM) configuration.</p>
+</li>
+</ol>
+<p>Let&rsquo;s look at each of these steps.</p>
+<h2 id="creating-the-virtual-network">Creating the Virtual Network</h2>
+<p>The easiest way I&rsquo;ve found to create the virtual network is to craft the network XML definition manually, then import it into libvirt using <code>virsh net-define</code>.</p>
+<p>Here&rsquo;s some sample XML code (I&rsquo;ll break down the relevant parts after the code):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;network&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;name&gt;</span>ovs-network<span style="color:#f92672">&lt;/name&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;forward</span> <span style="color:#a6e22e">mode=</span><span style="color:#e6db74">&#39;bridge&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;bridge</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;ovsbr0&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;virtualport</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;openvswitch&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;portgroup</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;vlan-01&#39;</span> <span style="color:#a6e22e">default=</span><span style="color:#e6db74">&#39;yes&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/portgroup&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;portgroup</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;vlan-02&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;vlan&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;tag</span> <span style="color:#a6e22e">id=</span><span style="color:#e6db74">&#39;2&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/vlan&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/portgroup&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;portgroup</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;vlan-03&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;vlan&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;tag</span> <span style="color:#a6e22e">id=</span><span style="color:#e6db74">&#39;3&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/vlan&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/portgroup&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;portgroup</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#39;vlan-all&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;vlan</span> <span style="color:#a6e22e">trunk=</span><span style="color:#e6db74">&#39;yes&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;tag</span> <span style="color:#a6e22e">id=</span><span style="color:#e6db74">&#39;2&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">&lt;tag</span> <span style="color:#a6e22e">id=</span><span style="color:#e6db74">&#39;3&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/vlan&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;/portgroup&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/network&gt;</span>
+</span></span></code></pre></div><p>The key takeaways from this snippet of XML are:</p>
+<ol>
+<li>
+<p>First, note that the OVS bridge is specified as the target bridge in the <code>&lt;bridge name=...&gt;</code> element. You&rsquo;ll need to edit this as necessary to make your specific OVS configuration. For example, in my configuration, <code>ovsbr0</code> refers to a bridge that handles only host management traffic.</p>
+</li>
+<li>
+<p>Second, note the <code>&lt;portgroup name=...&gt;</code> element. This is where the &ldquo;magic&rdquo; happens. Note that you can have no VLAN element (as in the <code>vlan-01</code> portgroup), a VLAN tag (as in the <code>vlan-10</code> or <code>vlan-20</code> portgroups), or a set of VLAN tags to pass as a trunk (as in the <code>vlan-all</code> portgroup).</p>
+</li>
+</ol>
+<p>Once you&rsquo;ve got the network definition in the libvirt XML format, you can import that configuration with <code>virsh net-define &lt;XML filename&gt;</code>. (Prepend this command with <code>sudo</code> if necessary.)</p>
+<p>After it is imported, use <code>virsh net-start &lt;network name&gt;</code> to start the libvirt virtual network. If you make changes to the virtual network, such as adding or removing portgroups, be sure to restart the virtual network using <code>virsh net-destroy &lt;network name&gt;</code> followed by <code>virsh net-start &lt;network name&gt;</code>.</p>
+<p>Now that the virtual network is defined, we can move on to creating the domain configuration.</p>
+<h2 id="configuring-the-domain-networking">Configuring the Domain Networking</h2>
+<p>As far as I&rsquo;m aware, to include the appropriate network definitions in the domain XML configuration, you&rsquo;ll have to edit the domain XML manually.</p>
+<p>Here&rsquo;s the relevant snippet of domain XML configuration:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#f92672">&lt;interface</span> <span style="color:#a6e22e">type=</span><span style="color:#e6db74">&#39;network&#39;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;mac</span> <span style="color:#a6e22e">address=</span><span style="color:#e6db74">&#39;11:22:33:44:55:66&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&lt;source</span> <span style="color:#a6e22e">network=</span><span style="color:#e6db74">&#39;ovs-network&#39;</span> <span style="color:#a6e22e">portgroup=</span><span style="color:#e6db74">&#39;vlan-02&#39;</span><span style="color:#f92672">/&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/interface&gt;</span>
+</span></span></code></pre></div><p>You&rsquo;ll likely have more configuration entries in your domain configuration, but the important one is the <code>&lt;source network=...&gt;</code> element, where you&rsquo;ll specify both the name of the network you created <strong>as well as</strong> the name of the portgroup to which this domain should be attached.</p>
+<p>With this configuration in place, when you start the domain, it will pass the necessary parameters to OVS to apply the desired VLAN configuration automatically. In other words, once you define the desired configuration in the domain XML, it&rsquo;s maintained persistently inside the domain XML (instead of on the ephemeral port in OVS), re-applied anytime the domain is started.</p>
+<h2 id="verifying-the-configuration">Verifying the Configuration</h2>
+<p>Once the appropriate configuration is in place, you can see the OVS configuration created by libvirt when a domain is started by simply using <code>ovs-vsctl show</code> or&mdash;for more detailed information&mdash;<code>ovs-vsctl list port &lt;port name&gt;</code>. Of particular interest when using <code>ovs-vsctl list port &lt;port name&gt;</code> are the <code>tag</code> and/or <code>trunks</code> values; these are where VLAN configurations are applied.</p>
+<h2 id="summary">Summary</h2>
+<p>In this post, I&rsquo;ve shown you how to create libvirt virtual networks that integrate with OVS to provide persistent VLAN configurations for domains connected to an OVS bridge. The key benefit that arises from this configuration is that you longer need to know to which OVS port a given domain is connected. Because the VLAN configuration is stored <em>with</em> the domain and applied to OVS automatically when the domain is started, you can be assured that a domain will always be attached to the correct VLAN when it starts.</p>
+<p>As usual, I encourage your feedback on this article. If you have questions, thoughts, corrections, or clarifications, you are invited to speak up in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/11/06/a-quick-warning-about-compiling-libvirt/">A Quick Warning About Compiling libvirt</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/11/08/a-call-for-open-vswitch-topics/">A Call for Open vSwitch Topics</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f07%2fusing-vlans-with-ovs-and-libvirt%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f07%2fusing-vlans-with-ovs-and-libvirt%2f&text=Using%20VLANs%20with%20OVS%20and%20libvirt" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f07%2fusing-vlans-with-ovs-and-libvirt%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">VLANs with Open vSwitch Fake Bridges</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2012/11/06/a-quick-warning-about-compiling-libvirt/">A Quick Warning About Compiling libvirt</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

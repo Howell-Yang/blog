@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Puppet for Account Management - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Puppet for Account Management - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Puppet for Account Management - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/11/25/using-puppet-for-account-management/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Puppet for Account Management</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;871 words (estimated 5 minutes to read)</span>
+  <p>It&rsquo;s been over four months since my last post on <a href="http://puppetlabs.com/puppet/puppet-open-source/">open source Puppet</a>, when I posted some <a href="/2012/07/09/updated-multi-os-puppet-configuration/">updated multi-OS Puppet configurations</a>. I&rsquo;m back from a long Puppet hiatus with some information on using Puppet for managing user accounts.</p>
+<p>It was pretty tough coming back to Puppet after a four-month break (during which time I&rsquo;ve been spending plenty of time on KVM, Open vSwitch, and libvirt), and it was almost like learning Puppet again from scratch. Fortunately, with the help of a few folks from Twitter and the #puppet IRC channel, I was able to get managing user accounts with Puppet to work (and learned a little bit in the process).</p>
+<p>The key to making it work is the idea of a virtual resource. In Puppet, you are normally only allowed to define a resource once; you&rsquo;d then apply that same resource against multiple systems. However, if you define a user resource for one system, you&rsquo;re then prevented from defining the same user resource for another system&mdash;the resource has already been defined. With a virtual resource, though, you can define the resource once (as a virtual resource; denoted with an &ldquo;@&rdquo; in front of the resource). Once a virtual resource has been defined, you can then <em>realize</em> (or instantiate) that resource as many times as needed across multiple systems. (At least, that&rsquo;s how I understand it. I&rsquo;m still wrapping my head around some of this stuff.) The Puppet Labs site does a much better job of <a href="http://docs.puppetlabs.com/puppet/3/reference/lang_virtual.html">explaining virtual resources</a>.</p>
+<p>Now that you&rsquo;re armed with that little bit of background information, let&rsquo;s get started on making this work. There are 2 basic steps involved:</p>
+<ol>
+<li>
+<p>Create a class with a defined type that creates the virtual user resources.</p>
+</li>
+<li>
+<p>Realize the virtual user resources where needed.</p>
+</li>
+</ol>
+<p>Let&rsquo;s tackle that first step: creating the class and defined type.</p>
+<p>Essentially what you&rsquo;re going to do to create the class and defined type is create a module. As such, we&rsquo;ll want to follow <a href="http://docs.puppetlabs.com/puppet/3/reference/modules_fundamentals.html">Puppet&rsquo;s guidelines for module structures</a>. In my case, I created a directory for the class (I called mine <code>accounts</code>), with all the suggested subdirectories for a module, even if most of them weren&rsquo;t needed. From there, I only need to create two files, both in the <code>accounts/manifests</code> directory: <code>init.pp</code> and <code>virtual.pp</code>.</p>
+<p>I&rsquo;ll come to the <code>init.pp</code> in a moment; somewhat counter-intuitively, we&rsquo;ll start with the <code>virtual.pp</code> manifest first. Here&rsquo;s the contents of that manifest (download this from GitHub <a href="https://gist.github.com/scottslowe/4050213">here</a>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#75715e"># Defined type for creating virtual user accounts
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">define</span> <span style="color:#a6e22e">accounts</span>::<span style="color:#a6e22e">virtual</span> ($uid,$realname,$pass) {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">user</span> { $title:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>            <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;present&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">uid</span>               <span style="color:#f92672">=&gt;</span>  $uid,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">gid</span>               <span style="color:#f92672">=&gt;</span>  $title,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">shell</span>             <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;/bin/bash&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">home</span>              <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#34;/home/${title}&#34;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">comment</span>           <span style="color:#f92672">=&gt;</span>  $realname,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">password</span>          <span style="color:#f92672">=&gt;</span>  $pass,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">managehome</span>        <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">true</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">require</span>           <span style="color:#f92672">=&gt;</span>  <span style="color:#a6e22e">Group</span>[$title],<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">group</span> { $title:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">gid</span>               <span style="color:#f92672">=&gt;</span>  $uid,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">file</span> { <span style="color:#e6db74">&#34;/home/${title}&#34;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>            <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">directory</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">owner</span>             <span style="color:#f92672">=&gt;</span>  $title,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">group</span>             <span style="color:#f92672">=&gt;</span>  $title,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">mode</span>              <span style="color:#f92672">=&gt;</span>  <span style="color:#ae81ff">0750</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">require</span>           <span style="color:#f92672">=&gt;</span>  [ <span style="color:#66d9ef">User</span>[$title], <span style="color:#a6e22e">Group</span>[$title] ],<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>I used the latest version of <code>puppet-lint</code> to ensure that all stylistic recommendations were followed properly. I derived this code from <a href="http://www.craigdunn.org/2011/03/puppet-working-with-define-based-virtuals/">this example</a>, which&mdash;once I wrapped my head around the concept&mdash;I found quite helpful. Note that there are no virtual resources here; those come in just a moment.</p>
+<p>Now that the defined type is done, we can use it to actually create the virtual user resources. We&rsquo;ll actually do that in the <code>accounts/manifests/init.pp</code> file, like this (download from GitHub <a href="https://gist.github.com/scottslowe/4050229">here</a>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#75715e"># Used to define/realize users on Puppet-managed systems
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">accounts</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">accounts</span>::<span style="color:#a6e22e">virtual</span> { <span style="color:#e6db74">&#39;johndoe&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">uid</span>             <span style="color:#f92672">=&gt;</span>  <span style="color:#ae81ff">1001</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">realname</span>        <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;John Doe&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">pass</span>            <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;&lt;password hash goes here&gt;&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>You&rsquo;ll just repeat that snippet of test as many times as necessary to create a virtual &ldquo;accounts::virtual&rdquo; resource for each user account you want to manage within Puppet. Each &ldquo;accounts::virtual&rdquo; resource includes a user account, a group account, and a home directory, but we manage all those individual resources as one object through the class definition.</p>
+<p>Once you&rsquo;re ready to actually instantiate an virtual resource, you do that with a snippet of code like this (available <a href="https://gist.github.com/scottslowe/4050236">here</a> from GitHub):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#66d9ef">node</span> <span style="color:#66d9ef">default</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">node</span> <span style="color:#e6db74">&#39;server.domain.net&#39;</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">include</span> <span style="color:#a6e22e">accounts</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">realize</span> (<span style="color:#a6e22e">Accounts</span>::<span style="color:#a6e22e">Virtual</span>[<span style="color:#e6db74">&#39;johndoe&#39;</span>])<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Let&rsquo;s break that down real quick:</p>
+<ul>
+<li>
+<p>This is a standard node definition, typically found in <code>nodes.pp</code> or similar.</p>
+</li>
+<li>
+<p>Note that the <code>accounts</code> class (module) is included; this is the class (module) we created earlier, where we created the virtual user resources. This makes the virtual user resources &ldquo;available&rdquo; to this node.</p>
+</li>
+<li>
+<p>Then we <em>realize</em> (or actually instantiate/create) the user account on this node with the <code>realize (Accounts::Virtual['johndoe'])</code> statement. Pay attention to the capitalized Accounts::Virtual in this code&mdash;this refers back to a resource that has already been defined. In this case, it&rsquo;s the virtual resource you defined in the <code>init.pp</code> file in the class you established earlier.</p>
+</li>
+</ul>
+<p>With this structure in place, when the node named &ldquo;server.domain.net&rdquo; runs Puppet and connects to the Puppet master, it will create the realized resources&mdash;user account, group account, and home directory&mdash;specified in the node definition. Pretty cool, huh?</p>
+<p>I freely admit that I&rsquo;m still relatively new to Puppet, so I&rsquo;m sure there are numerous ways this approach could be improved. I tested this code on both CentOS 6.3 as well as Ubuntu 12.04, and it seems to work fine on both platforms. Feel free to submit suggestions for improvement, corrections, or clarifications in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/11/23/using-encfs-with-dropbox-and-boxcryptor/">Using EncFS with Dropbox and BoxCryptor</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/11/25/presentation-from-uk-vmug/">Presentation from UK VMUG</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f25%2fusing-puppet-for-account-management%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f25%2fusing-puppet-for-account-management%2f&text=Using%20Puppet%20for%20Account%20Management" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f25%2fusing-puppet-for-account-management%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/07/09/updated-multi-os-puppet-configuration/">Updated Multi-OS Puppet Configuration</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2012/11/12/infrastructure-coders-denver-and-openstack-denver-meetups/">Infrastructure Coders Denver and OpenStack Denver Meetups</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/10/05/technology-short-take-25/">Technology Short Take #25</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

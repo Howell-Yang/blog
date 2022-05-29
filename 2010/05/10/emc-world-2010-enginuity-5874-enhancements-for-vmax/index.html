@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>EMC World 2010: Enginuity 5874 Enhancements for VMAX - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="EMC World 2010: Enginuity 5874 Enhancements for VMAX - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="EMC World 2010: Enginuity 5874 Enhancements for VMAX - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/05/10/emc-world-2010-enginuity-5874-enhancements-for-vmax/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">EMC World 2010: Enginuity 5874 Enhancements for VMAX</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;635 words (estimated 3 minutes to read)</span>
+  <p>This is a liveblog of the session titled &ldquo;Performance Improvements and Enhancements of Enginuity 5874 for Symmetrix VMAX: What&rsquo;s New Since Last Year&rdquo;. The presenter&rsquo;s name is John Aurin. (Note: the product branding is changing from &ldquo;V-Max&rdquo; to &ldquo;VMAX&rdquo;.)</p>
+<p>The session starts with a recap of the Symmetrix VMAX architecture: the directors, front-end ports, the Virtual Matrix connectivity for sharing data between directors, and the various expansion cabinets and drives that are supported. VMAX supports EFDs (200 or 400GB), 15K Fibre Channel drives (146GB to 600GB), 10K Fibre Channel drives (400GB to 600GB), and SATA drives (1TB).</p>
+<p>The discussion now shifts to front-end connectivity on the VMAX. For mainframe connectivity, the VMAX supports zHPF for high-performance FICON connectivity. The use of zHPF for high-performance FICON connectivity improves performance (up to 214% vs. the previous-generation DMX4). 8Gb Fibre Channel support is also available with the latest VMAX software.</p>
+<p>Some best practices for front end port layout:</p>
+<ul>
+<li>
+<p>Go wide across the &ldquo;A&rdquo; ports before going deep across the &ldquo;B&rdquo; ports.</p>
+</li>
+<li>
+<p>Mix different systems across the A and B ports.</p>
+</li>
+<li>
+<p>Be careful to provide enough ports when doing frame consolidation.</p>
+</li>
+<li>
+<p>Use general recommendations for FICON on VMAX on a port level.</p>
+</li>
+</ul>
+<p>Next the speaker moves into SRDF software compression. This is off by default, but can be enabled and can be turned on for all SRDF modes. It&rsquo;s typically not recommended for SRDF/S, but is recommended for SRDF/A or Adaptive Copy. The choice to leave software compression off by default is typically because organizations deploy network optimization technologies. It cannot be enabled via SYMCLI; it must be enabled via inline command only.</p>
+<p>Cloning is the next topic that the speaker discusses. The latest release of the code supports asynchronous copy on first write with virtual provisioning. This offers a performance improvement versus the previous behavior.</p>
+<p>Fully Automated Storage Tiering (FAST) is the next topic to be discussed. The current version of FAST works only on full LUNs and is based on Symmetrix Optimizer. FAST uses multiple algorithms to make the swap/move decisions. It is supported for mainframes on the VMAX. FAST does lock the frame briefly, but it does not hold the lock for the duration of the move/swap. The presenter shows a few graphs and reports that show how FAST handles hot drives or high drive utilization by leveraging EFDs or fast Fibre Channel drives for more demanding workloads.</p>
+<p>The latest Symmetrix code release supports up to four daisy chain bays added with four engines. Two engines can now support 1200 drives; four engines can support up to 2400 drives. There is no additional latency on the extra drive bays.</p>
+<p>Now the discussion moves to zero reclamation. This is only applicable in a virtual provisioning environment. Zero reclamation is a mechanism to return (de-allocate) thin extents that contain all zeros. Zero reclamation is administrator-initiated via SYMCLI. Zero reclamation is probably a one-time event, unless the host OS on the systems attached to the VMAX have the ability to write zeros (like Sdelete).</p>
+<p>Both zero reclamation and write leveling are background tasks and don&rsquo;t affect replication, snaps, front-end workloads, etc.</p>
+<p>Write leveling is used to rebalance allocation and usage across devices when new devices are added to a virtual provisioning pool.</p>
+<p>The session wraps up with some general Enginuity performance enhancements from GA to the current code release:</p>
+<ul>
+<li>
+<p>20% improvement in throughput between 5874 GA and 5874 2Q10 SR (these improvements are due to increased use of cache locality)</p>
+</li>
+<li>
+<p>Significant enhancements in rebuild times for RAID 5 (3+1), RAID 5 (7+1), and RAID 6 (6+2) configurations from GA to latest code release</p>
+</li>
+</ul>
+<p>With that, the speaker wrapped up the session with a summary of the various topics discussed: SRDF software compression, FAST, 8Gg FC/FICON support, Zero Reclaim, Write Leveling, and Enginuity improvements (faster rebuild, more snaps, enhanced throughput).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emcworld2010">EMCWorld2010</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/symmetrix">Symmetrix</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/05/10/emc-vplex-launches-today/">EMC VPLEX Launches Today</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/05/10/emc-world-2010-coverage/">EMC World 2010 Coverage</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f10%2femc-world-2010-enginuity-5874-enhancements-for-vmax%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f10%2femc-world-2010-enginuity-5874-enhancements-for-vmax%2f&text=EMC%20World%202010%3a%20Enginuity%205874%20Enhancements%20for%20VMAX" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f10%2femc-world-2010-enginuity-5874-enhancements-for-vmax%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/05/10/emc-vplex-launches-today/">EMC VPLEX Launches Today</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2010/04/13/the-everything-vmware-at-emc-community/">The Everything VMware at EMC Community</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2010/04/12/some-emc-data-domain-announcements-today/">Some EMC Data Domain Announcements Today</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

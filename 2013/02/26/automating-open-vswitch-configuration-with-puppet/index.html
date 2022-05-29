@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Automating Open vSwitch Configuration with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Automating Open vSwitch Configuration with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Automating Open vSwitch Configuration with Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/02/26/automating-open-vswitch-configuration-with-puppet/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Automating Open vSwitch Configuration with Puppet</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;386 words (estimated 2 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you a way to automate the configuration of <a href="http://openvswitch.org">Open vSwitch (OVS)</a> using <a href="http://www.puppetlabs.com">Puppet</a>. While this method will work, it is not without its drawbacks (which I&rsquo;ll explain later in the post). I freely admit that there might be better ways of accomplishing this task; this is one simple way that I discovered.</p>
+<p>I wish I could say that this method of automating OVS with Puppet was clever, but&mdash;to be honest&mdash;it&rsquo;s really more of a brutish hack that anything else. In an earlier post, I described <a href="/2013/02/07/exploring-rhel-ovs-integrations/">some integrations between RHEL and OVS</a> that allows you to use interface configuration files in <code>/etc/sysconfig/network-scripts</code> to configure portions of OVS. For example, you could use this interface configuration file to create an OVS internal interface for management traffic:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>DEVICE=&#34;mgmt0&#34;
+</span></span><span style="display:flex;"><span>BOOTPROTO=&#34;static&#34;
+</span></span><span style="display:flex;"><span>ONBOOT=&#34;yes&#34;
+</span></span><span style="display:flex;"><span>DEVICETYPE=&#34;ovs&#34;
+</span></span><span style="display:flex;"><span>TYPE=&#34;OVSIntPort&#34;
+</span></span><span style="display:flex;"><span>IPADDR=10.11.12.13
+</span></span><span style="display:flex;"><span>NETMASK=255.255.255.0
+</span></span><span style="display:flex;"><span>OVS_BRIDGE=&#34;ovsbr0&#34;
+</span></span><span style="display:flex;"><span>HOTPLUG=&#34;no&#34;
+</span></span></code></pre></div><p>Further, based on a number of the Puppet-related posts I&rsquo;ve written (<a href="/2012/07/05/using-puppet-with-multiple-operating-systems/">this one</a>, for example), you probably know that Puppet has the ability to enforce the presence and contents of file-based resources.</p>
+<p>So, Puppet can create and manage files, and files can be used to configure OVS. You can probably see where this is going. That&rsquo;s right&mdash;if we use Puppet to manage interface configuration scripts, we can automate the configuration of OVS (only on systems running RHEL or RHEL variants, naturally).</p>
+<p>Here&rsquo;s a snippet of Puppet code that could be used to automate the configuration of OVS to use an internal interface for management traffic:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#75715e"># This code declares a file resource to manage an interface
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"># configuration script on RHEL/RHEL variants for automated
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"># configuration of OVS.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">file</span> {<span style="color:#e6db74">&#39;/etc/sysconfig/network-scripts/ifcfg-mgmt0&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">ensure</span>                <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;present&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">source</span>                <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;puppet:///modules/module-name/ovs-ifcfg-mgmt0&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>As I said, this is a bit of a brutish hack&mdash;not an elegant solution, but one that works. Naturally, because this builds on the RHEL-OVS integrations, you&rsquo;ll need to do an <code>ifdown</code> and/or <code>ifup</code> to make the change(s) effective. (One could likely use an <code>exec</code> statement in the Puppet manifest to run these commands for you.) Another drawback is that this only works on RHEL and RHEL variants, whereas both OVS and Puppet are far more widely supported. Still, it might come in handy in some situations.</p>
+<p>If you have corrections, clarifications, or suggestions, please feel free to speak up in the comments below. Courteous comments are both encouraged and welcomed!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/redhat">RedHat</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/02/25/life-at-vmware-two-weeks-in/">Life at VMware, Two Weeks In</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/03/05/technology-short-take-30/">Technology Short Take #30</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f26%2fautomating-open-vswitch-configuration-with-puppet%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f26%2fautomating-open-vswitch-configuration-with-puppet%2f&text=Automating%20Open%20vSwitch%20Configuration%20with%20Puppet" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f26%2fautomating-open-vswitch-configuration-with-puppet%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/02/07/looking-ahead-my-2013-projects/">Looking Ahead: My 2013 Projects</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2012/10/29/technology-short-take-26/">Technology Short Take #26</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

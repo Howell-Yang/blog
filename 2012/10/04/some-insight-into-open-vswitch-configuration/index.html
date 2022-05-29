@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some Insight into Open vSwitch Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some Insight into Open vSwitch Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some Insight into Open vSwitch Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/04/some-insight-into-open-vswitch-configuration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some Insight into Open vSwitch Configuration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1000 words (estimated 5 minutes to read)</span>
+  <p>As you may already know, I&rsquo;ve been working with <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> for a few weeks now, trying to wrap my head around how this open source project works. One thing that I really struggled with&mdash;and still struggle with, to a certain extent&mdash;is a lack of user-friendly documentation. While there are a few posts that provide some basic instructions, I haven&rsquo;t found any good articles that provide a bit more depth and more explanation. Maybe it&rsquo;s just me, but I like to know <em>why</em> I&rsquo;m typing certain commands, and <em>how</em> those commands work.</p>
+<p>What <em>is</em> relatively well-documented are tasks like creating a bridge, adding ports to a bridge, or creating a bond. These tasks use commands like <code>ovs-vsctl add-br</code> or <code>ovs-vsctl add-port</code>. These commands are pretty easy to understand, reasonably well-documented in the help screens and the manpages, and provide decent error messages back to the user if the syntax is wrong. What <em>isn&rsquo;t</em> quite so well-documented are tasks like VLANs or LACP, and that&rsquo;s where I was struggling.</p>
+<p>(OK, rant over.)</p>
+<p>Anyway, I think that I&rsquo;ve finally made some progress, and I wanted to share what I&rsquo;ve found with you. (At some point in the near future, I intend to post some &ldquo;intro to OVS basics&rdquo; posts to help others that might be learning OVS for the first time like me.)</p>
+<p>So, let&rsquo;s say that you want to set the VLANs that are allowed across an OVS port. By default, all OVS ports are VLAN trunks, but based on my experience you still need to set the VLANs that are allowed across the trunk before they actually act like trunks. If you&rsquo;re familiar with Cisco switches, think of this process as using the <code>switchport trunk allowed vlans</code> command.</p>
+<p>To set the VLAN trunks for a given port, use this command:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; trunks=&lt;list of VLAN IDs&gt;
+</code></pre>
+<p>Obviously, you&rsquo;ll want to substitute the correct port name and VLAN IDs in that command. If you&rsquo;re unsure of the port name to use, use <code>ovs-vsctl show</code> to review the OVS configuration and determine which port(s) to configure.</p>
+<p>If you want to configure an OVS port as a VLAN access port, use this command:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; tag=&lt;VLAN ID&gt;
+</code></pre>
+<p>Again, it should go without stating, but you&rsquo;ll want to substitute the correct values for your environment in the command above.</p>
+<p>Here&rsquo;s one more example before I provide some explanation. Let&rsquo;s say that you have a bond (a NIC team or a link aggregate) and you want to enable LACP on that bond. You&rsquo;d run this command:</p>
+<pre><code>ovs-vsctl set port &lt;port name&gt; lacp=active
+</code></pre>
+<p>The &ldquo;port name&rdquo; in this case would be something like bond0, which is a bond you&rsquo;ve created using <code>ovs-vsctl add-bond</code> command. Your physical switch must be properly configured as well in order to support LACP on the appropriate physical switch ports.</p>
+<p>What are these commands doing, exactly? This is the part that I couldn&rsquo;t find documented (well) anywhere. I saw lots of references to <code>ovs-vsctl</code> parameters like <code>set interface</code> or <code>set port</code>, but no clear explanation of what these commands were doing, or why. Almost every single example I saw also used these commands during the process of creating a bridge, bond, port, or interface (not afterward). What if you needed to modify the values after the object is created? Do you have to delete the object and recreate it?</p>
+<p>Oddly enough, it was <a href="http://blog.sflow.com/2010/05/configuring-open-vswitch.html">this post</a> (which has <em>nothing</em> to do with VLANs, trunks, or LACP, but instead focuses on sFlow) that sparked my understanding. I was reading the post on how to configure OVS for sFlow while also reviewing the manpage for <code>ovs-vsctl</code> when I had the epiphany: these objects (bridge, port, bond, interface) are <em>tables</em> in the OVSDB, so you need to use the OVSDB-related parameters for <code>ovs-vsctl</code> in order to modify their properties.</p>
+<p>Looking at the <code>ovs-vsctl</code> manpage (or the <code>--help</code> screen), you can see that there are several DB-related commands. Here&rsquo;s the generic form:</p>
+<pre><code>ovs-vsctl &lt;command&gt; &lt;table name&gt; &lt;record name&gt; &lt;setting=value&gt;
+</code></pre>
+<p>In this generic command, <code>&lt;command&gt;</code> would be something like set, get, or list, and the <code>&lt;table name&gt;</code> would be replaced by a specific OVSDB table. For example, one such table is <code>port</code>. Let&rsquo;s plug a specific command and a specific table into the generic form:</p>
+<pre><code>ovs-vsctl set port &lt;record name&gt; &lt;setting=value&gt;
+</code></pre>
+<p>(Did something just click with you?)</p>
+<p>We could continue plugging specific items into the generic form to arrive at a command like this:</p>
+<pre><code>ovs-vsctl set port bond0 trunks=10,20,30,40,50
+</code></pre>
+<p>The trick, of course, is knowing what values to substitute into the command to manipulate the OVS database in the right way. Fortunately, there are a couple of commands that can help.</p>
+<p>To see all the OVS bridges and their settings, use this command:</p>
+<pre><code>ovs-vsctl list bridge
+</code></pre>
+<p>To see all the OVS ports and their settings, use this command:</p>
+<pre><code>ovs-vsctl list port
+</code></pre>
+<p>Finally, to see all the OVS interfaces and their settings, use this command:</p>
+<pre><code>ovs-vsctl list interface
+</code></pre>
+<p>You can add a specific record to the above commands; for example, to see the settings for a port named <code>bond0</code>:</p>
+<pre><code>ovs-vsctl list port bond0
+</code></pre>
+<p>This will show you the settings that are available for that particular record; you can then use <code>ovs-vsctl set</code> as described earlier to set the value for a setting. This is how you configure VLAN trunks (by setting the value of the trunks setting for a particular port) or enable LACP (by setting the value of the LACP setting for a particular port). These commands can be run when a record is created, like this:</p>
+<pre><code>ovs-vsctl add-bond br0 bond0 eth0 eth1 lacp=active trunks=10,11,12
+</code></pre>
+<p>Or you can run the commands after the record/object is created, like this:</p>
+<pre><code>ovs-vsctl set port bond0 lacp=active trunks=10,11,12
+</code></pre>
+<p>Hopefully, this additional information and insight&mdash;which seems so simple now that I understand it&mdash;will prove helpful to others.</p>
+<p>If there are errors or inaccuracies in my information, please speak up in the comments and correct me. This will also help other readers. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/09/18/calling-for-the-best-storage-recommendations/">Calling for the Best Storage Recommendations</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/05/technology-short-take-25/">Technology Short Take #25</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f04%2fsome-insight-into-open-vswitch-configuration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f04%2fsome-insight-into-open-vswitch-configuration%2f&text=Some%20Insight%20into%20Open%20vSwitch%20Configuration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f04%2fsome-insight-into-open-vswitch-configuration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/08/17/installing-kvm-and-open-vswitch-on-ubuntu/">Installing KVM and Open vSwitch on Ubuntu</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2006/06/04/strataguard-free/">StrataGuard Free</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

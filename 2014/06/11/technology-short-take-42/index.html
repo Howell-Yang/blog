@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #42 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #42 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #42 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/06/11/technology-short-take-42/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #42</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1170 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #42, another installation in my ongoing series of irregularly published collections of news, items, thoughts, rants, raves, and tidbits from around the Internet, with a focus on data center-related technologies. Here&rsquo;s hoping you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Anthony Burke&rsquo;s series on VMware NSX continues with <a href="http://networkinferno.net/installing-vmware-nsx-part-5">part 5</a>.</p>
+</li>
+<li>
+<p>Aaron Rosen, a Neutron contributor, recently published a post about a Neutron extension called Allowed-Address-Pairs and how you can use it <a href="http://blog.aaronorosen.com/implementing-high-availability-instances-with-neutron-using-vrrp/">to create high availability instances using VRRP</a> (via keepalived). Very cool stuff, in my opinion.</p>
+</li>
+<li>
+<p>Bob McCouch has a post over at Network Computing (where I&rsquo;ve recently started blogging as well&mdash;see <a href="http://www.networkcomputing.com/cloud-infrastructure/virtual-machines-vs-containers-a-matter-of-scope/a/d-id/1269190">my first post</a>) discussing his view on how software-defined networking (SDN) will <a href="http://www.networkcomputing.com/sdn-waiting-for-the-trickle-down-effect/a/d-id/1204407">trickle down</a> to small and mid-sized businesses. He makes comparisons among server virtualization, 10 Gigabit Ethernet, and SDN, and feels that in order for SDN to really hit this market it needs to be &ldquo;not a user-facing feature, but rather a means to an end&rdquo; (his words). I tend to agree&mdash;focusing on SDN is focusing on the mechanism, rather than focusing on the problems the mechanism can address.</p>
+</li>
+<li>
+<p>Want or need to use multiple external networks in your OpenStack deployment? Lars Kellogg-Stedman shows you how in this post on <a href="http://blog.oddbit.com/2014/05/28/multiple-external-networks-wit/">multiple external networks with a single L3 agent</a>.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>There was some noise this past week about Cisco UCS moving into the top x86 blade server spot for North America in Q1 2014. Kevin Houston takes a moment to explore some ideas why Cisco was so successful in <a href="http://bladesmadesimple.com/2014/06/the-secret-to-how-cisco-took-the-1-blade-server-spot/">this post</a>. I agree that Cisco had some innovative ideas in UCS&mdash;integrated management and server profiles come to mind&mdash;but my biggest beef with UCS right now is that it is still primarily a north/south (server-to-client) architecture in a world where east/west (server-to-server) traffic is becoming increasingly critical. Can UCS hold on in the face of a fundamental shift like that? I don&rsquo;t know.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Need to scramble some data on a block device? Check out <a href="http://www.commandlinefu.com/commands/view/13440/securely-destroy-data-on-given-device-hugely-faster-than-devurandom">this command</a>. (I love the commandlinefu.com site. It reminds me that I still have so much yet to learn.)</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>Want to play around with OpenDaylight and OpenStack? Brent Salisbury has <a href="http://networkstatic.net/updated-devstack-opendaylight-vm-image-for-openstack-icehouse/">a write-up</a> on how to OpenStack Icehouse (via DevStack) together with OpenDaylight.</p>
+</li>
+<li>
+<p>Puppet Labs has released a module that allows users to programmatically (via Puppet) provision and configure Google Compute Platform (GCP) instances. More details are available in <a href="http://puppetlabs.com/blog/automate-google-compute-engine-puppet">the Puppet Labs blog post</a>.</p>
+</li>
+<li>
+<p>I love how developers come up with these themes around certain projects. Case in point: &ldquo;Heat&rdquo; is the name of the project for orchestrating resources in OpenStack, HOT is the name for the format of Heat templates, and <a href="http://dev.cloudwatt.com/en/blog/introducing-flame-automatic-heat-template-generation.html">Flame is the name of a new project to automatically generate Heat templates</a>.</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>I can&rsquo;t imagine that anyone has been immune to the onslaught of information on Docker, but here&rsquo;s an article that might be helpful if you&rsquo;re still looking for <a href="http://developerblog.redhat.com/2014/05/15/practical-introduction-to-docker-containers/">a quick and practical introduction</a>.</p>
+</li>
+<li>
+<p>Many of you are probably familiar with Razor, the project that former co-workers Nick Weaver and Tom McSweeney created when they were at EMC. Tom has since moved on to CSC (via the vCHS team at VMware) and has launched a &ldquo;next-generation&rdquo; version of Razor called <a href="https://github.com/csc/Hanlon">Hanlon</a>. Read more about Hanlon and why this is a new/separate project in Tom&rsquo;s blog post <a href="http://osclouds.wordpress.com/2014/05/22/announcing-hanlon-and-the-hanlon-microkernel/">here</a>.</p>
+</li>
+<li>
+<p>Looking for a bit of clarity around <a href="https://coreos.com">CoreOS</a> and <a href="http://www.projectatomic.io">Project Atomic</a>? I found <a href="http://major.io/2014/05/13/coreos-vs-project-atomic-a-review/">this post by Major Hayden</a> to be extremely helpful and informative. Both of these projects are on my radar, though I&rsquo;ll probably focus on CoreOS first as the (currently) more mature solution.</p>
+</li>
+<li>
+<p>Linux Journal has a nice multi-page <a href="http://www.linuxjournal.com/content/docker-lightweight-linux-containers-consistent-development-and-deployment">write-up on Docker containers</a> that might be useful if you are still looking to understand Docker&rsquo;s basic building blocks.</p>
+</li>
+<li>
+<p>I really enjoyed Donnie Berkholz&rsquo; piece on <a href="http://redmonk.com/dberkholz/2014/05/20/microservices-and-the-migrating-unix-philosophy/">microservices and the migrating Unix philosophy</a>. It was a great view into how composability can (and does) shift over time. Good stuff, I highly recommend reading it.</p>
+</li>
+<li>
+<p>cURL is an incredibly useful utility, especially in today&rsquo;s age of HTTP-based REST API. Here&rsquo;s a list of <a href="http://httpkit.com/resources/HTTP-from-the-Command-Line/">9 uses for cURL that are worth knowing</a>. <a href="http://blogs.plexibus.com/2009/01/15/rest-esting-with-curl/">This article</a> on testing REST APIs with cURL is handy, too.</p>
+</li>
+<li>
+<p>And for something entirely differentI know that folks love to beat up AppleScript, but it&rsquo;s <a href="http://iworkautomation.com/keynote/examples-doc-from-outline.html">cross-application tasks like this</a> that make it useful.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Someone recently brought <a href="http://www.openvstorage.com/">the open source Open vStorage project</a> to my attention. Open vStorage compares itself to VMware VSAN, but supporting multiple storage backends and supporting multiple hypervisors. Like a lot of other solutions, it&rsquo;s implemented as a VM that presents NFS back to the hypervisors. If anyone out there has used it, I&rsquo;d love to hear your feedback.</p>
+</li>
+<li>
+<p>Erik Smith at EMC has published a series of articles on &ldquo;virtual storage networks.&rdquo; There&rsquo;s some interesting content there&mdash;I haven&rsquo;t finished reading all of the posts yet, as I want to be sure to take the time to digest them properly. If you&rsquo;re interested, I suggest starting out with <a href="http://brasstacksblog.typepad.com/brass-tacks/2014/04/an-introduction-to-virtual-storage-networks.html">his introductory post</a> (which, strangely enough, <em>wasn&rsquo;t</em> the first post in the series), then moving on to <a href="http://brasstacksblog.typepad.com/brass-tacks/2014/04/virtual-storage-networks-part-1.html">part 1</a>, <a href="http://brasstacksblog.typepad.com/brass-tacks/2014/04/virtual-storage-networks-part-2-requirements-for-multi-tenant-storage.html">part 2</a>, and <a href="http://brasstacksblog.typepad.com/brass-tacks/2014/05/virtual-storage-networks-part-3-multi-tenant-capable-topologies.html">part 3</a>.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Did you happen to see this write-up on <a href="https://blogs.vmware.com/vcloud/2014/04/migrate-vmware-fusion-vm-vcloud-hybrid-service.html">migrating a VMware Fusion VM to VMware&rsquo;s vCloud Hybrid Service</a>? For now&mdash;I believe there are game-changing technologies out there that will alter this landscape&mdash;one of the very tangible benefits of vCHS is its strong interoperability with your existing vSphere (and Fusion!) workloads.</p>
+</li>
+<li>
+<p>Need a listing of the IP addresses in use by the VMs on a given Hyper-V host? Ben Armstrong <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2014/04/18/listing-all-the-ip-addresses-used-by-vms.aspx">shares a bit of PowerShell code</a> that produces just such a listing. As Ben points out, this can be pretty handy when you&rsquo;re trying to track down a particular VM.</p>
+</li>
+<li>
+<p>vCenter Log Insight 2.0 was recently announced; Vladan Seget has <a href="http://www.vladan.fr/vmware-vcenter-log-insight-2-0-faster-machine-learning-capabilities/">a decent write-up</a>. I&rsquo;m thinking of putting this into my home lab soon for gathering event information from VMware NSX, OpenStack, and the underlying hypervisors. I just need more than 24 hours in a day</p>
+</li>
+<li>
+<p>William Lam has <a href="http://www.virtuallyghetto.com/2014/05/quick-tip-lldpnetmap-a-handy-utility-to-map-pnic-to-pswitch-on-esxi.html">an article on lldpnetmap</a>, a little-known utility for mapping ESXi interfaces to physical switches. As the name implies, this relies on LLDP, so switches that don&rsquo;t support LLDP or that don&rsquo;t have LLDP enabled won&rsquo;t work correctly. Still, a useful utility to have in your toolbox.</p>
+</li>
+<li>
+<p>Technology previews of the next versions of Fusion (Fusion 7) and Workstation (Workstation 11) are available; see Eric Sloof&rsquo;s articles (<a href="http://www.ntpro.nl/blog/archives/2639-VMware-Fusion-7-Technology-Preview-Now-Available.html">here</a> and <a href="http://www.ntpro.nl/blog/archives/2638-VMware-Workstation-11-Technology-Preview-Now-Available.html">here</a> for Fusion and Workstation, respectively) for more details.</p>
+</li>
+<li>
+<p>vSphere 4 (and associated pieces) are <a href="http://planetvm.net/blog/?p=2684">no longer under general support</a>. Sad face, but time stops for no man (or product).</p>
+</li>
+<li>
+<p>Having some problems with VMware Fusion&rsquo;s networking? Cody Bunch channels his inner Chuck Norris to <a href="http://openstack.prov12n.com/kicking-vmware-fusion-networking-in-the-teeth/">kick VMware Fusion networking in the teeth</a>.</p>
+</li>
+<li>
+<p>Want to preview OS X Yosemite? Check out William Lam&rsquo;s <a href="http://www.virtuallyghetto.com/2014/06/test-drive-apple-osx-10-10-yosemite-on-vmware-fusion-vsphere.html">guide to using Fusion or vSphere to preview the new OS X beta release</a>.</p>
+</li>
+</ul>
+<p>I&rsquo;d better wrap this up now, or it&rsquo;s going to turn into <a href="http://virtualgeek.typepad.com/virtual_geek/2014/03/a-few-thoughts-and-opinions-on-vsan-and-hyperconvergence.html">one of Chad&rsquo;s posts</a>. (Just kidding, Chad!) Thanks for taking the time to read this far!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/06/09/docker-making-its-move/">Docker Making Its Move</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/06/13/openstack-architecture-and-design-book-sprint/">OpenStack Architecture and Design Book Sprint</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f11%2ftechnology-short-take-42%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f11%2ftechnology-short-take-42%2f&text=Technology%20Short%20Take%20%2342" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f11%2ftechnology-short-take-42%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2014/02/06/technology-short-take-38/">Technology Short Take #38</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

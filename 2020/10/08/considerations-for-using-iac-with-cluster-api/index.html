@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Considerations for using IaC with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Considerations for using IaC with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Considerations for using IaC with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/10/08/considerations-for-using-iac-with-cluster-api/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Considerations for using IaC with Cluster API</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;530 words (estimated 3 minutes to read)</span>
+  <p>In other posts on this site, I&rsquo;ve talked about both infrastructure-as-code (see <a href="/tags/terraform">my posts on Terraform</a> or <a href="/tags/pulumi">my posts on Pulumi</a>) and somewhat separately I&rsquo;ve talked about Cluster API (see <a href="/tags/capi">my posts on Cluster API</a>). And while I&rsquo;ve discussed the idea of <a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">using existing AWS infrastructure with Cluster API</a>, in this post I wanted to try to think about how these two technologies play together, and provide some considerations for using them together.</p>
+<p>I&rsquo;ll focus here on AWS as the cloud provider/platform, but many of these considerations would also apply&mdash;in concept, at least&mdash;to other providers/platforms.</p>
+<p>In no particular order, here are some considerations for using infrastructure-as-code and Cluster API (CAPI)&mdash;specifically, the Cluster API Provider for AWS (CAPA)&mdash;together:</p>
+<ul>
+<li>If you&rsquo;re going to need the CAPA workload clusters to have access to other AWS resources, like applications running on EC2 instances or managed services like RDS, you&rsquo;ll need to use the <code>additionalSecurityGroups</code> functionality, as I described in <a href="/2020/04/22/using-existing-aws-security-groups-with-cluster-api/">this blog post</a>.</li>
+<li>The AWS cloud provider requires certain tags to be assigned to resources (see <a href="/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">this post</a> for more details), and CAPI automatically provisions new workload clusters with the AWS cloud provider when running on AWS. Thus, you&rsquo;ll want to make sure that the IaC tool you&rsquo;re using is assigning the correct tags on the AWS resources.</li>
+<li>Continuing on the tag theme, you&rsquo;ll also need to make sure that the tags match the cluster name assigned in the workload cluster YAML manifest. So, for example, if your workload cluster YAML manifest defines a cluster name of &ldquo;blue&rdquo;, the AWS tag must be <code>kubernetes.io/cluster/blue</code>. Otherwise, the AWS cloud provider won&rsquo;t function correctly.</li>
+<li>When it comes to bastion hosts, both CAPA and your IaC tool of choice can create them. You&rsquo;ll probably want to have them handled by the IaC tool (presumably you have other AWS resources you&rsquo;re managing to which you may also need access), in which case the first bullet point above&mdash;about using the <code>additionalSecurityGroups</code> functionality to enable access to other AWS resources&mdash;applies.</li>
+<li>CAPA will need access to information about the infrastructure it is consuming. Per <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/master/docs/book/src/topics/consuming-existing-aws-infrastructure.md">the upstream docs</a>, CAPA needs the VPC ID and the IDs of all the subnets. Ideally, you&rsquo;ll want some sort of automated (or relatively automated) means of getting this information out of your IaC solution and into CAPA. For a few ideas of how this might be done with Pulumi, check out <a href="https://github.com/scottslowe/2020-ces-iac-capi">this repository</a> that I created to accompany my Cloud Engineering Summit session.</li>
+<li>Keep in mind that using IaC to manage infrastructure but using CAPI/CAPA to manage your Kubernetes clusters creates a &ldquo;split management&rdquo; scenario. One potential benefit to CAPI/CAPA is that it can handle the lifecycle of both Kubernetes clusters and the underlying infrastructure. Leveraging IaC with CAPI/CAPA means giving up that potential benefit. On the flip side, using IaC for infrastructure may provide greater flexibility and more options for customization. As with so many things in technology, making this decision is all about weighing the trade-offs.</li>
+</ul>
+<p>No doubt there are more considerations worth discussing, but this short list should get you started. Feel free to contact <a href="https://twitter.com/scott_lowe">me on Twitter</a> or find <a href="https://kubernetes.slack.com">me on the Kubernetes Slack</a> if you&rsquo;re interested in talking more about this topic.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/pulumi">Pulumi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/10/02/technology-short-take-131/">Technology Short Take 131</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/10/23/technology-short-take-132/">Technology Short Take 132</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f08%2fconsiderations-for-using-iac-with-cluster-api%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f08%2fconsiderations-for-using-iac-with-cluster-api%2f&text=Considerations%20for%20using%20IaC%20with%20Cluster%20API" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f08%2fconsiderations-for-using-iac-with-cluster-api%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/04/24/technology-short-take-126/">Technology Short Take 126</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2019/06/21/technology-short-take-115/">Technology Short Take 115</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">Consuming Pre-Existing AWS Infrastructure with Cluster API</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

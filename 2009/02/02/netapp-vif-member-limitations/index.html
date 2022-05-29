@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>NetApp VIF Member Limitations - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="NetApp VIF Member Limitations - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="NetApp VIF Member Limitations - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/02/02/netapp-vif-member-limitations/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">NetApp VIF Member Limitations</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;323 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;ve written a couple of times about NetApp virtual interfaces (VIFs), which are Data ONTAP&rsquo;s name for a link aggregate using either EtherChannel or dynamic LACP. The earlier articles I wrote are:</p>
+<p><a href="/2007/06/13/cisco-link-aggregation-and-netapp-vifs/">Cisco Link Aggregation and NetApp VIFs</a><br>
+<a href="/2008/01/08/lacp-with-cisco-switches-and-netapp-vifs/">LACP with Cisco Switches and NetApp VIFs</a></p>
+<p>I came across an issue today of which I was not aware. I&rsquo;ve been working on a new NetApp deployment with a fellow engineer that called for a number of different VIFs to be created: one for CIFS traffic, one for NFS traffic, and one for SnapMirror traffic. (Yes, I know the SnapMirror VIF won&rsquo;t really use more than one link because it&rsquo;s all point-to-point traffic; it&rsquo;s primarily for redundancy.) There were some really strange network issues going on, like losing connectivity to the default gateway one moment and then network connectivity being restored the next. We were having a hard time troubleshooting the problem until one of the network engineers casually commented that it looked like the static LACP bundles (the aggregated links represented by the VIFs on the NetApp storage array) weren&rsquo;t really coming up.</p>
+<p>That comment lead to a deeper inspection of the NetApp VIFs and eventually a case with NetApp. The end result was that we learned that multimode VIFs can&rsquo;t span built-in NICs and add-in NICs. Since the FAS3000 series has a limited number of built-in NICs, we&rsquo;d installed two additional quad-port NICs and then, as was customary, created VIFs spanning the built-in NICs and the add-in NICs for maximum redundancy. Well, that doesn&rsquo;t work!</p>
+<p>Once we reconfigured the Cisco switches (these were Cisco Catalyst 3750 switches uplinked via 10 Gigabit Ethernet to Catalyst 6509 switches) so that the link aggregates only contained add-in NICs or built-in NICs but not both, the connections came up fully and the network connectivity issues disappeared.</p>
+<p>So, when creating multimode VIFs, be sure to only include NICs from add-in cards <strong>or</strong> the built-in NICs, but not both.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ontap">ONTAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/01/29/im-writing-a-book/">I&#39;m Writing a Book!</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/02/04/welcome-aaron/">Welcome, Aaron!</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f02%2fnetapp-vif-member-limitations%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f02%2fnetapp-vif-member-limitations%2f&text=NetApp%20VIF%20Member%20Limitations" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f02%2fnetapp-vif-member-limitations%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/11/02/a-couple-more-articles-published-2/">A Couple More Articles Published</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2008/12/03/2031-enhancements-to-netapp-cloning-technology/">2031: Enhancements to NetApp Cloning Technology</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

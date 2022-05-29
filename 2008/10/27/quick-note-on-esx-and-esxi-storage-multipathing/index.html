@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Quick Note on ESX and ESXi Storage Multipathing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Quick Note on ESX and ESXi Storage Multipathing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Quick Note on ESX and ESXi Storage Multipathing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/10/27/quick-note-on-esx-and-esxi-storage-multipathing/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Quick Note on ESX and ESXi Storage Multipathing</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;340 words (estimated 2 minutes to read)</span>
+  <p>Rich Brambley (of <a href="http://vmetc.com/">VM /ETC</a>), Duncan Epping (of <a href="http://www.yellow-bricks.com/">Yellow Bricks</a>), and I were having a brief discussion on Twitter late last week about storage multipathing. Rich initiated the discussion with <a href="http://twitter.com/rbrambley/status/973665521">this update</a>, which prompted me to respond and thus started the conversation. Rich and I continued the conversation via e-mail (Twitter isn&rsquo;t exactly the best medium for that kind of exchange), and prompted by his questions I did some digging. Here&rsquo;s what I came up with.</p>
+<p>This <a href="https://now.netapp.com/Knowledgebase/solutionarea.asp?id=kb44784">NetApp KB article</a> (NOW login required to view) is kind of what kick-started the entire thing. In that article, NetApp recommends that users set the preferred path for every LUN anytime an ESXi server is rebooted. This behavior seemed curious to me, so I inquired with some industry contacts to see where this recommendation may have originated.</p>
+<p>One of my contacts responded that the <code>vicfg-mpath</code> command, part of the Remote CLI used to manage ESXi, is broken in that it lists the target&rsquo;s WWN <em>not</em> the target&rsquo;s WWPN. Apparently this will be addressed in a future version of the <code>vicfg-mpath</code> tool. To compound the issue, setting preferred paths from VirtualCenter is apparently not persistent across reboots because the VML LUN name is not used. Hence, when working with ESXi, neither method of setting the preferred path&mdash;<code>vicfg-mpath</code> or VirtualCenter&mdash;can provide persistent settings. Hence, the recommendation in the NetApp KB article.</p>
+<p>But what about VMware ESX? The issue about using VirtualCenter remains, but <code>esxcfg-mpath</code> allows users to use the VML LUN name during the command to ensure that paths are persistent across reboots. In fact, there&rsquo;s a note in the help screen of <code>esxcfg-mpath</code> (<code>esxcfg-mpath -h</code>) that mentions the fact that VMHBA names are not persistent across reboots, and users should use VML LUN names to be sure of consistency.</p>
+<p>So there you have it&mdash;when using ESXi you&rsquo;ll want to set the preferred path for a LUN when you reboot, but if you using ESX you can avoid that trouble by using the VML LUN name in the <code>esxcfg-mpath</code> command. As clear as mud, right?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/10/24/hyper9-beta-invitations/">Hyper9 Beta Invitations</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/10/28/vima-rolls-out/">VIMA Rolls Out</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f27%2fquick-note-on-esx-and-esxi-storage-multipathing%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f27%2fquick-note-on-esx-and-esxi-storage-multipathing%2f&text=Quick%20Note%20on%20ESX%20and%20ESXi%20Storage%20Multipathing" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f27%2fquick-note-on-esx-and-esxi-storage-multipathing%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/08/05/flexclones-versus-deduplication-with-vmware-infrastructure/">FlexClones Versus Deduplication with VMware Infrastructure</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2007/10/08/full-vm-recovery-with-netapp-snapshots/">Full VM Recovery with NetApp Snapshots</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

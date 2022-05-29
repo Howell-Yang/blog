@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>On the Topic of Lock-In - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="On the Topic of Lock-In - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="On the Topic of Lock-In - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/03/17/on-topic-of-lock-in/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">On the Topic of Lock-In</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;659 words (estimated 4 minutes to read)</span>
+  <p>While talking with customers over the past couple of weeks during a multi-country/multi-continent trip, one phrase that kept coming up is &ldquo;lock-in&rdquo;, as in &ldquo;we&rsquo;re trying to avoid lock-in&rdquo; or &ldquo;this approach doesn&rsquo;t have any lock-in&rdquo;. While I&rsquo;m not a huge fan of memes, this phrase always brings to mind <em>The Princess Bride</em>, Vizzini&rsquo;s use of the word &ldquo;inconceivable,&rdquo; and Inigo Montoya&rsquo;s famous response. C&rsquo;mon, you know you want to say it: &ldquo;You keep using that word. I do not think it means what you think it means.&rdquo; I feel the same way about lock-in, and here&rsquo;s why.</p>
+<p>Lock-in, as I understand how it&rsquo;s viewed, is an inability to migrate from your current solution to some other solution. For example, you might feel &ldquo;locked in&rdquo; to Microsoft (via Office or Windows) or &ldquo;locked in&rdquo; to Oracle (via their database platform or applications), or even &ldquo;locked in&rdquo; to VMware through vCenter and vSphere. Although these solutions/platforms/products might be the right fit for your particular problem/need, the fact that you can&rsquo;t migrate is a problem. Here you are, running a product or solution or platform that is the right fit for your needs, but because you may not be able to migrate to some other platform at some point in the future you&rsquo;re &ldquo;locked in.&rdquo; Therefore, in order to keep your options open, you feel like you have to choose a different solution, perhaps even settling for a solution that is less ideally suited to solve the problem(s) you&rsquo;re trying to solve.</p>
+<p>Based on this understanding, the key question that comes to my mind is this: what makes you think you can avoid lock-in?</p>
+<p>The reality is that <em>every single platform/solution/product out there has lock-in.</em> They might have various levels of lock-in, but lock-in exists everywhere:</p>
+<ul>
+<li>Linux has lock-in. (Gasp!) Don&rsquo;t believe me? Ever run into a problem running a script because it contained idiosyncrasies specific to a particular distribution? Yes, these situations can be minimized, but the fact remains that there is some level of lock-in present.</li>
+<li>KVM has lock-in. (Gasp!) You can&rsquo;t run QCOW2 disk images on another hypervisor without conversion. Yes, conversion tools are available&mdash;but so are conversion tools for vSphere and Hyper-V.</li>
+<li>Docker has lock-in. (Gasp!) Can you take a Docker container and run it using LXC? Yes, work is progressing on this front, but we&rsquo;re not there yet, and may never be.</li>
+<li>OpenStack has lock-in. (Gasp!) Try writing some Heat templates in HOT format and then see if they&rsquo;ll work with a cloud platform other than OpenStack.</li>
+<li>Public cloud providers have lock-in. (Gasp!) Let&rsquo;s face it, once you start taking advantage of services or APIs that are specific to a provider, you&rsquo;re locked in. Or there&rsquo;s the concept of being locked in because it&rsquo;s <em>too expensive</em> to get your data out (think multiple terabytes of data in Amazon S3).</li>
+</ul>
+<p>The thing that gets me is when people place avoiding lock-in (which is impossible) above other, potentially more important, design considerations. Let&rsquo;s take operational costs as an example. Let&rsquo;s assume, just for the purposes of discussion, that using KVM on Linux offers less lock-in than using VMware vSphere. Does it offer less operational cost? Is it easier and cheaper to operate? What about the staff training that would be required to operate it? What about backups? What about monitoring? You can&rsquo;t ignore these design considerations in favor of trying to avoid the unavoidable.</p>
+<p>The point is not to try to avoid lock-in&mdash;because you can&rsquo;t&mdash;but to recognize that &ldquo;lock-in&rdquo; is simply another variable to be considered in the overall design and architecture of your system. As a variable to be considered in design, you can then place an appropriate emphasis on minimizing lock-in versus solving business applications versus operational costs versus the cost of future migrations versus&hellip;well, you get the idea.</p>
+<p>Let&rsquo;s stop placing the avoidance of &ldquo;lock in&rdquo; above other equally important design considerations and instead focus on finding the <em>best</em> solution for the problem at hand.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/03/09/full-stack-journey-ep003/">Full Stack Journey Episode #3: Jonathan Frappier</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/03/18/technology-short-take-63/">Technology Short Take #63</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f17%2fon-topic-of-lock-in%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f17%2fon-topic-of-lock-in%2f&text=On%20the%20Topic%20of%20Lock-In" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f17%2fon-topic-of-lock-in%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2016/01/29/technology-short-take-60/">Technology Short Take #60</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2016/01/15/technology-short-take-59/">Technology Short Take #59</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

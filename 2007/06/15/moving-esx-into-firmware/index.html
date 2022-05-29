@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Moving ESX Into Firmware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Moving ESX Into Firmware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Moving ESX Into Firmware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/06/15/moving-esx-into-firmware/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Moving ESX Into Firmware</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;323 words (estimated 2 minutes to read)</span>
+  <p>The rumor that a slimmed down version of <a href="http://www.vmware.com/products/vi/esx/">ESX Server</a>, supposedly called &ldquo;ESX Lite,&rdquo; is being developed for placement into a server&rsquo;s firmware, is circulating the Internet (see <a href="http://www.cmswire.com/cms/virtualization/embedded-esx-lites-allegedly-acooking-at-vmware-001377.php">here</a> or <a href="http://www.thincomputing.net/comment.php?comment.news.3386">here</a>). Most of these reports link back to <a href="http://searchservervirtualization.techtarget.com/originalContent/0,289142,sid94_gci1260992,00.html">a story on SearchServerVirtualization</a> which quotes sources close to VMware stating:</p>
+<blockquote>
+<p>According to several sources close to VMware, ESX Lite is real and currently under development. The new lightweight hypervisor would be installed directly on the motherboard, simplifying the deployment of an ESX host and ensuring 100% hardware integration.</p>
+</blockquote>
+<p>Virtualization.info adds that the rumor is <a href="http://www.virtualization.info/2007/06/vmware-esx-server-lite-edition-coming.html">apparently confirmed</a>.</p>
+<p>This is a smart move. It&rsquo;s smart because it derails Microsoft&rsquo;s attempts to marginalize the hypervisor by bundling it with the operating system (via Windows Server Virtualization, aka &ldquo;Viridian&rdquo;). It&rsquo;s smart because it expands the hypervisor market in new directions that no one else has yet tapped, helping VMware retain mindshare about its technical leadership and innovation. It&rsquo;s smart because it&rsquo;s the hardware vendors that have the most to lose via virtualization, and by partnering with them you remove potential future opponents.</p>
+<p>However, it&rsquo;s also a very risky move. What if &ldquo;ESX Lite&rdquo; doesn&rsquo;t (or can&rsquo;t) perform as well as &ldquo;full&rdquo; ESX Server? What if embedding the hypervisor into a server&rsquo;s firmware causes VMware to lose visibility? After all, customers wouldn&rsquo;t be buying solutions from VMware any longer, because these would be integrated with the hardware. It would be prudent for VMware to create a kind of &ldquo;VMware Inside&rdquo;-type program that maintains their visibility in the overall solution, even though it&rsquo;s all being purchased through <a href="http://www.dell.com/">Dell</a>, <a href="http://www.hp.com/">HP</a>, or <a href="http://www.ibm.com/">IBM</a>.</p>
+<p>It will be very interesting to see how this plays out, and which of the hardware vendors are &ldquo;on board&rdquo; with the effort.</p>
+<p><strong>UPDATE:</strong> In a recent blog posting, Gordon Haff agrees with me regarding this approach by VMware as a <a href="http://www.illuminata.com/perspectives/?p=330">move to forestall</a> the &ldquo;built in&rdquo; virtualization functionality that exists or will soon exist in most operating systems.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/06/15/leaving-esx-for-virtual-server/">Leaving ESX for Virtual Server?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/06/19/more-on-cpu-masking/">More on CPU Masking</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f15%2fmoving-esx-into-firmware%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f15%2fmoving-esx-into-firmware%2f&text=Moving%20ESX%20Into%20Firmware" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f06%2f15%2fmoving-esx-into-firmware%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/04/12/vmware-as-middleware/">VMware as Middleware</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2007/06/15/leaving-esx-for-virtual-server/">Leaving ESX for Virtual Server?</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

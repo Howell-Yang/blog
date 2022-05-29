@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/11/21/using-ssh-bastion-host/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using an SSH Bastion Host</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;608 words (estimated 3 minutes to read)</span>
+  <p>Secure Shell, or SSH, is something of a &ldquo;Swiss Army knife&rdquo; when it comes to administering and managing Linux (and other UNIX-like) workloads. In this post, I&rsquo;m going to explore a very specific use of SSH: the <em>SSH bastion host</em>. In this sort of arrangement, SSH traffic to servers that are not directly accessible via SSH is instead directed through a bastion host, which proxies the connection between the SSH client and the remote servers.</p>
+<p>At first, it may sound like the use of an SSH bastion host is a pretty specialized use case. In reality, though, I believe this is a design pattern that can actually be useful in a variety of situations. I plan to explore the use cases for an SSH bastion host in a future blog post.</p>
+<p>This diagram illustrates the concept of using an SSH bastion host to provide access to Linux instances running inside some sort of cloud network (like an OpenStack Neutron tenant network or an AWS VPC):</p>
+<p><img src="/public/img/ssh-bastion-host.png" alt="SSH bastion host diagram"></p>
+<p>Let&rsquo;s take a closer look at the nuts and bolts of actually setting up an SSH bastion host.</p>
+<p>First, you&rsquo;ll want to ensure you have public key authentication properly configured, both on the bastion host as well as the remote instances. This is a topic that has been discussed extensively in other locations (<a href="https://kb.iu.edu/d/aews">here</a>, for example), so I won&rsquo;t cover it here in any great detail. You can use the same key for both the bastion host and the remote instances, or different keys; you&rsquo;ll just need to ensure that the keys are loaded by <code>ssh-agent</code> appropriately so they can be used as needed. (Note that the use of public key authentication isn&rsquo;t strictly <em>required</em>, but it&rsquo;s something you really should do.)</p>
+<p>Next, you&rsquo;ll want to ensure that name resolution is working&mdash;both from the client to the bastion as well as from the bastion to the remote instances. The bastion host is going to use the hostname specified on the <code>ssh</code> command line, so if it can&rsquo;t resolve the name the connection will fail.</p>
+<p>Finally, you&rsquo;ll want to configure the <code>ProxyCommand</code> setting for the remote instances in your SSH configuration file. For example, let&rsquo;s say that you had a remote instance named &ldquo;private1&rdquo; and you wanted to run SSH connections through a bastion host called &ldquo;bastion&rdquo;. The appropriate SSH configuration might look something like this:</p>
+<pre><code>Host private1
+  IdentityFile ~/.ssh/rsa_private_key
+  ProxyCommand ssh user@bastion -W %h:%p
+
+Host bastion
+  IdentityFile ~/.ssh/bastion_rsa_key
+</code></pre>
+<p>With this configuration in place, when you type <code>ssh user@private1</code> SSH will establish a connection to the bastion host and then <em>through the bastion host</em> connect to &ldquo;private1&rdquo;, using the specified keys. The user won&rsquo;t see any of this; he or she will just see a shell for &ldquo;private1&rdquo; appear. If you dig a bit further, though (try running <code>who</code> on the remote node), you&rsquo;ll see the connections are coming from the bastion host, not the original SSH client. Handy, eh?</p>
+<p>In a future blog post, look for me to explore one or more examples of where using an SSH bastion host might be very useful (or even necessary).</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>I found <a href="https://10mi2.wordpress.com/2015/01/14/using-ssh-through-a-bastion-host-transparently/">this article</a> <em>(update: try <a href="http://web.archive.org/web/20170413054605/https://10mi2.wordpress.com/2015/01/14/using-ssh-through-a-bastion-host-transparently/">this Wayback machine version</a>; it seems the original has gone offline)</em> to be extraordinarily helpful while working through the details of an SSH bastion host configuration.</p>
+<p><strong>UPDATE 13 Sep 2016:</strong> I&rsquo;ve removed the references to the need for SSH agent forwarding, as it turns out this isn&rsquo;t required (despite indications otherwise from other tutorials). See <a href="/2016/09/13/ssh-bastion-host-follow-up/">this follow-up post</a> for more information.</p>
+<p><strong>UPDATE: 13 Jul 2020:</strong> It seems one of my original links has gone offline (thanks Lucas!), so I&rsquo;ve added a link to the Wayback Machine&rsquo;s archived copy.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/11/17/technology-short-take-56/">Technology Short Take #56</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/11/23/bootstrapping-cloud-instances-ansible/">Bootstrapping Cloud Instances into Ansible</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f21%2fusing-ssh-bastion-host%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f21%2fusing-ssh-bastion-host%2f&text=Using%20an%20SSH%20Bastion%20Host" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f21%2fusing-ssh-bastion-host%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

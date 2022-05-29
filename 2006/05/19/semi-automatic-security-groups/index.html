@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Semi-Automatic Security Groups - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Semi-Automatic Security Groups - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Semi-Automatic Security Groups - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/05/19/semi-automatic-security-groups/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Semi-Automatic Security Groups</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;562 words (estimated 3 minutes to read)</span>
+  <p>One really cool feature of <a href="http://www.microsoft.com/exchange/default.mspx">Exchange Server 2003</a> is <em>query-based distribution groups</em>. This feature allows organizations to define LDAP queries and then dynamically populate distribution groups based on the results of the LDAP query. Unfortunately, there&rsquo;s no built-in equivalent for security groups, but here&rsquo;s a reasonable workaround to create that same kind of functionality.</p>
+<p>Using the <code>dsquery</code> and <code>dsmod</code> tools in Windows Server 2003, we can create a command that issues an LDAP query, then stuffs the result of that LDAP query into an already-existing security group. Here&rsquo;s how it works.</p>
+<p>First, we use the <code>dsquery *</code> command, which allows us to define a custom LDAP query to find any kind of object within Active Directory. Let&rsquo;s say we are interested in automatically populating departmental security groups based on the department attribute for each user object. To find all the members of the Engineering group in Atlanta, we&rsquo;d use a command like this (this has been broken into three lines for readability, but should be typed in as a single line):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>dsquery * ou=Users,ou=Atlanta,ou=Locations,dc=example,dc=net 
+</span></span><span style="display:flex;"><span>-filter &#34;(&amp;(objectcategory=person)(objectclass=user)
+</span></span><span style="display:flex;"><span>(department=Engineering))&#34; -limit 1000
+</span></span></code></pre></div><p>This command will return the DNs of those user objects in the Locations/Atlanta/Users OU whose department attribute is set to Engineering. We can then pipe that output to the <code>dsmod</code> command, like so (again, lines have been broken for readability but this should be entered as a single line):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>dsquery * ou=Users,ou=Atlanta,ou=Locations,dc=example,dc=net 
+</span></span><span style="display:flex;"><span>-filter &#34;(&amp;(objectcategory=person)(objectclass=user)
+</span></span><span style="display:flex;"><span>(department=Engineering))&#34; -limit 1000 | dsmod group &#34;cn=Atlanta 
+</span></span><span style="display:flex;"><span>Engineering Dept,ou=Groups,ou=Atlanta,ou=Locations,
+</span></span><span style="display:flex;"><span>dc=example,dc=net&#34; -addmbr
+</span></span></code></pre></div><p>This command takes the output of the <code>dsquery</code> command and pipes it to the <code>dsmod</code> command, modifying the group named Atlanta Engineering Dept in the Locations/Atlanta/Groups OU. (If you anticipate more than 1,000 users in Atlanta in the Engineering department, adjust the &ldquo;-limit&rdquo; parameter accordingly.)</p>
+<p>There&rsquo;s a couple of problems, however. Once the command has run once, then subsequent times will generate an error because the users will already be a member of that group. In addition, this command doesn&rsquo;t take into account those users who have left the Engineering group. To fix this, we need a couple more commands.</p>
+<p>First, we get the members of the group using the <code>dsget</code> command:</p>
+<pre><code>dsget group &quot;cn=Atlanta Engineering Dept,ou=Groups,
+ou=Atlanta,ou=Locations,dc=example,dc=net&quot; -members
+</code></pre>
+<p>This returns a list of the DNs for those users that are currently members of the specified group. We pipe that to the <code>dsmod</code> command again to clear the group out:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>dsget group &#34;cn=Atlanta Engineering Dept,ou=Groups,
+</span></span><span style="display:flex;"><span>ou=Atlanta,ou=Locations,dc=example,dc=net&#34; -members | dsmod group 
+</span></span><span style="display:flex;"><span>&#34;cn=Atlanta Engineering Dept,ou=Groups,ou=Atlanta,ou=Locations,
+</span></span><span style="display:flex;"><span>dc=example,dc=net&#34; -rmmbr
+</span></span></code></pre></div><p>This command sequence removes all the current members of the group. Run this command before the <code>dsquery</code>, and both problems (the error about users already being a member and &ldquo;stale&rdquo; members not being removed) are corrected.</p>
+<p>By wrapping these commands into a batch file and then scheduling the batch file to run on a regular interval (an interval to be determined by your organization), you have created semi-automatic security groups that will repopulate every time this command runs.</p>
+<p>There are some caveats, of course. Since groups memberships are only updated on the access token when a user logs out and logs back in again, the changes to the group membership won&rsquo;t take effect immediately. For this reason, it&rsquo;s probably best to only run these scripts once a day during the off hours. Second, this technique is only effective if your organization is making sure the information in Active Directory is up-to-date (of course).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/05/18/openbsd-39-on-esx-server/">OpenBSD 3.9 on ESX Server</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/05/19/semi-automatic-account-maintenance/">Semi-Automatic Account Maintenance</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-security-groups%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-security-groups%2f&text=Semi-Automatic%20Security%20Groups" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-security-groups%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2005/12/22/complete-linux-ad-authentication-details/">Complete Linux-AD Authentication Details</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2005/07/22/linux-ad-integration-wrap-up/">Linux-AD Integration Wrap-Up</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

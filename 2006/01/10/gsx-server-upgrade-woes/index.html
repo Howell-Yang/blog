@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>GSX Server Upgrade Woes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="GSX Server Upgrade Woes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="GSX Server Upgrade Woes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/01/10/gsx-server-upgrade-woes/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">GSX Server Upgrade Woes</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;912 words (estimated 5 minutes to read)</span>
+  <p>The last few days have been interesting ones for me. For those of you that didn&rsquo;t already know, I&rsquo;m a network/systems engineer, and as such I&rsquo;m involved in a variety of projects with a variety of customers. Just the other day, I had the opportunity to perform an upgrade of <a href="http://www.vmware.com/products/gsx/">VMware GSX Server</a> on Windows Server 2003, from version 2.5 to version 3.2.1. Here are all the gory details.</p>
+<p>Regular readers of this weblog know that I&rsquo;m a huge fan of virtualization, and VMware&rsquo;s products&mdash;as the industry leaders in this technology&mdash;are particular favorites. I was excited, therefore, to get to participate in this upgrade. I reviewed the VMware documents in advance, noting the need to uninstall the previous version before installing the new version, and noting that virtual hardware would have to be upgraded before they would be able to take advantage of all the latest features. OK, seems fairly straightforward, so we shut down the virtual machines (VMs) and got started.</p>
+<p>The uninstall of GSX Server 2.5 is reasonably painless, except for the Blue Screen of Death that assails us halfway through the installation. We still haven&rsquo;t determined exactly what caused the BSOD, but fortunately the host server booted back up again and showed no signs of further problems. Thinking that the GSX Server 2.x uninstall was complete given that the product was no longer listed in Add/Remove Programs, I launched the GSX Server 3 installer only to be greeted with a message stating that the previous version had to be uninstalled first.</p>
+<p>Fortunately, another trip to Add/Remove Programs showed a GSX Server entry lingering there, and I was able to finally uninstall the application completely (requiring another reboot in the process). After the server came back up, I installed GSX Server 3.2.1 quickly and without incident.</p>
+<p>Next, I made a backup copy of a small Linux VM running a 2.4.x kernel. This would be the first VM back up and running under the new version of GSX Server. When the backup was complete, I tried to upgrade the virtual hardware. The attempt failed; I learned I had to install the latest version of the VMware Tools in order to upgrade the virtual hardware. OK, fair enough, but these VMs didn&rsquo;t have the VMware Tools installed because they are text-only servers (they don&rsquo;t run the X Window System). For now, the customer and I agree to leave the existing Linux VM intact and just run it &ldquo;as is.&rdquo;</p>
+<p>I boot the server with &ldquo;legacy&rdquo; virtual hardware, and it boots perfectly and the hardware detection application launches, finding some changes in the &ldquo;hardware&rdquo; and wanting to reconfigure the hardware. A bit wary, I allow the application to update the virtual server&rsquo;s configuration, and I find that the process completes quickly and without any problems. Note that this reconfiguration included the network card, which had me worried that I&rsquo;d have to recreate the network configuration. I did not&mdash;that&rsquo;s good news.</p>
+<p>A second text-only Linux VM, also with a 2.4.x kernel, comes up as well and I am pleased to note that it behaves <em>exactly</em> as the first one did. Repeatable results are good, in my opinion. Network connectivity to both VMs is fine; their network services are functioning perfectly despite the fact that GSX Server 3 sees them as &ldquo;legacy VMs.&rdquo; Now on to a Windows-based VM.</p>
+<p>I pick a non-essential Windows VM for testing. The initial boot is identical to the others. Once I get logged in, I install the new VMware Tools, which installs new versions of the video, mouse, network, audio, and SCSI drivers. Unfortunately, during the process of installing the updated drivers, the previous versions are completely removed. This <em>completely</em> erases the network configuration of the Windows-based virtual server, which I must then recreate.</p>
+<p>&lt;aside&gt;This is <em>very irritating</em>. VMware needs to work on this process. In this case, it wasn&rsquo;t a huge deal, but with a large number of VMs that would have to be reconfigured it could get ugly real quick. It can be done with Linux, why not with Windows? OK, that&rsquo;s probably a loaded question.&lt;/aside&gt;</p>
+<p>Once the network settings are properly reconfigured, I shut the server down and upgraded the virtual hardware. This process took <em>far</em> longer than I had anticipated it would, apparently needing to somehow reconfigure the virtual disk files. After a lengthy delay, the virtual hardware upgrade is complete and I boot the Windows VM again. As expected, the New Hardware Wizard launches once I get logged into the VM. Not as expected, however, the wizard can&rsquo;t find drivers for the virtual audio device that has been introduced as a result of the virtual hardware upgrade. I disable the device and continue; servers don&rsquo;t need audio anyway.</p>
+<p>I still have a couple more virtual machines to boot as of this writing; however, these are pre-production systems (still in testing and validation) so there is no terrible rush just yet. So far, I&rsquo;m both pleased and displeased with GSX Server 3.2.1 compared to previous versions. I have another server to upgrade soon; that upgrade will be particularly interesting because it hosts some Linux VMs with a 2.6.x kernel. These 2.6.x kernels seem to be a bit problematic under GSX Server 2.5.</p>
+<p>As the upgrades continue, I&rsquo;ll post additional information. In the meantime, if you are a VMware expert and want to post some comments telling me how I could have handled this situation better, please do! I&rsquo;m always seeking information to help me improve.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/01/10/macbook-pro-unveiled/">MacBook Pro Unveiled</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/01/10/new-open-source-virtualization-project/">New Open Source Virtualization Project</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f10%2fgsx-server-upgrade-woes%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f10%2fgsx-server-upgrade-woes%2f&text=GSX%20Server%20Upgrade%20Woes" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f10%2fgsx-server-upgrade-woes%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/07/22/linux-ad-integration-wrap-up/">Linux-AD Integration Wrap-Up</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2006/01/04/mac-os-x-and-local-domains/">Mac OS X and .local Domains</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2005/12/26/security-flaw-found-in-vmware/">Security Flaw Found in VMware</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

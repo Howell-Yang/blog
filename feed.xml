@@ -1,0 +1,864 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Scott&#39;s Weblog </title>
+    <link>https://www.howellyang.com/</link>
+    <language>en-us</language>
+    <author>Howell Yang</author>
+    <rights>(C) 2022</rights>
+    <updated>2022-05-27 16:00:00 -0600 -0600</updated>
+
+    
+      <item>
+        <title>Git Difftool and Meld as a Flatpak</title>
+        <link>https://www.howellyang.com/2022/05/27/git-difftool-and-meld-as-a-flatpak/</link>
+        <pubDate>Fri, 27 May 2022 16:00:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/05/27/git-difftool-and-meld-as-a-flatpak/</guid>
+        <description>&lt;p&gt;I&amp;rsquo;ve recently started migrating many of the applications on my &lt;a href=&#34;https://getfedora.org/&#34;&gt;Fedora&lt;/a&gt; 36 laptop to their &lt;a href=&#34;https://www.flatpak.org/&#34;&gt;Flatpak&lt;/a&gt; versions. For the most part, this has been pretty straightforward, although there isn&amp;rsquo;t really any method for migrating configuration and data. Today I ran into a problem with &lt;a href=&#34;https://meldmerge.org/&#34;&gt;Meld&lt;/a&gt;, a graphical diff utility, and using it with the &lt;code&gt;git difftool&lt;/code&gt; command. Below I&amp;rsquo;ll share how I worked around this problem.&lt;/p&gt;
+&lt;p&gt;Normally, the integration between Git and Meld&amp;mdash;which is what enables you to run &lt;code&gt;git difftool&lt;/code&gt; and have the results show up in Meld&amp;mdash;would look something like this (this is from &lt;code&gt;~/.gitconfig&lt;/code&gt;):&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;merge&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;tool&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;tool&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;difftool&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;prompt&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;no&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;difftool&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;meld&amp;#34;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;cmd&lt;/span&gt; = &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;usr&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;bin&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$LOCAL&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$REMOTE&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;mergetool&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;meld&amp;#34;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;cmd&lt;/span&gt; = &lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;usr&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;bin&lt;/span&gt;&lt;span style=&#34;color:#960050;background-color:#1e0010&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$LOCAL&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$REMOTE&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;However, when Meld is installed as a Flatpak, &lt;code&gt;/usr/bin/meld&lt;/code&gt; doesn&amp;rsquo;t exist. In order to continue using Meld with the &lt;code&gt;git difftool&lt;/code&gt; command, you must change the Git configuration to look like this instead:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-toml&#34; data-lang=&#34;toml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;merge&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;tool&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;tool&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;meld&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;difftool&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;prompt&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;no&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;difftool&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;meld&amp;#34;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;cmd&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;flatpak&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;run&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;org&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;gnome&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Meld&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$LOCAL&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$REMOTE&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;mergetool&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;meld&amp;#34;&lt;/span&gt;]
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#a6e22e&#34;&gt;cmd&lt;/span&gt; = &lt;span style=&#34;color:#a6e22e&#34;&gt;flatpak&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;run&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;org&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;gnome&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;Meld&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$LOCAL&amp;#34;&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;$REMOTE&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;After you make these changes, using Meld with &lt;code&gt;git difftool&lt;/code&gt; should work as expected again.&lt;/p&gt;
+&lt;p&gt;This is a pretty straightforward change, but hopefully documenting it here will prove helpful to someone. If you have any questions, feel free to contact &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;. Thanks!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 155</title>
+        <link>https://www.howellyang.com/2022/05/27/technology-short-take-155/</link>
+        <pubDate>Fri, 27 May 2022 08:45:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/05/27/technology-short-take-155/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #155, just in time for the 2022 Memorial Day holiday weekend! (Here in the US, at least.) I mean, don&amp;rsquo;t you want to spend this weekend catching up on some technology-related articles instead of cooking on the grill and gathering with friends and family? I certainly hope not! Still, for those who need a little technology fix over the weekend, hopefully I&amp;rsquo;ve included something useful in the list of articles below. Enjoy!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Isovalent&amp;mdash;the company behind the Cilium project&amp;mdash;has been talking a lot about how the use of eBPF will transform things, including the architecture of a service mesh. Along those lines, one of their latest articles discusses &lt;a href=&#34;https://isovalent.com/blog/post/2022-05-03-servicemesh-security&#34;&gt;how to achieve identity-based mutual authentication leveraging eBPF&lt;/a&gt;. If I&amp;rsquo;m understanding the article correctly (and feel free to correct me if I am mistaken) it looks as if Cilium Service Mesh will leverage/does leverage a combination of certificate-based mTLS for identity at the workload level and node-based transport encryption (via WireGuard) for data confidentiality. Even though I know that the underlying mechanisms are different, subjectively this &lt;em&gt;feels&lt;/em&gt; a lot like using tunnels to connect workloads on different compute nodes (i.e., network virtualization). Is the relationship between network virtualization and service mesh closer than some folks might wish to admit?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Researchers have uncovered a potential security flaw in Apple Silicon CPUs; more details in &lt;a href=&#34;https://9to5mac.com/2022/05/02/augury-apple-silicon-vulnerability/&#34;&gt;this 9to5Mac article&lt;/a&gt;. I&amp;rsquo;m not sure how I feel about security researchers calling this flaw &amp;ldquo;not that bad.&amp;rdquo;&lt;/li&gt;
+&lt;li&gt;Colin Percival shares some benchmarks using &lt;a href=&#34;http://www.daemonology.net/blog/2022-05-23-FreeBSD-Graviton-3.html&#34;&gt;FreeBSD on the Graviton 3&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;An earlier security vulnerability that exposed APC Smart-UPS devices (see details &lt;a href=&#34;https://www.helpnetsecurity.com/2022/03/08/ups-devices-vulnerabilities/&#34;&gt;here&lt;/a&gt;&amp;mdash;attackers could even &lt;em&gt;destroy&lt;/em&gt; the UPS!) now has &lt;a href=&#34;https://www.helpnetsecurity.com/2022/05/03/tlstorm-2-0/&#34;&gt;a follow-up exploit&lt;/a&gt; that exposes Aruba and Avaya network switches to remote code execution. In both cases, it&amp;rsquo;s a problem with the TLS implementation in a library called NanoSSL.&lt;/li&gt;
+&lt;li&gt;Steven J. Vaughan-Nichols writes about &lt;a href=&#34;https://thenewstack.io/first-malware-running-on-aws-lambda-discovered/&#34;&gt;the first malware discovered running on AWS Lambda&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Attacks that &lt;a href=&#34;https://threatpost.com/iphones-attack-turned-off/179641/&#34;&gt;can affect iPhones when they&amp;rsquo;re turned off&lt;/a&gt;? Yikes. Fortunately, such an attack vector isn&amp;rsquo;t very straightforward.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://medium.com/cloud-security/zoom-rce-time-to-patch-f9ad802e0e5e&#34;&gt;Via Teri Radichel&lt;/a&gt;, I saw this article from Google Project Zero about &lt;a href=&#34;https://googleprojectzero.blogspot.com/2022/01/zooming-in-on-zero-click-exploits.html&#34;&gt;zero-click security vulnerabilities in Zoom&lt;/a&gt;. Fortunately, it looks like these vulnerabilities have been patched, so be sure to update your Zoom client. I know it&amp;rsquo;s a pain, but it&amp;rsquo;s one of those things you just need to do.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Kubernetes 1.24 marks the first release of the open source container orchestration platform that is signed using Sigstore (more details &lt;a href=&#34;https://blog.sigstore.dev/kubernetes-signals-massive-adoption-of-sigstore-for-protecting-open-source-ecosystem-73a6757da73&#34;&gt;here&lt;/a&gt;). As I understand it, this is the culmination of an effort launched about a year ago &lt;a href=&#34;https://security.googleblog.com/2021/05/making-internet-more-secure-one-signed.html&#34;&gt;when Google started signing the &amp;ldquo;distroless&amp;rdquo; images&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Kat Cosgrove provides &lt;a href=&#34;https://kubernetes.io/blog/2022/05/03/dockershim-historical-context/&#34;&gt;some historical context&lt;/a&gt; for the removal of dockershim in Kubernetes 1.24.&lt;/li&gt;
+&lt;li&gt;Although a bit older (from June 2021), this article on &lt;a href=&#34;https://log.martinatkins.me/2021/06/14/terraform-plan-unknown-values/&#34;&gt;unknown values in Terraform&lt;/a&gt; feels like a direct response to the rise of tools leveraging general purpose programming languages for declarative infrastructure management (think tools like Pulumi, AWS CDK, etc.).&lt;/li&gt;
+&lt;li&gt;Manoj Bhagwat provides &lt;a href=&#34;https://manoj-bhagwat60.medium.com/kiali-manage-visualize-validate-and-troubleshoot-your-service-mesh-5f9c68ea8ced&#34;&gt;a high-level overview of Kiali and how to install it&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Lee Briggs &lt;a href=&#34;https://leebriggs.co.uk/blog/2022/05/09/learning-to-love-yaml&#34;&gt;talks about the YAML&lt;/a&gt; (he&amp;rsquo;s discussing the recent addition of YAML support in Pulumi).&lt;/li&gt;
+&lt;li&gt;Viktor van den Berg shares his &lt;a href=&#34;https://www.viktorious.nl/2022/05/09/ckad-exam-experience-and-some-tips-on-how-to-prepare/&#34;&gt;CKAD exam experience and some tips on how to prepare&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://prefetch.net/blog/2022/05/01/understanding-cloud-spend-in-your-terraform-workflows/&#34;&gt;a user&amp;rsquo;s perspective&lt;/a&gt; on using &lt;code&gt;infracost&lt;/code&gt; to bring cloud spend into your Terraform worfklows.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The new utility &lt;code&gt;zq&lt;/code&gt; claims to be &lt;a href=&#34;https://www.brimdata.io/blog/introducing-zq/&#34;&gt;an easier and faster alternative to &lt;code&gt;jq&lt;/code&gt;&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;programming&#34;&gt;Programming&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://slsa.dev/blog/2022/05/slsa-sbom&#34;&gt;This article&lt;/a&gt; helped me better understand the relationship(s) between SLSA and SBOMs.&lt;/li&gt;
+&lt;li&gt;Bashayr Alabdullah provides an example of &lt;a href=&#34;https://bshayr29.medium.com/build-your-own-admission-controllers-in-kubernetes-using-go-bef8ba38d595&#34;&gt;building your own admission controllers in Kubernetes using Go&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;John Breen&amp;rsquo;s article on &lt;a href=&#34;https://breen.tech/post/but-await-theres-more/&#34;&gt;patterns with promises and asynchronous programming in JavaScript&lt;/a&gt; provides some practical advice on understanding these concepts. (Hat tip to Corey Quinn for sharing this article via Twitter.)&lt;/li&gt;
+&lt;li&gt;Alex Edwards&amp;rsquo; post on &lt;a href=&#34;https://www.alexedwards.net/blog/interfaces-explained&#34;&gt;Golang interfaces explained&lt;/a&gt; was helpful.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;For relevant storage news, I&amp;rsquo;d recommend having a look at J Metz&amp;rsquo; &lt;a href=&#34;https://jmetz.com/2022/05/storage-short-take-42/&#34;&gt;Storage Short Take 42&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The state of virtualization on Apple Silicon hardware has seen a few developments in recent days and weeks. One project that caught my attention was &lt;a href=&#34;https://github.com/cirruslabs/tart&#34;&gt;Tart&lt;/a&gt;, a CLI-driven tool that leverages the virtualization support present in macOS to run virtual macOS instances. This will become even more useful, in my opinion, when Linux support is added. (The possibility of a Vagrant provider just seals the deal, in my opinion.)&lt;/li&gt;
+&lt;li&gt;The world of virtualization&amp;mdash;nay, more than just virtualization&amp;mdash;will be forever changed with &lt;a href=&#34;https://www.theverge.com/2022/5/26/23142653/broadcom-vmware-acquisition-deal-software&#34;&gt;the announcement of Broadcom&amp;rsquo;s acquisition of VMware&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skills&#34;&gt;Career/Soft Skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Mike McQuaid shares some details on &lt;a href=&#34;https://mikemcquaid.com/2021/07/21/how-i-get-things-done/&#34;&gt;how he gets things done&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ashley Janssen discusses &lt;a href=&#34;https://ashleyjanssen.com/time-blocking-and-imagining-your-ideal-week/&#34;&gt;how time-blocking may help improve productivity&lt;/a&gt;. This is not a technique I&amp;rsquo;ve generally used, so I&amp;rsquo;d be curious to hear from readers who may have used or are currently using techniques like this.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://www.readysetcloud.io/blog/allen.helton/how-to-build-your-first-architecture-diagram/&#34;&gt;some advice&lt;/a&gt; on &amp;ldquo;starting your diagramming career&amp;rdquo; (let&amp;rsquo;s be real, many IT folk need to create diagrams on a regular basis, so tips on creating diagrams might prove really useful).&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;other&#34;&gt;Other&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;I&amp;rsquo;ve seen a &lt;em&gt;lot&lt;/em&gt; of work-from-home desk setups, but &lt;a href=&#34;https://bdarfler.medium.com/the-best-starter-desk-setup-for-2022-7586cf603581&#34;&gt;this one&lt;/a&gt; stood out as actually having some budget-conscious selections (which is often not the case). The use of 3M Command strips to affix stuff under the desk is also so blindingly obvious that I&amp;rsquo;m surprised I hadn&amp;rsquo;t thought of it already.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;It&amp;rsquo;s time to wrap up. I hope you all have a wonderful weekend! Feel free to reach out to me if you have questions, comments, suggestions for improvement, or if you just want to say hi. The easiest way to contact me is &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;via Twitter&lt;/a&gt;. Thanks for reading!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Fine-Tuning Control Plane Access with Cluster API</title>
+        <link>https://www.howellyang.com/2022/05/12/fine-tuning-control-plane-access-with-cluster-api/</link>
+        <pubDate>Thu, 12 May 2022 14:30:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/05/12/fine-tuning-control-plane-access-with-cluster-api/</guid>
+        <description>&lt;p&gt;When &lt;a href=&#34;https://cluster-api.sigs.k8s.io&#34;&gt;Cluster API&lt;/a&gt; creates a workload cluster, it also creates a load balancing solution to handle traffic to the workload cluster&amp;rsquo;s control plane. This is necessary so that the control plane endpoint is decoupled from the underlying control plane nodes (which facilitates scaling the control plane, among other things). On AWS, this mean creating an ELB and a set of security groups. For flexibility, Cluster API provides a limited ability to customize this control plane load balancer. In this post, I&amp;rsquo;ll show you how to use this functionality to fine-tune access to a workload cluster&amp;rsquo;s control plane when using Cluster API with AWS.&lt;/p&gt;
+&lt;p&gt;If you&amp;rsquo;re not familiar with Cluster API (hereafter just referred to as &amp;ldquo;CAPI&amp;rdquo;), then &lt;a href=&#34;https://www.howellyang.com/2019/08/26/an-introduction-to-kubernetes-cluster-api/&#34;&gt;my introduction to CAPI article&lt;/a&gt; may be useful. Keep in mind that article was written in 2019, while the project was still in its early stages. The high-level concepts are correct, but some of the details may have shifted slightly over the last three years as the project progressed from &lt;code&gt;v1alpha1&lt;/code&gt; APIs to the now-current &lt;code&gt;v1beta1&lt;/code&gt; APIs.&lt;/p&gt;
+&lt;p&gt;The key here is the &lt;code&gt;controlPlaneLoadBalancer&lt;/code&gt; object, which is part of the &lt;code&gt;AWSCluster&lt;/code&gt; object (see details &lt;a href=&#34;https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/master/api/v1beta1/awscluster_types.go#L55-L57&#34;&gt;here in the code&lt;/a&gt; or &lt;a href=&#34;https://pkg.go.dev/sigs.k8s.io/cluster-api-provider-aws/api/v1beta1#AWSClusterSpec&#34;&gt;here via &lt;code&gt;pkg.go.dev&lt;/code&gt;&lt;/a&gt;). With regard to access to a workload cluster&amp;rsquo;s control plane via its control plane load balancer, two fields are of particular interest:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;The &lt;code&gt;additionalSecurityGroups&lt;/code&gt; field allows you to list any additional security groups&amp;mdash;referenced by security group ID&amp;mdash;that the control plane load balancer should use (this is in addition to the standard set of security groups created by CAPI). This is an optional field.&lt;/li&gt;
+&lt;li&gt;The &lt;code&gt;scheme&lt;/code&gt; field allows you to specify whether the load balancer should be externally-accessible from the Internet (specified with the value &amp;ldquo;internet-facing&amp;rdquo;, which is the default value) or not (specified with the value &amp;ldquo;internal&amp;rdquo;). If you specify &amp;ldquo;internal&amp;rdquo; as the scheme, then the load balancer won&amp;rsquo;t get a public IP address and won&amp;rsquo;t be reachable via the Internet. This would be a great way to restrict access to only those connections coming via a VPN (or similar) into the VPC.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Personally, I would &lt;em&gt;at least&lt;/em&gt; switch the scheme on the control plane load balancer; otherwise, the API server of your newly-created workload cluster is publicly accessible via the Internet. You can then leverage any additional security groups as needed.&lt;/p&gt;
+&lt;p&gt;One note to keep in mind: the default security group created by the AWS provider for CAPI (referred to as CAPA) allows access from &lt;code&gt;0.0.0.0/0&lt;/code&gt; to the control plane load balancer. If you need to &lt;em&gt;restrict&lt;/em&gt; access to something more fine-grained than that, using the &lt;code&gt;additionalSecurityGroups&lt;/code&gt; field is not the way. As outlined &lt;a href=&#34;https://cluster-api-aws.sigs.k8s.io/topics/bring-your-own-aws-infrastructure.html#security-groups&#34;&gt;here&lt;/a&gt;, you&amp;rsquo;ll instead want to use the &lt;code&gt;securityGroupOverrides&lt;/code&gt; field (which is found at &lt;code&gt;spec.network.securityGroupOverrides&lt;/code&gt;).&lt;/p&gt;
+&lt;p&gt;I hope this information is useful. Feel free to reach out to me if you have any questions (or corrections, in the event I explained/presented something incorrectly). You can find me on &lt;a href=&#34;https://kubernetes.slack.com&#34;&gt;the Kubernetes Slack&lt;/a&gt; (as well as a number of other Slack communities) as well as &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;on Twitter&lt;/a&gt;.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 154</title>
+        <link>https://www.howellyang.com/2022/04/29/technology-short-take-154/</link>
+        <pubDate>Fri, 29 Apr 2022 09:00:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/04/29/technology-short-take-154/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #154! My link of links and articles from around the Internet is a bit light on networking and virtualization this time around, but heftier in the security, cloud, and OS/application sections. I hope that I&amp;rsquo;ve managed to include something that you&amp;rsquo;ll find useful. Enjoy the content!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Lucas Pardue and Christopher Wood share &lt;a href=&#34;https://blog.cloudflare.com/a-primer-on-proxies/&#34;&gt;a primer on proxies&lt;/a&gt;. (Hat tip to Matt Oswalt for putting this on my Twitter timeline.)&lt;/li&gt;
+&lt;li&gt;Ivan Pepelnjak talks about the 1.2.1 release of netsim-tools in &lt;a href=&#34;https://blog.ipspace.net/2022/04/netsim-tools-release-1.2.1.html&#34;&gt;this blog post&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;It seems like silicon photonics is something the industry has been talking about for years, but something that never seems to come to fruition. The Next Platform recently chatted with Andy Bechtolsheim about it; you can read the results of that discussion &lt;a href=&#34;https://www.nextplatform.com/2022/03/10/talking-silicon-photonics-signal-and-noise-with-andy-bechtolsheim/&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Daniel Holback &lt;a href=&#34;https://fluxcd.io/blog/2022/02/security-more-confidence-through-fuzzing/&#34;&gt;talks about the addition of fuzzing to the Flux controllers&lt;/a&gt;, to improve the security posture of the Flux project.&lt;/li&gt;
+&lt;li&gt;Wojciech Reguła &lt;a href=&#34;https://wojciechregula.blog/post/macos-red-teaming-bypass-tcc-with-old-apps/&#34;&gt;shares&lt;/a&gt; a trick for bypassing the macOS TCC protection using older applications.&lt;/li&gt;
+&lt;li&gt;It appears that &lt;a href=&#34;https://www.crowdstrike.com/blog/lemonduck-botnet-targets-docker-for-cryptomining-operations/&#34;&gt;a well-known cryptomining botnet has started targeting Docker&lt;/a&gt;. (Hat tip to Teri Radichel for sharing this and making it appear on my Twitter timeline.)&lt;/li&gt;
+&lt;li&gt;GitHub recently shared details on &lt;a href=&#34;https://github.blog/2022-04-12-git-security-vulnerability-announced/&#34;&gt;a Git security vulnerability&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The idea of a software bill of materials (SBOM) is gaining traction; &lt;a href=&#34;https://anchore.com/sbom/how-to-generate-an-sbom-with-free-open-source-tools/&#34;&gt;here&amp;rsquo;s an article&lt;/a&gt; on a tool by Anchore that claims to be able to help.&lt;/li&gt;
+&lt;li&gt;Liam Galvin shows &lt;a href=&#34;https://lia.mg/posts/malicious-rego/&#34;&gt;a couple of ways&lt;/a&gt; that Rego (the language behind Open Policy Agent) can be used maliciously.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Richard Seroter shares some data &lt;a href=&#34;https://seroter.com/2022/04/18/measuring-container-size-and-startup-latency-for-serverless-apps-written-in-c-node-js-go-and-java/&#34;&gt;comparing container size and startup latency for serverless apps&lt;/a&gt; written in various programming languages.&lt;/li&gt;
+&lt;li&gt;I came across &lt;a href=&#34;https://www.praetorian.com/blog/introducing-snowcat/&#34;&gt;this post announcing Snowcat&lt;/a&gt;, a security scanner for Istio. I suspect that as service meshes continue to proliferate, I suspect we&amp;rsquo;ll see more tools like this emerge.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://www.vxav.fr/2022-04-23-fluxcd-in-tanzu-community-edition-0.12/&#34;&gt;a walkthrough of FluxCD on Tanzu Community Edition&lt;/a&gt;. Most of this, if not all of this, is also possible on non-Tanzu Kubernetes clusters; obviously the Tanzu CLI commands and the use of &lt;code&gt;kapp&lt;/code&gt; (from Carvel) may be different, but the basic concepts are all the same.&lt;/li&gt;
+&lt;li&gt;Vladislav Supalov &lt;a href=&#34;https://vsupalov.com/pulumi-learnings/&#34;&gt;shares some things he wished he&amp;rsquo;d known earlier about Pulumi&lt;/a&gt;. Nothing bad here, in my opinion, just things that come from using a general-purpose programming language instead of a more constrained domain-specific language.&lt;/li&gt;
+&lt;li&gt;Also on the topic of Pulumi: Martin Thwaites discusses &lt;a href=&#34;https://martinjt.me/2021/03/04/pulumi-multiple-projects-with-custom-backends/&#34;&gt;using multiple Pulumi projects with custom backends&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Scott Hanselman insists that &lt;a href=&#34;https://www.hanselman.com/blog/one-email-rule-have-a-separate-inbox-and-an-inbox-cc-to-reduce-email-stress-guaranteed&#34;&gt;this one e-mail rule&lt;/a&gt; will change your life.&lt;/li&gt;
+&lt;li&gt;Julia Ferraioli &lt;a href=&#34;https://www.juliaferraioli.com/blog/2022/your-git-email-matters/&#34;&gt;reminds&lt;/a&gt; readers that the e-mail address you use in a Git repository does, in fact, matter.&lt;/li&gt;
+&lt;li&gt;In the event you need to understand &lt;a href=&#34;https://platformers.dev/log/2022/latest-literally-kills-puppies/&#34;&gt;why you should avoid &lt;code&gt;:latest&lt;/code&gt; when working with Docker images&lt;/a&gt;, David Norton has you covered. I don&amp;rsquo;t know about it killing puppies, but it&amp;rsquo;s definitely &lt;em&gt;not&lt;/em&gt; a good idea.&lt;/li&gt;
+&lt;li&gt;Jorge Castro encourages folks to &lt;a href=&#34;https://www.ypsidanger.com/lets-just-kill-the-silly-myths/&#34;&gt;just kill the silly myths&lt;/a&gt; (regarding desktop Linux).&lt;/li&gt;
+&lt;li&gt;Web views in macOS? See &lt;a href=&#34;https://blog.jim-nielsen.com/2022/inspecting-web-views-in-macos/&#34;&gt;here&lt;/a&gt; for details on how to inspect them.&lt;/li&gt;
+&lt;li&gt;Katarina Brookfield shares details with readers on &lt;a href=&#34;http://advecti.io/2022/13-automating-hugo-k8s-deployment-with-gitlab-cicd/&#34;&gt;automating updates to her Hugo-based site using GitLab CI/CD&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Poorna Gaddehosur has an update on &lt;a href=&#34;https://cloudblogs.microsoft.com/opensource/2022/02/22/getting-linux-based-ebpf-programs-to-run-with-ebpf-for-windows/&#34;&gt;getting Linux-based eBPF programs to run with eBPF on Windows&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;When I first saw &lt;a href=&#34;https://blog.dowhile0.org/2022/04/22/fedora-36-a-brave-new-drm-kms-only-world/&#34;&gt;this article&lt;/a&gt;, I was thinking DRM was &amp;ldquo;Digital Rights Management&amp;rdquo; and was I really caught off-guard. (Hint: DRM means something entirely different in the context of the article.)&lt;/li&gt;
+&lt;li&gt;Andreas Sommer shares some &lt;a href=&#34;https://andidog.de/blog/2022-04-21-grafana-dashboards-best-practices-dashboards-as-code&#34;&gt;best practices for Grafana dashboards&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Howard Oakley has &lt;a href=&#34;https://eclecticlight.co/2022/04/23/explainer-filevault/&#34;&gt;a great post explaining FileVault&lt;/a&gt;. (Hat tip to Stephen Foskett for putting this in my Twitter timeline.)&lt;/li&gt;
+&lt;li&gt;Also from Howard, &lt;a href=&#34;https://eclecticlight.co/2022/04/18/m1-thunderbolt-ports-dont-fully-support-usb-3-1-gen-2/&#34;&gt;here&amp;rsquo;s an explanation&lt;/a&gt; of why you may be getting less-than-promised storage throughput for USB-C storage on your M1-based Macs.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Eric Sloof has some information on &lt;a href=&#34;https://www.ntpro.nl/blog/archives/3668-Configure-the-vRealize-Orchestrator-Plug-in-for-vCloud-Director.html&#34;&gt;how to configure the vRealize Orchestrator plugin for vCloud Director&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;QEMU 7.0 was recently released; &lt;a href=&#34;https://www.phoronix.com/scan.php?page=news_item&amp;amp;px=QEMU-7.0-Released&#34;&gt;here&amp;rsquo;s&lt;/a&gt; Michael Larabel&amp;rsquo;s write-up for Phoronix.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skills&#34;&gt;Career/Soft Skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Robin Moffatt, a developer advocate at Confluent, recently wrote about &lt;a href=&#34;https://rmoff.net/2022/04/07/hanging-up-my-boarding-passes-and-jetlagfor-now/&#34;&gt;hanging up his boarding passes and jetlag (for now)&lt;/a&gt;. I have a lot of respect for Robin taking the time to do some serious introspection, and deciding to put family first. Kudos.&lt;/li&gt;
+&lt;li&gt;I love &lt;a href=&#34;https://blog.ipspace.net/2022/04/keep-blogging.html&#34;&gt;this motivational post&lt;/a&gt; by Ivan Pepelnjak on why you (yes, you!) should keep blogging. And thanks for the shout-out at the end of that post, Ivan!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s all for now! I&amp;rsquo;ll be back in a couple weeks with another Technology Short Take, but until then feel free to contact me if you have links to share, interesting articles you&amp;rsquo;ve found, or if you just want to say hello! You can find me on any number of Slack communities, or you can contact &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;. Thanks for reading!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 153</title>
+        <link>https://www.howellyang.com/2022/04/15/technology-short-take-153/</link>
+        <pubDate>Fri, 15 Apr 2022 08:45:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/04/15/technology-short-take-153/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #153! My personal and professional life has kept me busy over the last couple of months, so things have been quiet here on the blog. I&amp;rsquo;ve still been collecting links to share with you, though, and here&amp;rsquo;s the latest collection. I hope you&amp;rsquo;re able to find something useful here!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://pansift.com/blog/how-to-fix-ipv6-connectivity/&#34;&gt;This article&lt;/a&gt; contains some good information on IPv6 for those who are just starting to get more familiar with it, although toward the end it turns into a bit of an advertisement.&lt;/li&gt;
+&lt;li&gt;Want to understand &lt;code&gt;kube-proxy&lt;/code&gt;, a key part of Kubernetes networking, a bit better? &lt;a href=&#34;https://mayankshah.dev/blog/demystifying-kube-proxy/&#34;&gt;Start here&lt;/a&gt;. Arthur Chiao&amp;rsquo;s &lt;a href=&#34;https://arthurchiao.art/blog/cracking-k8s-node-proxy/&#34;&gt;post on cracking &lt;code&gt;kube-proxy&lt;/code&gt;&lt;/a&gt; is also an excellent resource&amp;mdash;in fact, there&amp;rsquo;s so much information packed in there you may need to read it more than once.&lt;/li&gt;
+&lt;li&gt;Xavier Avrillier &lt;a href=&#34;https://www.vxav.fr/2022-03-11-on-premise-layer-2-service-type-loadbalancer-with-antrea/&#34;&gt;walks&lt;/a&gt; readers through using Antrea (a Kubernetes CNI built on top of Open vSwitch&amp;mdash;a topic I&amp;rsquo;ve touched on a time or two) to provide on-premise load balancing in Kubernetes.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Cabling is hardware, right? What happens to submarine cables when there are massive events, like a volcanic eruption? Ulrich Speidel &lt;a href=&#34;https://blog.apnic.net/2022/03/01/when-volcanoes-go-bang-submarine-cables-do-what/&#34;&gt;shares&lt;/a&gt; some of the findings after the volcanic eruption in Tonga.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Although Linux is often considered to be superior to Windows and macOS with regard to security, it is not without &lt;a href=&#34;https://arstechnica.com/information-technology/2022/03/linux-has-been-bitten-by-its-most-high-severity-vulnerability-in-years/&#34;&gt;its own security flaws&lt;/a&gt;. I, personally, would posit that Linux &lt;em&gt;can&lt;/em&gt; be more secure than other platforms, but it requires proper configuration and can still be undone by a loose nut behind the keyboard.&lt;/li&gt;
+&lt;li&gt;Ouch&amp;mdash;&lt;a href=&#34;https://orca.security/resources/blog/autowarp-microsoft-azure-automation-service-vulnerability/&#34;&gt;another Azure vulnerability&lt;/a&gt; that allows cross-account access.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Diego Sucaria shows &lt;a href=&#34;https://diegosucaria.info/how-to-access-a-private-eks-cluster-from-your-local-machine-without-a-vpn/&#34;&gt;how to use an SSH SOCKS proxy to access private Kubernetes clusters&lt;/a&gt;. This is an interesting approach that, honestly, I hadn&amp;rsquo;t considered. (Warning: I&amp;rsquo;m not sure the configuration as described in the article will actually work, but the concept is sound.) If you&amp;rsquo;re unfamiliar with SSH SOCKS proxying, read &lt;a href=&#34;https://linuxtect.com/create-socks-proxy-via-ssh-tunnelling/&#34;&gt;this&lt;/a&gt; to get up to speed (or use your favorite web search engine, there are many articles out there on this topic).&lt;/li&gt;
+&lt;li&gt;Version 3.8.0 of Helm adds the ability to store and work with charts in container (OCI, Open Container Initiative) registries (instead of Helm repositories). More information is available in &lt;a href=&#34;https://helm.sh/blog/storing-charts-in-oci/&#34;&gt;this Helm blog post&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Daniel Helfand &lt;a href=&#34;https://carvel.dev/blog/carvel-vcluster/&#34;&gt;plays around with vclusters and Carvel&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://elastisys.com/designing-and-deploying-scalable-applications-on-kubernetes/&#34;&gt;a set of 15 principles for designing and deploying scalable applications on Kubernetes&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Fatima Silveira has a good article on &lt;a href=&#34;https://itnext.io/kubernetes-for-dummies-deployment-auto-scaling-28ad0f9da1df&#34;&gt;using the Kubernetes Horizontal Pod Autoscaler&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ajeet Singh Raina shares a list of &lt;a href=&#34;https://dev.to/ajeetraina/top-200-kubernetes-tools-for-devops-engineer-like-you-3h7e&#34;&gt;the top 200 Kubernetes tools for DevOps engineers&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Levent Ogut takes &lt;a href=&#34;https://loft.sh/blog/kubernetes-init-containers/&#34;&gt;a deep dive into Kubernetes init containers&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Steven Bright shows &lt;a href=&#34;https://www.stevenbright.com/2022/03/deploy-salt-minions-automatically-using-vmware-tools/&#34;&gt;how to deploy Salt minions automatically using VMware Tools&lt;/a&gt;. (Note that this page doesn&amp;rsquo;t seem to render properly in Firefox, although Chrome and Safari seem fine.)&lt;/li&gt;
+&lt;li&gt;I found this article to be &lt;a href=&#34;https://www.fermyon.com/blog/how-to-think-about-wasm&#34;&gt;a good overview of WebAssembly&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Matt Oswalt takes readers though &lt;a href=&#34;https://oswalt.dev/2022/02/non-local-address-binds-in-linux/&#34;&gt;a fairly in-depth look&lt;/a&gt; at sockets and address binds in Linux.&lt;/li&gt;
+&lt;li&gt;If you are an absolute beginner with Envoy Proxy, &lt;a href=&#34;https://adamtheautomator.com/envoy-proxy/&#34;&gt;this tutorial&lt;/a&gt; will help you get started. However, it quickly runs out of steam, and you&amp;rsquo;ll need to progress to more advanced examples and documentation to continue your learning journey.&lt;/li&gt;
+&lt;li&gt;I asked a question about Git, Git tags, and releasing versions of a project on Twitter the other day (here&amp;rsquo;s &lt;a href=&#34;https://twitter.com/scott_lowe/status/1513557942255206401&#34;&gt;the tweet&lt;/a&gt;), and &lt;a href=&#34;https://nvie.com/posts/a-successful-git-branching-model/&#34;&gt;this article on Git branching&lt;/a&gt; was shared with me. Perhaps you&amp;rsquo;ll find it useful as well!&lt;/li&gt;
+&lt;li&gt;I&amp;rsquo;ve been digging into OIDC/OAuth 2.0 lately, and learning about JWTs (JSON Web Tokens, see &lt;a href=&#34;https://jwt.io/introduction/&#34;&gt;here&lt;/a&gt; for an introduction). I found this article telling folks to &lt;a href=&#34;https://sdoxsee.github.io/blog/2020/01/06/stop-overloading-jwts-with-permission-claims&#34;&gt;stop overloading JWTs with permissions claims&lt;/a&gt; a while ago, but at the time I didn&amp;rsquo;t fully understand all the concepts or the implications. Now that I&amp;rsquo;ve had some time and some exposure, this makes a lot more sense to me&amp;mdash;and I agree with the author!&lt;/li&gt;
+&lt;li&gt;Speaking of JWTs: they don&amp;rsquo;t score so well in Thomas Ptacek&amp;rsquo;s &lt;a href=&#34;https://fly.io/blog/api-tokens-a-tedious-survey/&#34;&gt;survey of API tokens&lt;/a&gt;. There&amp;rsquo;s a lot to unpack in Ptacek&amp;rsquo;s article; I suspect I&amp;rsquo;ll be coming back to read it again later as my knowledge in this area grows. Some of it is still too advanced for me right now.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;p&gt;Nothing here this time around&amp;mdash;maybe &lt;a href=&#34;https://jmetz.com/2022/03/storage-short-take-41/&#34;&gt;go check J Metz&amp;rsquo; blog instead&lt;/a&gt;?&lt;/p&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;If you&amp;rsquo;re a PowerCLI user, &lt;a href=&#34;https://www.hollebollevsan.nl/usefull-powercli-scripts/&#34;&gt;here are some scripts you may find useful&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.vmwareopsguide.com/&#34;&gt;This&lt;/a&gt; is such an invaluable resource. And it&amp;rsquo;s &lt;a href=&#34;https://github.com/TheNewStellW/vmware-operations-guide&#34;&gt;publicly available on GitHub&lt;/a&gt;, although not licensed with a typical open source license.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skills&#34;&gt;Career/Soft Skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Have you ever had one of those days where you just aren&amp;rsquo;t feeling like working? I think we all have. Here is &lt;a href=&#34;https://hbr.org/2018/11/how-to-keep-working-when-youre-just-not-feeling-it&#34;&gt;an article from the Harvard Business Review&lt;/a&gt; on some strategies for motivating yourself when that happens.&lt;/li&gt;
+&lt;li&gt;Although written from the perspective of a developer seeking to improve their knowledge in a particular programming language, I think the ideas and principles laid out in this article on &lt;a href=&#34;https://www.learncoderetain.com/2021/06/28/how-developers-remember-things/&#34;&gt;how developers remember things&lt;/a&gt; are applicable to folks learning new things in other IT disciplines as well.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s it for this time around. I&amp;rsquo;ll be back soon with more original content as well as more Short Takes! In the meantime, feel free to reach out to me&amp;mdash;my e-mail address isn&amp;rsquo;t hard to find, I&amp;rsquo;m present in a number of Slack communities, and you can always hit &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt; (DMs are open). Thanks for reading!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 152</title>
+        <link>https://www.howellyang.com/2022/02/28/technology-short-take-152/</link>
+        <pubDate>Mon, 28 Feb 2022 17:30:00 -0700</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/02/28/technology-short-take-152/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #152! Normally I&amp;rsquo;d publish a Technology Short Take in the morning on a Friday, but I really wanted to get this one out so I&amp;rsquo;m making it live late in the day on a Monday. Here&amp;rsquo;s hoping I&amp;rsquo;ve included some content below that you find useful!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;I was (and am) familiar with RFC 1918 and the concept of non-routable address spaces. However, I was not familiar with the term &amp;ldquo;bogons&amp;rdquo; to refer to such prefixes that should not be publicly routed. Thanks to &lt;a href=&#34;https://blog.engyak.co/2022/01/bogons-and-how-to-leverage-public-ip.html&#34;&gt;this article&lt;/a&gt;, that oversight is now corrected. Oh, and the article shares a handy Python script to help implement bogon filtering in NSX-T.&lt;/li&gt;
+&lt;li&gt;Koyeb &lt;a href=&#34;https://www.koyeb.com/blog/building-a-multi-region-service-mesh-with-kuma-envoy-anycast-bgp-and-mtls&#34;&gt;describes&lt;/a&gt;, at a high level, the global networking stack for their serverless platform. Components involved include the open source Kuma service mesh (in turn leveraging Envoy), anycast BGP, and mutual TLS (mTLS).&lt;/li&gt;
+&lt;li&gt;Ivan Pepelnjak does a great job of describing all the things you really shouldn&amp;rsquo;t do (or don&amp;rsquo;t really need to do) when &lt;a href=&#34;https://blog.ipspace.net/2022/02/bgp-on-virtual-machines.html&#34;&gt;trying to deal with migrating container hosts in a data center fabric&lt;/a&gt;. In truth, the answer is exactly as Ivan says at the top of the article: when it comes to migrating container hosts, you don&amp;rsquo;t. (Seriously.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The Eclectic Light Company is back with an article on &lt;a href=&#34;https://eclecticlight.co/2022/01/03/power-frequency-management-how-m1-e-cores-win/&#34;&gt;how the M1&amp;rsquo;s efficiency (E) cores win&lt;/a&gt;. I must admit I am a bit surprised at how much improvement there seems to be between the M1 Pro&amp;rsquo;s E cores and the original M1 E cores.&lt;/li&gt;
+&lt;li&gt;William Lam takes a look at &lt;a href=&#34;https://williamlam.com/2022/02/potentially-interesting-vmware-homelab-kits-for-2022.html&#34;&gt;some potentially interesting homelab hardware&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;If you aren&amp;rsquo;t paying attention to the security of your CI/CD pipelines, you probably should. Read &lt;a href=&#34;https://research.nccgroup.com/2022/01/13/10-real-world-stories-of-how-weve-compromised-ci-cd-pipelines/&#34;&gt;this NCC Group article about some ways they&amp;rsquo;ve compromised CI/CD pipelines&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Sometimes I read articles like &lt;a href=&#34;https://www.darkreading.com/threat-intelligence/researchers-uncover-dangerous-new-firmware-level-rootkit&#34;&gt;this one on UEFI-based rootkits&lt;/a&gt; and I think about getting rid of all my electronics and moving deep into the wilderness to live off the land.&lt;/li&gt;
+&lt;li&gt;Rory McCune &lt;a href=&#34;https://blog.aquasec.com/cve-2022-0185-linux-kernel-container-escape-in-kubernetes&#34;&gt;writes&lt;/a&gt; about a CVE in the Linux kernel that could allow for container escape in Kubernetes.&lt;/li&gt;
+&lt;li&gt;Teri Radichel &lt;a href=&#34;https://medium.com/cloud-security/why-does-whats-happening-in-ukraine-matter-for-cybersecurity-3686efaa6223&#34;&gt;draws some connections between recent events in the Ukraine and cybersecurity&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Anders Eknert shows how to do&amp;mdash;or at least provides a framework on getting started with&amp;mdash;dynamic policy composition with Open Policy Agent (OPA) in &lt;a href=&#34;https://blog.styra.com/blog/dynamic-policy-composition-for-opa&#34;&gt;this blog post from April 2021&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s an article on &lt;a href=&#34;https://bahr.dev/2022/02/07/org-formation/&#34;&gt;how to get started with OrgFormation&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;This workshop on &lt;a href=&#34;https://graviton2-workshop.workshop.aws/en/gettingstarted.html&#34;&gt;using Graviton2 on AWS&lt;/a&gt; is pretty neat.&lt;/li&gt;
+&lt;li&gt;Xavier Avrillier writes about how to workaround &lt;a href=&#34;https://www.vxav.fr/2022-02-02-vsphere-csi-controller-crashloopbackoff-in-capv-cluster/&#34;&gt;a vSphere CSI controller CrashLoopBackoff&lt;/a&gt; when using Cluster API for vSphere (CAPV).&lt;/li&gt;
+&lt;li&gt;Jorge de la Cruz shares &lt;a href=&#34;https://jorgedelacruz.uk/2022/01/31/how-to-install-kubernetes-on-ubuntu-20-04/&#34;&gt;how to install Kubernetes on Ubuntu 20.04&lt;/a&gt;. Most of my readers are probably already familiar with this process, but I wanted to share it here just in case.&lt;/li&gt;
+&lt;li&gt;Marc Brooker has a pair of articles on circuit breakers and retries that are, in my opinion, worth reading (part 1 on circuit breakers is &lt;a href=&#34;https://brooker.co.za/blog/2022/02/16/circuit-breakers.html&#34;&gt;here&lt;/a&gt;, part 2 on retries is &lt;a href=&#34;https://brooker.co.za/blog/2022/02/28/retries.html&#34;&gt;here&lt;/a&gt;). And when I say &amp;ldquo;circuit breakers,&amp;rdquo; I&amp;rsquo;m not talking about your electrical panel, either. Read the articles if you&amp;rsquo;re unfamiliar with the concept of circuit breakers in modern distributed systems.&lt;/li&gt;
+&lt;li&gt;For folks who may be just getting started with Terraform, here&amp;rsquo;s a tutorial on &lt;a href=&#34;https://gmusumeci.medium.com/how-to-deploy-ec2-instances-in-aws-using-terraform-45e304230262&#34;&gt;how to deploy EC2 instances in AWS using Terraform&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;I just came across this relatively-new &lt;a href=&#34;https://eks.news/&#34;&gt;EKS News site&lt;/a&gt;. Have a look at &lt;a href=&#34;https://eks.news/archives/&#34;&gt;the archives&lt;/a&gt; for links to all the issues of EKS News. It&amp;rsquo;s a shame the site doesn&amp;rsquo;t appear to have an RSS/Atom feed&amp;hellip;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://konghq.com/blog/gitops-for-kong-managing-kong-declaratively-with-deck-and-github-actions/&#34;&gt;Here&amp;rsquo;s&lt;/a&gt; an article on using a GitOps approach for declaratively managing the configuration of a Kong API gateway.&lt;/li&gt;
+&lt;li&gt;I don&amp;rsquo;t have a use case for &lt;code&gt;htmlq&lt;/code&gt; (which I learned about via &lt;a href=&#34;https://linuxconfig.org/how-to-scrape-web-pages-from-the-command-line-using-htmlq&#34;&gt;this article&lt;/a&gt;), but it&amp;rsquo;s so cool that I have it installed on my Mac anyway.&lt;/li&gt;
+&lt;li&gt;Andrey Babushkin takes readers along on a journey of &lt;a href=&#34;https://blog.flant.com/highly-available-memcached-with-mcrouter-in-kubernetes/&#34;&gt;using &lt;code&gt;mcrouter&lt;/code&gt; with &lt;code&gt;memcached&lt;/code&gt; on Kubernetes&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;A &lt;a href=&#34;https://basicappleguy.com/basicappleblog/settingsapp&#34;&gt;redesign&lt;/a&gt; for Apple&amp;rsquo;s long-stagnant System Preferences app? Yes, please.&lt;/li&gt;
+&lt;li&gt;This was &lt;a href=&#34;https://spacelift.io/blog/tricking-postgres-into-using-query-plan&#34;&gt;a pretty cool story&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Read this article if you&amp;rsquo;re interested in &lt;a href=&#34;https://www.modulo2.nl/blog/argocd-on-aws-with-multiple-clusters&#34;&gt;deploying ArgoCD on AWS&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Jim Jones has an article on &lt;a href=&#34;https://www.koolaid.info/getting-started-with-s3-compatible-object-storage/&#34;&gt;getting started with S3-compatible object storage&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;I have to confess that prior to just a few days ago I was not familiar with the term &amp;ldquo;kibibyte.&amp;rdquo; For those who may be in a similar situation, read &lt;a href=&#34;https://ozanerhansha.medium.com/kilobytes-vs-kibibytes-d77eb2ff6c2a&#34;&gt;this&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;programming&#34;&gt;Programming&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Kamaleshree Nagaraj talks about &lt;a href=&#34;https://www.thoughtworks.com/insights/blog/microservices/scaling-microservices-gRPC-part-one&#34;&gt;scaling microservices with gRPC&lt;/a&gt;. I&amp;rsquo;m looking forward to part two of the series, which will discuss Envoy Proxy.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Normally Ivan Pepelnjak&amp;rsquo;s articles land in the &amp;ldquo;Networking&amp;rdquo; section, but this time Ivan is squarely discussing virtualization when he talks about &lt;a href=&#34;https://blog.ipspace.net/2022/02/ubuntu-mac-m1.html&#34;&gt;running an Ubuntu VM on an M1-based Mac&lt;/a&gt;. I guess this is just yet another example of how fluid the &amp;ldquo;boundaries&amp;rdquo; between technical disciplines has become.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skills&#34;&gt;Career/Soft Skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;I really enjoyed this post on &lt;a href=&#34;https://originalgreen.org/blog/what-i-learned-by-moving-my&#34;&gt;lessons learned by moving the office home&lt;/a&gt;. There&amp;rsquo;s several nuggets in here that I need to apply to my next office move (which will be happening in about a month or so, if I don&amp;rsquo;t run into any more delays).&lt;/li&gt;
+&lt;li&gt;I like &lt;a href=&#34;https://cate.blog/2022/01/31/the-intention/&#34;&gt;this idea&lt;/a&gt; of thinking about an &lt;em&gt;intention&lt;/em&gt; instead of &lt;em&gt;resolutions&lt;/em&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s a wrap! I&amp;rsquo;ll be back in a couple of weeks with another Technology Short Take; until then, keep exploring, keep learning, and keep sharing! If you want to contact me&amp;mdash;perhaps to provide some feedback, suggest a site you&amp;rsquo;ve found helpful, or just to say hello&amp;mdash;feel free to contact &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt; or hit me up in any one of a number of Slack communities. I&amp;rsquo;d love to hear from you.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Using cert-manager with Kuma for mTLS</title>
+        <link>https://www.howellyang.com/2022/02/17/using-cert-manager-with-kuma-mtls/</link>
+        <pubDate>Thu, 17 Feb 2022 08:45:00 -0700</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/02/17/using-cert-manager-with-kuma-mtls/</guid>
+        <description>&lt;p&gt;When configuring mutual TLS (mTLS) on &lt;a href=&#34;https://kuma.io/&#34;&gt;the open source Kuma service mesh&lt;/a&gt;, users have a couple of different options. They can use a &amp;ldquo;builtin&amp;rdquo; certificate authority (CA), in which Kuma itself will generate a CA certificate and key for use in creating service-specific mTLS certificates. Users also have the option of using a &amp;ldquo;provided&amp;rdquo; CA, in which they must supply a CA certificate and key for Kuma to use when creating service-specific mTLS certificates. Both of these options are described &lt;a href=&#34;https://kuma.io/docs/1.4.x/policies/mutual-tls/&#34;&gt;on this page in the Kuma documentation&lt;/a&gt;. In this post, I&amp;rsquo;d like to explore the use of &lt;a href=&#34;https://cert-manager.io/&#34;&gt;cert-manager&lt;/a&gt; as a &amp;ldquo;provided&amp;rdquo; CA for mTLS on Kuma.&lt;/p&gt;
+&lt;p&gt;Currently, Kuma lacks direct integration with cert-manager, so the process is a bit more manual than I&amp;rsquo;d prefer. If direct cert-manager integration is something you&amp;rsquo;d find useful, please consider opening an issue to that effect on &lt;a href=&#34;https://github.com/kumahq/kuma/&#34;&gt;the Kuma GitHub repository&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Assuming you have cert-manager installed already, the process for using cert-manager as the CA for a &amp;ldquo;provided&amp;rdquo; CA mTLS backend looks like this:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Define the root CA in cert-manager.&lt;/li&gt;
+&lt;li&gt;Prepare the secrets for Kuma.&lt;/li&gt;
+&lt;li&gt;Configure the Kuma &lt;code&gt;mesh&lt;/code&gt; object for mTLS.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;I know these steps are really too high level to be useful on their own, so I&amp;rsquo;ll step through them in a bit more detail in the sections below.&lt;/p&gt;
+&lt;h2 id=&#34;define-the-mtls-root-ca&#34;&gt;Define the mTLS Root CA&lt;/h2&gt;
+&lt;p&gt;If you&amp;rsquo;ve browsed &lt;a href=&#34;https://cert-manager.io/docs/&#34;&gt;the cert-manager documentation&lt;/a&gt;, you&amp;rsquo;ve probably seen that there are a variety of ways to set up an Issuer (a means of issuing Certificate objects managed by cert-manager). In this example, I&amp;rsquo;ll just use a SelfSigned issuer, although you could use a different method. (To be honest, though, if you were going to go down the CA route you might as well just use the CA certificate and key with Kuma directly.)&lt;/p&gt;
+&lt;p&gt;To create a SelfSigned issuer, this piece of YAML would work:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;---
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager.io/v1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;ClusterIssuer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;selfsigned-issuer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;selfSigned&lt;/span&gt;: {}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then use that SelfSigned issuer to issue a root CA for Kuma to use:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;---
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager.io/v1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Certificate&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-mtls-root-ca&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-system&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;isCA&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;true&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;commonName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-mtls-root-ca&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;secretName&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-mtls-root-ca&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;duration&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;43800h&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# 5 years&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;renewBefore&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;720h&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# 30d&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;privateKey&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;algorithm&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;RSA&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;encoding&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;PKCS1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;size&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;2048&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;usages&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#ae81ff&#34;&gt;digital signature&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#ae81ff&#34;&gt;key encipherment&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    - &lt;span style=&#34;color:#ae81ff&#34;&gt;cert sign&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;issuerRef&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;selfsigned-issuer&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# References self-signed ClusterIssuer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;ClusterIssuer&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;group&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager.io&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Once this is applied to the cluster where cert-manager is running (which doesn&amp;rsquo;t necessarily need to be the cluster where Kuma will be installed, as you&amp;rsquo;ll see in a moment), then cert-manager will create not only the Certificate resource but &lt;em&gt;also&lt;/em&gt; a corresponding Secret that contains the certificate and the private key (the name of that Secret is controlled by the &lt;code&gt;spec.secretName&lt;/code&gt; field above). You&amp;rsquo;ll use that secret for the next step, which is preparing the secrets for Kuma.&lt;/p&gt;
+&lt;h2 id=&#34;preparing-secrets-for-kuma&#34;&gt;Preparing Secrets for Kuma&lt;/h2&gt;
+&lt;p&gt;It would be nice if Kuma could just use/read the Secret created by cert-manager directly, but that functionality doesn&amp;rsquo;t currently exist. As a result, we&amp;rsquo;ll need to take the Kubernetes Secret created by cert-manager and turn it into something that Kuma can leverage.&lt;/p&gt;
+&lt;p&gt;To do this, you&amp;rsquo;ll need to make two mesh-scoped Kuma secrets (see &lt;a href=&#34;https://kuma.io/docs/1.4.x/security/secrets/&#34;&gt;the Kuma secrets documentation&lt;/a&gt;). On Kubernetes, these will be Kubernetes Secrets, but labeled for a specific mesh and tagged as a specific type.&lt;/p&gt;
+&lt;p&gt;This example template shows what a mesh-scoped Kuma secret would look like on Kubernetes:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;---
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;v1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Secret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;sample-secret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-system&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;labels&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;kuma.io/mesh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;default&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;data&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;blah&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system.kuma.io/secret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The label (&lt;code&gt;kuma.io/mesh: default&lt;/code&gt;), the type (&lt;code&gt;system.kuma.io/secret&lt;/code&gt;), and the namespace (&lt;code&gt;kuma-system&lt;/code&gt;) mark this as a mesh-scoped Kuma secret. How do you take the Kubernetes Secret generated by cert-manager and turn it into one of these?&lt;/p&gt;
+&lt;p&gt;Well, you &lt;em&gt;could&lt;/em&gt; export the contents of the Kubernetes Secret created by cert-manager (using &lt;code&gt;kubectl get secret &amp;lt;name&amp;gt; -jsonpath=&#39;{.data.tls\.crt}&#39;&lt;/code&gt;, piping that through &lt;code&gt;base64&lt;/code&gt; to decode it, and then redirecting to a file), and then use the file to create a new mesh-scoped Kuma secret using the template above, making sure to re-encode the file contents with &lt;code&gt;base64&lt;/code&gt; alone the way. However, there&amp;rsquo;s no real need to have the CA certificate and key in a file on the disk, and there&amp;rsquo;s no real sense in decoding and then re-encoding the Secret&amp;rsquo;s contents. Is there a better way?&lt;/p&gt;
+&lt;p&gt;In fact, there is. Using &lt;code&gt;yq&lt;/code&gt; (here&amp;rsquo;s &lt;a href=&#34;https://github.com/mikefarah/yq&#34;&gt;the GitHub repository&lt;/a&gt; for it), you can do what you need with a single command (I&amp;rsquo;ll break this command down in a moment):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;yq e &amp;quot;.data.value = \
+\&amp;quot;$(kubectl -n kuma-system get secret kuma-mtls-root-ca \
+-jsonpath=&#39;{.data.tls\.crt}&#39;)\&amp;quot; secret-template.yaml | \
+yq e &#39;.metadata.name = &amp;quot;mtls-root-certificate&amp;quot;&#39; -
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;That&amp;rsquo;s a doozy! What&amp;rsquo;s happening here? You&amp;rsquo;re using &lt;code&gt;yq&lt;/code&gt; to modify the values of a couple of fields; there&amp;rsquo;s two iterations of &lt;code&gt;yq&lt;/code&gt;, each modifying a different field. The first iteration of &lt;code&gt;yq&lt;/code&gt; modifies the &lt;code&gt;.data.value&lt;/code&gt; field, making its value equal to the output of the &lt;code&gt;kubectl get secret&lt;/code&gt; command (which is the base64-encoded CA certificate in the Secret created by cert-manager). &lt;code&gt;yq&lt;/code&gt; expects double quotes around the value being assigned to the field, but double quotes are needed to do the command substitution so the &amp;ldquo;inner quotes&amp;rdquo; are backslash-escaped. The second iteration of &lt;code&gt;yq&lt;/code&gt; modifies the &lt;code&gt;.metadata.name&lt;/code&gt; field to be equal to &amp;ldquo;mtls-root-certificate&amp;rdquo;. Since there&amp;rsquo;s no command substitution in this iteration, you&amp;rsquo;re using single quotes around the &lt;code&gt;yq&lt;/code&gt; operation and unescaped double quotes around the value.&lt;/p&gt;
+&lt;p&gt;The end result looks something like this:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;---
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;v1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Secret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mtls-root-certificate&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;namespace&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma-system&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;labels&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;kuma.io/mesh&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;default&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;data&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;value&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;LS0tLS1CRUdJTiBDRVJUSUZJ...&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;# Base64-encoded contents&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;system.kuma.io/secret&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Just add one final pipe (pipe it into &lt;code&gt;kubectl apply -f -&lt;/code&gt;) to the command above and you&amp;rsquo;re good to go.&lt;/p&gt;
+&lt;p&gt;Repeat for the key:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;yq e &amp;quot;.data.value = \
+\&amp;quot;$(kubectl -n kuma-system get secret kuma-mtls-root-ca \
+-jsonpath=&#39;{.data.tls\.key}&#39;)\&amp;quot; secret-template.yaml | \
+yq e &#39;.metadata.name = &amp;quot;mtls-root-key&amp;quot;&#39; - | \
+kubectl apply -f -
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You&amp;rsquo;re now ready for the final step, which is configuring the Kuma mesh for mTLS.&lt;/p&gt;
+&lt;h2 id=&#34;configuring-the-mesh-for-mtls&#34;&gt;Configuring the Mesh for mTLS&lt;/h2&gt;
+&lt;p&gt;Fortunately, this step is pretty straightforward. Working from the example found in &lt;a href=&#34;https://kuma.io/docs/1.4.x/policies/mutual-tls/&#34;&gt;the Kuma mTLS documentation&lt;/a&gt; for a &amp;ldquo;provided&amp;rdquo; backend, something like this would work:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-yaml&#34; data-lang=&#34;yaml&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;apiVersion&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;kuma.io/v1alpha1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;kind&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;Mesh&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;metadata&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;default&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;spec&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#f92672&#34;&gt;mtls&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;enabledBackend&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#f92672&#34;&gt;backends&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;      - &lt;span style=&#34;color:#f92672&#34;&gt;name&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;cert-manager&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;type&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;provided&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;dpCert&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;rotation&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;expiration&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1d&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#f92672&#34;&gt;conf&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;cert&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;secret&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mtls-root-certificate&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;          &lt;span style=&#34;color:#f92672&#34;&gt;key&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;            &lt;span style=&#34;color:#f92672&#34;&gt;secret&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;mtls-root-key&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The backend name is entirely subjective, of course, but the names of the secrets referenced by &lt;code&gt;spec.conf.cert.secret&lt;/code&gt; and &lt;code&gt;spec.conf.key.secret&lt;/code&gt; must match the names of the mesh-scoped Kuma secrets you created in the previous section.&lt;/p&gt;
+&lt;p&gt;And that&amp;rsquo;s it! Once this configuration is in place, Kuma will use the CA certificate issued by cert-manager (which you then translated into a pair of mesh-scoped Kuma secrets) to automatically issue and sign the mTLS certificates used by the data plane proxies. (You could use the Envoy admin API to see more details on these certificates, but that&amp;rsquo;s a different post for a different day.)&lt;/p&gt;
+&lt;p&gt;If you have any questions about this, or about Kuma in general, feel free to hit me up. You can find me in &lt;a href=&#34;https://kuma-mesh.slack.com&#34;&gt;the Kuma community Slack&lt;/a&gt;, or hit &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;. My DMs are open and I&amp;rsquo;d be happy to help if I&amp;rsquo;m able.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Follow Up: Bootstrapping Servers into Ansible</title>
+        <link>https://www.howellyang.com/2022/01/21/follow-up-bootstrapping-servers-ansible/</link>
+        <pubDate>Fri, 21 Jan 2022 12:00:00 -0700</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/01/21/follow-up-bootstrapping-servers-ansible/</guid>
+        <description>&lt;p&gt;Seven years ago, I wrote a quick post on &lt;a href=&#34;https://www.howellyang.com/2015/05/26/bootstrap-servers-ansible/&#34;&gt;bootstrapping servers into Ansible&lt;/a&gt;. The basic gist of the post was that you can use variables on the &lt;a href=&#34;https://www.ansible.com/&#34;&gt;Ansible&lt;/a&gt; command-line to specify hosts that aren&amp;rsquo;t part of your inventory or log in via a different user (useful if the host doesn&amp;rsquo;t yet have a dedicated Ansible user account because you want to use Ansible to create that account). Recently, though, I encountered a situation where this approach doesn&amp;rsquo;t work, and in this post I&amp;rsquo;ll describe the workaround.&lt;/p&gt;
+&lt;p&gt;In one of the Slack communities I frequent, someone asked about using the approach described in the original blog post. However, they were having issues connecting. Specifically, this error was cropping up in the Ansible output (names have been changed to protect the innocent):&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;fatal: [new-server.int.domain.test]: UNREACHABLE! =&amp;gt; {&amp;#34;changed&amp;#34;: false, &amp;#34;msg&amp;#34;: &amp;#34;Failed to connect to the host via ssh: ansible@new-server.int.domain.test: Permission denied (publickey,password).&amp;#34;, &amp;#34;unreachable&amp;#34;: true}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Now, this is odd, because the Ansible command-line being executed included the parameters I mentioned in the original blog post:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ansible-playbook bootstrap.yml -i inventory/hosts -K --extra-vars &amp;quot;hosts=new-server.int.domain.test user=john&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For some reason, though, it was ignoring that parameter and attempting to connect as &lt;code&gt;ansible&lt;/code&gt;. At first, I thought this was just an SSH error, but the person assured me that they were definitely able to SSH into the specified host as the specified user.&lt;/p&gt;
+&lt;p&gt;That was when we found the difference between this environment and the environment I&amp;rsquo;d used: in this environment, the &lt;code&gt;ansible_user&lt;/code&gt; variable was defined in the specified inventory file. I hadn&amp;rsquo;t defined &lt;code&gt;ansible_user&lt;/code&gt;. Could that be it?&lt;/p&gt;
+&lt;p&gt;I asked the person to try specifying &lt;code&gt;ansible_user&lt;/code&gt; instead of &lt;code&gt;user&lt;/code&gt; on the command line, like so:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;ansible-playbook bootstrap.yml -i inventory/hosts -K --extra-vars &amp;quot;hosts=new-server.int.domain.test ansible_user=john&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It worked!&lt;/p&gt;
+&lt;p&gt;So, the key takeaway is: if you&amp;rsquo;re thinking of using this bootstrapping technique with your Ansible environment, be sure to specify &lt;code&gt;ansible_user&lt;/code&gt; on the Ansible command-line &lt;em&gt;if&lt;/em&gt; you&amp;rsquo;ve defined &lt;code&gt;ansible_user&lt;/code&gt; in your inventory. Otherwise, you should be able to just use &lt;code&gt;user&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Credit for finding this issue with the approach I described in the original blog post, and for testing the workaround, goes to James Cox. Thanks James! As always, feel free to reach out to &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;&amp;mdash;or find me in any of the Slack communities I regularly visit&amp;mdash;and ask questions, provide feedback, or just say hello. I&amp;rsquo;d love to hear from you.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 151</title>
+        <link>https://www.howellyang.com/2022/01/21/technology-short-take-151/</link>
+        <pubDate>Fri, 21 Jan 2022 08:15:00 UTC</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/01/21/technology-short-take-151/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #151, the first Technology Short Take of 2022. I hope everyone had a great holiday season and that 2022 is off to a wonderful start! I have a few more links than normal this time around, although I didn&amp;rsquo;t find articles in a couple categories. Don&amp;rsquo;t worry&amp;mdash;I&amp;rsquo;ll keep my eyes peeled and my RSS reader ready to pull in new articles in those categories for next time. And now for the content!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Mike Fiedler &lt;a href=&#34;https://www.miketheman.net/2021/12/28/container-to-container-communication/&#34;&gt;explores differences&lt;/a&gt; in ways for container-to-container communication to occur.&lt;/li&gt;
+&lt;li&gt;Aidan Steele examines how &lt;a href=&#34;https://awsteele.com/blog/2022/01/02/shared-vpcs-are-underrated.html&#34;&gt;VPC sharing could potentially improve security and reduce cost&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;What do &lt;em&gt;you&lt;/em&gt; think &lt;a href=&#34;https://blog.ipspace.net/2022/01/microsegmentation-terminology.html&#34;&gt;microsegmentation means&lt;/a&gt;?&lt;/li&gt;
+&lt;li&gt;Nick Schmidt talks about &lt;a href=&#34;https://blog.engyak.co/2022/01/gitops-with-nsx-advanced-load-balancer.html&#34;&gt;using GitOps with the NSX Advanced Load Balancer&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;The Next Platform takes &lt;a href=&#34;https://www.nextplatform.com/2022/01/04/inside-amazons-graviton3-arm-server-processor/&#34;&gt;a look at Amazon&amp;rsquo;s Graviton3 processor&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ru Singh provides &lt;a href=&#34;https://rusingh.com/not-very-pro-apple-hello-air/&#34;&gt;a review&lt;/a&gt; of her M1-based MacBook Air.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://luisartola.com/framework-laptop-with-ubuntu-review/&#34;&gt;a great review of the Framework laptop&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Losing to Apple&amp;mdash;whose M-series chips are widely regarded as faster and more efficient than Intel&amp;rsquo;s chips&amp;mdash;has apparently stung the chip giant into revving up the innovation engine. &lt;a href=&#34;https://www.gsmarena.com/intel_announces_12thgen_h_processors_for_laptops_with_hybrid_design-news-52539.php&#34;&gt;These details on their 12th-generation H processors&lt;/a&gt; shows that Intel appears to be intent to regain the lead. Time will tell how successful they are.&lt;/li&gt;
+&lt;li&gt;Chris Evans revisits the discussion regarding &lt;a href=&#34;https://www.architecting.it/blog/arm-architecture-cloud/&#34;&gt;Arm processor architectures in the public cloud&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;And, speaking of Arm processor architectures in the public cloud, &lt;a href=&#34;https://muratbuffalo.blogspot.com/2021/12/graviton2-and-graviton3.html&#34;&gt;here&amp;rsquo;s another look&lt;/a&gt; at Amazon&amp;rsquo;s Graviton2 and Graviton3 chips, as discussed in a pair of re:Invent talks.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Kat Traxler &lt;a href=&#34;https://www.vectra.ai/blogpost/log4j-unique-impact-in-the-cloud&#34;&gt;considers the impact of the Log4J vulnerability in cloud-based environments&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;I was very glad to see &lt;a href=&#34;https://gnupg.org/blog/20220102-a-new-future-for-gnupg.html&#34;&gt;this blog post&lt;/a&gt; about the financial future of the GnuPG project.&lt;/li&gt;
+&lt;li&gt;The story of a developer deliberately polluting their open source projects&amp;mdash;as outlined &lt;a href=&#34;https://www.bleepingcomputer.com/news/security/dev-corrupts-npm-libs-colors-and-faker-breaking-thousands-of-apps/&#34;&gt;here&lt;/a&gt; for the &amp;ldquo;colors.js&amp;rdquo; and &amp;ldquo;faker.js&amp;rdquo; libraries hosted on NPM&amp;mdash;is a software supply chain issue that I suspect many organizations hadn&amp;rsquo;t considered. Now they&amp;rsquo;re going to have to start accounting for this possibility.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://www.intezer.com/blog/malware-analysis/new-backdoor-sysjoker/&#34;&gt;Cross-platform malware&lt;/a&gt;. Ugh.&lt;/li&gt;
+&lt;li&gt;Orca Security &lt;a href=&#34;https://orca.security/resources/blog/aws-glue-vulnerability/&#34;&gt;discusses the &amp;ldquo;Superglue&amp;rdquo; vulnerability&lt;/a&gt; in AWS Glue.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Benoît Bouré explains &lt;a href=&#34;https://benoitboure.com/securely-access-your-aws-resources-from-github-actions&#34;&gt;how to use short-lived credentials to access AWS resources from GitHub Actions&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Ivan Velichko has a detailed article on &lt;a href=&#34;https://iximiuz.com/en/posts/kubernetes-api-structure-and-terminology/&#34;&gt;Kubernetes API resources, kinds, and objects&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Sander Rodenhuis wrote an article on &lt;a href=&#34;https://hashnode.com/post/security-policies-in-kubernetes-made-easy-ckxz5fu2h02j2u8s13ecy82x0&#34;&gt;security policies in Kubernetes&lt;/a&gt;. The post focuses on Otomi, which in turn leverages Open Policy Agent and Gatekeeper.&lt;/li&gt;
+&lt;li&gt;Michael Gasch pontificates on Knative&amp;rsquo;s missteps in &lt;a href=&#34;https://www.mgasch.com/2021/06/knative-pov/&#34;&gt;this post from June 2021&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Yann Léger and Alisdair Broshar &lt;a href=&#34;https://www.koyeb.com/blog/the-koyeb-serverless-engine-from-kubernetes-to-nomad-firecracker-and-kuma&#34;&gt;talk about the technology stack behind the Koyeb Serverless Engine&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Lydia Leong has a great idea: why not &lt;a href=&#34;https://cloudpundit.com/2021/10/21/improving-cloud-resilience-through-stuff-that-works/&#34;&gt;improve cloud resilience using things that actually work&lt;/a&gt;, instead of chasing &lt;a href=&#34;https://cloudpundit.com/2021/10/14/multicloud-failover-is-almost-always-a-terrible-idea/&#34;&gt;the multi-cloud failover unicorn&lt;/a&gt;? There&amp;rsquo;s some useful and practical advice here, in my opinion.&lt;/li&gt;
+&lt;li&gt;Via the Kubernetes blog, Rory McCune of Aqua Security provides &lt;a href=&#34;https://kubernetes.io/blog/2022/01/19/secure-your-admission-controllers-and-webhooks/&#34;&gt;some guidelines for securing admission controllers&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;I recently had a need to do a multicast DNS lookup, and &lt;a href=&#34;https://www.gabriel.urdhr.fr/2019/04/02/llmnr-mdns-cli-lookup/&#34;&gt;this article&lt;/a&gt; was critical in figuring out how to use &lt;code&gt;dig&lt;/code&gt; to do it.&lt;/li&gt;
+&lt;li&gt;If you need a quick start for HashiCorp Vault, &lt;a href=&#34;https://devopscube.com/setup-hashicorp-vault-beginners-guide/&#34;&gt;this one&lt;/a&gt; worked really well for me. I found it easier/better than the documentation on the HashiCorp web site, in fact.&lt;/li&gt;
+&lt;li&gt;Dennis Felsing shares some thoughts on &lt;a href=&#34;https://hookrace.net/blog/macos-setup/&#34;&gt;switching to macOS after 15 years on Linux&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Running Docker on an M1 Max-based system? &lt;a href=&#34;https://www.proudcommerce.com/devops/docker-performance-on-apple-macbook-pro-with-m1-max-processor-status-and-tips&#34;&gt;This article&lt;/a&gt; may provide some useful information.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://rachelbythebay.com/w/2022/01/01/baddate/&#34;&gt;Here&amp;rsquo;s some information&lt;/a&gt; on why Microsoft Exchange stopped delivering e-mail messages on January 1, 2022.&lt;/li&gt;
+&lt;li&gt;Mark Brookfield has started a series on automating SSL certificate issuance and renewal using HashiCorp Vault Agent, &lt;a href=&#34;https://virtualhobbit.com/2022/01/11/automate-ssl-certificate-issuing-and-renewal-with-hashicorp-vault-agent-part-1-configure-vault/&#34;&gt;here&amp;rsquo;s part 1&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Julia Evans has a quick post on &lt;a href=&#34;https://jvns.ca/blog/2022/01/11/how-to-find-a-domain-s-authoritative-nameserver/&#34;&gt;finding a domain&amp;rsquo;s authoritative name servers&lt;/a&gt;. I was already familiar with this process, but I appreciate that there are lots of folks out there who may not have had to ever do this.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://www.tomsguide.com/how-to/how-to-use-secret-codes-on-iphone&#34;&gt;a handy list of secret phone codes you can use&lt;/a&gt;. Some of these I already knew, but a few of them were new to me. Neat.&lt;/li&gt;
+&lt;li&gt;The founder of the Nginx project recently stepped away from the project. Read more &lt;a href=&#34;https://www.nginx.com/blog/do-svidaniya-igor-thank-you-for-nginx/&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://linuxiac.com/intel-is-bringing-an-important-feature-to-linux-kernel-5-17/&#34;&gt;BIOS updates without a reboot&lt;/a&gt;, and under Linux first? Yes please!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s all for now. I hope this was useful in some way! If you have any feedback for me&amp;mdash;constructive criticism, praise, suggestions for where I can find more articles (especially if the site supports RSS!), feel free to reach out. I&amp;rsquo;d love to hear from you! You can reach &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;, or hit me up in any one of a number of different Slack communities.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Getting Certificate Details from HashiCorp Vault</title>
+        <link>https://www.howellyang.com/2022/01/12/getting-certificate-details-from-hashicorp-vault/</link>
+        <pubDate>Wed, 12 Jan 2022 09:00:00 UTC</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/01/12/getting-certificate-details-from-hashicorp-vault/</guid>
+        <description>&lt;p&gt;It seems there are lots of tutorials on setting up a PKI (public key infrastructure) using &lt;a href=&#34;https://www.vaultproject.io/&#34;&gt;HashiCorp Vault&lt;/a&gt;. What I&amp;rsquo;ve found missing from most of these tutorials, however, is how to get details on certificates issued by a Vault-driven PKI &lt;em&gt;after&lt;/em&gt; the initial creation. For example, someone other than you issued a certificate, but now you need to get the details for said certificate. How is that done? In this post, I&amp;rsquo;ll show you a couple ways to get details on certificates issued and stored in HashiCorp Vault.&lt;/p&gt;
+&lt;p&gt;For the commands and API calls I&amp;rsquo;ve shared below, I&amp;rsquo;m using &amp;ldquo;pki&amp;rdquo; as the name/path you (or someone else) assigned to a PKI secrets engine within Vault. If you&amp;rsquo;re using a different name/path, then be sure to substitute the correct name/path as appropriate.&lt;/p&gt;
+&lt;p&gt;To use the Vault CLI to see the list of certificates issued by Vault, you can use this command:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vault list pki/certs
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will return a list of the serial numbers of the certificates issued by this PKI. Looking at just serial numbers isn&amp;rsquo;t terribly helpful, though. To get more details, you first need to read the certificate details (note singular &amp;ldquo;cert&amp;rdquo; here versus plural &amp;ldquo;certs&amp;rdquo; in the previous command):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vault read pki/cert/&amp;lt;serial-num&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now the output is a formatted response that includes the PEM-encoded certificate. That&amp;rsquo;s a bit more useful, but still not quite all the way to seeing all the details about the certificate. Fortunately, the Vault CLI supports a &lt;code&gt;-format=json&lt;/code&gt; parameter, and you can couple that with the trusty tool &lt;code&gt;jq&lt;/code&gt; to parse the output (see &lt;a href=&#34;https://www.howellyang.com/2015/11/11/handy-cli-tool-json/&#34;&gt;this post&lt;/a&gt; if you&amp;rsquo;re not familiar with &lt;code&gt;jq&lt;/code&gt;):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vault read -format=json pki/cert/&amp;lt;serial-num&amp;gt; | jq -r &#39;.data.certificate&#39;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Finally! One more step: pipe the output of the command through &lt;code&gt;openssl x509&lt;/code&gt;, like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;vault read -format=json pki/cert/&amp;lt;serial-num&amp;gt; | \
+jq -r &#39;.data.certificate&#39; | \
+openssl x509 -in - -noout -text
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Bam! Now you have all the details on the certificate.&lt;/p&gt;
+&lt;p&gt;It&amp;rsquo;s also possible to do this via Vault&amp;rsquo;s HTTP API. Using &lt;code&gt;curl&lt;/code&gt;, you can retrieve the list of certificate serial numbers with this API call:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl -s --request LIST https://&amp;lt;vault-ip-or-hostname&amp;gt;/v1/pki/certs
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Armed with a serial number, you can then retrieve a specific certificate:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl -s https://&amp;lt;vault-ip-or-hostname&amp;gt;/v1/pki/cert/&amp;lt;serial-num&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And then, naturally, you can use &lt;code&gt;jq&lt;/code&gt; and &lt;code&gt;openssl&lt;/code&gt; to see the certificate details:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;curl -s https://&amp;lt;vault-ip-or-hostname&amp;gt;/v1/pki/cert/&amp;lt;serial-num&amp;gt; | \
+jq -r &#39;.data.certificate&#39; | \
+openssl x509 -in - -noout -text
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Per &lt;a href=&#34;https://www.vaultproject.io/api-docs/secret/pki&#34;&gt;the Vault API docs&lt;/a&gt;, the endpoints for retrieving the list of certificates or retrieving a specific certificate are unauthenticated endpoints, so there&amp;rsquo;s no need to include the &amp;ldquo;X-Vault-Token&amp;rdquo; header with your API requests.&lt;/p&gt;
+&lt;p&gt;I hope this is useful. If you have questions&amp;mdash;or corrections, in the event I explained something incorrectly above&amp;mdash;feel free to reach out to &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;, or find me in any one of a number of Slack communities.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Using Test-Driven Development for Kustomize Overlays</title>
+        <link>https://www.howellyang.com/2022/01/10/using-test-driven-development-for-kustomize-overlays/</link>
+        <pubDate>Mon, 10 Jan 2022 09:00:00 UTC</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2022/01/10/using-test-driven-development-for-kustomize-overlays/</guid>
+        <description>&lt;p&gt;I am by no means a developer (not by a long shot!), but I have been learning lots of development-related things over the last several years and trying to incorporate those into my workflows. One of these is the idea of &lt;em&gt;test-driven development&lt;/em&gt; (see &lt;a href=&#34;https://en.wikipedia.org/wiki/Test-driven_development&#34;&gt;Wikipedia&lt;/a&gt; for a definition and some additional information), in which one writes tests to validate functionality before writing the code to implement said functionality (pardon the paraphrasing). In this post, I&amp;rsquo;ll discuss how to use &lt;a href=&#34;https://www.conftest.dev/&#34;&gt;&lt;code&gt;conftest&lt;/code&gt;&lt;/a&gt; to (loosely) implement test-driven development for &lt;a href=&#34;https://kubernetes-sigs.github.io/kustomize/&#34;&gt;Kustomize&lt;/a&gt; overlays.&lt;/p&gt;
+&lt;p&gt;If you&amp;rsquo;re unfamiliar with Kustomize, then &lt;a href=&#34;https://www.howellyang.com/2019/09/13/an-introduction-to-kustomize/&#34;&gt;this introductory article I wrote&lt;/a&gt; will probably be useful.&lt;/p&gt;
+&lt;p&gt;For the discussion around using the principles of test-driven development for Kustomize overlays, I&amp;rsquo;ll pull in a recent post I did on &lt;a href=&#34;https://www.howellyang.com/2021/10/21/creating-reusable-kuma-installation-yaml/&#34;&gt;creating reusable YAML for installing Kuma&lt;/a&gt;. In that post, I pointed out four changes that needed to be made to the output of &lt;code&gt;kumactl install control-plane&lt;/code&gt; to make it reusable:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Remove the &lt;code&gt;caBundle&lt;/code&gt; value for all webhooks.&lt;/li&gt;
+&lt;li&gt;Annotate all webhooks so that cert-manager will inject the correct &lt;code&gt;caBundle&lt;/code&gt; value.&lt;/li&gt;
+&lt;li&gt;Add a volume and volume mount to the &amp;ldquo;kuma-control-plane&amp;rdquo; Deployment.&lt;/li&gt;
+&lt;li&gt;Change one of the environment variables for the &amp;ldquo;kuma-control-plane&amp;rdquo; Deployment to reference the volume added in step 3.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Since I know what specific changes I need to see in the original YAML, I &lt;em&gt;should&lt;/em&gt; be able to write some sort of test that tells me if that change has been made or not. I can run the test against the original YAML, knowing that it will fail, before writing the necessary Kustomize patches to make the change. Then I can test again to verify if the Kustomize patches worked as expected or anticipated.&lt;/p&gt;
+&lt;p&gt;This is where &lt;code&gt;conftest&lt;/code&gt; comes in. The &lt;code&gt;conftest&lt;/code&gt; command-line utility uses the Rego policy language from &lt;a href=&#34;https://www.openpolicyagent.org/&#34;&gt;Open Policy Agent&lt;/a&gt;, and is intended to allow users to do exactly what I&amp;rsquo;m trying to do. Specifically, it allows me to run a series of tests against YAML manifests to ensure that the test conditions (whatever those may be) are satisfied. The &amp;ldquo;test conditions&amp;rdquo; here are that the necessary changes have been made in order to make the installation YAML reusable.&lt;/p&gt;
+&lt;p&gt;I&amp;rsquo;ll start with the first change (removing the &lt;code&gt;caBundle&lt;/code&gt; value). Here&amp;rsquo;s a Rego stanza that will test for the presence of a &lt;code&gt;caBundle&lt;/code&gt; value (I&amp;rsquo;ll explain the code below):&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;warn[msg] {
+    input.kind == &amp;#34;ValidatingWebhookConfiguration&amp;#34;
+    some i; input.webhooks[i].clientConfig.caBundle
+    msg = &amp;#34;caBundle value not removed for a validating webhook&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Before moving on to the other tests, let&amp;rsquo;s break this one down a bit:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The &lt;code&gt;warn[msg]&lt;/code&gt; header tells &lt;code&gt;conftest&lt;/code&gt; to warn with the supplied message if the following conditions are true. The conditions within the curly braces act as a logical AND; all of them must be true in order to cause &lt;code&gt;conftest&lt;/code&gt; to warn with the supplied message.&lt;/li&gt;
+&lt;li&gt;The first line checks to see if &lt;code&gt;input.kind&lt;/code&gt; is equal to ValidatingWebhookConfiguration. The input here is whatever YAML being fed to &lt;code&gt;conftest&lt;/code&gt;, so &lt;code&gt;input.kind&lt;/code&gt; refers to the top-level &lt;code&gt;kind&lt;/code&gt; object in the input YAML.&lt;/li&gt;
+&lt;li&gt;The second line is Rego&amp;rsquo;s form of iteration. Rego will essentially iterate over all the webhooks in the input YAML and look for the presence of &lt;code&gt;clientConfig.caBundle&lt;/code&gt; in each webhook. If it finds at least one webhook with &lt;code&gt;clientConfig.caBundle&lt;/code&gt; present, then this condition is true.&lt;/li&gt;
+&lt;li&gt;The last line in the curly braces sets the message to be displayed by &lt;code&gt;conftest&lt;/code&gt; if all the conditions are true.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I can place this test into a file, which &lt;code&gt;conftest&lt;/code&gt; expects to be in a subfolder named &amp;ldquo;policy&amp;rdquo;, and then pipe the output of &lt;code&gt;kumactl install control-plane&lt;/code&gt; through it like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kumactl install control-plane | conftest test -
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This will produce a warning, of course, but that&amp;rsquo;s exactly what we wanted&amp;mdash;we want to the test to indicate that the &lt;code&gt;caBundle&lt;/code&gt; hasn&amp;rsquo;t been removed.&lt;/p&gt;
+&lt;p&gt;The test above checked for the &lt;code&gt;caBundle&lt;/code&gt; value for validating webhooks; this slightly modified version does the same thing for mutating webhooks:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;warn[msg] {
+    input.kind == &amp;#34;MutatingWebhookConfiguration&amp;#34;
+    some i; input.webhooks[i].clientConfig.caBundle
+    msg = &amp;#34;caBundle value not removed for a validating webhook&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Let&amp;rsquo;s look at another change and how we can test for it. What about change #4 from above&amp;mdash;changing an environment variable being passed to the &amp;ldquo;kuma-control-plane&amp;rdquo; Deployment? Here&amp;rsquo;s a Rego test for that:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;warn[msg] {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    env := input.spec.template.spec.containers[0].env[_]
+    env.name == &amp;#34;KUMA_RUNTIME_KUBERNETES_INJECTOR_CA_CERT_FILE&amp;#34;
+    not env.value == &amp;#34;/var/run/secrets/kuma.io/ca-cert/ca.crt&amp;#34;
+    msg = &amp;#34;KUMA_RUNTIME_KUBERNETES_INJECTOR_CA_CERT_FILE is not set correctly&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The syntax here is a bit different, so let&amp;rsquo;s discuss it before moving on:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;The header and the first line inside the braces are similar/the same as what I explained above in the previous example.&lt;/li&gt;
+&lt;li&gt;The second line in the braces creates a new variable, called &lt;code&gt;env&lt;/code&gt;, and assigns it the contents of the &lt;code&gt;env&lt;/code&gt; array of values under &lt;code&gt;spec.template.spec.container[0]&lt;/code&gt; (i.e., the first container defined in the Deployment). The &lt;code&gt;env[_]&lt;/code&gt; syntax is like another form of iteration, allowing Rego to perform the next two checks on all the contents of the array of values.&lt;/li&gt;
+&lt;li&gt;The next two lines check for a) an entry whose &lt;code&gt;name&lt;/code&gt; field is set to KUMA_RUNTIME_KUBERNETES_INJECTOR_CA_CERT_FILE &lt;em&gt;and&lt;/em&gt; b) whose &lt;code&gt;value&lt;/code&gt; field is NOT set to the specified path. Recall that conditions within the braces are like a logical AND, so specifying both of these conditions allows the test to find instances where the environment variable is defined incorrectly (i.e., with a different value than what is expected/desired).&lt;/li&gt;
+&lt;li&gt;The test closes out with setting the message &lt;code&gt;conftest&lt;/code&gt; will display if all the conditions are true.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;The test for change #2 is reasonably straightforward:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;warn[msg] {
+    input.apiVersion == &amp;#34;admissionregistration.k8s.io/v1&amp;#34;
+    not input.metadata.annotations[&amp;#34;cert-manager.io/inject-ca-from&amp;#34;]
+    msg = &amp;#34;cert-manager CA injection annotation missing from a webhook&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;The only notable syntax note here is how Rego would reference the name of the annotation, which is &amp;ldquo;cert-manager.io/inject-ca-from&amp;rdquo;. If a field name contains only letters or numbers, then the &lt;code&gt;input.metadata.annotations&lt;/code&gt; syntax (separating each field with a period) is sufficient. When a field contains something other than letters and numbers, then you need to move to the &lt;code&gt;input.metadata.annotations[&amp;quot;cert-manager.io/inject-ca-from&amp;quot;]&lt;/code&gt; syntax, where the field name is referenced in brackets and quotes.&lt;/p&gt;
+&lt;p&gt;Finally, I can write the tests for the last change: adding a volume and mounting it to a path in the container. This change is a bit more complex. In this case, the tests need to flag three different conditions:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;If the volume isn&amp;rsquo;t present&lt;/li&gt;
+&lt;li&gt;If the volume is present, but configured to point to the wrong entity (it&amp;rsquo;s supposed to point to a specific Secret)&lt;/li&gt;
+&lt;li&gt;If the volume isn&amp;rsquo;t mounted to the correct path in the container&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;As you might expect, then, I need three tests. In this case, I&amp;rsquo;m going to use a slightly different syntax that allows me to define a condition and then reference it later in a rule. First, let&amp;rsquo;s set up the condition:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;general_ca_vol_present = true {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    vols := input.spec.template.spec.volumes[_]
+    vols.name == &amp;#34;general-ca-crt&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;By now, this syntax should look pretty familiar to you, with the exception of the header. This defines a condition&amp;mdash;a subroutine or function, if you will&amp;mdash;called &lt;code&gt;general_ca_vol_present&lt;/code&gt;. This function checks to ensure that the volume does exist in the YAML manifest. I&amp;rsquo;ll reference this in a rule in just a moment.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;&amp;lt;aside&amp;gt;&lt;/code&gt;One side note here: a peculiarity of Rego is that I can&amp;rsquo;t test if the volume &lt;em&gt;doesn&amp;rsquo;t exist.&lt;/em&gt; If you check for &lt;code&gt;not vols.name == &amp;quot;general-ca-crt&amp;quot;&lt;/code&gt;, this check is true because there &lt;em&gt;are&lt;/em&gt; other volumes whose name is not &amp;ldquo;general-ca-crt&amp;rdquo;. This may require to you write your tests slightly differently than you might expect at first.&lt;code&gt;&amp;lt;/aside&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Next, a custom function to see if the volume is configured incorrectly (it doesn&amp;rsquo;t point to the correct Secret):&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;general_ca_vol_incorrect = true {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    vols := input.spec.template.spec.volumes[_]
+    vols.name == &amp;#34;general-ca-crt&amp;#34;
+    not vols.secret.secretName == &amp;#34;kuma-root-ca&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Finally, a function to check to see if it is mounted into the container correctly:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;general_ca_crt_volume_mounted = true {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    mounts := input.spec.template.spec.containers[0].volumeMounts[_]
+    mounts.mountPath == &amp;#34;/var/run/secrets/kuma.io/ca-cert&amp;#34;
+    mounts.name == &amp;#34;general-ca-crt&amp;#34;
+    mounts.readOnly == true
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;With the functions defined, I can now write the rules:&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;warn[msg] {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    not general_ca_vol_present
+    msg = &amp;#34;Additional volume not defined for CA of custom TLS certificate&amp;#34;
+}
+
+warn[msg] {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    general_ca_vol_incorrect
+    msg = &amp;#34;Additional volume for CA of custom TLS certificate not configured correctly&amp;#34;
+}
+
+warn[msg] {
+    input.kind == &amp;#34;Deployment&amp;#34;
+    not general_ca_crt_volume_mounted
+    msg = &amp;#34;Additional volume for CA of custom TLS certificate not mounted or incorrectly mounted in container&amp;#34;
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;With all the tests in place, running &lt;code&gt;kumactl install control-plane | conftest test -&lt;/code&gt; will generate warnings, as expected. From here, I can start to write Kustomize configurations that will make the necessary changes, and run them back through the tests like this (this command assumes the Kustomize configuration is in a directory named &amp;ldquo;kuma&amp;rdquo; under the current directory):&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;kustomize build kuma | conftest test -
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When &lt;code&gt;conftest&lt;/code&gt; finally reports zero warnings, I&amp;rsquo;ll know my Kustomize configuration is making the changes I coded in my tests. Bam&amp;mdash;I&amp;rsquo;ve just used the principles behind test-driven development in the creation of a Kustomize configuration.&lt;/p&gt;
+&lt;p&gt;In this particular case, a sample Kustomize configuration that modifies the base YAML output by &lt;code&gt;kumactl install control-plane&lt;/code&gt; is found in &lt;a href=&#34;https://github.com/scottslowe/kuma-declarative-install&#34;&gt;this GitHub repository&lt;/a&gt;. I&amp;rsquo;ve also added a Rego file with all the tests described in this post to the repository; it&amp;rsquo;s found in the &amp;ldquo;policy&amp;rdquo; directory. You can use &lt;code&gt;conftest&lt;/code&gt; to verify the sample Kustomize configuration using the Rego file in the &amp;ldquo;policy&amp;rdquo; directory.&lt;/p&gt;
+&lt;h2 id=&#34;additional-resources&#34;&gt;Additional Resources&lt;/h2&gt;
+&lt;p&gt;As mentioned above, &lt;a href=&#34;https://github.com/scottslowe/kuma-declarative-install&#34;&gt;this GitHub repository&lt;/a&gt;&amp;mdash;which was created to accompany the original &lt;a href=&#34;https://www.howellyang.com/2021/10/21/creating-reusable-kuma-installation-yaml/&#34;&gt;reusable Kuma installation YAML blog post&lt;/a&gt;&amp;mdash;has both a sample Kustomize configuation &lt;em&gt;and&lt;/em&gt; a Rego policy file you can use with &lt;code&gt;conftest&lt;/code&gt;. Feel free to take a closer look at either or both, or use them as the basis for something of your own.&lt;/p&gt;
+&lt;p&gt;If you have any questions, feel free to reach out to &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;. I&amp;rsquo;d be happy to help, if I&amp;rsquo;m able. For help with Rego, OPA, or &lt;code&gt;conftest&lt;/code&gt;, you can also check out &lt;a href=&#34;https://openpolicyagent.slack.com&#34;&gt;the Open Policy Agent Slack community&lt;/a&gt;.&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 150</title>
+        <link>https://www.howellyang.com/2021/12/31/technology-short-take-150/</link>
+        <pubDate>Fri, 31 Dec 2021 09:00:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2021/12/31/technology-short-take-150/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #150! This is the last Technology Short Take of 2021, so hopefully I&amp;rsquo;ll close the year out &amp;ldquo;with a bang&amp;rdquo; with this collection of links and articles on various technology areas. Bring on the content!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Ivan Pepelnjak has a post on &lt;a href=&#34;https://blog.ipspace.net/2021/12/network-automation-container.html&#34;&gt;running network automation tools in a container&lt;/a&gt;. In fact, he&amp;rsquo;s already built some container images, and the post has information on running tools from his prebuilt container image. Well worth reading!&lt;/li&gt;
+&lt;li&gt;Tom Hollingsworth &lt;a href=&#34;https://networkingnerd.net/2021/12/10/is-disaggregation-going-to-be-cord-cutting-for-the-enterprise/&#34;&gt;likens&lt;/a&gt; networking disaggregation to &amp;ldquo;cutting the cord&amp;rdquo; and switching away from cable.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Derek Seaman &lt;a href=&#34;https://www.derekseaman.com/2021/11/my-journey-for-dual-displays-with-my-m1-pro-mac.html&#34;&gt;chronicles his adventures&lt;/a&gt; in getting dual displays working with his M1 Pro-based 14&amp;quot; MacBook Pro.&lt;/li&gt;
+&lt;li&gt;Glenn Fleishman &lt;a href=&#34;https://tidbits.com/2021/12/03/usbefuddled-untangling-the-rats-nest-of-usb-c-standards-and-cables/&#34;&gt;offers more information on USB cables and standards than you probably cared to know&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Nicholas Weaver (no, not &lt;a href=&#34;https://twitter.com/lynxbat&#34;&gt;that Nick Weaver&lt;/a&gt;) &lt;a href=&#34;https://www.lawfareblog.com/whats-deal-log4shell-security-nightmare&#34;&gt;discusses the Log4Shell vulnerability&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The Log4J vulnerability and associated exploits has been on many folks&amp;rsquo; minds, so it&amp;rsquo;s only natural that many security companies have been looking into how to mitigate this attack vector. Aqua Security has a write-up on some of their analysis &lt;a href=&#34;https://blog.aquasec.com/real-world-log4j-attacks-analysis&#34;&gt;here&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;This is an older post, but it doesn&amp;rsquo;t look like I&amp;rsquo;ve linked to it before, so I thought I&amp;rsquo;d include it here. Some Azure folks from Microsoft have published &lt;a href=&#34;https://www.microsoft.com/security/blog/2020/04/02/attack-matrix-kubernetes/&#34;&gt;a threat matrix for Kubernetes&lt;/a&gt;. This is useful, in my opinion, because now platform operators have a &amp;ldquo;starting point&amp;rdquo; on the specific threats they need to try to mitigate.&lt;/li&gt;
+&lt;li&gt;I found &lt;a href=&#34;https://arstechnica.com/information-technology/2021/12/the-secret-uganda-deal-that-has-brought-nso-to-the-brink-of-collapse/&#34;&gt;this article on NSO/Pegasus&lt;/a&gt; a very interesting read. There&amp;rsquo;s also some great information in &lt;a href=&#34;https://googleprojectzero.blogspot.com/2021/12/a-deep-dive-into-nso-zero-click.html&#34;&gt;this Google Project Zero blog post&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;This is an older article, but resurfaced (on my radar, at least) recently&amp;mdash;it&amp;rsquo;s &lt;a href=&#34;https://pauldjohnston.medium.com/serverless-best-practices-b3c97d551535&#34;&gt;a collection of serverless best practices&lt;/a&gt; from Paul Johnston.&lt;/li&gt;
+&lt;li&gt;Cormac Hogan looks at using &lt;a href=&#34;https://cert-manager.io&#34;&gt;cert-manager&lt;/a&gt; to &lt;a href=&#34;https://cormachogan.com/2021/11/24/securing-ldap-with-tls-certificates-in-tkg-v1-4/&#34;&gt;secure LDAP communication in TKG clusters&lt;/a&gt;. Although a lot of this is, in theory, portable to any Kubernetes cluster, keep in mind that some of the commands shared in Cormac&amp;rsquo;s post are specific to the way TKG does things.&lt;/li&gt;
+&lt;li&gt;Dmitri Lerko shows how to use labels to do &lt;a href=&#34;https://tech.loveholidays.com/dynamic-alert-routing-with-prometheus-and-alertmanager-f6a919edb5f8&#34;&gt;dynamic alert routing with Prometheus and AlertManager&lt;/a&gt; (in other words, routing alerts to the correct team based on labels).&lt;/li&gt;
+&lt;li&gt;Tim O&amp;rsquo;Reilly &lt;a href=&#34;https://www.oreilly.com/radar/why-its-too-early-to-get-excited-about-web3/&#34;&gt;takes a look at Web3&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Kevin Swiber shows &lt;a href=&#34;https://hackernoon.com/how-to-automate-kubernetes-deployments-with-postman&#34;&gt;how to use Postman to deploy an application onto a Kubernetes cluster&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Jérôme Petazzoni lists some &lt;a href=&#34;http://jpetazzo.github.io/2021/11/30/docker-build-container-images-antipatterns/&#34;&gt;anti-patterns when building container images&lt;/a&gt;. I like that Jérôme also pointed out that these anti-patterns aren&amp;rsquo;t always bad (another way of saying sometimes you need to do things differently to satisfy your particular requirements).&lt;/li&gt;
+&lt;li&gt;Will Thompson digs a bit deeper into &lt;a href=&#34;https://blogs.gnome.org/wjjt/2021/11/24/on-flatpak-disk-usage-and-deduplication/&#34;&gt;Flatpak disk usage and deduplication&lt;/a&gt;. This article is apparently in response to &lt;a href=&#34;https://ludocode.com/blog/flatpak-is-not-the-future&#34;&gt;this other article&lt;/a&gt; that is critical of Flatpak.&lt;/li&gt;
+&lt;li&gt;Filippo Valsorda &lt;a href=&#34;https://blog.filippo.io/professional-maintainers/&#34;&gt;speculates on how open source maintainers need to evolve into professional maintainers&lt;/a&gt;. This is a topic that comes up every time a notable vulnerability or flaw is found in some piece of heavily-used open source software; the prompt this time, as far as I can tell, is the Log4j vulnerability. Regardless of the prompt, I do agree with many of the things Filippo says in this article.&lt;/li&gt;
+&lt;li&gt;Beth Marshall (aka &amp;ldquo;Beth the Tester&amp;rdquo;) provides &lt;a href=&#34;https://beththetester.com/2021/11/27/postman-flows-a-block-reference-guide/&#34;&gt;a reference guide to blocks in Postman Flows&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Who&amp;rsquo;s interested in &lt;a href=&#34;https://iongion.github.io/podman-desktop-companion/&#34;&gt;a graphical desktop companion app for Podman&lt;/a&gt;?&lt;/li&gt;
+&lt;li&gt;I don&amp;rsquo;t know&amp;hellip;I&amp;rsquo;m not sure if JSON can &lt;em&gt;ever&lt;/em&gt; be described as &amp;ldquo;for humans&amp;rdquo; (see &lt;a href=&#34;https://json5.org/&#34;&gt;this site&lt;/a&gt;).&lt;/li&gt;
+&lt;li&gt;LaunchBar is, in my opinion, an extremely useful macOS application. Making it even more useful is third-party actions like &lt;a href=&#34;https://github.com/Ptujec/LaunchBar/tree/master/Timezones&#34;&gt;this one&lt;/a&gt; for easily looking up times in cities around the world. (There&amp;rsquo;s a whole collection of actions in this repository.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;storage&#34;&gt;Storage&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Jeff Geerling describes &lt;a href=&#34;https://www.jeffgeerling.com/blog/2021/my-backup-plan&#34;&gt;his backup plan&lt;/a&gt;. (Jeff, if you aren&amp;rsquo;t aware, is a fairly prolific YouTube content creator.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;This article provides some in-depth information on &lt;a href=&#34;https://gvisor.dev/blog/2021/12/02/running-gvisor-in-production-at-scale-in-ant/&#34;&gt;optimizing gVisor to run at scale&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://www.howtoforge.com/enable-uefi-support-on-kvm-virtualization/&#34;&gt;how to enable UEFI support on KVM&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thomas Leonard has an interesting blog on &lt;a href=&#34;https://roscidus.com/blog/blog/2021/10/30/xwayland/&#34;&gt;using virtualization to isolate Xwayland&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Via &lt;a href=&#34;https://www.phoronix.com/scan.php?page=news_item&amp;amp;px=QEMU-6.2-Released&#34;&gt;this Phoronix article&lt;/a&gt;, QEMU 6.2 is available. New features in QEMU 6.2 include, among other things, support for Apple Silicon-based virtualization hosts (to run AArch64 guests).&lt;/li&gt;
+&lt;li&gt;I have a genuine question here (not trolling or being sarcastic): what is the use case/intended audience for &lt;a href=&#34;https://www.cloudhypervisor.org/&#34;&gt;Cloud Hypervisor&lt;/a&gt;? I&amp;rsquo;m not really understanding where this fits into the overall virtualization landscape.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skills&#34;&gt;Career/Soft Skills&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Katarina Brookfield recently shared her experience with the Certified Kubernetes Administrator (CKA) exam; you can find her notes &lt;a href=&#34;http://advecti.io/2021/my-cka-exam-experience-and-tips/&#34;&gt;here&lt;/a&gt;. Oh, and while we&amp;rsquo;re at it&amp;mdash;you may find Curtis Collicutt&amp;rsquo;s &lt;a href=&#34;https://serverascode.com//2021/07/27/thoughts-on-the-cks-exam.html&#34;&gt;experience with the Certified Kubernetes Security (CKS) specialist exam&lt;/a&gt; helpful as well.&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://enterprisersproject.com/article/2021/10/remote-work-how-prove-yourself&#34;&gt;This post&lt;/a&gt; has a list of &amp;ldquo;10 ways to prove yourself during remote work.&amp;rdquo; It seems to be primarily targeted at leadership-type roles, but readers may find a few useful tips here.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s a wrap! Not only for this Technology Short Take, but also for 2021. I hope that 2022 brings you much success and joy. As always, feel free to contact &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt; if you&amp;rsquo;d like to provide feedback, ask a question, or just say hello. I&amp;rsquo;d love to hear from you!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Review: OWC Thunderbolt 3 Dock</title>
+        <link>https://www.howellyang.com/2021/12/23/review-owc-thunderbolt-dock/</link>
+        <pubDate>Thu, 23 Dec 2021 13:00:00 -0700</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2021/12/23/review-owc-thunderbolt-dock/</guid>
+        <description>&lt;p&gt;About six months ago I purchased an &lt;a href=&#34;https://www.owcdigital.com/products/thunderbolt-3-dock-14-port&#34;&gt;OWC Thunderbolt 3 Dock&lt;/a&gt; to replace my &lt;a href=&#34;https://www.anker.com/a8396launch&#34;&gt;Anker PowerElite Thunderbolt 3 Dock&lt;/a&gt; (see my review &lt;a href=&#34;https://www.howellyang.com/2020/07/24/review-anker-powerexpand-elite-thunderbolt-3-dock/&#34;&gt;here&lt;/a&gt;). While there was nothing necessarily wrong with the Anker PowerElite, it lacked a digital audio port that I could use to send audio to a soundbar positioned under my monitor. (I&amp;rsquo;d grown accustomed to using a soundbar when my 2012 Mac Pro was my primary workstation.) In this post, I&amp;rsquo;ll provide a brief review of the OWC Thunderbolt 3 Dock.&lt;/p&gt;
+&lt;p&gt;Note that I&amp;rsquo;m posting this as a customer. I paid for the dock with my own money, and I have not received any compensation of any kind from anyone for this review.&lt;/p&gt;
+&lt;h2 id=&#34;first-impressions&#34;&gt;First Impressions&lt;/h2&gt;
+&lt;p&gt;The OWC Thunderbolt 3 Dock feels well-built, but is larger than the Anker PowerElite. To be frank, I think I prefer the smaller footprint of the Anker PowerElite, but the added ports available on the OWC Thunderbolt Dock sealed the deal for me. Your priorities may be different, of course.&lt;/p&gt;
+&lt;p&gt;As one might expect, setup was truly &amp;ldquo;plug-and-play.&amp;rdquo; I connected all my peripherals to the dock&amp;mdash;see below for the list of what I use on a regular basis&amp;mdash;and then plugged in the Thunderbolt cable to my 2020 M1-based 13&amp;quot; MacBook Pro (see my review &lt;a href=&#34;https://www.howellyang.com/2021/06/02/review-2020-m1-based-macbook-pro/&#34;&gt;here&lt;/a&gt;). All the devices were recognized and started working immediately; no further action needed on my part.&lt;/p&gt;
+&lt;h2 id=&#34;more-in-depth-impressions&#34;&gt;More In-Depth Impressions&lt;/h2&gt;
+&lt;h3 id=&#34;connectivity&#34;&gt;Connectivity&lt;/h3&gt;
+&lt;p&gt;I was able to connect all my peripherals with no issues at all:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Samsung U32J59x 4K monitor (via Mini DisplayPort)&lt;/li&gt;
+&lt;li&gt;Logitech C922 webcam (via USB)&lt;/li&gt;
+&lt;li&gt;Samsung sound bar (via optical audio cable)&lt;/li&gt;
+&lt;li&gt;Heil PR40 microphone (via Blue Icicle XLR-to-USB converter/preamp)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I still have several USB-A ports, a USB-C port, SD/microSD card readers, and another Thunderbolt port available, as well as an Ethernet port. The unused USB-C port and one of the USB-A ports are front-facing, and I&amp;rsquo;ve had to use the latter a number of times for USB flash drives.&lt;/p&gt;
+&lt;h3 id=&#34;reliability&#34;&gt;Reliability&lt;/h3&gt;
+&lt;p&gt;I&amp;rsquo;ve had zero issues with the dock. All the peripherals work every time I plug in, and there&amp;rsquo;s been no &amp;ldquo;drops&amp;rdquo; in connectivity with any of the devices.&lt;/p&gt;
+&lt;p&gt;My only complaint&amp;mdash;and I don&amp;rsquo;t know if this is the dock or how Apple&amp;rsquo;s M1-based Macs work&amp;mdash;is that the display is sometimes recognized &amp;ldquo;late&amp;rdquo; and all of my window layouts are &amp;ldquo;forgotten,&amp;rdquo; making me move windows back where I want them. I haven&amp;rsquo;t found a workaround yet, nor have I identified a root cause.&lt;/p&gt;
+&lt;h3 id=&#34;other-notes&#34;&gt;Other Notes&lt;/h3&gt;
+&lt;p&gt;In comparison to the Anker PowerElite, the OWC Thunderbolt 3 Dock generates very little heat. It&amp;rsquo;s a tad warm to the touch on the underside of the dock, but that&amp;rsquo;s it.&lt;/p&gt;
+&lt;h2 id=&#34;summary&#34;&gt;Summary&lt;/h2&gt;
+&lt;p&gt;Overall, I&amp;rsquo;m quite happy with the OWC Thunderbolt 3 Dock. Although I prefer the smaller form factor and the aesthetics of the Anker PowerElite, the extra ports that are available on the OWC Thunderbolt Dock make the difference for me, and I still have room for additional peripherals. I would&amp;rsquo;ve preferred HDMI over Mini DisplayPort, but this is a minor quibble.&lt;/p&gt;
+&lt;p&gt;Feel free to contact &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt; if you have any questions, and I&amp;rsquo;ll do my best to answer them for you. Happy Holidays!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 149</title>
+        <link>https://www.howellyang.com/2021/12/10/technology-short-take-149/</link>
+        <pubDate>Fri, 10 Dec 2021 11:50:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2021/12/10/technology-short-take-149/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #149! I&amp;rsquo;ll have one more Technology Short Take in 2021, scheduled for three weeks from now (on the last day of the year!). For now, though, I have a small collection of articles and links for your reading pleasure&amp;mdash;not as many as I usually include in a Technology Short Take, but better than nothing at all (I hope!). Enjoy!&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Thomas Graf recently shared &lt;a href=&#34;https://isovalent.com/blog/post/2021-12-08-ebpf-servicemesh&#34;&gt;how eBPF will eliminate sidecars in service mesh architectures&lt;/a&gt; (he also announces the Cilium Service Mesh beta in the same post). I have many thoughts here&amp;mdash;but I will reserve those thoughts until I&amp;rsquo;ve had time to do a bit more reading and research.&lt;/li&gt;
+&lt;li&gt;Ivan tackles the topic of &lt;a href=&#34;https://blog.ipspace.net/2021/12/ci-cd-network-automation-tests.html&#34;&gt;CI/CD and testing in network automation&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Dan Lorenc &lt;a href=&#34;https://chainguard.dev/posts/2021-11-12-fulcio-deep-dive&#34;&gt;dives deep into Fulcio&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;From the Not Surprised Department, some folks are starting to take a harder look at the timelines for security patches for older versions of macOS compared to newer versions. Ars Technica has &lt;a href=&#34;https://arstechnica.com/gadgets/2021/11/psa-apple-isnt-actually-patching-all-the-security-holes-in-older-versions-of-macos/&#34;&gt;a write-up&lt;/a&gt; on what&amp;rsquo;s been observed so far.&lt;/li&gt;
+&lt;li&gt;Rory McCune of Aqua &lt;a href=&#34;https://blog.aquasec.com/kubernetes-version-1.23-security-features&#34;&gt;shares some new security-related features&lt;/a&gt; in the Kubernetes 1.23 release.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;I shared this via Twitter as well, but this is so useful I wanted to include it here. Ivan Velichko wrote up &lt;a href=&#34;https://iximiuz.com/en/posts/container-learning-path/&#34;&gt;his container learning path&lt;/a&gt; and shared it for others who may need to follow a similar path. I wish I&amp;rsquo;d had this years ago!&lt;/li&gt;
+&lt;li&gt;Xavier Avrillier digs into the Cluster API Provider for vSphere in &lt;a href=&#34;https://www.vxav.fr/2021-11-21-understanding-kubernetes-cluster-api-provider-vsphere-capv/&#34;&gt;this post&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Baptiste Collard has a post on &lt;a href=&#34;https://baptistout.net/posts/two-kubernetes-controllers-for-managing-aws-nlb/&#34;&gt;Kubernetes controllers for AWS load balancers&lt;/a&gt;. One takeaway from this post for me was that the new AWS load balancer controller uses a &lt;em&gt;ton&lt;/em&gt; of annotations.&lt;/li&gt;
+&lt;li&gt;Tetrate has a post on &lt;a href=&#34;https://www.tetrate.io/blog/istio-wasm-extensions-and-ecosystem/&#34;&gt;the new WASM-based extensions that are available in Istio 1.12&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Michael Heap shares &lt;a href=&#34;https://konghq.com/blog/kong-gateway-pulumi/&#34;&gt;how to deploy a Kong Gateway data plane with Pulumi&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;In &lt;a href=&#34;https://hackernoon.com/infrastructure-as-code-the-next-big-shift-is-here&#34;&gt;this post&lt;/a&gt;, Piotr talks about the &amp;ldquo;next big shift&amp;rdquo; in infrastructure as code, but what he&amp;rsquo;s really discussing is &lt;a href=&#34;https://crossplane.io/&#34;&gt;Crossplane&lt;/a&gt;. I really dig Crossplane, but I don&amp;rsquo;t know if I would refer to it as the &amp;ldquo;next big shift&amp;rdquo; in infrastructure as code.&lt;/li&gt;
+&lt;li&gt;I was recently digging into OpenTelemtry a little bit and found &lt;a href=&#34;https://opentelemetry.lightstep.com/core-concepts/context-propagation/&#34;&gt;this page&lt;/a&gt; helpful (among several others on this site).&lt;/li&gt;
+&lt;li&gt;In the event you missed this in the barrage of AWS re:Invent announcements, I thought it was worth pointing out that &lt;a href=&#34;https://www.docker.com/blog/news-from-aws-reinvent-docker-official-images-on-amazon-ecr-public/&#34;&gt;you can now use Amazon ECR Public to get Docker Official images&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Olivier Miossec shows how to use container groups to &lt;a href=&#34;https://dev.to/omiossec/using-azure-container-instance-with-multiple-containers-43fd&#34;&gt;run multiple containers in a single Azure Container Instance&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Running Kong Gateway or Kuma service mesh in your environment and also using Grafana? I recently learned that there are &lt;a href=&#34;https://grafana.com/orgs/konghq&#34;&gt;a series of Grafana dashboards&lt;/a&gt; you can use!&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;https://nickjanetakis.com/blog/get-the-last-argument-of-the-last-run-command-in-your-shell-with-dollar-underscore&#34;&gt;Here&amp;rsquo;s a handy Bash tip&lt;/a&gt; from Nick Janetakis.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Eric Sloof &lt;a href=&#34;https://www.ntpro.nl/blog/archives/3652-New-Technical-White-Paper-VMware-Paravirtual-RDMA-for-High-Performance-Computing.html&#34;&gt;drew my attention&lt;/a&gt; to a VMware white paper on paravirtual RDMA devices on vSphere.&lt;/li&gt;
+&lt;li&gt;James Hamilton discusses &lt;a href=&#34;https://perspectives.mvdirona.com/2021/11/xen-on-nitro-aws-nitro-for-legacy-instances/&#34;&gt;running Xen on AWS Nitro to support legacy instances&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That&amp;rsquo;s all for now. I hope you have a great weekend! If you have feedback for me, or if you just want to say hi, hit &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt; or find me on any of the various Slack communities I frequent (&lt;a href=&#34;https://kubernetes.slack.com&#34;&gt;the Kubernetes Slack community&lt;/a&gt; is one great option). Thanks for reading!&lt;/p&gt;</description>
+      </item>
+    
+      <item>
+        <title>Technology Short Take 148</title>
+        <link>https://www.howellyang.com/2021/11/19/technology-short-take-148/</link>
+        <pubDate>Fri, 19 Nov 2021 21:25:00 -0600</pubDate>
+        <author>Howell Yang</author>
+        <guid>https://www.howellyang.com/2021/11/19/technology-short-take-148/</guid>
+        <description>&lt;p&gt;Welcome to Technology Short Take #148, aka the Thanksgiving Edition (at least, for US readers). I&amp;rsquo;ve been scouring RSS feeds and various social media sites, collecting as many useful links and articles as I can find: from networking hardware and networking CI/CD pipelines to Kernel TLS and tricks for improving your working memory. That&amp;rsquo;s quite the range! I hope that you find something useful here.&lt;/p&gt;
+&lt;h2 id=&#34;networking&#34;&gt;Networking&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Here&amp;rsquo;s &lt;a href=&#34;https://brainbit.io/posts/pwru/&#34;&gt;an article&lt;/a&gt; on the recently-introduced &lt;code&gt;pwru&lt;/code&gt; tool, which aims to help with tracing network packets in the Linux kernel. It seems like it may be a bit too debug-level to be useful to the average person, but I have yet to lay hands on it myself and find out for sure.&lt;/li&gt;
+&lt;li&gt;Matt Mullen has a pretty lengthy (and informative) article on &lt;a href=&#34;https://blog.networktocode.com/post/using-python-requests-with-rest-apis/&#34;&gt;using the Python &lt;code&gt;requests&lt;/code&gt; module to work with REST APIs&lt;/a&gt;. Good stuff here.&lt;/li&gt;
+&lt;li&gt;While reading Tom Hollingsworth&amp;rsquo;s article &lt;a href=&#34;https://networkingnerd.net/2021/11/05/is-the-m1-macbook-pro-wi-fi-really-slower/&#34;&gt;regarding &amp;ldquo;slower&amp;rdquo; Wi-Fi on the M1-based MacBook Pro laptops&lt;/a&gt; (a good read, BTW), he shared a link to this post about &lt;a href=&#34;https://sc-wifi.com/2014/07/08/drag-racing-the-bus/&#34;&gt;drag racing the bus&lt;/a&gt;. Hilarious&amp;mdash;but very true. Also found via Tom&amp;rsquo;s article was &lt;a href=&#34;https://divdyn.com/wi-fi-throughput/&#34;&gt;this post on Wi-Fi throughput&lt;/a&gt;, which I found to be a very informative read.&lt;/li&gt;
+&lt;li&gt;Ivan Pepelnjak &lt;a href=&#34;https://blog.ipspace.net/2021/09/graceful-restart.html&#34;&gt;explains the concepts of graceful restart&lt;/a&gt;, and then goes on to discuss &lt;a href=&#34;https://blog.ipspace.net/2021/10/graceful-restart-convergence.html&#34;&gt;graceful restart and routing protocol convergence&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;I haven&amp;rsquo;t had a chance to read all the articles yet, but this six-part series (so far?) on building a network CI/CD pipeline looks to be quite informative. Start &lt;a href=&#34;https://juliopdx.com/2021/10/20/building-a-network-ci-cd-pipeline-part-1/&#34;&gt;here&lt;/a&gt; with part 1.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;servershardware&#34;&gt;Servers/Hardware&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Ars Technica &lt;a href=&#34;https://arstechnica.com/gadgets/2021/11/intels-alder-lake-big-little-cpu-design-tested-its-a-barn-burner/&#34;&gt;takes a look at the new Intel &amp;ldquo;Alder Lake&amp;rdquo; CPUs&lt;/a&gt;. Their conclusion: they&amp;rsquo;re insanely fast, but also insanely power-hungry.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;security&#34;&gt;Security&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Microsoft found a macOS vulnerability that could bypass System Integrity Protection (SIP). More details are in &lt;a href=&#34;https://www.microsoft.com/security/blog/2021/10/28/microsoft-finds-new-macos-vulnerability-shrootless-that-could-bypass-system-integrity-protection/&#34;&gt;this Microsoft blog post&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;It&amp;rsquo;s unfortunate that a security researcher is having such a hard time with Apple&amp;rsquo;s Security Bounty program; see &lt;a href=&#34;https://habr.com/en/post/579714/&#34;&gt;this article&lt;/a&gt;. (Hat tip to &lt;a href=&#34;https://mjtsai.com/blog/2021/10/29/denis-tokarevs-four-zero-days/&#34;&gt;Michael Tsai&lt;/a&gt;.)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;cloud-computingcloud-management&#34;&gt;Cloud Computing/Cloud Management&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;For all the Internet&amp;rsquo;s distributed nature, it&amp;rsquo;s funny how some aspects still end up being dependent on smaller, less distributed things. Dark Reading &lt;a href=&#34;https://www.darkreading.com/dr-tech/how-to-avoid-another-lets-encrypt-like-meltdown&#34;&gt;takes a look&lt;/a&gt; at one such instance: the dependence on Let&amp;rsquo;s Encrypt and what happened when one of their root certificates recently expired.&lt;/li&gt;
+&lt;li&gt;Dean Lewis runs through &lt;a href=&#34;https://veducate.co.uk/tkg-kubectl-scale-vertically/&#34;&gt;updating node resources when using TKG on vSphere&lt;/a&gt; (the same basic process is used for AWS and Azure as well). Since machine templates are immutable, the key here (and what Dean illustrates in his article) is creating a new template and then pointing the MachineDeployment to the new template. This is all documented on the Cluster API site, but it&amp;rsquo;s useful to see an example of it as found in Dean&amp;rsquo;s article.&lt;/li&gt;
+&lt;li&gt;Want to do a deep dive into the inner workings of custom resource validation in Kubernetes? Daniel Mangum &lt;a href=&#34;https://danielmangum.com/posts/how-kubernetes-validates-custom-resources/&#34;&gt;has you covered&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Thinking of using Envoy&amp;rsquo;s Lua filter? &lt;a href=&#34;https://medium.com/safetycultureengineering/edge-routing-with-envoy-and-lua-621f3d776c57&#34;&gt;This post&lt;/a&gt; by Jean-Marie Joly has some great information.&lt;/li&gt;
+&lt;li&gt;Kief Morris &lt;a href=&#34;https://infrastructure-as-code.com/book/2021/11/19/snowflakes-as-code.html&#34;&gt;tackles the &amp;ldquo;snowflakes as code&amp;rdquo; antipattern&lt;/a&gt;, where separate instances of infrastructure code are used to manage different environments.&lt;/li&gt;
+&lt;li&gt;Michael Marie-Julie &lt;a href=&#34;https://medium.com/thefork/creating-our-piece-of-cloud-in-aws-fd4e30571682&#34;&gt;shares some details&lt;/a&gt; on how The Fork structures their AWS presence (and the tools they use).&lt;/li&gt;
+&lt;li&gt;Joaquín Menchaca takes a closer look at &lt;a href=&#34;https://joachim8675309.medium.com/istio-service-mesh-on-aks-1b6ed16f6890&#34;&gt;using Istio with AKS&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;operating-systemsapplications&#34;&gt;Operating Systems/Applications&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Here&amp;rsquo;s a neat trick (and tool) for &lt;a href=&#34;https://thisdevbrain.com/how-to-create-a-custom-macos-folder-icon/&#34;&gt;making custom folder icons on macOS&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;Hubert Maslowski crafted a post on &lt;a href=&#34;https://hmaslowski.com/home/f/kerberos-single-sign-on-sso-app-extension-for-macos&#34;&gt;the Kerberos single-sign on app extension for macOS&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;I thought it was cool to come across some &lt;a href=&#34;https://www.openbsd.org/&#34;&gt;OpenBSD&lt;/a&gt;-related blog posts. First, APNIC has two posts on OpenBSD; &lt;a href=&#34;https://blog.apnic.net/2021/10/28/openbsd-part-1-how-it-all-started/&#34;&gt;part 1&lt;/a&gt; provides some background, while &lt;a href=&#34;https://blog.apnic.net/2021/11/05/openbsd-part-2-why-use-openbsd/&#34;&gt;part 2&lt;/a&gt; provides the &amp;ldquo;why&amp;rdquo; in &amp;ldquo;Why use OpenBSD?&amp;rdquo; Both posts are apparently based on/adapted from &lt;a href=&#34;https://bsdly.blogspot.com/2021/09/what-every-it-person-needs-to-know.html&#34;&gt;this post&lt;/a&gt;.&lt;/li&gt;
+&lt;li&gt;The folks at NGINX talk about &lt;a href=&#34;https://www.nginx.com/blog/improving-nginx-performance-with-kernel-tls/&#34;&gt;using Kernel TLS (kTLS) to improve performance&lt;/a&gt;. Unrelated side note: why is it &amp;ldquo;Kernel TLS&amp;rdquo; (note the capitalization) but is abbreviated &amp;ldquo;kTLS&amp;rdquo; (again, note the capitalization)?&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;virtualization&#34;&gt;Virtualization&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Carlos Mestre del Pino talks about &lt;a href=&#34;https://www.mestredelpino.com/automated-tanzu-community-edition-deployment-on-vmware-cloud-on-aws&#34;&gt;automated deployment of Tanzu Community Edition on VMware Cloud on AWS&lt;/a&gt; using Terraform and PowerCLI. (Hat tip to Robert Kloosterhuis for sharing this link in the vExpert Slack.)&lt;/li&gt;
+&lt;li&gt;It&amp;rsquo;s kind of neat to see other folks using mind maps, like &lt;a href=&#34;https://www.ntpro.nl/blog/archives/3649-SaltStack-Mind-Map.html&#34;&gt;this mind map&lt;/a&gt; that Eric Sloof created for vRealize Automation SaltStack Config (which, by the way, has got to be the most convoluted name for a piece of software).&lt;/li&gt;
+&lt;li&gt;David Herron shares his motivation for&amp;mdash;and experience with&amp;mdash;&lt;a href=&#34;https://techsparx.com/software-development/docker/docker-desktop/multipass.html&#34;&gt;exchanging Docker Desktop for Multipass&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;careersoft-skillsother&#34;&gt;Career/Soft Skills/Other&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;Although &lt;a href=&#34;https://intrepidednews.com/what-kids-need-to-know-about-their-working-memory-deborah-farmer-kris/&#34;&gt;this article&lt;/a&gt; is titled &amp;ldquo;What Kids Need to Know About Their Working Memory,&amp;rdquo; I&amp;rsquo;d say the article is equally applicable to adults.&lt;/li&gt;
+&lt;li&gt;Ever heard of the &amp;ldquo;tyranny of the urgent&amp;rdquo;? If not, &lt;a href=&#34;https://toggl.com/blog/tyranny-of-the-urgent&#34;&gt;this post&lt;/a&gt; is for you. Even if you have heard of it, you may find some useful tips!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I have more links and articles to share, but I&amp;rsquo;ll stop here&amp;hellip;for now, anyway! I do hope I&amp;rsquo;ve managed to share something useful for readers. If you have any questions or any comments, please don&amp;rsquo;t hesitate to contact me. Reach out to &lt;a href=&#34;https://twitter.com/scott_lowe&#34;&gt;me on Twitter&lt;/a&gt;, or find me on any one of several Slack communities (like &lt;a href=&#34;https://kubernetes.slack.com&#34;&gt;the Kubernetes Slack community&lt;/a&gt;). Enjoy!&lt;/p&gt;</description>
+      </item>
+    
+  </channel>
+</rss>

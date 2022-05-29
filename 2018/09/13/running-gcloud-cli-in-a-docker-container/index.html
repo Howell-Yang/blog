@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Running the gcloud CLI in a Docker Container - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Running the gcloud CLI in a Docker Container - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Running the gcloud CLI in a Docker Container - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/09/13/running-gcloud-cli-in-a-docker-container/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Running the gcloud CLI in a Docker Container</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;361 words (estimated 2 minutes to read)</span>
+  <p>A few times over the last week or two I&rsquo;ve had a need to use the <code>gcloud</code> command-line tool to access or interact with <a href="https://cloud.google.com/">Google Cloud Platform (GCP)</a>. Because working with GCP is something I don&rsquo;t do very often, I prefer to not install the Google Cloud SDK; instead, I run it in a <a href="https://www.docker.com/">Docker</a> container. However, there is a trick to doing this, and so to make it easier for others I&rsquo;m documenting it here.</p>
+<p>The <code>gcloud</code> tool stores some authentication data that it needs every time it runs. As a result, when you run it in a Docker container, you must take care to store this authentication data <em>outside</em> the container. Most of the tutorials I&rsquo;ve seen, like <a href="https://adilsoncarvalho.com/using-gcloud-in-a-docker-container-dd5f9eea5bbc">this one</a>, suggest the use of a named Docker container. For future invocations after the first, you would then use the <code>--volumes-from</code> parameter to access this named container.</p>
+<p>There&rsquo;s only one small problem with this approach: what if you&rsquo;re using another tool that also needs access to these GCP credentials? In my case, I needed to be able to run <a href="https://www.packer.io/">Packer</a> against GCP as well. If the authentication information is stored inside a named Docker container (and then accessed using the <code>--volumes-from</code> parameter), that information won&rsquo;t be accessible to commands <em>not</em> running in a Docker container.</p>
+<p>The fix for this is to bind mount a host path into the container instead of using a named volume. First, create the <code>~/.config/gcloud</code> directory on your system. Then you&rsquo;ll initialize and authenticate with this command:</p>
+<pre><code>docker run --rm -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
+google/cloud-sdk gcloud init
+</code></pre>
+<p>This will take you through the initialization/authentication process, and will store the authentication information outside the container (so that tools like Packer can still access them). From there, just include the bind mount for future invocations of the Docker image. For example, to see a list of your GKE clusters:</p>
+<pre><code>docker run --rm -ti -v $HOME/.config/gcloud:/root/.config/gcloud \
+google/cloud-sdk gcloud container clusters list
+</code></pre>
+<p>You could then make this easier for yourself with a Bash alias:</p>
+<pre><code>alias gcloud=&quot;docker run --rm -ti \
+-v $HOME/.config/gcloud:/root/.config/gcloud \
+google/cloud-sdk gcloud&quot;
+</code></pre>
+<p>Nothing terribly new or revolutionary here, but I hope it&rsquo;s useful to someone nevertheless.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/google">Google</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cloud">Cloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/09/07/technology-short-take-104/">Technology Short Take 104</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/09/27/a-markdown-to-pdf-workflow-on-linux/">A Markdown-to-PDF Workflow on Linux</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f13%2frunning-gcloud-cli-in-a-docker-container%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f13%2frunning-gcloud-cli-in-a-docker-container%2f&text=Running%20the%20gcloud%20CLI%20in%20a%20Docker%20Container" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f13%2frunning-gcloud-cli-in-a-docker-container%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/07/13/technology-short-take-102/">Technology Short Take 102</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2017/11/24/using-docker-machine-kvm-libvirt/">Using Docker Machine with KVM and Libvirt</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2017/11/22/installing-older-docker-client-binaries-fedora/">Installing Older Docker Client Binaries on Fedora</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

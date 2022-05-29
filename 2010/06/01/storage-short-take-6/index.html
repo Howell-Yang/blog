@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Storage Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Storage Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Storage Short Take #6 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/06/01/storage-short-take-6/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Storage Short Take #6</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;530 words (estimated 3 minutes to read)</span>
+  <p>Welcome to Storage Short Take #6, the latest installation of my quite irregular collection of storage-related links, posts, and thoughts. You could call this the &ldquo;EMC World&rdquo; edition, since most of the items listed here stemmed from announcements that came out of EMC World a few weeks ago.</p>
+<ul>
+<li>
+<p>One of the announcements from EMC World was FAST Cache, a new feature that EMC is slated to include in the next version of FLARE. Mark Twomey aka Storagezilla has a good write-up of FAST Cache <a href="http://storagezilla.typepad.com/storagezilla/2010/05/fast-cache-for-emc-unified-storage.html">here</a>. The nice thing about FAST Cache is that you don&rsquo;t need new hardware to use it&mdash;if you already have a CX4-based array and EFDs, you can use FAST Cache when the next version of FLARE gets released. That&rsquo;s pretty cool.</p>
+</li>
+<li>
+<p>Mark also does a great job of describing the storage pool architecture that is the preferred way of provisioning storage in the future. Read <a href="http://storagezilla.typepad.com/storagezilla/2010/05/the-clariion-storage-pool.html">this post on storage pools</a> and <a href="http://storagezilla.typepad.com/storagezilla/2010/05/storage-services-for-clariion-storage-pool-luns.html">this post on storage pool services</a> for more information on new features like block compression (leveraging the EMC RecoverPoint compression engine), thick/thin LUNs, and sub-LUN FAST (Fully Automated Storage Tiering). These posts really help provide an idea of where EMC&rsquo;s midrange arrays are headed.</p>
+</li>
+<li>
+<p>An EMC Technical Consultant in the Seattle area also <a href="http://storagesavvy.com/2010/05/15/emc-unified-updates/">published a list of key changes in FLARE 30</a>; it&rsquo;s worth a look. Also listed are all the existing features in the midrange storage platforms.</p>
+</li>
+<li>
+<p>Chad Sakac also tackled the changes to EMC&rsquo;s midrange platforms in a pair of posts: first a post on <a href="http://virtualgeek.typepad.com/virtual_geek/2010/05/emc-unified-storage-next-generation-simplicity.html">next-generation simplicity</a> (primarily focused around the new Unisphere management interface), then a post on <a href="http://virtualgeek.typepad.com/virtual_geek/2010/05/emc-unified-storage-next-generation-efficiency-details.html">next-generation efficiency</a>. Both articles are good reads&mdash;almost all of Chad&rsquo;s posts are good reads&mdash;and worth taking the time to read, understand, and apply. I have to say that Chad&rsquo;s multi-dimensional discussion of efficiency is an excellent overview of how storage features or functions might help in one area (like capacity efficiency) but not necessarily others (such as performance efficiency). This need to be able to offer efficiencies in multiple dimensions is, in my mind, the reason for a broader product set. In other words, the idea of multi-dimensional efficiency is why one size doesn&rsquo;t fit all.</p>
+</li>
+<li>
+<p>Here&rsquo;s a list of the <a href="http://www.enterprisestorageforum.com/industrynews/article.php/3883916/Top-Ten-Revelations-from-EMC-World.htm">&ldquo;top ten revelations&rdquo;</a> from the conference.</p>
+</li>
+<li>
+<p>Moving away from EMC World-related links, here&rsquo;s a <a href="http://blog.virtualtacit.com/home/2010/6/1/quick-hit-pause-bb_credits-and-pfc.html">&ldquo;quick hit&rdquo;</a> by Joe Kelly on various networking mechanisms for ensuring lossless behavior. It&rsquo;s a pretty good intro to how some of the different mechanisms work.</p>
+</li>
+<li>
+<p>Interesting discussion going on over at Dan Weiss&rsquo; site about a recent instance in which his company (an EMC reseller) was able to retain a customer against a competing NetApp configuration. Go read <a href="http://blog.dpweiss.com/?p=155">the post and the comments</a> for full details.</p>
+</li>
+<li>
+<p>The EMC Storage Info site has a &ldquo;how to&rdquo; post on <a href="http://www.emcstorageinfo.com/2010/05/how-to-backuprestore-using-timefinder.html">performing backups/restores using TimeFinder BCV</a> in Windows.</p>
+</li>
+<li>
+<p>RecoverPoint is one of the technologies into which I&rsquo;m trying to dig deeper, so I&rsquo;ve been gathering information from whatever sources I can find. It turns out that the EMC RecoverPoint team has <a href="http://www.youtube.com/user/RecoverPoint">a YouTube channel</a> with some videos. I&rsquo;m curious to know&mdash;is this something you find useful?</p>
+</li>
+</ul>
+<p>As always, I welcome your feedback on this and other posts, so speak up the comments!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emcworld2010">EMCWorld2010</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/05/26/some-vblock-posts/">Some Vblock Posts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/06/05/vmware-vexpert-2010-thank-you/">VMware vExpert 2010: Thank You!</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f01%2fstorage-short-take-6%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f01%2fstorage-short-take-6%2f&text=Storage%20Short%20Take%20%236" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f06%2f01%2fstorage-short-take-6%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/05/11/emc-world-2010-symmetrix-vmax-auto-provisioning-groups/">EMC World 2010: Symmetrix VMAX Auto-Provisioning Groups</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2010/05/10/emc-world-2010-coverage/">EMC World 2010 Coverage</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2010/05/10/emc-world-2010-enginuity-5874-enhancements-for-vmax/">EMC World 2010: Enginuity 5874 Enhancements for VMAX</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

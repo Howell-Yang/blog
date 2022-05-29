@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Thinking Out Loud: The Future of VLANs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Thinking Out Loud: The Future of VLANs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Thinking Out Loud: The Future of VLANs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/06/20/thinking-out-loud-the-future-of-vlans/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Thinking Out Loud: The Future of VLANs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;658 words (estimated 4 minutes to read)</span>
+  <p>It&rsquo;s interesting to me how much the idea of a VLAN has invaded the consciousness of data center IT professionals. Data center folks primarily tasked with managing compute workloads are nearly as familiar with VLANs as their colleagues primarily tasked with managing network connectivity. However, as networking undergoes a transformation at the hands of SDN, NFV, and network virtualization, what will happen to the VLAN?</p>
+<p>The ubiquity of the VLAN is due, I think, to the fact that it serves as a reasonable &ldquo;common ground&rdquo; for both compute-focused and networking-focused professionals. Need a logical container for new workloads? We can use a VLAN for that. VMware is partially to blame for this&mdash;vSphere (and its predecessors) made it incredibly easy to use VLANs as a way of logically &ldquo;partitioning&rdquo; compute workloads on the same host. (To be fair, it was really the only tool available to accomplish the task at the time.)</p>
+<p>Normally, finding a &ldquo;common ground&rdquo; is a good thinguntil that common ground starts to get pushed beyond where it was intended to be used. I think this is where VLANs are now&mdash;getting pushed beyond where they were intended to be used, and that strain is the source of some discord between the compute-centric teams and the networking-centric teams:</p>
+<ul>
+<li>
+<p>The compute-centric teams need a logical container by which they can group workloads that might run potentially anywhere in the data center.</p>
+</li>
+<li>
+<p>The networking-centric teams, though, recognize the challenges inherent in taking a VLAN (i.e., a single broadcast domain) and stretching it across a bunch of different top-of-rack (ToR) switches so that it&rsquo;s available to any compute host. (The irony here is that we&rsquo;re using a tool designed to breakdown broadcast domains&mdash;VLANs&mdash;and building large broadcast domains with them.)</p>
+</li>
+</ul>
+<p>What&rsquo;s needed here is a separation, or layering, of functions. The compute-centric world needs some sort of logical identifier that can be used to group or identify traffic. However, this logical identifier needs to be separate and distinct from the identifier/tag/mark that the networking-centric folks need to use to build scalable networks with reasonably-sized broadcast domains. This is, in my view, one of the core functions of a network encapsulation protocol like STT, VXLAN, or NVGRE <em>when used in the context of a network virtualization solution.</em> Note that qualification&mdash;a network encapsulation protocol alone is like the suspension on a car: useful, but only in the context of the complete package. When a network encapsulation protocol is used in the context of the complete package (a network virtualization solution), the network encapsulation protocol can supply the logical identifier the compute-centric teams need (this would be VXLAN&rsquo;s 24-bit VNI, or STT&rsquo;s 64-bit Context ID) while simultaneously allowing the network-centric teams to use VLANs as they see fit for the best performance and resiliency of the network.</p>
+<p>&lt;aside&gt;By the way, while using a network encapsulation protocol in the context of a network virtualization solution provides the decoupling that is so important to innovation, it&rsquo;s important to note that decoupling does not equal loss of visibility. But that&rsquo;s a topic for another post&hellip;&lt;/aside&gt;</p>
+<p>The end result is that compute-centric teams can create logical groupings that are not dependent on the configuration of the underlying network. Need a new logical grouping for some new line-of-business application? No problem, create it and start turning up workloads. Meanwhile, the networking-centric teams are free to design the network for optimal performance, resiliency, and cost-effectiveness without having to take the compute-centric team&rsquo;s logical groups into consideration. Need to use a routed L3 architecture between pods/racks/ToR switches using VLANs? No problem&mdash;build it the way it needs to be built, and the network virtualization solution will handle creating the compute-centric logical grouping.</p>
+<p>At least, that&rsquo;s my thought. All my Thinking Out Loud posts are just that&mdash;me thinking out loud, providing a springboard to more conversation. What do you think? Am I mistaken? Feel free to speak up in the comments below. Courteous comments (with vendor disclosures where applicable, please) are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/tol">ToL</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/06/14/reducing-the-friction-using-keyboard-shortcuts/">Reducing the Friction: Using Keyboard Shortcuts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/06/21/reducing-the-friction-processing-e-mail/">Reducing the Friction: Processing E-Mail</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f06%2f20%2fthinking-out-loud-the-future-of-vlans%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f06%2f20%2fthinking-out-loud-the-future-of-vlans%2f&text=Thinking%20Out%20Loud%3a%20The%20Future%20of%20VLANs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f06%2f20%2fthinking-out-loud-the-future-of-vlans%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/04/03/thinking-out-loud-targeting-the-real-problem/">Thinking Out Loud: Targeting the Real Problem</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/05/03/technology-short-take-32/">Technology Short Take #32</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

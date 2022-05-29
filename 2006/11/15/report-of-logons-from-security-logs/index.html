@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Report of Logons from Security Logs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Report of Logons from Security Logs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Report of Logons from Security Logs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/11/15/report-of-logons-from-security-logs/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Report of Logons from Security Logs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;382 words (estimated 2 minutes to read)</span>
+  <p>As a system administrator, no doubt you&rsquo;ve had the occasion where you&rsquo;ve needed to review the security event log on a server or a domain controller to retrieve information about when a particular user logged in or logged out. It&rsquo;s a time consuming and laborious process. Or it was, until now.</p>
+<p>Try this Log Parser command on for size:</p>
+<pre><code>logparser -i:evt -o:csv &quot;SELECT TimeGenerated AS LogonDate,
+EXTRACT_TOKEN(Strings, 0, '|') AS Account INTO filename.csv FROM 
+\Server1\Security, \Server2\Security WHERE EventID NOT IN 
+(541;542;543) AND EventType = 8 AND EventCategory = 2
+</code></pre>
+<p>Whoa! That&rsquo;s quite a command. Let&rsquo;s break it down just a bit:</p>
+<ul>
+<li>
+<p>The &ldquo;-i:evt&rdquo; and &ldquo;-o:csv&rdquo; options specify the event log input format and the CSV output format, respectively.</p>
+</li>
+<li>
+<p>The TimeGenerated field is selected and presented as LogonDate, and the EXTRACT_TOKEN function is used to extract the username from the event text and present it as Account.</p>
+</li>
+<li>
+<p>The results from the query are placed into the file named <code>filename.csv</code>.</p>
+</li>
+<li>
+<p>Next, we specify the servers and event logs we&rsquo;d like to include in the query. Here you can specify as many servers as you&rsquo;d like (within reason, of course), just tacking additional servers on in front of the WHERE clause separated by commas. In the example above, we&rsquo;re looking only at the Security logs on Server1 and Server2.</p>
+</li>
+<li>
+<p>Finally, we restrict the results with a WHERE clause that specifies only events with a type of 8 and a category of 2 that are not event codes 541, 542, or 543 should be returned.</p>
+</li>
+</ul>
+<p>That&rsquo;s pretty cool, but it returns &ldquo;logon&rdquo; events by computer accounts as well, including the local computer account. To filter that down to only user accounts, we&rsquo;ll trot out our favorite text filtering tool and a simple regex:</p>
+<pre><code>grep -v -E \$$ filename.csv &gt; filename2.csv
+</code></pre>
+<p>This command returns all the lines that don&rsquo;t end in a dollar sign (as a computer account in Active Directory would end in a dollar sign). Make note that your particular version of <code>grep</code> may use slightly different parameters or syntax.</p>
+<p>Just to give you a slight idea of how useful this technique can be, I managed to parse over 600,000 security event entries in less than a minute and a half with this command. Beats the heck out of searching through them manually, doesn&rsquo;t it?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/11/14/security-fixes-for-esx/">Security Fixes for ESX</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/11/15/my-first-few-weeks-with-the-macbook-pro/">My First Few Weeks with the MacBook Pro</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f15%2freport-of-logons-from-security-logs%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f15%2freport-of-logons-from-security-logs%2f&text=Report%20of%20Logons%20from%20Security%20Logs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f15%2freport-of-logons-from-security-logs%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2005/08/16/funky-active-directory-issue/">Funky Active Directory Issue</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2006/09/01/kerberos-tgt-validation/">Kerberos TGT Validation</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

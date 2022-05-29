@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>SSHjail in Centralized Environments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="SSHjail in Centralized Environments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="SSHjail in Centralized Environments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/04/25/sshjail-in-centralized-environments/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">SSHjail in Centralized Environments</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;368 words (estimated 2 minutes to read)</span>
+  <p>The idea of <a href="http://en.wikipedia.org/wiki/Chroot_jail">chrooting</a> (or jailing) certain security-sensitive services is a well-known and pretty well-accepted method of protecting systems against further compromise in the event of a security breach. BIND is commonly run in a chroot jail, as can be Apache HTTPD or an FTP server. SSH is another common target for running in a chroot jail, and <a href="http://paradigma.pt/~gngs/sshjail/">SSHjail</a> is a patch designed to simplify the process of running <a href="http://www.openssh.org/">OpenSSH</a> in a chroot jail. (UNIX die-hards, please forgive me and correct me if I am mistakenly interchanging &ldquo;chroot&rdquo; and &ldquo;jail&rdquo;.)</p>
+<p>I was alerted to SSHjail via <a href="http://www.linux.com/article.pl?sid=07/04/11/211209">this article</a> on <a href="http://www.linux.com/">Linux.com</a>, and it certainly appears that SSHjail greatly simplifies the process of running OpenSSH in a chroot jail. What interested me more than the configuration or use of SSHjail (which, as I mentions, looks pretty straightforward&mdash;kudos to the developer) was the question, &ldquo;Could SSHjail be used in centralized authentication environments?&rdquo;</p>
+<p>Perhaps due to my work in <a href="/2007/01/15/linux-ad-integration-version-4/">Linux/UNIX-Active Directory integration</a>, but the idea of using SSHjail initially seemed to be at odds with an environment where users are being authenticated via Kerberos/LDAP against Active Directory. After all, the home directory would normally be specified on the user object&rsquo;s properties in AD, so how would that interact with the home directory configuration specified in the <code>/etc/sshjail.conf</code> file? Is SSHjail so transparent that it won&rsquo;t matter? For example, if I specify that <code>/home/slowe</code> is the UNIX home directory in AD, and SSHjail is configured to put me into a jail at <code>/chroot/ssh/</code>, do I need to then change the UNIX home directory in AD? The article seems to imply that it does, as it mentions editing local users to specify a new home directory location. How, then, do we handle disparate systems where SSH may be jailed on some and not on others?</p>
+<p>&lt;aside&gt;Of course, this brings back up the question of how to handle different operating systems, such as Solaris and Linux, that (by default) place home directories in different locations on the file system or in different file systems.&lt;/aside&gt;</p>
+<p>Any feedback or clarification from Linux/UNIX experts out there is welcome. It would be great to be able to include information on how to utilize SSHjail in conjunction with AD integration.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/04/24/solaris-ad-integration-update-coming/">Solaris-AD Integration Update Coming</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/04/25/solaris-10-ad-integration-version-3/">Solaris 10-AD Integration, Version 3</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsshjail-in-centralized-environments%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsshjail-in-centralized-environments%2f&text=SSHjail%20in%20Centralized%20Environments" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsshjail-in-centralized-environments%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/12/13/application-specific-vpns/">Application-Specific VPNs</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2006/11/21/greater-ad-integration-via-nfs-and-automounts/">Greater AD Integration via NFS and Automounts</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

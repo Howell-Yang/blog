@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Automatic Ansible Inventory with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Automatic Ansible Inventory with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Automatic Ansible Inventory with Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/06/09/automatic-ansible-inventory-with-vagrant/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Automatic Ansible Inventory with Vagrant</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;581 words (estimated 3 minutes to read)</span>
+  <p>Yesterday, I posted about <a href="/2015/06/08/using-vagrant-to-learn-ansible/">using Vagrant to learn Ansible</a>, in which I showed you one way to combine these two tools to make it easier to learn <a href="http://www.ansible.com/home">Ansible</a>. This is a combination I&rsquo;m currently using as I continue to explore Ansible. Today, I&rsquo;m going to expand on yesterday&rsquo;s post by showing you how to make <a href="https://www.vagrantup.com">Vagrant</a> automatically build an Ansible inventory for a particular Vagrant environment.</p>
+<p>As you may already know, the <code>Vagrantfile</code> that Vagrant uses to instantiate and configure the VMs in a particular Vagrant environment is just <a href="https://www.ruby-lang.org/en/">Ruby</a>. As such, it can be extended in a lot of different ways to do a lot of different things. In my case, I&rsquo;ve settled on a design pattern that involves a separate <a href="http://yaml.org/">YAML</a> file with all the VM-specific data, which is read by the <code>Vagrantfile</code> when the user runs <code>vagrant up</code>. The data in the YAML file determines how many VMs are instantiated, what box is used for each VM, and the resources that are allocated to each VM. This is a design pattern I&rsquo;ve used repeatedly in <a href="https://github.com/scottslowe/learning-tools">my GitHub &ldquo;learning-tools&rdquo; repository</a>, and it seems to work pretty well (for me, at least).</p>
+<p>Using this arrangement, since I already have all the VM-specific data in the external YAML file&mdash;this could include IP addresses to be assigned to additional network adapters&mdash;it&rsquo;s relatively straightforward to extend the <code>Vagrantfile</code> to dynamically build an Ansible inventory file when the user runs <code>vagrant up</code>.</p>
+<p>Here&rsquo;s the particular snippet of Ruby code to add to the <code>Vagrantfile</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span>require <span style="color:#e6db74">&#34;fileutils&#34;</span>
+</span></span><span style="display:flex;"><span>f <span style="color:#f92672">=</span> <span style="color:#66d9ef">File</span><span style="color:#f92672">.</span>open(<span style="color:#e6db74">&#34;hosts&#34;</span>,<span style="color:#e6db74">&#34;w&#34;</span>)
+</span></span><span style="display:flex;"><span>servers<span style="color:#f92672">.</span>each <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>servers<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>  f<span style="color:#f92672">.</span>puts servers<span style="color:#f92672">[</span><span style="color:#e6db74">&#34;ip_addr&#34;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span> <span style="color:#75715e"># servers.each</span>
+</span></span><span style="display:flex;"><span>f<span style="color:#f92672">.</span>close
+</span></span></code></pre></div><p>This snippet of code opens a file named <code>hosts</code> (which is the inventory file name specified in the <code>ansible.cfg</code> in this directory, as I described in yesterday&rsquo;s post). If the file already exists, it is overwritten&mdash;the preferred behavior, actually, since it allows us to write the contents fresh every time the user runs <code>vagrant up</code>. It then iterates through the entries from the external YAML file, and writes the IP address to the file, closing the file after the loop is complete.</p>
+<p>I&rsquo;m not a Ruby programmer, so I freely admit there may be a more efficient or effective way of accomplishing this task. That being said, the code above does work. (I leave it as an exercise for the reader to incorporate this into a YAML-equipped <code>Vagrantfile</code>. Numerous examples of such are found in my &ldquo;learning-tools&rdquo; repository.)</p>
+<p>With this approach, your workflow looks like this:</p>
+<ul>
+<li>You edit the external YAML file to include a key (named &ldquo;ip_addr&rdquo; in the code snippet above) that includes the IP address Ansible should use for this particular Vagrant environment.</li>
+<li>You ensure there is an Ansible configuration file, as per yesterday&rsquo;s post, in the same directory where your <code>Vagrantfile</code> is located.</li>
+<li>You run <code>vagrant up</code>. Vagrant instantiates the VMs, configures them according to the external YAML file, and writes the IP addresses to the Ansible inventory file.</li>
+<li>When the Vagrant environment is turned up, you run whatever Ansible ad-hoc commands you need, or run playbooks using <code>ansible-playbook</code>. The Ansible configuration file will tailor Ansible to work seamlessly in a Vagrant environment, and the inventory file will tell Ansible to work only against the VMs in that particular Vagrant environment.</li>
+<li>When you&rsquo;re done, you run <code>vagrant destroy</code>.</li>
+<li>When you&rsquo;re ready to start again, you run <code>vagrant up</code> and start all over again with a fresh environment. The Ansible inventory file gets automatically re-created with the correct IP addresses.</li>
+</ul>
+<p>Pretty useful, yes?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/08/using-vagrant-to-learn-ansible/">Using Vagrant to Help Learn Ansible</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/06/22/docker-con-day1-general-session/">Liveblog: DockerCon 2015 Day 1 General Session</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f09%2fautomatic-ansible-inventory-with-vagrant%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f09%2fautomatic-ansible-inventory-with-vagrant%2f&text=Automatic%20Ansible%20Inventory%20with%20Vagrant" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f09%2fautomatic-ansible-inventory-with-vagrant%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/06/08/using-vagrant-to-learn-ansible/">Using Vagrant to Help Learn Ansible</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2015/04/21/running-photon-fusion-vagrant/">Running Photon on Fusion via Vagrant</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2015/04/19/running-etcd-backed-docker-swarm-cluster/">Running an etcd-Backed Docker Swarm Cluster</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>More Handy CLI Tools for JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="More Handy CLI Tools for JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="More Handy CLI Tools for JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/06/28/more-handy-cli-tools-json/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">More Handy CLI Tools for JSON</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;828 words (estimated 4 minutes to read)</span>
+  <p>In late 2015 I wrote <a href="/2015/11/11/handy-cli-tool-json/">a post about a command-line tool named <code>jq</code></a>, which is used for parsing JSON data. Since that time I&rsquo;ve referenced <code>jq</code> in a number of different blog posts (like <a href="/2018/05/23/quick-post-parsing-aws-instance-data-with-jq/">this one</a>). However, <code>jq</code> is not the only game in town for parsing JSON data at the command line. In this post, I&rsquo;ll share a couple more handy CLI tools for working with JSON data.</p>
+<p>(By the way, if you&rsquo;re new to JSON, check out <a href="/2013/11/08/a-non-programmers-introduction-to-json/">this post</a> for a gentle introduction.)</p>
+<h2 id="jmespath-and-jp">JMESPath and <code>jp</code></h2>
+<p><a href="http://jmespath.org/">JMESPath</a> is used by both Amazon Web Services (AWS) in their AWS CLI as well as <a href="https://docs.microsoft.com/en-us/cli/azure/query-azure-cli">by Microsoft in the Azure CLI</a>. For examples of JMESPath in action, see <a href="https://docs.aws.amazon.com/cli/latest/userguide/controlling-output.html">the AWS CLI documentation on the <code>--query</code> functionality</a>, which makes use of server-side JMESPath queries to reduce the amount of data returned by an AWS CLI command (as opposed to filtering on the client side).</p>
+<p>However, you can also use JMESPath on the client-side through <a href="https://github.com/jmespath/jp">the <code>jp</code> command-line utility</a>. As a client-side parsing tool, <code>jp</code> is similar in behavior to <code>jq</code>, but I find the JMESPath query language to be a bit easier to use than <code>jq</code> in some situations.</p>
+<p>Let&rsquo;s assume we are working with the output of the command <code>aws ec2 describe-security-groups</code>, which returns&mdash;as JSON&mdash;a list of security groups and their properties. Naturally, parsing this data down to find only the specific information you need is a prime use case for <code>jp</code>. Perhaps you know that a security group named &ldquo;internal-only&rdquo; exists, but you don&rsquo;t know anything else&mdash;only the name. Using <code>jp</code>, we could get more details on that specific group with this command:</p>
+<pre><code>aws ec2 describe-security-groups | jp &quot;SecurityGroups[?GroupName == 'internal-only']&quot;
+</code></pre>
+<p>The AWSCLI command will return all the security groups, and <code>jp</code> will filter through the data to return only the properties of the security group whose name (as defined in the &ldquo;GroupName&rdquo; field/property) is equal to &ldquo;internal-only.&rdquo; Compare that syntax to the equivalent <code>jq</code> syntax:</p>
+<pre><code>aws ec2 describe-security-groups | jq '.SecurityGroups[] | select (.GroupName == &quot;internal-only&quot;)'
+</code></pre>
+<p>That&rsquo;s handy, but what if we needed only a particular property of that security group? No problem, we&rsquo;d just append the property name to the end of the query:</p>
+<pre><code>aws ec2 describe-security-groups | jp &quot;SecurityGroups[?GroupName == 'internal-only'].GroupId&quot;
+</code></pre>
+<p>This is fundamentally equivalent to this <code>jq</code> command:</p>
+<pre><code>aws ec2 describe-security-groups | jq '.SecurityGroups[] | select (.GroupName == &quot;internal-only&quot;).GroupId'
+</code></pre>
+<p>However, if you try both <code>jp</code> and <code>jq</code> as described above, you&rsquo;ll note a significant difference in the output. First, here&rsquo;s the output of a <code>jq</code> command like the one above:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>&#34;sg-7f7efe02&#34;
+</span></span></code></pre></div><p>Now compare that to the output of the equivalent <code>jp</code> command:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  &#34;sg-7f7efe02&#34;
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>As you can see, <code>jq</code> returns a specific value, whereas <code>jp</code> returns an array of values (with only a single item in the array). In order to get all the way down to a single value with <code>jp</code>, you have to extend the query:</p>
+<pre><code>aws ec2 describe-security-groups | jp &quot;SecurityGroups[?GroupName == 'internal-only'].GroupId | [0]&quot;
+</code></pre>
+<p>This command will return <em>only</em> the value of the &ldquo;GroupId&rdquo; field. <code>jp</code> does support a <code>-u</code> command-line option that is equivalent to the <code>-r</code> option to <code>jq</code> in order to return unquoted (raw) strings. This is helpful when storing the command output into a variable for use later.</p>
+<p>If you need more than a single property, you can build a JSON object from multiple properties by listing them in curly braces at the end of the query, like this:</p>
+<pre><code>aws ec2 describe-security-groups | jp &quot;SecurityGroups[?GroupName == 'internal-only'].{ Name: GroupName, ID: GroupId, VPC: VpcId }&quot;
+</code></pre>
+<p>This will return a JSON object with the properties listed.</p>
+<p>I may explore writing a more in-depth article on <code>jp</code> in the future; if that&rsquo;s something in which you&rsquo;d be interested, please <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> and let me know.</p>
+<h2 id="json-incremental-digger-jid">JSON Incremental Digger (<code>jid</code>)</h2>
+<p>What if you&rsquo;re not all that well-versed in the JMESPath syntax? Well, there are online simulators and parsers. Another approach would be to use <a href="https://github.com/simeji/jid"><code>jid</code>, the JSON incremental digger</a>. It doesn&rsquo;t necessarily follow the JMESPath syntax, but it does allow you to interactively query some JSON data to find what you&rsquo;re seeking.</p>
+<p>To use <code>jid</code>, simply pipe in some JSON data. For example, you could direct the output of the AWS CLI into <code>jid</code>:</p>
+<pre><code>aws ec2 describe-instances | jid
+</code></pre>
+<p>This puts you into an interactive screen where you can explore and parse the data to find exactly what you need. <code>jid</code> will supply &ldquo;suggested&rdquo; queries at the top of the screen in green; just press Tab to accept the suggestion. Adjust the query at the top until you have the data you need, then press Enter. The specific data you&rsquo;d selected in <code>jid</code> will be output to the shell. This is a super-handy way, in my opinion, of exploring JSON data structures with which you aren&rsquo;t already familiar.</p>
+<p>Have any other handy CLI tools for working with JSON? <a href="https://twitter.com/scott_lowe">Hit me on Twitter</a> with other tool suggestions, and I&rsquo;ll update the post with feedback from readers. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/06/22/a-quick-intro-to-aws-cli/">A Quick Intro to the AWS CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/07/13/technology-short-take-102/">Technology Short Take 102</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f28%2fmore-handy-cli-tools-json%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f28%2fmore-handy-cli-tools-json%2f&text=More%20Handy%20CLI%20Tools%20for%20JSON" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f28%2fmore-handy-cli-tools-json%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/06/22/a-quick-intro-to-aws-cli/">A Quick Intro to the AWS CLI</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2018/05/23/quick-post-parsing-aws-instance-data-with-jq/">Quick Post: Parsing AWS Instance Data with JQ</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2018/02/24/technology-short-take-95/">Technology Short Take 95</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

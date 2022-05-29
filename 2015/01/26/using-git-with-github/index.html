@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Git with GitHub - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Git with GitHub - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Git with GitHub - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/01/26/using-git-with-github/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Git with GitHub</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1179 words (estimated 6 minutes to read)</span>
+  <p>Building on <a href="/2015/01/14/non-programmer-git-intro/">my earlier non-programmer&rsquo;s introduction to Git</a>, I wanted to talk a little bit about using Git with <a href="https://github.com">GitHub</a>, a very popular service for hosting Git repositories. This post, in conjunction with the earlier introductory post on Git, will serve as the basis for a future post that talks about how to use Git and GitHub to collaborate with others on an open source project hosted on GitHub.</p>
+<p>If you aren&rsquo;t familiar with Git and haven&rsquo;t yet read the earlier introductory post, I <em>strongly</em> recommend reading that post first.</p>
+<p>Recall that Git is a distributed version control system (DVCS), and is designed to operate in such a way that full copies of repositories exist on multiple systems. This means you (as a single user) might have multiple copies of a repository across multiple systems. So how does one keep these repositories in sync? Generally, this would be handled via the use of a &ldquo;server-side&rdquo; repository to which the various repository clones are linked via a Git remote. This server-side repository might be hosted on an internal server or on a public server, and you may be connecting to it using the Git protocol, SSH, or HTTP(S). You would then push and/or pull changes to/from that server-side repository using various <code>git</code> commands (I&rsquo;ll discuss those in a moment). In this sort of arrangement, GitHub fills the role of the server-side repository&mdash;you&rsquo;ll push and pull changes to/from GitHub to clones of the repository on your laptop, your development workstation, and/or your server at work.</p>
+<p>What you <em>won&rsquo;t</em> do, though, is make changes directly to the GitHub repository. This threw me off in the early days of my journey to learn Git. In order to make changes to a repository hosted on GitHub, you <em>must</em> have a local copy of the repository&mdash;in other words, you <em>must</em> clone the repository to your local system. Only after you have a clone of the repository locally can you make changes. (<strong>UPDATE:</strong> A reader pointed out that GitHub&rsquo;s web site does offer  editing functionality, so <em>technically</em> you can make changes directly to the GitHub repository.)</p>
+<p>I talked about how to clone a repository in my earlier article, but let&rsquo;s look at it again. GitHub supports cloning via SSH as well as via HTTPS; I tend to use HTTPS as it is more likely to work in all environments (SSH can be blocked in many environments). So, to clone the GitHub repository for my weblog, I&rsquo;d use the <code>git clone</code> command, like this:</p>
+<pre><code>git clone https://github.com/scottslowe/lowescott.github.io.git
+</code></pre>
+<p>The generic form of this command is <code>git clone &lt;URL&gt;</code>. As I mentioned in my earlier Git article, this clones the entire repository down to your local system and automatically adds a Git remote (a link, if you will) back to the repository on GitHub. (You can see the Git remote by running <code>git remote -v</code>.) In the specific instance of using GitHub, you&rsquo;ll automatically have a Git remote named <code>origin</code> that refers to the GitHub repository.</p>
+<p>Once you have the repository cloned to your system, you can begin to work with the repository: making changes, building your changeset with <code>git add</code> (to add new files to be tracked by Git or add changed files to the next commit), and committing changes to the repository&rsquo;s commit history with <code>git commit</code>. None of this changes when working with a repository cloned from GitHub.</p>
+<p>What <em>does</em> change, though, is that now you have the ability to take the changes you&rsquo;ve made to your local repository and send them up to GitHub. You do that using the <code>git push</code> command. For example, if I wanted to push changes to the GitHub repository for my weblog, I&rsquo;d use this command:</p>
+<pre><code>git push origin master
+</code></pre>
+<p>The generic form of this command is <code>git push &lt;remote&gt; &lt;branch&gt;</code>. Recall that GitHub automatically added the <code>origin</code> remote when you cloned the repository, so that&rsquo;s why this command uses <code>origin</code>. The <code>master</code> comes from the default &ldquo;master&rdquo; branch. If I were working in a different branch (I haven&rsquo;t discussed branches yet, so bear with me), then the command would look a bit different. To ensure that you have permissions to push changes to the repository, GitHub would prompt you for credentials. This means that you will need a GitHub account, naturally. (Note that on some systems, the credentials can be saved and automatically supplied in the future. OS X is one such system.)</p>
+<p>It can be difficult sometimes to keep track of whether you&rsquo;ve pushed changes to GitHub or not, so the <code>git status</code> command helpfully tells you if your local repository is ahead of the GitHub repository (meaning changes have been committed locally but not pushed to GitHub).</p>
+<p>If you have multiple clones of the repository (say, a clone on your laptop and a clone on a development workstation at the office), you can keep those clones in sync by pushing changes to GitHub (using <code>git push</code>) and then pulling those changes down on other systems. Naturally&mdash;as you&rsquo;ve probably guessed already&mdash;the command to do that is <code>git pull</code>. If I pushed some changes to my weblog&rsquo;s repository from my MacBook Air and now need to update the clone of the repository on my Mac Pro, then I&rsquo;d run this command:</p>
+<pre><code>git pull origin master
+</code></pre>
+<p>Again, the generic form of the command is <code>git pull &lt;remote&gt; &lt;branch&gt;</code>, so if the Git remote to the GitHub repository was named something other than <code>origin</code> and/or you&rsquo;re working in a different branch than <code>master</code>, the command would look different. The <code>git pull</code> command pulls down all the changes from GitHub and then applies them to the local clone to bring it up to date.</p>
+<p>To quickly recap, then:</p>
+<ul>
+<li>GitHub acts as a &ldquo;server-side&rdquo; Git repository to which changes (commits) can be pushed or pulled.</li>
+<li>You can&rsquo;t make changes directly to a GitHub repository; you have to clone the repository down to your local system using <code>git clone</code>.</li>
+<li>Cloning a repository from GitHub automatically adds a Git remote named <code>origin</code> that points back to the GitHub repository.</li>
+<li>Changes you&rsquo;ve committed locally can be pushed to GitHub using the <code>git push</code> command. GitHub uses your GitHub account to determine if you are allowed to push changes to a particular repository.</li>
+<li>Changes you&rsquo;ve pushed to GitHub can be pulled down to another clone of the repository using <code>git pull</code>.</li>
+<li>Multiple clones of the same GitHub repository are kept in sync through the combination of pushing changes to GitHub (using <code>git push</code>) and pulling those changes down using <code>git pull</code>. (Note: For this reason it&rsquo;s a good idea to get into the habit of using <code>git status</code> to check the current status of a repository before starting to make changes&mdash;you might need to run a <code>git pull</code> first to get the latest changes.)</li>
+</ul>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>I found <a href="http://professionalvmware.com/2014/10/vbrownbag-devops-follow-up-git-with-matthew-brender-mjbrender/">Matt Brender&rsquo;s #vBrownBag session on using Git and GitHub</a> to be useful. As I mentioned in the introductory Git post, I also found GitHub&rsquo;s online help pages to be useful, and I <strong>really</strong> encourage you to read the <em>Pro Git</em> book by Scott Chacon. It&rsquo;s available for download <a href="http://www.git-scm.com/book/en/v2">here</a>.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/development">Development</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/github">GitHub</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/01/23/self-documenting-systems/">Self-Documenting Systems?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/01/27/using-fork-branch-git-workflow/">Using the Fork-and-Branch Git Workflow</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f26%2fusing-git-with-github%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f26%2fusing-git-with-github%2f&text=Using%20Git%20with%20GitHub" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f26%2fusing-git-with-github%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/01/14/non-programmer-git-intro/">A Non-Programmer&#39;s Introduction to Git</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2014/11/06/setting-up-the-tools-for-contributing-to-openstack-documentation/">Setting up the Tools for Contributing to OpenStack Documentation</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2014/11/21/removing-ovs-configuration-settings/">Removing OVS Configuration Settings</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

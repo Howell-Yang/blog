@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Vagrant with Libvirt on Fedora 27 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Vagrant with Libvirt on Fedora 27 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Vagrant with Libvirt on Fedora 27 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/12/06/using-vagrant-with-libvirt-on-fedora/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Vagrant with Libvirt on Fedora 27</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1016 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you how to use <a href="https://www.vagrantup.com/">Vagrant</a> with <a href="http://libvirt.org/">Libvirt</a> via the <a href="https://github.com/vagrant-libvirt/vagrant-libvirt">vagrant-libvirt provider</a> when running on <a href="https://getfedora.org/">Fedora</a> 27. Both Vagrant and Libvirt are topics I&rsquo;ve covered more than a few times here on this site, but this is the first time I&rsquo;ve discussed combining the two projects.</p>
+<p>If you&rsquo;re unfamiliar with Vagrant, I recommend you start first with <a href="/2014/09/12/a-quick-introduction-to-vagrant/">my quick introduction to Vagrant</a>, after which you can <a href="/tags/vagrant/">browse all the &ldquo;Vagrant&rdquo;-tagged articles on my site</a> for a bit more information. If you&rsquo;re unfamiliar with Libvirt, you can browse <a href="/tags/libvirt/">all my &ldquo;Libvirt&rdquo;-tagged articles</a>; I don&rsquo;t have an introductory post for Libvirt.</p>
+<h2 id="background">Background</h2>
+<p>I first experimented with the Libvirt provider for Vagrant quite some time ago, but at that time I was using the Libvirt provider to communicate with a remote Libvirt daemon (the use case was using Vagrant to create and destroy KVM guest domains via Libvirt on a remote Linux host). I found this setup to be problematic and error-prone, and discarded it after only a short while.</p>
+<p>Recently, I revisited using the Libvirt provider for Vagrant on my Fedora laptop (which I rebuilt with Fedora 27). As I mentioned in <a href="/2017/02/07/installing-virtualbox-51-fedora-25/">this post</a>, installing <a href="https://www.virtualbox.org/">VirtualBox</a> on Fedora isn&rsquo;t exactly straightforward. Further, what I <em>didn&rsquo;t</em> mention in that post is that the VirtualBox kernel modules aren&rsquo;t signed; this means you must turn off Secure Boot in order to run VirtualBox on Fedora. I was loathe to turn off Secure Boot, so I thought I&rsquo;d try the Vagrant+Libvirt combination again&mdash;this time using Libvirt to talk to the <em>local</em> Libvirt daemon (which is installed by default on Fedora in order to support the GNOME Boxes application, a GUI virtual machine tool). Hence, this blog post.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Obviously, you&rsquo;ll need Vagrant installed; I chose to install Vagrant from the Fedora repositories using <code>dnf install vagrant</code>. At the time of this writing, that installed version 1.9.8 of Vagrant. You&rsquo;ll also need the Libvirt plugin, which is  available via <code>dnf</code>:</p>
+<pre><code>dnf install vagrant-libvirt vagrant-libvirt-doc
+</code></pre>
+<p>At the time of writing, this installed version 0.40.0 of the Libvirt plugin, which is the latest version. You could also install the plugin via <code>vagrant plugin install vagrant-libvirt</code>, though I didn&rsquo;t test this approach. (In theory, it should work fine.)</p>
+<p>As with most other providers (the AWS and OpenStack providers being the exceptions), you&rsquo;ll also need one or more Vagrant boxes formatted for the Libvirt provider. I found a number of Libvirt-formatted boxes on <a href="https://app.vagrantup.com/boxes/search">Vagrant Cloud</a>, easily installable via <code>vagrant box add</code>. For the purposes of this post, I&rsquo;ll use the &ldquo;fedora/27-cloud-base&rdquo; Vagrant box with the Libvirt provider.</p>
+<p>Finally, because Vagrant is orchestrating Libvirt on the back-end, I also found it helpful to have the Libvirt client tools (like <code>virsh</code>) installed. This lets you see what Vagrant is doing behind the scenes, which can be helpful at times. Just run <code>dnf install libvirt-client</code>.</p>
+<h2 id="using-libvirt-with-vagrant">Using Libvirt with Vagrant</h2>
+<p>Once all the necessary prerequisites are satisfied, you&rsquo;re ready to start managing Libvirt guest domains (VMs) with Vagrant. For a really quick start:</p>
+<ol>
+<li><code>cd</code> into a directory of your choice</li>
+<li>Run <code>vagrant init fedora/27-cloud-base</code> to create a sample <code>Vagrantfile</code></li>
+<li>Boot the VM with <code>vagrant up</code></li>
+</ol>
+<p>For more fine-grained control over the VM and its settings, you&rsquo;ll want to customize the <code>Vagrantfile</code> with some additional settings. Here&rsquo;s a sample <code>Vagrantfile</code> that shows a few (there are many!) of the ways you could customize the VM Vagrant creates:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>configure(<span style="color:#e6db74">&#34;2&#34;</span>) <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>config<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Define the Vagrant box to use</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;fedora/27-cloud-base&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Disable automatic box update checking</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box_check_update <span style="color:#f92672">=</span> <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Set the VM hostname</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>hostname <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;fedora27&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Attach to an additional private network</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>network <span style="color:#e6db74">&#34;private_network&#34;</span>, <span style="color:#e6db74">ip</span>: <span style="color:#e6db74">&#34;192.168.100.101&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Modify some provider settings</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>provider <span style="color:#e6db74">&#34;libvirt&#34;</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>lv<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    lv<span style="color:#f92672">.</span>memory <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;1024&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span> <span style="color:#75715e"># config.vm.provider</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span> <span style="color:#75715e"># Vagrant.configure</span>
+</span></span></code></pre></div><p>For a more complete reference, see <a href="https://github.com/vagrant-libvirt/vagrant-libvirt">the GitHub repository for the vagrant-libvirt provider</a>. Note, however, that I did run into a few oddities, particularly around networking. For example, I wasn&rsquo;t able to create a new private Libvirt network using the <code>libvirt__network_address</code> setting; it always reverted to the default network address. However, using the syntax shown above, I <em>was</em> able to create a new private Libvirt network with the desired network address. I was also able to manually create a new Libvirt network (using <code>virsh net-create</code>) and then attach the VM to that network using the <code>libvirt__network_name</code> setting in the <code>Vagrantfile</code>. Some experimentation may be necessary to get precisely the results you&rsquo;re seeking.</p>
+<p>Once you&rsquo;ve instantiated the VM using <code>vagrant up</code>, then the standard Vagrant workflow applies:</p>
+<ul>
+<li>Use <code>vagrant ssh &lt;name&gt;</code> to log into the VM via SSH.</li>
+<li>Use <code>vagrant provision</code> to apply any provisioning instructions, such as running a shell script, copying files into the VM, or applying an Ansible playbook.</li>
+<li>Use <code>vagrant destroy</code> to terminate and delete the VM.</li>
+</ul>
+<p>There is one potential &ldquo;gotcha&rdquo; of which to be aware: when you use <code>vagrant box remove</code> to remove a Vagrant box <em>and</em> you&rsquo;ve created at least one VM from that box, then there is an additional step required to fully remove the box. When you run <code>vagrant up</code> with a particular box for the very first time, the Libvirt provider uploads the box into a Libvirt storage pool (the pool named &ldquo;default&rdquo;, by default). Running <code>vagrant box remove</code> only removes the files from the <code>~/.vagrant.d</code> directory, and does <strong>not</strong> remove any files from the Libvirt storage pool.</p>
+<p>To remove the files from the Libvirt storage pool, run <code>virsh pool-edit default</code> to get the filesystem path where the storage pool is found (if no changes have been made, the &ldquo;default&rdquo; pool should be located at <code>/var/lib/libvirt/images</code>). Navigate to that directory and remove the appropriate files in order to complete the removal of a particular box (or a specific version of a box).</p>
+<p>So far&mdash;though my testing has been fairly limited&mdash;I&rsquo;m reasonably pleased with the Libvirt provider when running against a local Libvirt daemon. The performance is good, and I haven&rsquo;t had to &ldquo;jump through hoops&rdquo; to make the virtualization provider work (as I did with VirtualBox on Fedora).</p>
+<p>If you have any questions or feedback, <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/29/aws-reinvent-2017-keynote-andy-jassy/">AWS re:Invent 2017 Keynote with Andy Jassy</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/12/07/installing-azure-cli-fedora-27/">Installing the Azure CLI on Fedora 27</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f12%2f06%2fusing-vagrant-with-libvirt-on-fedora%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f12%2f06%2fusing-vagrant-with-libvirt-on-fedora%2f&text=Using%20Vagrant%20with%20Libvirt%20on%20Fedora%2027" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f12%2f06%2fusing-vagrant-with-libvirt-on-fedora%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2017/11/24/using-docker-machine-kvm-libvirt/">Using Docker Machine with KVM and Libvirt</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

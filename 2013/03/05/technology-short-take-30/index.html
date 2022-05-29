@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #30 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #30 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #30 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/03/05/technology-short-take-30/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #30</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1160 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #30. This Technology Short Take is a bit heavy on the networking side, but I suppose that&rsquo;s understandable given my recent job change. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>Ben Cherian, Chief Strategy Officer for Midokura, helps make a <a href="http://allthingsd.com/20130124/making-a-case-for-network-virtualization/">case for network virtualization</a>. (Note: Midokura makes a network virtualization solution.) If you&rsquo;re wondering about network virtualization and why there is a focus on it, this post might help shed some light. Given that it was written by a network virtualization vendor, it might seem a bit rah-rah, so keep that in mind.</p>
+</li>
+<li>
+<p>Brent Salisbury has a <em>fantastic</em> series on OpenFlow. It&rsquo;s so good I wish I&rsquo;d written it. He starts out by discussing <a href="http://networkstatic.net/openflow-proactive-vs-reactive-flows/">proactive vs. reactive flows</a>, in which Brent explains that OpenFlow performance is less about OpenFlow and more about how flows are inserted into the hardware. Next, he tackles the concerns over the scale of flow-based forwarding in his post on <a href="http://networkstatic.net/openflow-coarse-vs-fine-flows/">coarse vs. fine flows</a>. I love this quote from that article: &ldquo;The second misnomer is, flow based forwarding does not scale. Bad designs are what do not scale.&rdquo; Great statement! The third post in the series tackles what Brent calls <a href="http://networkstatic.net/openflow-sdn-hybrid-deployment-strategies">hybrid SDN deployment strategies</a>, and Brent provides some great design considerations for organizations looking to deploy an SDN solution. I&rsquo;m looking forward to the fourth and final article in the series!</p>
+</li>
+<li>
+<p>Also, if you&rsquo;re looking for some additional context to the TCAM considerations that Brent discusses in his OpenFlow series, check out this Packet Pushers blog post on <a href="http://packetpushers.net/openflow-switching-performance-not-all-tcam-is-created-equal/">OpenFlow switching performance</a>.</p>
+</li>
+<li>
+<p>Another one from Brent, this time on <a href="http://networkstatic.net/putting-together-provider-bridging-provider-backbone-bridging-s-tags-and-c-tags/">Provider Bridging and Provider Backbone Bridging</a>. Good explanation&mdash;it certainly helped me.</p>
+</li>
+<li>
+<p><a href="http://www.securityweek.com/software-defined-networking-new-network-weakness">This article</a> by Avi Chesla points out a potential security weakness in SDN, in the form of a DoS (Denial of Service) attack where many switching nodes request many flows from the central controller. It appears to me that this would only be an issue for networks using fine-grained, reactive flows. Am I wrong?</p>
+</li>
+<li>
+<p>Scott Hogg has a nice list of <a href="http://www.networkworld.com/community/blog/9-common-spanning-tree-mistakes">9 common Spanning Tree mistakes</a> you shouldn&rsquo;t make.</p>
+</li>
+<li>
+<p>Schuberg Philis has a nice write-up of their CloudStack+NVP deployment <a href="http://www.cupfighter.net/index.php/2013/01/schuberg-philis-cloud-l2-l3-use-case/">here</a>.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>
+<p>Alex Galbraith recently posted a two-part series on what he calls the &ldquo;NanoLab,&rdquo; a home lab built on the Intel NUC (&ldquo;Next Unit of Computing&rdquo;). It&rsquo;s a good read for those of you looking for some very quiet and very small home lab equipment, and Alex does a good job of providing all the details. Check out <a href="http://www.tekhead.org/blog/2013/01/nanolab-running-vmware-vsphere-on-intel-nuc-part-1/">part 1 here</a> and <a href="http://www.tekhead.org/blog/2013/01/nanolab-running-vmware-vsphere-on-intel-nuc-part-2-2/">part 2 here</a>.</p>
+</li>
+<li>
+<p>At first, I thought this article was written from a sarcastic point of view, but it turns out that Kevin Houston&rsquo;s post on <a href="http://bladesmadesimple.com/2013/02/5-reasons-you-may-not-want-blade-servers/">5 reasons why you may not want blade servers</a> is the real deal. It&rsquo;s nice to see someone who focuses on blade servers opening up about why they aren&rsquo;t necessarily the best fit for all situations.</p>
+</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Nick Buraglio has a good post on <a href="http://www.forwardingplane.net/2013/02/watch-out-gigamon-and-others-arista-is-bringing-their-a-game/">the potential impact of Arista&rsquo;s new DANZ functionality</a> on tap aggregation solutions in the security market. It will be interesting to see how this shapes up. BTW, Nick&rsquo;s writing some pretty good content, so if you&rsquo;re not subscribed to his blog I&rsquo;d reconsider.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>Although this post is a bit older (it&rsquo;s from September of last year), it&rsquo;s still an interesting <a href="http://www.mirantis.com/blog/an-openstack-guy-takes-cloudstack-for-a-test-drive/">comparison of both OpenStack and CloudStack</a>. Note that the author apparently works for Mirantis, which is a company that provides OpenStack consulting services. In spite of that fact, he manages to provide a reasonably balanced approach to comparing the two cloud management platforms. Both of them (I believe) have had releases since this time, so some of the points may not be valid any longer.</p>
+</li>
+<li>
+<p>Are you a CloudStack fan? If so, you should probably check out <a href="http://www.aarondelp.com/2012/12/links-to-everything-cloudstack.html">this collection of links</a> from Aaron Delp. Aaron&rsquo;s focused a lot more on CloudStack now that he&rsquo;s at Citrix, so he might be a good resource if that is your cloud management platform of choice.</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>If you&rsquo;re just now getting into the whole configuration management scene where tools like Puppet, Chef, and others play, you might find <a href="http://spin.atomicobject.com/2012/09/13/from-imperative-to-declarative-system-configuration-with-puppet/">this article</a> helpful. It walks through the difference between configuring a system imperatively and configuring a system declaratively (hint: Puppet, Chef, and others are declarative). It does presume a small bit of programming knowledge in the examples, but even as a non-programmer I found it useful.</p>
+</li>
+<li>
+<p>Here&rsquo;s a three-part series on beginning Puppet that you might find helpful as well (<a href="http://justfewtuts.blogspot.com/2012/05/puppet-beginners-concept-guide-part-1.html">Part 1</a>, <a href="http://justfewtuts.blogspot.com/2012/07/puppet-beginners-concept-guide-part-2.html">Part 2</a>, and <a href="http://justfewtuts.blogspot.com/2012/08/puppet-beginners-concept-guide-part-3.html">Part 3</a>).</p>
+</li>
+<li>
+<p>If you&rsquo;re a developer-type person, I would first ask why you&rsquo;re reading my site, then I&rsquo;d point you to <a href="http://blogs.vmware.com/vfabric/2013/02/choosing-your-messaging-protocol-amqp-mqtt-or-stomp.html">this post on the AMQP, MQTT, and STOMP messaging protocols</a>.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>There&rsquo;s a good post here by Manish Patel on <a href="http://virtualpatel.blogspot.com/2013/01/how-to-verify-vmfs-heartbeat-region.html">verifying VMFS heartbeat region corruption</a>.</p>
+</li>
+<li>
+<p>Jason Boche has a great, great post on <a href="http://www.boche.net/blog/index.php/2013/02/28/vaai-and-the-unlimited-vms-per-datastore-urban-myth/">VAAI and the &ldquo;unlimited VMs per datastore&rdquo; urban myth</a>. Jason clearly and logically lays out the benefits of VAAI (specifically, he focuses most on hardware-assisted locking) and how those benefits don&rsquo;t address other design considerations. Overall, an excellent article, and one I highly recommend.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Although these posts are storage-related, the real focus is on how the storage stack is implemented in a virtualization solution, which is why I&rsquo;m putting them in this section. Cormac Hogan has a series going titled &ldquo;Pluggable Storage Architecture (PSA) Deep Dive&rdquo; (<a href="http://cormachogan.com/2013/02/04/pluggable-storage-architecture-psa-deep-dive-part-1/">part 1 here</a>, <a href="http://cormachogan.com/2013/02/05/pluggable-storage-architecture-psa-deep-dive-part-2/">part 2 here</a>, <a href="http://cormachogan.com/2013/02/07/pluggable-storage-architecture-psa-deep-dive-part-3/">part 3 here</a>). If you want more PSA information, you&rsquo;d be hard-pressed to find a better source. Well worth reading for VMware admins and architects.</p>
+</li>
+<li>
+<p>Chris Colotti shares information on a little-known vSwitch advanced setting that helps resolve an issue with multicast traffic and NICs in promiscuous mode in <a href="http://www.chriscolotti.us/vmware/vsphere/interesting-vmware-vswitch-advanced-setting/">this post</a>.</p>
+</li>
+<li>
+<p>Frank Denneman reminds everyone in <a href="http://frankdenneman.nl/2012/12/18/designing-your-vmotion-network/">this post</a> that the concurrent vMotion limit only goes to 8 concurrent vMotions when vSphere detects the NIC speed at 10Gbps. Anything less causes the concurrent limit to remain at 4. For those of you using solutions like HP VirtualConnect or similar that allow you to slice and dice a 10Gb link into smaller links, this is a design consideration you&rsquo;ll want to be sure to incorporate. Good post Frank!</p>
+</li>
+<li>
+<p>Interested in some OpenStack inception? See <a href="http://openstack.prov12n.com/nesting-openstack-in-openstack/">here</a>. How about some oVirt inception? See <a href="http://blog.jebpages.com/archives/ovirt-on-ovirt-nested-kvm-fu/">here</a>. What&rsquo;s that? Not familiar with oVirt? No problem&mdash;see <a href="http://blog.jebpages.com/archives/up-and-running-with-ovirt-3-1-edition/">here</a>.</p>
+</li>
+<li>
+<p><a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2013/02/18/windows-backup-and-hyper-v-in-server-2012.aspx">Windows Backup has native Hyper-V support in Windows Server 2012</a>. That&rsquo;s cool, but are you surprised? I&rsquo;m not.</p>
+</li>
+<li>
+<p>Red Hat and IBM put out a <a href="http://www.redhat.com/about/news/archive/2013/2/red-hat-and-ibm-achieve-leading-performance-benchmark-results">press release</a> today on improved I/O performance with RHEL 6.4 and KVM. The press release claims that a single KVM guest on RHEL 6.4 can support up to 1.5 million IOPS. (Cue timer until next virtualization vendor ups the ante)</p>
+</li>
+</ul>
+<p>I guess I should wrap things up now, even though I still have more articles that I&rsquo;d love to share with readers. Perhaps a &ldquo;mini-TST&rdquo;</p>
+<p>In any event, courteous comments are always welcome, so feel free to speak up below. Thanks for reading and I hope you&rsquo;ve found something useful!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/redhat">RedHat</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/02/26/automating-open-vswitch-configuration-with-puppet/">Automating Open vSwitch Configuration with Puppet</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/03/19/announcing-vmware-vsphere-design-2nd-edition/">Announcing VMware vSphere Design, 2nd Edition</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f03%2f05%2ftechnology-short-take-30%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f03%2f05%2ftechnology-short-take-30%2f&text=Technology%20Short%20Take%20%2330" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f03%2f05%2ftechnology-short-take-30%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2012/10/05/technology-short-take-25/">Technology Short Take #25</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

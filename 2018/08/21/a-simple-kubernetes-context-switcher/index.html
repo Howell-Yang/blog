@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Simple Kubernetes Context Switcher - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Simple Kubernetes Context Switcher - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Simple Kubernetes Context Switcher - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/08/21/a-simple-kubernetes-context-switcher/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Simple Kubernetes Context Switcher</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;542 words (estimated 3 minutes to read)</span>
+  <p>I recently needed to find a simple way of switching between <a href="https://kubernetes.io/">Kubernetes</a> contexts. I already use <code>powerline-go</code> (here&rsquo;s <a href="https://github.com/justjanne/powerline-go">the GitHub repo</a>), which allows me to display the Kubernetes context in the prompt so I always know which context is the active (current) context. However, switching between contexts using <code>kubectl config set-context &lt;name&gt;</code> isn&rsquo;t the easiest approach; not to mention it requires merging multiple config files into a single file (which is itself a bit of a task). So, I set out to create a simple Kubernetes context switcher&mdash;and here&rsquo;s the initial results of my efforts.</p>
+<p>Before I go any further, I&rsquo;d like to stress 2 important points. First, I&rsquo;m not a programmer, so keep that in mind. Second, this is a <em>simple</em> Kubernetes context switcher&mdash;it&rsquo;s not meant to address any and every possible use case out there, nor do I claim any sort of sophistication in the code.</p>
+<p>With those disclaimers out of the way, allow me to introduce <code>kcs</code>: the simple Kubernetes context switcher. <code>kcs</code> is built on the idea that it&rsquo;s easiest to manage Kubernetes contexts in their own files, rather than trying to merge config files. So, it makes the assumption that you&rsquo;ll store your Kubernetes contexts in separate config files. To add a new context, just copy the config file into the <code>~/.kube</code> directory (the directory <code>kubectl</code> uses by default).</p>
+<p>Once you have your config files in the <code>~/.kube</code> directory, then using <code>kcs</code> is a piece of cake:</p>
+<ul>
+<li>To select a particular context, just use <code>kcs &lt;context-name&gt;</code> (where <code>&lt;context-name&gt;</code> will equal a filename in the <code>~/.kube</code> directory). If you&rsquo;re using a prompt tool that shows the active Kubernetes context, you&rsquo;ll see the newly-selected context in your prompt.</li>
+<li>To list the available contexts, type <code>kcs list</code>. You&rsquo;ll get a space-delimited list of the available contexts (again, where a context is equivalent to a file in <code>~/.kube</code>).</li>
+<li>To specify that you don&rsquo;t want <em>any</em> active context, specify <code>kcs none</code>.</li>
+</ul>
+<p>Now, if you haven&rsquo;t figured it out yet, there&rsquo;s a <strong>giant</strong> problem with the admittedly very simplistic approach I&rsquo;ve taken here&mdash;the name of the context <em>inside</em> a config file may not match the name of the file itself, and it&rsquo;s the name of the context that most prompt tools (like powerline-go, for example) will use, not the filename itself. Clearly, this is a problem, and one that I hope to be able to programmatically address at some point, but for now the workaround is to simply edit the config file and make the context name match the filename.</p>
+<p><code>kcs</code> is written entirely in Bash, so it should run unmodified on most Linux distributions as well as macOS. (Maybe at some point as my Golang skills develop I&rsquo;ll re-code it in Golang.) If you&rsquo;d like to give <code>kcs</code> a try, feel free to grab it from <a href="https://github.com/scottslowe/scripts/">my GitHub &ldquo;scripts&rdquo; repository</a>. As I mentioned before, I&rsquo;m not a programmer (yet), so feel free to submit pull requests for improvements to <code>kcs</code> that might improve error checking, performance, portability, etc.</p>
+<p>In the meantime, I hope this small (and quite simple) utility is helpful to folks.</p>
+<p><strong>UPDATE:</strong> Within days of publishing this post, someone pointed me to <a href="https://github.com/heptiolabs/ktx"><code>ktx</code></a>, which does pretty much the same thing (only better). I&rsquo;ve completely abandoned <code>kcs</code> in favor of <code>ktx</code>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/">Bootstrapping an etcd Cluster with TLS using Kubeadm</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/08/22/populating-new-namespaces-using-heptio-ark/">Populating New Namespaces Using Heptio Ark</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f08%2f21%2fa-simple-kubernetes-context-switcher%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f08%2f21%2fa-simple-kubernetes-context-switcher%2f&text=A%20Simple%20Kubernetes%20Context%20Switcher" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f08%2f21%2fa-simple-kubernetes-context-switcher%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/07/13/technology-short-take-102/">Technology Short Take 102</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2018/06/12/examining-x509-certificates-embedded-in-kubeconfig-files/">Examining X.509 Certificates Embedded in Kubeconfig Files</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2018/06/05/exploring-kubernetes-kubeadm-part-1-introduction/">Exploring Kubernetes with Kubeadm, Part 1: Introduction</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

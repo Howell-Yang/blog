@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Docker Machine with Azure - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Docker Machine with Azure - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Docker Machine with Azure - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/01/25/using-docker-machine-with-azure/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Docker Machine with Azure</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;527 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;ve written about using <a href="https://www.docker.com/products/docker-machine">Docker Machine</a> with a number of different providers, such as <a href="/2016/03/22/using-docker-machine-with-aws/">with AWS</a>, <a href="/2015/09/24/using-docker-machine-with-openstack/">with OpenStack</a>, and even <a href="/2017/11/24/using-docker-machine-kvm-libvirt/">with a local KVM/Libvirt daemon</a>. In this post, I&rsquo;ll expand that series to show using Docker Machine with Azure. (This is a follow-up to my earlier post on <a href="/2018/01/16/experimenting-with-azure/">experimenting with Azure</a>.)</p>
+<p>As with most of the other Docker Machine providers, using Docker Machine with Azure is reasonably straightforward. Run <code>docker-machine create -d azure --help</code> to get an idea of some of the parameters you can use when creating VMs on Azure using Docker Machine. A full list of the various parameters and options for the Azure drive is <a href="https://docs.docker.com/machine/drivers/azure/">also available</a>.</p>
+<p>The only <em>required</em> parameter is <code>--azure-subscription-id</code>, which specifies your Azure subscription ID. If you don&rsquo;t know this, or want to obtain it programmatically, you can use this Azure CLI command:</p>
+<pre><code>az account show --query &quot;id&quot; -o tsv
+</code></pre>
+<p>If you have more than one subscription, you&rsquo;ll probably need to modify this command to filter it down to the specific subscription you want to use.</p>
+<p>Additional parameters that you can supply include (but aren&rsquo;t limited to):</p>
+<ul>
+<li>Use the <code>--azure-image</code> parameter to specify the VM image you&rsquo;d like to use. By default, the Azure driver uses Ubuntu 16.04.</li>
+<li>By default, the Azure driver launches a Standard_A2 VM. If you&rsquo;d like to use a different size, just supply the <code>--azure-size</code> parameter.</li>
+<li>The <code>--azure-location</code> parameter lets you specify an Azure region other than the default, which is &ldquo;westus&rdquo;.</li>
+<li>You can specify a non-default resource group (the default value is &ldquo;docker-machine&rdquo;) by using the <code>--azure-resource-group</code> parameter.</li>
+<li>The Azure driver defaults to a username of &ldquo;docker-user&rdquo;; use the <code>--azure-ssh-user</code> to specify a different name.</li>
+<li>You can customize networking configurations using the <code>--azure-subnet-prefix</code>, <code>--azure-subnet</code>, and <code>--azure-vnet</code> options. Default values for these options are 192.168.0.0/16, &ldquo;docker-machine&rdquo;, and &ldquo;docker-machine&rdquo;, respectively.</li>
+</ul>
+<p>So what would a complete command look like? Using Bash command substitution to supply the Azure subscription ID, a sample command might look like this:</p>
+<pre><code>docker-machine create -d azure \
+--azure-subscription-id $(az account show --query &quot;id&quot; -o tsv) \
+--azure-location westus2 \
+--azure-ssh-user ubuntu \
+--azure-size &quot;Standard_B1ms&quot; \
+dm-azure-test
+</code></pre>
+<p>This would create an Azure VM named &ldquo;dm-azure-test&rdquo;, based on the (default) Ubuntu 16.04 LTS image, in the &ldquo;westus2&rdquo; Azure region and using a username of &ldquo;ubuntu&rdquo;. Once the VM is running and responding across the network, Docker Machine will provision and configure Docker Engine on the VM.</p>
+<p>Once the VM is up, all the same <code>docker-machine</code> commands are available:</p>
+<ul>
+<li><code>docker-machine ls</code> will list all configured machines (systems managed via Docker Machine); this is across all supported Docker Machine providers</li>
+<li><code>docker-machine ssh &lt;name&gt;</code> to establish an SSH connection to the VM</li>
+<li><code>eval $(docker-machine env &lt;name&gt;)</code> to establish a Docker configuration pointing to the remote VM (this would allow you to use a local Docker client to communicate with the remote Docker Engine instance)</li>
+<li><code>docker-machine stop &lt;name&gt;</code> stops the VM (which can be restarted using <code>docker-machine start &lt;name&gt;</code>, naturally)</li>
+<li><code>docker-machine rm &lt;name&gt;</code> deletes the VM</li>
+</ul>
+<p>Clearly, there&rsquo;s more available, but this should be enough to get most folks rolling.</p>
+<p>If I&rsquo;ve missed something (or gotten it incorrect), please <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>. I&rsquo;ll happily make corrections where applicable.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/01/24/update-on-using-docker-machine-with-vagrant/">An Update on Using Docker Machine with Vagrant</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/01/30/running-ovs-fedora-atomic-host/">Running OVS on Fedora Atomic Host</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f25%2fusing-docker-machine-with-azure%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f25%2fusing-docker-machine-with-azure%2f&text=Using%20Docker%20Machine%20with%20Azure" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f01%2f25%2fusing-docker-machine-with-azure%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/01/16/experimenting-with-azure/">Experimenting with Azure</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2016/09/23/installing-specific-version-docker-engine/">Installing a Specific Version of Docker Engine</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

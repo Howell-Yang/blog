@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Mudslinging Between Cisco and HP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Mudslinging Between Cisco and HP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Mudslinging Between Cisco and HP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/07/16/mudslinging-between-cisco-and-hp/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Mudslinging Between Cisco and HP</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1103 words (estimated 6 minutes to read)</span>
+  <p>I&rsquo;ll preface this article by saying that I am not (yet) an expert with Cisco&rsquo;s Unified Computing System (UCS), so if I have incorrect information I&rsquo;m certainly open to clarification. Some would also accuse me of being a UCS-hater, since I had the audacity to call UCS a blade server (the horror!). Truth is, I&rsquo;m on the side of the customer, and as we all know there is no such thing as a &ldquo;one size fits all&rdquo; solution. Cisco can&rsquo;t provide one, and HP can&rsquo;t provide one.</p>
+<p>The mudslinging that I&rsquo;m talking about is taking place between Steve Chambers (formerly with VMware, now with Cisco) and HP. HP published a page with a list of reasons why Cisco UCS should be dismissed, and Steve responded on his personal blog. Here are the links to the pages in question:</p>
+<p><a href="http://h71028.www7.hp.com/enterprise/us/en/messaging/realstory-cisco-datacenter-view.html">The Real Story about Ciscos &ldquo;One Giant Switch&rdquo; view of the Datacenter</a> <em>(this was based, in part at least, on the next link)</em></p>
+<p><a href="http://www.procurve.com/network-pro-news/articles/may09/buyer-beware.htm?ed=na">Buyer beware of the &ldquo;one giant switch&rdquo; data center network model</a></p>
+<p><a href="http://viewyonder.com/2009/07/15/hp-on-the-run/">HP on the run</a></p>
+<p>I thought I might take a few points from these differing perspectives and try to call out some mudslinging that&rsquo;s occurring on <em>both</em> sides. To be fair, Steve states in the comments to his article that it was intended to be entertaining and light-hearted, so please keep that in mind.</p>
+<h2 id="point-1-complexity">Point #1: Complexity</h2>
+<p>The reality of these solutions is that they are both equally complex, just in different ways. HP&rsquo;s BladeSystem Matrix uses reasonably well-understood and mature technologies, while Cisco UCS uses newer technologies that aren&rsquo;t as widely understood. This is not a knock against either; as I&rsquo;ve said before in many other contexts and many other situations, there are advantages and disadvantages to every approach. HP&rsquo;s advantage is that leverages the knowledge and experience that people have with their existing technologies: StorageWorks storage solutions, ProLiant blades, ProCurve networking, and HP software. The disadvantage is that HP is still tied to the same &ldquo;legacy&rdquo; technologies.</p>
+<p>In building UCS, Cisco&rsquo;s advantage is that the solution uses the latest technologies (including some that are still Cisco-proprietary) and doesn&rsquo;t have any ties to &ldquo;legacy&rdquo; technologies. The disadvantage, naturally, is that this technological leap creates additional perceived complexity because people have to learn the new technologies embedded within UCS.</p>
+<p>Adding to the simple fact that both of these solutions are equally complex in different ways is the fact that you must re-architect your storage in order to gain the full advantage of either solution. To get the full benefit of both UCS and HP BladeSystem Matrix, you need to be doing boot from SAN. (Clearly, this doesn&rsquo;t apply to virtualized systems, but both Cisco and HP are touting their solutions as equally applicable to non-virtualized workloads.) This is a fact that, in my opinion, has been significantly understated.</p>
+<p>Neither HP nor Cisco really have the right to proclaim their solution is less complex than the other. Both solutions are complex in their own ways.</p>
+<h2 id="point-2-standards-based-vs-proprietary">Point #2: Standards-Based vs. Proprietary</h2>
+<p>Again, neither HP nor Cisco really have any room to throw the rock labeled &ldquo;Proprietary&rdquo;. Both solutions have their own measure of vendor lock-in. HP is right; you can&rsquo;t put an HP blade or an IBM blade into a Cisco UCS chassis. Steve Chambers is right; you can&rsquo;t put a Dell blade or a Cisco blade server into an HP chassis. The reality, folks, is that every vendor&rsquo;s solution is has a certain amount of vendor lock-in. Does VMware vSphere have vendor lock-in? Sure, but so does Hyper-V and Citrix XenServer. Does Microsoft Windows have vendor lock-in? Of course, but so does&hellip;so does&hellip;well, you get the idea.</p>
+<p>HP says VNTag is proprietary and won&rsquo;t even work with some of Cisco&rsquo;s own switches. OK, let&rsquo;s talk proprietary&hellip;does Flex-10 work with other vendor&rsquo;s switches? The fact of the matter is that both Cisco and HP have their own forms of vendor lock-in and neither can cry &ldquo;foul&rdquo; on the other. It&rsquo;s a draw.</p>
+<h2 id="point-3-the-giant-network-switch">Point #3: The &ldquo;Giant Network Switch&rdquo;</h2>
+<p>At one point in HP&rsquo;s article (I believe it was under the Complexity heading) they make this point about the network traffic in a Cisco UCS environment:</p>
+<blockquote>
+<p>In Cisco&rsquo;s one-giant-switch model, all traffic must travel over a physical wire to a physical switch for every operation. Consequently, it appears that traffic even between two virtual servers running next to each other on the same physical would have to traverse the network, making an elaborate &ldquo;hairpin turn&rdquo; within the physical switch, only to traverse the network again before reaching the other virtual server on the same physical machine. Return traffic (or a &ldquo;response&rdquo; from the second virtual machine) would have to do the same. Each of these packet traversals logically accounts for multiple interrupts, data copies and delays for your multi-core processor.</p>
+</blockquote>
+<p>I do have to call &ldquo;partial FUD&rdquo; on this one. In a virtualized environment, even a virtualized environment running the Cisco Nexus 1000V, traffic from one virtual server to another virtual server on the same host never leaves that host. HP&rsquo;s statement seems to imply that&rsquo;s not the case, and as far as I know it is. However, HP&rsquo;s statement is partially true: traffic from one virtual server on one physical host does have to travel to the fabric interconnect and then back again in order to communicate with a virtual server running on a physical host in the same chassis. The fabric extenders don&rsquo;t provide any switching functionality; that all occurs in the interconnect. Based on the information I&rsquo;ve seen thus far, I would say that using Cisco&rsquo;s SR-IOV-based &ldquo;Palo&rdquo; adapter and attaching VMs directly to a virtual PCIe NIC <em>would</em> put you into the situation HP is describing, which then just reinforces a question that Brad Hedlund and I tossed back and forth a couple of times: is hypervisor-bypass, aka VMDirectPath, with &ldquo;Palo&rdquo; the right design for all environments? In my opinion, no&mdash;I again go back to my statement that there is no &ldquo;one size fits all&rdquo; solution. And considering that the use of hypervisor-bypass with &ldquo;Palo&rdquo; would put you into a situation where traffic between two virtual machines on the same physical host has to travel to the fabric interconnect and back again, I&rsquo;m even less inclined to use that architecture.</p>
+<p>In the end, it&rsquo;s pretty clear to me that both HP and Cisco have some advantages and disadvantages to their respective solutions, and neither vendor really has the room to label the other as &ldquo;more complex&rdquo; or &ldquo;more proprietary&rdquo; than the other. But what do you think? Do you agree or disagree? Courteous comments (with full vendor disclosure) are welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/07/13/vmware-releases-a-trio-of-new-products/">VMware Releases a Trio of New Products</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/07/18/a-bit-of-an-applescript-kick/">A Bit of an AppleScript Kick</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f16%2fmudslinging-between-cisco-and-hp%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f16%2fmudslinging-between-cisco-and-hp%2f&text=Mudslinging%20Between%20Cisco%20and%20HP" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f16%2fmudslinging-between-cisco-and-hp%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/04/03/a-collection-of-viewpoints-on-cisco-ucs/">A Collection of Viewpoints on Cisco UCS</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/03/18/cisco-ucs-virtualization-optimized-cnas/">Cisco UCS Virtualization-Optimized CNAs</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2009/03/16/more-on-cisco-ucs/">More on Cisco UCS</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

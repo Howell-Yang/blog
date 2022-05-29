@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing a Specific Version of Docker Engine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing a Specific Version of Docker Engine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing a Specific Version of Docker Engine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/09/23/installing-specific-version-docker-engine/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing a Specific Version of Docker Engine</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;277 words (estimated 2 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you how to install a specific version of the <a href="https://www.docker.com/products/docker-engine">Docker Engine</a> package on <a href="http://www.ubuntu.com/">Ubuntu</a>. While working on a side project (one that will hopefully bear fruit soon), I found myself in need of installing a slightly older version of Docker Engine (1.11 instead of 1.12, to be specific). While this task isn&rsquo;t hard, it also wasn&rsquo;t clearly spelled out anywhere, and this post aims to help address that shortcoming.</p>
+<p>If you&rsquo;ve followed the instructions to add the Docker Apt repos to your system as outlined <a href="https://docs.docker.com/engine/installation/linux/ubuntulinux/">here</a>, then installing the Docker Engine (latest version) would be done something like this:</p>
+<pre><code>apt-get install docker-engine
+</code></pre>
+<p>If you do an <code>apt-cache search docker-engine</code>, though, you&rsquo;ll find that the &ldquo;docker-engine&rdquo; package is a metapackage that refers to a variety of different versions of the Docker Engine. To install a specific version of the Docker Engine, then, simply append the version (as described by the results of the <code>apt-cache search docker-engine</code> command) to the end, like this:</p>
+<pre><code>apt-get install docker-engine=1.11.2-0~trusty
+</code></pre>
+<p>This will install version 1.11.2 of the Docker Engine.</p>
+<p>You&rsquo;ll use the same syntax when you need to install a specific version of the Docker Engine via <a href="https://www.ansible.com/">Ansible</a> (which is what I was trying to do). For example, this snippet of an Ansible playbook would install version 1.11.2 of the Docker Engine:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">Install Docker packages</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">apt</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;docker-engine=1.11.2-0~trusty&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">state</span>: <span style="color:#e6db74">&#34;present&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">update_cache</span>: <span style="color:#e6db74">&#34;yes&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cache_valid_time</span>: <span style="color:#e6db74">&#34;3600&#34;</span>
+</span></span></code></pre></div><p>As I said, it&rsquo;s not terribly difficult or complex, but it also wasn&rsquo;t spelled out plainly anywhere that I found in my Internet searches. Hopefully this post will make it easier for others who find themselves in a similar situation.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/09/20/spousetivities-in-barcelona/">Spousetivities in Barcelona</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/09/28/why-now-using-virtualbox-with-vagrant/">Why I&#39;m Now Using VirtualBox with Vagrant</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f09%2f23%2finstalling-specific-version-docker-engine%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f09%2f23%2finstalling-specific-version-docker-engine%2f&text=Installing%20a%20Specific%20Version%20of%20Docker%20Engine" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f09%2f23%2finstalling-specific-version-docker-engine%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/04/22/technology-short-take-65/">Technology Short Take #65</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2016/03/22/using-docker-machine-with-aws/">Using Docker Machine with AWS</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2015/11/23/bootstrapping-cloud-instances-ansible/">Bootstrapping Cloud Instances into Ansible</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

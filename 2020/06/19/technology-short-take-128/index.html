@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 128 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 128 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 128 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/06/19/technology-short-take-128/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 128</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;677 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #128! It looks like I&rsquo;m settling into a roughly monthly cadence with the Technology Short Takes. This time around, I&rsquo;ve got a (hopefully) interesting collection of links. The collection seems a tad heavier than normal in the hardware and security sections, probably due to new exploits discovered in Intel&rsquo;s speculative execution functionality. In any case, here&rsquo;s what I&rsquo;ve gathered for you. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Graham Smith writes about <a href="https://vdives.com/2020/06/01/nsx-t-3-0-lab-single-n-vds-edge-nodes/">switching his NSX-T lab to use single N-DVS Edge nodes</a>.</li>
+<li>Here&rsquo;s another useful article from Eric Sloof on <a href="https://www.ntpro.nl/blog/archives/3576-Bridging-between-GNS3-and-NSX-T.html">bridging between GNS3 and NSX-T</a>. Lots of network engineers are familiar with GNS3, and showing how to integrate it with NSX-T for testing and simulation is, I think, going to be helpful.</li>
+<li>The inimitable Ivan Pepelnjak provides <a href="https://blog.ipspace.net/2020/05/azure-networking-101.html">a primer on Azure networking</a>.</li>
+<li>Sebastian Cohnen of StormForger shares <a href="https://stormforger.com/blog/aws-fargate-network-performance/">some results from network performance testing of AWS Fargate</a>. Note that this article is a couple of years old, so some things may have changed since it was written.</li>
+<li>Daniel Teycheney discusses <a href="https://blog.danielteycheney.com/posts/starting-your-network-automation-journey/">starting your network automation journey</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li><a href="https://cfenollosa.com/blog/seven-years-later-i-bought-a-new-macbook-for-the-first-time-i-dont-love-it.html">This article</a> from Carlos Fenollosa talks about his experience with a new 2020 MacBook Pro compared to his 2013-era MacBook Air. While there is some discussion of software in here (given Apple&rsquo;s tight coupling it can&rsquo;t be avoided), the article mostly focuses on hardware aspects of Apple&rsquo;s latest lineup of laptops. Personally, I appreciated Carlos&rsquo; balanced review.</li>
+<li>This is one of those times when an article belongs in multiple categories&mdash;in this case, hardware and security. <a href="https://www.bleepingcomputer.com/news/security/new-sgaxe-attack-steals-protected-data-from-intel-sgx-enclaves/">This article</a> describes a new attack that &ldquo;breaches the security guarantees&rdquo; of Intel SGX.</li>
+<li>Oh, and while we&rsquo;re talking about Intel CPU exploits, <a href="https://www.vusec.net/projects/crosstalk/">here&rsquo;s another one</a>.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li><a href="https://www.ostechnix.com/how-to-encrypt-directories-with-ecryptfs-in-linux/">This article</a> explains how to use a &ldquo;stacked filesystem&rdquo; encryption solution named eCryptfs to encrypt directories on Linux. If you&rsquo;re interested in doing something like this for cloud storage, <a href="https://www.linuxuprising.com/2020/05/how-to-encrypt-cloud-storage-files-with.html">this other article</a> shows how to use encryption with <code>rclone</code>.</li>
+<li>ZDNet covered <a href="https://www.zdnet.com/article/check-point-released-an-open-source-fix-for-common-linux-memory-corruption-security-hole/">the news</a> of Check Point fixing a well-known memory corruption security hole in the GNU C Library.</li>
+<li>If you say that Linux malware doesn&rsquo;t exist&hellip;read <a href="https://www.darkreading.com/vulnerabilities---threats/new-tycoon-ransomware-strain-targets-windows-linux/d/d-id/1338006">this article</a>.</li>
+<li>The Citizen Lab <a href="https://citizenlab.ca/2020/06/dark-basin-uncovering-a-massive-hack-for-hire-operation/">uncovers Dark Basin</a>, described in their words as a &ldquo;massive hack-for-hire operation.&rdquo;</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Michael McCune shares a look at <a href="https://notes.elmiko.dev/2020/05/22/kubernetes-autoscaler-capd.html">debugging the Kubernetes autoscaler using Cluster API and Docker</a>.</li>
+<li>Jean-Paul Smit takes a look at Pulumi in the context of using it with C# to deploy Azure API Management. Read <a href="https://www.jeanpaulsmit.com/2020/04/pulumi-deploy-apim/">his blog post here</a>.</li>
+<li>Stellios Williams shares <a href="https://www.funkycloudmedina.com/2020/06/how-to-download-a-private-github-repository-zip-via-api/">how to download a ZIP of a private GitHub repository via the GitHub API</a> (something he&rsquo;s doing inside a Lambda function as part of automatic deployments of his Hugo-based site).</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Patrick Kremer shares a workaround for <a href="http://www.patrickkremer.com/per-zone-dns-resolution-for-homelabs/">DNS resolution for home labs when using corporate VPNs</a>.</li>
+<li>Here&rsquo;s <a href="https://kushaldas.in/posts/a-few-new-generation-command-line-tools.html">a short list of &ldquo;new generation&rdquo; command-line tools</a>. I&rsquo;ve adopted a couple of these myself (<code>ripgrep</code> and <code>bat</code>).</li>
+<li>Allan Odgaard (of TextMate fame) <a href="https://sigpipe.macromates.com/2020/macos-catalina-slow-by-design/">slams macOS &ldquo;Catalina&rdquo;</a> on the basis of performance.</li>
+<li>Want to run Linux on your Surface Pro 4? <a href="https://steinwachs.net/blog/dualboot-windows-fedora-surfacepro4/">You&rsquo;re in luck.</a></li>
+<li>Nick Gerace <a href="https://nickgerace.dev/post/why-i-use-fedora">shares why he uses Fedora</a>.</li>
+<li>Chip Zoller shares his <a href="https://neonmirrors.net/post/2020-05/cicd-for-hugo-on-aws/">GitHub Actions-based CI/CD for Hugo on AWS</a>. Building a pipeline for automatic deploys of this site is something I&rsquo;ve been talking about doing for a while, so Chip&rsquo;s article was useful. I also learned about <a href="https://github.com/peak/s5cmd">the <code>s5cmd</code> utility</a>, though for now I think I&rsquo;ll stick with <a href="https://github.com/bep/s3deploy"><code>s3deploy</code></a>.</li>
+<li>If you&rsquo;re thinking of renaming the &ldquo;master&rdquo; branch of your Git repositories to something else, Scott Hanselman <a href="https://www.hanselman.com/blog/EasilyRenameYourGitDefaultBranchFromMasterToMain.aspx">shows</a> how easy it can be.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Cormac Hogan takes a look at <a href="https://cormachogan.com/2020/06/16/static-persistent-volumes-and-cloud-native-storage/">using &ldquo;manually&rdquo; or &ldquo;statically&rdquo; configured Persistent Volumes with Cloud Native Storage (CNS) on vSphere</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>JJ Asghar walks through <a href="https://jjasghar.github.io/blog/2020/05/26/fedora-coreos-working-on-virtualbox/">running Fedora CoreOS on VirtualBox</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Kyle Galbraith talks about <a href="https://blog.kylegalbraith.com/2019/04/11/technical-skills-are-great-but-communication-and-curiosity-are-better/">how communication and curiosity can matter more than technical skills</a> when it comes to a successful career in technology.</li>
+</ul>
+<p>OK, that&rsquo;s all for now. As always, I&rsquo;d love to hear from you, so feel free to find <a href="https://twitter.com/scott_lowe">me on Twitter</a> and let me know what you think of these posts. If you have suggestions for improvement, I&rsquo;d love to hear those, too!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/pulumi">Pulumi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualbox">VirtualBox</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/06/16/using-kubectl-via-an-ssh-tunnel/">Using kubectl via an SSH Tunnel</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/06/23/fixes-for-some-vagrant-issues-on-fedora/">Fixes for Some Vagrant Issues on Fedora</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f19%2ftechnology-short-take-128%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f19%2ftechnology-short-take-128%2f&text=Technology%20Short%20Take%20128" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f06%2f19%2ftechnology-short-take-128%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/06/21/technology-short-take-115/">Technology Short Take 115</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2018/11/09/technology-short-take-106/">Technology Short Take 106</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2018/02/24/technology-short-take-95/">Technology Short Take 95</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

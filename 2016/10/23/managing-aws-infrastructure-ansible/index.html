@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Managing AWS Infrastructure with Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Managing AWS Infrastructure with Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Managing AWS Infrastructure with Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/10/23/managing-aws-infrastructure-ansible/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Managing AWS Infrastructure with Ansible</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1538 words (estimated 8 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to discuss some concepts behind managing your <a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a> infrastructure using <a href="https://www.ansible.com/">Ansible</a>. Ansible is a very popular tool for configuring operating system instances and software; using the concepts and examples provided in this post would allow you to expand your use of Ansible to include&mdash;when using AWS&mdash;the creation and deletion of the operating system instances themselves, as well as related infrastructure components (like security groups or other services).</p>
+<h2 id="preface">Preface</h2>
+<p>Before I continue, I&rsquo;d like to first discuss the &ldquo;fit&rdquo; of using Ansible for this particular purpose. Ansible doesn&rsquo;t store the state of managed systems. Perhaps this is due to the agentless architecture; I don&rsquo;t know. What that means in this particular use case is that you must take other steps to store information you&rsquo;ll absolutely need like instance IDs, security group IDs, and the like because Ansible itself doesn&rsquo;t. In my mind, this makes Ansible a less-than-ideal tool for this particular use case. That doesn&rsquo;t mean Ansible isn&rsquo;t a good tool; it just means that Ansible may not be the <em>best</em> tool for this particular purpose. (Think of it like this: Yes, you can sometimes unscrew something using a knife, but a screwdriver is typically much more efficient.)</p>
+<p>With that caveat out of the way, let&rsquo;s dig in.</p>
+<h2 id="required-components">Required Components</h2>
+<p>To make this work, you&rsquo;ll need the following items installed on whatever system will execute the Ansible playbooks:</p>
+<ul>
+<li>Ansible itself (obviously; I tested using Ansible 2.1.1.0)</li>
+<li>The <code>ec2.py</code> dynamic inventory script, along with the accompanying <code>ec2.ini</code> configuration file; both are available <a href="https://github.com/ansible/ansible/tree/devel/contrib/inventory">here on GitHub</a> as of the writing of this blog post)</li>
+<li>The &ldquo;boto&rdquo; Python library, which you can easily install via <code>pip</code> (if you are using a virtualenv for Ansible <a href="/2016/04/30/installing-ansible-in-virtualenv/">like me</a>, be sure to install into the same virtualenv as Ansible)</li>
+</ul>
+<h2 id="configuring-the-components">Configuring the Components</h2>
+<p>The system on which I did my testing also had <a href="https://aws.amazon.com/cli/">the AWS CLI</a> installed, and was able to use the information there for AWS authentication. Some of the blog posts I read indicated a need to configure the &ldquo;boto&rdquo; library; I can&rsquo;t confirm personally whether that is necessary or not. I <em>can</em> confirm that if the AWS CLI is working, then the &ldquo;boto&rdquo; library should work without any additional work.</p>
+<p>As for Ansible itself, I&rsquo;m a fan of using per-project Ansible configuration files, so I placed an <code>ansible.cfg</code> in the directory where my playbooks resided. This configuration file did only one thing: it set the location of the Ansible inventory. I did this for two reasons:</p>
+<ol>
+<li>
+<p>It makes running the various <code>ansible-*</code> commands easier because you don&rsquo;t have to specify the <code>-i</code> parameter (usually; you&rsquo;ll see an exception later in this article).</p>
+</li>
+<li>
+<p>It allowed me to address the issue of running Ansible in a Python virtualenv. If you do run Ansible in a Python virtualenv, then the default Python interpreter (which defaults to <code>/usr/bin/python</code> on my OS X system) won&rsquo;t have Ansible or the &ldquo;boto&rdquo; library installed (because these are in a virtualenv). However, a very quick and simply change to the inventory file fixes this:</p>
+<pre><code> [local]
+ localhost ansible_python_interpreter=python
+</code></pre>
+<p>Making this simple change means that Ansible picks up whatever Python interpreter is in the path, thus picking up the Python from the virtualenv and working as expected. Nifty trick, right? (Not mine&mdash;I got it from <a href="https://www.zigg.com/2014/using-virtualenv-python-local-ansible.html">here</a>.)</p>
+</li>
+</ol>
+<p>The other piece of configuration required is configuring the <code>ec2.py</code> dynamic inventory script. This script has a configuration file, <code>ec2.ini</code>, that it expects in the same directory. For me, I only needed to change the <code>regions=</code> line in this file to point to &ldquo;us-west-2&rdquo; (where I run my infrastructure). Obviously, configure this as appropriate for your use of AWS.</p>
+<p>Once the configuration is done, you&rsquo;re ready to proceed with using the playbooks.</p>
+<h2 id="provisioning-aws-infrastructure">Provisioning AWS Infrastructure</h2>
+<p>Provisioning (creating) AWS infrastructure is pretty straightforward. Here&rsquo;s a sample Ansible playbook (some values have been changed to protect the innocent):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">hosts</span>: <span style="color:#e6db74">&#34;localhost&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">connection</span>: <span style="color:#e6db74">&#34;local&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">gather_facts</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">vars</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ami</span>: <span style="color:#e6db74">&#34;&lt;insert AMI value here&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;&lt;insert AWS region name&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#e6db74">&#34;t2.micro&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">sshkey</span>: <span style="color:#e6db74">&#34;&lt;insert keypair name&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">vpcid</span>: <span style="color:#e6db74">&#34;&lt;insert VPC ID&gt;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">tasks</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;Create a new security group&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ec2_group</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;ansible-sec-group&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">description</span>: <span style="color:#e6db74">&#34;New SG for Ansible-created instances&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;{{ region }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">vpc_id</span>: <span style="color:#e6db74">&#34;{{ vpcid }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">rules</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">proto</span>: <span style="color:#e6db74">&#34;tcp&#34;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">from_port</span>: <span style="color:#ae81ff">22</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">to_port</span>: <span style="color:#ae81ff">22</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">cidr_ip</span>: <span style="color:#e6db74">&#34;0.0.0.0/0&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">rules_egress</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">proto</span>: <span style="color:#e6db74">&#34;all&#34;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">cidr_ip</span>: <span style="color:#e6db74">&#34;0.0.0.0/0&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">register</span>: <span style="color:#ae81ff">secgrp</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;Provision an EC2 instance&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ec2</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">key_name</span>: <span style="color:#e6db74">&#34;{{ sshkey }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">group_id</span>: <span style="color:#e6db74">&#34;{{ secgrp.group_id }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">instance_type</span>: <span style="color:#e6db74">&#34;{{ type }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">ec2_region</span>: <span style="color:#e6db74">&#34;{{ region }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">image</span>: <span style="color:#e6db74">&#34;{{ ami }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">wait</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">count</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">instance_tags</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">tool</span>: <span style="color:#e6db74">&#34;ansible&#34;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">env</span>: <span style="color:#e6db74">&#34;test&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">register</span>: <span style="color:#ae81ff">ec2instance</span>
+</span></span></code></pre></div><p>This playbook is, hopefully, pretty straightforward, but let&rsquo;s walk through it nevertheless:</p>
+<ul>
+<li>The Ansible EC2 module works against the local system running Ansible, so first we set that at the top of the YAML file.</li>
+<li>Next, we define some variables that are used later. You&rsquo;ll want to customize these for your particular usage of AWS.</li>
+<li>Next, we create a new security group. This will hold our instances. We register the result of that operation into a variable named <code>secgrp</code>, which is used later in the playbook. (Note that you could use this same approach to create a new VPC and then create the security group in that VPC.)</li>
+<li>Finally, we provision an EC2 instance using the specified AMI, instance type, region, SSH keypair, and security group (which references the security group created earlier). We also assign some AWS tags; these are <em>essential</em> for working with resources on AWS. Finally, although we don&rsquo;t use it in this playbook, we register the result of this task into a variable named <code>ec2instance</code>.</li>
+</ul>
+<p>To run this playbook, you&rsquo;d switch into the directory where the playbook is stored and simply run <code>ansible-playbook create.yml</code>. Boom! Within a couple of minutes you&rsquo;ll have a new instance running on AWS.</p>
+<p>Nice&mdash;but what about tearing down infrastructure? That&rsquo;s the more challenging part, in my opinion.</p>
+<h2 id="destroying-aws-infrastructure">Destroying AWS Infrastructure</h2>
+<p>Lots and lots of articles showed examples of how to create (provision) AWS infrastructure elements using Ansible; not very many showed how to <em>destroy</em> that same infrastructure with Ansible. I consider the ability to (relatively) easy tear down infrastructure to be a core part of managing infrastructure with AWS, and therefore wanted to be sure to include that in this article.</p>
+<p>To tear down infrastructure, you&rsquo;ll need to leverage the <code>ec2.py</code> dynamic inventory script. This will query the AWS APIs to retrieve information about the instances, and Ansible can then leverage this to delete instances. Here&rsquo;s a playbook that tears down the infrastructure created using the playbook from the previous section:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">hosts</span>: <span style="color:#e6db74">&#34;tag_tool_ansible&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">connection</span>: <span style="color:#e6db74">&#34;local&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">gather_facts</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">vars</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;us-west-2&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">tasks</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;Remove tagged EC2 instances from security group&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ec2</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">state</span>: <span style="color:#e6db74">&#34;running&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;{{ region }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">instance_ids</span>: <span style="color:#e6db74">&#34;{{ ec2_id }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">group_id</span>: <span style="color:#e6db74">&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">delegate_to</span>: <span style="color:#e6db74">&#34;localhost&#34;</span>
+</span></span><span style="display:flex;"><span>      
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;Terminate tagged EC2 instances&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ec2</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">state</span>: <span style="color:#e6db74">&#34;absent&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;{{ region }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">instance_ids</span>: <span style="color:#e6db74">&#34;{{ ec2_id }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">wait</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">delegate_to</span>: <span style="color:#e6db74">&#34;localhost&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">hosts</span>: <span style="color:#e6db74">&#34;localhost&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">connection</span>: <span style="color:#e6db74">&#34;local&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">gather_facts</span>: <span style="color:#66d9ef">false</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">vars</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;us-west-2&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">tasks</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;Remove security group&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">ec2_group</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;ansible-sec-group&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">description</span>: <span style="color:#e6db74">&#34;New SG for Ansible-created instances&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">region</span>: <span style="color:#e6db74">&#34;{{ region }}&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">state</span>: <span style="color:#e6db74">&#34;absent&#34;</span>
+</span></span></code></pre></div><p>This playbook is a bit more complex than the previous one, so let&rsquo;s break it down a bit:</p>
+<ul>
+<li>This playbook has two plays: one that is configured to run against a set of hosts called &ldquo;tag_tool_ansible&rdquo;, and another that is set to run against the local system. Ultimately, all plays will run on the local system via the use of the <code>delegate_to</code> command.</li>
+<li>The first play has two tasks. The first task takes instances out of the security group we created; this is necessary in order to remove the group (otherwise the task removing the group fails because there are still instances that are part of the group). This play uses the membership of the &ldquo;tag_tool_ansible&rdquo; group from the dynamic inventory script to enumerate the list of instances, and then executes the task locally via the <code>delegate_to</code> command. The result is a local task that iterates against all the instances that are tagged with the tag &ldquo;tool&rdquo; that has a value of &ldquo;ansible&rdquo;. (Astute readers will note that this tag was the tag assigned by the earlier playbook. See the connection now?)</li>
+<li>The second play removes the security group. Now that all the instances have been removed from the security group (and then terminated), we can remove the group itself.</li>
+</ul>
+<p>To run this playbook, we have to specify the inventory, so the command looks like this:</p>
+<pre><code>ansible-playbook -i ./ec2.py delete.yml
+</code></pre>
+<p>When the playbook executes, it will run the dynamic inventory script to generate an inventory. The inventory includes a group that corresponds to each tag/value assigned to the instances, generated as &ldquo;tag_name_value&rdquo; (i.e., like &ldquo;tag_tool_ansible&rdquo; or &ldquo;tag_env_test&rdquo;). You can use this group as the target for a play (as we did in the playbook), and since the tasks need to run locally on the system where the playbook is executing, use <code>delegate_to</code> to assign the task to the local system.</p>
+<p>So there you have it&mdash;example Ansible playbooks to not only create infrastructure on AWS, but also to tear it down.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>To make this easier to test out yourself, I&rsquo;ve made all the playbooks and such discussed in this article available via <a href="https://github.com/scottslowe/learning-tools">my &ldquo;learning-tools&rdquo; GitHub repository</a>. Just have a look in the <code>ansible-aws</code> directory.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/10/20/vagrant-photon-bug-workaround/">Vagrant-Photon OS Bug and Workaround</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/11/09/thinking-out-loud-future-of-kubernetes/">Thinking Out Loud: The Future of Kubernetes</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f23%2fmanaging-aws-infrastructure-ansible%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f23%2fmanaging-aws-infrastructure-ansible%2f&text=Managing%20AWS%20Infrastructure%20with%20Ansible" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f23%2fmanaging-aws-infrastructure-ansible%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/10/05/triple-provider-vagrant-environment/">A Triple-Provider Vagrant Environment</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2016/09/23/installing-specific-version-docker-engine/">Installing a Specific Version of Docker Engine</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2016/09/15/using-vagrant-with-aws/">Using Vagrant with AWS</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

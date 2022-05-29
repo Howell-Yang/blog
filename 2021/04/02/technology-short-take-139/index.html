@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 139 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 139 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 139 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/04/02/technology-short-take-139/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 139</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;807 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #139! This Technology Short Take is a bit heavy on cloud, OS, and programming topics, but there should be enough other interesting links to be useful to plenty of folks. (At least, I hope that&rsquo;s the case!) Now, let&rsquo;s get on to the content!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Tony Mackay has a tutorial showing <a href="https://graspingtech.com/wordpress-docker-traefik-rate-limit/">how to use Traefik to rate-limit requests to a WordPress instance</a>.</li>
+<li>Ali Al Idrees has <a href="https://yallavirtual.com/2020/11/23/tanzu-kubernetes-cluster-ingress-with-nsx-alb/">a post</a> on using NSX ALB (formerly Avi Networks) with Kubernetes clusters in a vSphere with Tanzu environment.</li>
+<li><a href="https://blog.engyak.net/2021/03/unearned-uptime-present-and-future.html">This post</a> provides some examples of shared control planes (and thus shared failure domains) within networking.</li>
+<li>In <a href="https://blog.cloudflare.com/conntrack-turns-a-blind-eye-to-dropped-syns/">this post</a>, Jakub Sitnicki digs way deep into the Linux kernel to uncover the answer to the question, &ldquo;Why are there no entries in the conntrack table for SYN packets dropped by the firewall?&rdquo; Get ready to get nerdy!</li>
+<li><a href="https://containerjournal.com/topics/container-networking/isovalent-container-networking-in-2021-using-ebpf/">This article</a> on eBPF and Isovalent (the company behind the Cilium CNI plugin for Kubernetes) has some statements with which I agree, and some that don&rsquo;t make sense to me. For example, I agree with the statement that the &ldquo;impact eBPF will have on networking, security and observability will be widespread&rdquo;. However, I don&rsquo;t understand how eBPF will &ldquo;reduce reliance on legacy network overlays&rdquo;. I could see how eBPF will <em>change</em> how network overlays are implemented, sure, but reduce the reliance on network overlays? I&rsquo;m not sure about that. If you have strong feelings about this, hit <a href="https://twitter.com/scott_lowe">me on Twitter</a> and let&rsquo;s discuss.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Dominic Hopton shares a sordid tale of getting <a href="https://www.codevoid.net/ruminations/2020/09/27/three-displays-three-times-the-fun.html">three monitors to work with a 13&quot; MacBook Pro</a>.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Linux malware is <a href="https://www.bleepingcomputer.com/news/security/linux-malware-uses-open-source-tool-to-evade-detection/">getting more sophisticated</a>.</li>
+<li>A <a href="https://9to5mac.com/2021/03/11/browser-based-attack-affects-intel-m1-macs/">browser-based side-channel attack</a>? Even worse, this isn&rsquo;t just limited to Intel chips, but may also affect ARM-based systems like Apple&rsquo;s M1 CPUs. Further, turning off JavaScript doesn&rsquo;t help. Ugh.</li>
+<li>Given the prevalence of VMware&rsquo;s ESXi hypervisor, I suppose it was only a matter of time before the bad guys really <a href="https://www.crowdstrike.com/blog/carbon-spider-sprite-spider-target-esxi-servers-with-ransomware/">started targeting it in a major way</a>. This time, they&rsquo;re exploiting a weakness that VMware can&rsquo;t patch: people.</li>
+<li>A while ago I chatted with the folks at Indeni about <a href="https://indeni.com/cloudrail/">Cloudrail</a>, a security solution for infrastructure-as-code environments.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Patrick Kremer <a href="https://www.patrickkremer.com/monitoring-vmware-cloud-on-aws-firewall-changes-with-vrealize-log-insight-cloud/">writes</a> about using vRealize Log Insight Cloud to monitor for firewall changes in a VMware Cloud on AWS environment.</li>
+<li><a href="https://popeyecli.io/">Aye aye, Popeye!</a></li>
+<li>Daniel Mangum&rsquo;s post on <a href="https://danielmangum.com/posts/crossplane-infrastructure-llvm/">Crossplane as the infrastructure LLVM</a> is (in my opinion) a great read, particularly so if you&rsquo;re interested in the intersection of Kubernetes and infrastructure as code.</li>
+<li>Here&rsquo;s a post on <a href="https://www.centinosystems.com/blog/containers/installing-and-configuring-containerd-as-a-kubernetes-container-runtime/">installing and configuring containerd as a Kubernetes container runtime</a>.</li>
+<li>If you&rsquo;re a DynamoDB user, check out this list of <a href="https://dynobase.dev/dynamodb-best-practices/">29 DynamoDB best practices</a> compiled by Rafal Wilinski.</li>
+<li>Marcin Cuber discusses <a href="https://itnext.io/amazon-eks-upgrade-journey-from-1-18-to-1-19-cca82de84333">process and considerations for upgrading EKS to version 1.19</a>.</li>
+<li>Need to list assets across multiple cloud providers? <a href="https://www.kitploit.com/2021/02/cloudlist-tool-for-listing-assets-from.html?m=1">Check out <code>cloudlist</code></a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li><a href="https://about.scarf.sh/post/announcing-scarf-gateway">This announcement of the Scarf Gateway</a> popped into my Twitter timeline recently, and after taking a look at how the Scarf Gateway is described I can see how this is an important addition to companies&rsquo; secure software supply chain efforts, especially in the beginning. Why in the beginning? Because that&rsquo;s when you&rsquo;re struggling to understand the dependencies of your software supply chain, and the Scarf Gateway provides that sort of visibility (as I understand it).</li>
+<li><a href="https://www.cyberciti.biz/hardware/how-to-protects-linux-and-unix-machines-from-accidental-shutdownsreboots-with-molly-guard/">This is handy</a>.</li>
+<li>Ben Kehoe shares <a href="https://ben11kehoe.medium.com/my-favorite-zoom-tips-c944961c0191">his favorite Zoom tips</a>.</li>
+<li>How about <a href="https://samuel.karp.dev/blog/2021/03/runj-a-new-oci-runtime-for-freebsd-jails/">an OCI runtime for FreeBSD Jails</a>?</li>
+<li><code>xh</code> appears to be an as-yet-incomplete reimplementation of HTTPie in Rust. Check out <a href="https://github.com/ducaale/xh">the GitHub repository</a>.</li>
+<li>Jan Grzegorowski <a href="https://www.grzegorowski.com/how-to-remap-single-mac-keyboard-key">shares how to remap a single Mac keyboard key</a> using <code>hidutil</code>.</li>
+<li>I just recently <a href="https://opensource.com/article/20/2/linux-sox">learned about <code>sox</code></a>, which I think of as the audio file equivalent of ImageMagick.</li>
+</ul>
+<h2 id="programming">Programming</h2>
+<ul>
+<li>A fair amount of this article was over my head, but I still enjoyed reading about <a href="https://tailscale.com/blog/netaddr-new-ip-type-for-go/">how Tailscale built a new IP address type for Go</a>.</li>
+<li>Francisco Trindade launches a series of posts that tackle the prevalent use of pull requests (PRs) in software development with the statement that <a href="https://medium.com/@franciscomt/pull-requests-considered-harmful-c3a10af8becd">PRs are considered harmful</a>.</li>
+<li>Here&rsquo;s a list of <a href="http://alanpryorjr.com/2019-03-09-git_tips/">10 advanced Git tips to help improve your developer workflow</a> (be aware this appears to be an HTTP-only site).</li>
+<li>Some of <a href="https://javascript.plainenglish.io/10-essential-github-repos-for-software-developers-6a42ebba279">these repositories</a> may be worth checking out.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li><a href="https://www.enterprisestorageforum.com/cloud/amazon-web-services-vs-google-cloud-cloud-storage-comparison/">This post</a> from Enterprise Storage Forum attempts to provide a comparison of cloud storage between AWS and Google Cloud. Frankly, though, I found the article to be a bit unfocused, also discussing other cloud services instead of really concentrating on being the best comparison of cloud storage services. Maybe that&rsquo;s just me, though.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Mike Foley <a href="https://core.vmware.com/blog/confidential-containers-vsphere-pods-amd">shares details</a> on a new feature in vSphere 7 Update 2 that leverages AMD-specific functionality to create what are called &ldquo;Confidential Containers.&rdquo;</li>
+</ul>
+<p>Happy reading and learning! If you have any questions, comments, suggestions for improvement, or other feedback, I&rsquo;m always happy to hear from you. Contact <a href="https://twitter.com/scott_lowe">me on Twitter</a> and let&rsquo;s chat!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/go">Go</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/04/01/using-wireguard-on-macos/">Using WireGuard on macOS</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/04/13/making-firefox-on-linux-use-private-browsing-by-default/">Making Firefox on Linux use Private Browsing by Default</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f04%2f02%2ftechnology-short-take-139%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f04%2f02%2ftechnology-short-take-139%2f&text=Technology%20Short%20Take%20139" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f04%2f02%2ftechnology-short-take-139%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2020/11/06/technology-short-take-133/">Technology Short Take 133</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: How News UK Centralized Cloud Governance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: How News UK Centralized Cloud Governance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: How News UK Centralized Cloud Governance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/11/30/centralized-governance-policy-mgmt/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: How News UK Centralized Cloud Governance</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;870 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of the AWS re:Invent session titled &ldquo;How News UK Centralized Cloud Governance Using Policy Management&rdquo; (DEV306). The speakers for the session are Joe Kinsella from CloudHealth Technologies and Iain Caldwell of News UK/News Corp EMEA.</p>
+<p>Kinsella kicks things off by indicating that the session will attempt to tackle the burning question: how does one maintain the agility that brought you to the cloud in the beginning, but enforce the proper level of governance and control? Kinsella and Caldwell then spend a few minutes on introductions before diving into the content of the session.</p>
+<p>Caldwell starts off the session content with a review of News Corp&rsquo;s use of AWS. News UK is currently running 69% of their workloads in the public cloud, with an aim to hit 75% by July 2017. Before they started their journey to the public cloud, News Corp ran a &ldquo;global application assessment&rdquo;&mdash;and Caldwell believes that this was <em>critical</em> to the success News Corp/News UK has seen so far. News is using a wide variety of AWS services: EC2, S3, VPC, Direct Connect, Route 53, CloudFront, CloudFormation, CloudWatch, RDS, WorkSpaces, Storage Gateway.</p>
+<p>When prompted by Kinsella, Caldwell indicates that EC2 instances were the biggest challenge for governance.</p>
+<p>Kinsella now takes a moment to define governance, particuarly in terms of controlling cost, security, and compliance. When asked about governance, people are often ambivalent; when faced with concrete examples of what governance addresses, their stance often changes. However, they are concerned about governance not affecting the agility they&rsquo;ve gained from moving to the cloud. Kinsella says that governance is a balancing act that must strike the delicate balance between agility and control/protection.</p>
+<p>Governance in the cloud is, according to Kinsella, much more difficult. The speed of changes is three, sometimes four, orders of magnitude faster, and this makes governance quite challenging. Combined with powerful cloud-based servies and features, decentralized management, disparate management tools, and the need to integrate multiple products and sources of data, and cloud governance becomes very difficult, according to Kinsella. Caldwell shared that cost was a major driver for more effective governance for his organization.</p>
+<p>So what are some common cloud governance issues?</p>
+<ul>
+<li>No tagging</li>
+<li>Reluctance to invest in Reserved Instances</li>
+<li>Reserved Instances left underutilized</li>
+<li>No right-sizing</li>
+<li>Elastic Load Balancing left unused</li>
+<li>Elastic Block Storage volumes left unattached</li>
+<li>RDS instances with no connections</li>
+<li>Leaving unused instances running 24x7</li>
+</ul>
+<p>Organizationally, the ownership of cloud infrastructure is often handled by various lines of businesses, and IT is increasingly relegated to &ldquo;influencer&rdquo; instead of &ldquo;owner&rdquo;. Caldwell echoes that this was definitely an issue for News Corp/News UK.</p>
+<p>So where does an organization start when working on governance?</p>
+<ol>
+<li>Establish a strategy and obtain stakeholder buy-in.</li>
+<li>Evaluate and implement tool strategy.</li>
+<li>Identify deliverables by stakeholder.</li>
+<li>Implement, rinse, and repeat.</li>
+</ol>
+<p>With regards to establishing a strategy, it&rsquo;s again a matter of a balancing act, and making decisions along different axes. For example, when it comes to cost an organization might be more willing to endure risk, but around security the same organization could be more risk-averse. It&rsquo;s also important to make sure that you have the right people to support your strategy.</p>
+<p>The &ldquo;cloud steward&rdquo; is an evolving role responsible for ongoing cloud governance and optimization. Caldwell shares that this sort of role is something that News Corp/News UK is advocating within their own organization.</p>
+<p>With regards to tools, Kinsella and Caldwell share a few different tools that News Corp/News UK are using:</p>
+<ul>
+<li>AWSGO - Enforcing instance shutdowns, snooze/suspend, and start</li>
+<li>Scripts to delete volumes that have been unattached for greater than 5 days</li>
+<li>CloudHealth (Kinsella&rsquo;s company)</li>
+<li>Consigliere</li>
+<li>New Relic (APM)</li>
+<li>Rundeck</li>
+<li>Puppet</li>
+<li>Slack integration</li>
+</ul>
+<p>It&rsquo;s important to note, as pointed out by Caldwell, that this process of governance is a <em>journey,</em> not a <em>destination.</em> In other words, this is an ongoing thing, something that has to be done on a regular basis. It&rsquo;s not a one-time task. This is what&rsquo;s encapsulated in step #4 (&ldquo;Implement, rinse, and repeat&rdquo;).</p>
+<p>At this point, Caldwell shares a few things that News Corp/News UK did during their governance/optimization efforts:</p>
+<ul>
+<li>Right-sized their instances</li>
+<li>Invested in Reserved Instances</li>
+<li>Decommissioned instances that they didn&rsquo;t need</li>
+<li>Implemented automation wherever possible</li>
+<li>Use the AWS Trusted Advisor service</li>
+</ul>
+<p>Kinsella shares that the first 25-30% of cost savings can come relatively easily, but the next 20-25% can be more challenging.</p>
+<p>With regards to security, Caldwell shared some ongoing tasks that News UK/News Corp has adopted:</p>
+<ul>
+<li>Regular reviews of network ACLs</li>
+<li>Regular review of security groups</li>
+<li>Audit and review of IAM roles</li>
+<li>Inactive users removed</li>
+</ul>
+<p>What are some key metrics to determine if your efforts have been successful?</p>
+<ol>
+<li>Adherence to architectural standards/controls</li>
+<li>Increased efficiency/lifecycle management, TCO, ROI</li>
+<li>Adherence to asset configuration standards</li>
+<li>Compliance to security guidelines</li>
+<li>Rate of adoption</li>
+</ol>
+<p>Personally, I&rsquo;m not sure that #5 is a meaningful metric in the absence of other metrics; for example, simply adopting new services without <em>also</em> showing that the new services are cost-effective is not very helpful.</p>
+<p>Five best practices that Kinsella shares with the audience:</p>
+<ol>
+<li>Empower a centralized owner.</li>
+<li>Don&rsquo;t give up on agility.</li>
+<li>Create partnerships with strategic vendors.</li>
+<li>Establish high-value policies.</li>
+<li>Automate, automate, automate!</li>
+</ol>
+<p>At this point, Kinsella and Caldwell wrap up and session and open up for audience questions.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2016">reInvent2016</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/11/30/automating-cloud-mgmt-deployment/">Liveblog: Automating Cloud Mgmt and Deployment</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/11/30/intro-managed-db-services/">Liveblog: Introduction to Managed Database Services on AWS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fcentralized-governance-policy-mgmt%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fcentralized-governance-policy-mgmt%2f&text=Liveblog%3a%20How%20News%20UK%20Centralized%20Cloud%20Governance" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f30%2fcentralized-governance-policy-mgmt%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/11/30/automating-cloud-mgmt-deployment/">Liveblog: Automating Cloud Mgmt and Deployment</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/11/30/aws-reinvent-keynote-andy-jassy/">AWS re:Invent 2016 Keynote with Andy Jassy</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2016/11/29/thoughts-aws-reinvent-day-1/">Thoughts on AWS re:Invent Day 1</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>DATS002: Big Data Meets High Performance Computing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="DATS002: Big Data Meets High Performance Computing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="DATS002: Big Data Meets High Performance Computing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/09/12/dats002-big-data-meets-high-performance-computing/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">DATS002: Big Data Meets High Performance Computing</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;755 words (estimated 4 minutes to read)</span>
+  <p>This is session DATS002, titled &ldquo;Big Data Meets High Performance Computing.&rdquo; The speakers are John Hengeveld from Intel and Micahel Franklin from UC Berkeley. The title sounds like this might be a marketing session, but I&rsquo;m hoping that this material will be substantial instead of just fluff.</p>
+<p>Hengeveld starts the session by reminding attendees that Big Data is really about the insights that are gained from the data. Big Data isn&rsquo;t about the data, it&rsquo;s about the insight and understanding. In this context, discussions of Big Data that talk about millions of Facebook posts, or data posted to Google or Twitter, or clickstream data, often miss the opportunity to discuss the insight that can be gained from the data. Hengeveld describes Big Data as an oilfield&mdash;massive, deep, full of &ldquo;rich&rdquo; information. Big data technologies are the &ldquo;mining&rdquo; technologies that allow you to extract value from that oilfield.</p>
+<p>Continuing the oilfield analogy, you need something that can work with the data to produce the insight&mdash;something that can refine insight from the raw data. This is HPC&mdash;high-performance computing. So what kinds of insights can HPC mine from Big Data? Better medical therapies, improved security through facial recognition, analyzing routes through traffic based on cell phone density, and urban planning and simulation are four examples that Hengeveld shares in the session.</p>
+<p>At this point the presentation shifts to Professor Franklin from UC Berkeley, who works at the AMP Lab and is doing some Big Data research. Franklin describes &ldquo;AMP&rdquo; as standing for &ldquo;Algorithms, Machines, &amp; People&rdquo;&mdash;meaning that all three have value in extracting value from Big Data. AMP was launched in February 2011 and is funded by a consortium of organizations, including Intel (hence the connection to IDF). All of the software that AMP is generating is released under the BSD license.</p>
+<p>Franklin takes a moment to point out that much of the data that comprises Big Data is generated from online activities, but an even greater amount of data comes from tracking online activities. This could be from systems that track the user experience, logs from systems that support the online activities, health/utilization reports from the underlying infrastructure, etc.</p>
+<p>What AMP is building is called BDAS, which stands for Berkeley Data Analysis System. In addition to compute resources, BDAS is also designed to leverage people (crowdsourcing) and data collectors such as public data sources. The goals of BDAS are threefold: 1) to effectively manage cluster resources; 2) efficiently extract value out of big data; and 3) continuously optimize cost, time, and answer quality. In order to support these initiatives, AMP has pushed data quality and answer quality attributes deep into the system. The BDAS components that have been released so far includes Mesos (the cluster resource management layer); Spark (an alternative to Hadoop that is targeted at interactive and iterative workloads); and Shark (a port of Hive from Hadoop to Shark; completely compatible with existing Hive queries). Mesos is under the governance of the Apache Foundation; the other projects are available on Github (Shark is <a href="https://github.com/amplab/shark">here</a>; Spark is <a href="https://github.com/mesos/spark">here</a>). These are licensed with the BSD license, as mentioned earlier.</p>
+<p>Franklin next goes over an application AMP developed called Carat. Carat uses crowdsourced data in conjunction with AWS and Spark to do analysis of applications and battery usage. This helps determine correlations between battery life and application usage. Free iOS and Android apps are available to help contribute to Carat (and gain information from Carat, such as which applications drain your battery most).</p>
+<p>At this point, Hengeveld takes the platform again to wrap up the session. He reiterates the need for new big data software stacks (like Spark and Shark) to keep up with growing data volume, velocity, and variety (the &ldquo;three V&rsquo;s of Big Data&rdquo;). The discussion then shifts to a review of the technologies and initiatives that Intel is developing to help in the Big Data and HPC (and Big Data+HPC together). One of the areas that Intel is working on is fixing &ldquo;1960&rsquo;s era&rdquo; storage hierarchies that simply don&rsquo;t support Big Data paradigms.  The new approach is object-based storage; Hengeveld uses Lustre as an example. Another area of development is interconnect technology; so Intel is working to improve effective bandwidth by lowering latency with Intel True Scale (formerly Qlogic) technologies. Finally, Hengeveld believes that the Intel Many Integrated Core (MIC) architecture, now officially known as Xeon Phi, will really help with processing highly parallel data structures.</p>
+<p>At this point, Hengeveld wraps up with a call to action for developers and opens the floor to questions.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2012">IDF2012</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/09/11/clds001-odca-and-usage-models-for-cloud-computing/">CLDS001: ODCA and Usage Models for Cloud Computing</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/09/12/clds006-exploring-new-xeon-e5-optimizations-for-10-gb-ethernet/">CLDS006: Exploring New Xeon E5 Optimizations for 10 Gb Ethernet</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fdats002-big-data-meets-high-performance-computing%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fdats002-big-data-meets-high-performance-computing%2f&text=DATS002%3a%20Big%20Data%20Meets%20High%20Performance%20Computing" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f12%2fdats002-big-data-meets-high-performance-computing%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/09/11/clds001-odca-and-usage-models-for-cloud-computing/">CLDS001: ODCA and Usage Models for Cloud Computing</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/09/11/coms002-next-generation-cloud-infrastructure-with-data-plane-virtualization/">COMS002: Next Generation Cloud Infrastructure with Data Plane Virtualization</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/09/11/spcs001-intel-next-generation-haswell-microarchitecture/">SPCS001: Intel Next-Generation Haswell Microarchitecture</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

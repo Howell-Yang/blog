@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 131 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 131 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 131 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/10/02/technology-short-take-131/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 131</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;787 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #131! I&rsquo;m back with another collection of articles on various data center technologies. This time around the content is a tad heavy on the security side, but I&rsquo;ve still managed to pull in articles on networking, cloud computing, applications, and some programming-related content. Here&rsquo;s hoping you find something useful here!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li><a href="https://arstechnica.com/gadgets/2020/08/a-chrome-feature-is-creating-enormous-load-on-global-root-dns-servers/">This recent Ars Technica article</a> points out that a feature in Chromium&mdash;the open source project leveraged by Chrome and Edge, among others&mdash;is having a significant impact on root DNS traffic. More technical details can be found in <a href="https://blog.apnic.net/2020/08/21/chromiums-impact-on-root-dns-traffic/">an associated APNIC blog post</a>.</li>
+<li>Here&rsquo;s <a href="https://openservicemesh.io/blog/introducing-open-service-mesh/">a few details</a> around Open Service Mesh.</li>
+<li>Quentin Machu outlines a series of problems his company experienced using Weave Net as the CNI for their Kubernetes clusters, as well as describes the migration process to a new CNI. <a href="https://blog.quentin-machu.fr/2020/08/07/our-breakup-with-weave-net/">His blog post</a> is well worth a read, IMO.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>I thought I&rsquo;d mentioned this already, but there&rsquo;s <a href="https://arstechnica.com/information-technology/2020/08/snapdragon-chip-flaws-put-1-billion-android-phones-at-risk-of-data-theft/">a flaw in a Snapdragon chip that puts greater than 1 billion Android phones at risk</a>, according to Ars Technica.</li>
+<li>Jed Salazar of Isovalent (the company behind Cilium) has <a href="https://cilium.io/blog/2020/06/29/cilium-kubernetes-cni-vulnerability/">a fairly detailed article</a> showing some examples of how Cilium protects against certain network attacks.</li>
+<li>Via <a href="https://blog.ipspace.net/2020/09/aws-security-example.html">this post by Ivan Pepelnjak</a>, I found <a href="https://github.com/nadeemnet/NetworkingInPubClouds/tree/master/security">Nadeem Lughmani&rsquo;s GitHub repository</a> aimed to helping to secure one&rsquo;s public cloud deployment.</li>
+<li>Here&rsquo;s <a href="https://securelist.com/an-overview-of-targeted-attacks-and-apts-on-linux/98440/">a review of targeted attacks and APTs (advanced persistent threats) on Linux</a>.</li>
+<li>A <em>significant</em> flaw in Microsoft&rsquo;s Netlogon protocol has been discovered, potentially exposing privilege escalation to Domain Admin. More details are found in <a href="https://www.secura.com/blog/zero-logon">this article</a>. The &ldquo;TL;DR&rdquo; is you should patch your domain controller &ldquo;as fast as possible.&rdquo;</li>
+<li>Here&rsquo;s <a href="https://fly.io/blog/sandboxing-and-workload-isolation/">a quick review of various sandboxing and workload isolation mechanisms</a> out there. The article doesn&rsquo;t go deep on any of them, but does provide some useful information and comparison of the various mechanisms.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Joaquín Menchaca shares a couple of posts related to EKS&mdash;first there&rsquo;s an article on <a href="https://medium.com/@Joachim8675309/create-an-amazon-vpc-for-eks-597481514bcc">creating an Amazon VPC for EKS</a>, followed by an article on <a href="https://medium.com/@Joachim8675309/create-eks-with-an-existing-vpc-8e31d95ccc5b">using <code>eksctl</code> to create an EKS cluster in said pre-created VPC</a>.</li>
+<li>Oh, and while we are on the topic of EKS&mdash;here&rsquo;s an article by AWS on <a href="https://aws.amazon.com/blogs/containers/using-gatekeeper-as-a-drop-in-pod-security-policy-replacement-in-amazon-eks/">using Gatekeeper as a drop-in replacement for Pod Security Policies</a>, and here&rsquo;s one (also by AWS) on <a href="https://aws.amazon.com/blogs/containers/amazon-eks-cluster-multi-zone-auto-scaling-groups/">using Auto Scaling Groups in multiple AZs in Kubernetes</a>.</li>
+<li>Colin Walters <a href="https://blog.verbum.org/2020/08/22/immutable-%e2%86%92-reprovisionable-anti-hysteresis/">lays out the arguments against the use of &ldquo;immutable.&rdquo;</a> I get the arguments, but in my humble opinion this is kind of like arguing that there are still servers in serverless.</li>
+<li>Ádám Sándor talks about <a href="https://blog.container-solutions.com/gitops-the-bad-and-the-ugly">some of the bad and the ugly with GitOps</a>. This is helpful because many folks only have glowing things to say about GitOps, which&mdash;surprise, surprise!&mdash;isn&rsquo;t perfect. (Hint: no technology is perfect.)</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I use <code>scp</code> all the time. Per <a href="https://fedoramagazine.org/scp-users-migration-guide-to-rsync/">this article</a>, I guess it&rsquo;s time to switch to <code>rsync</code>!</li>
+<li>If you&rsquo;re relatively new to the Linux/macOS/UNIX/*BSD side of the world, this post on <a href="https://linuxconfig.org/how-to-make-the-most-of-openssh">making the most of OpenSSH</a> may prove quite useful. Heck, even if you&rsquo;re not new to OpenSSH, you might pick up something new.</li>
+<li>Stepan Stipl writes about <a href="https://blog.doit-intl.com/kubernetes-how-to-automatically-detect-and-deal-with-deprecated-apis-f9a8fc23444c">detecting and dealing with deprecated APIs in Kubernetes</a>.</li>
+<li>Not sure how consensus algorithms work? No worries, start <a href="https://www.planetscale.com/blog/blog-series-consensus-algorithms-at-scale-1">here</a>.</li>
+<li><a href="https://www.cockroachlabs.com/blog/pebble-rocksdb-kv-store/">This</a> is an interesting article about why the CockroachDB team created Pebble, a KV store intended to replace RocksDB.</li>
+<li><a href="http://www-cs-students.stanford.edu/~blynn/gitmagic/">Here&rsquo;s a pretty comprehensive resource</a> for using <code>git</code>.</li>
+</ul>
+<h2 id="programming">Programming</h2>
+<ul>
+<li>Kyle Galbraith has two articles that I read over the last several weeks, <a href="https://dev.to/kylegalbraith/getting-familiar-with-the-awesome-repository-pattern--1ao3">one on the repository pattern</a> and <a href="https://blog.kylegalbraith.com/2018/06/29/how-to-use-the-excellent-adapter-pattern-and-why-you-should/">one on the adapter pattern</a>. Since I&rsquo;m still quite the programming newbie, both were a bit of a stretch of my knowledge, but I think I gleaned enough of the concepts to be able to use them later.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Laurens van Dujin <a href="https://vdr.one/vmware-vcenter-7-0-0c-high-cpu-usage/">brings to light</a> a bug in vCenter 7.0.0c that causes high CPU usage; turns out this bug is related to the new Workload Control Plane features in vSphere 7. You can disable the service to bring the CPU usage down, but there are caveats. Be sure to read Laurens&rsquo; post for details.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>This is <a href="https://daverog.com/2020/08/05/culture-eats-technology-for-breakfast/">a great post on some undesirable traits in company culture</a>. This post is part 5 in a series; I need to make some time to read some of the earlier posts as well.</li>
+<li>I enjoyed <a href="https://blog.danielteycheney.com/posts/what-problems-do-you-want/">this post</a> by Daniel Teycheney on being proactive and conscious (I might use the word &ldquo;deliberate&rdquo;) about solving problems in your career.</li>
+</ul>
+<p>OK, that&rsquo;s all for now. Hopefully you&rsquo;ve found something useful in this post. If so, I&rsquo;d love to hear about it&mdash;feel free to reach out to <a href="https://twitter.com/scott_lowe">me on Twitter</a>. Similarly, if you have suggestions for how I might improve the content of these types of posts, I&rsquo;m open to all constructive criticism. Thanks for reading!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dns">DNS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/android">Android</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cilium">Cilium</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/09/02/updating-aws-credentials-in-cluster-api/">Updating AWS Credentials in Cluster API</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/10/08/considerations-for-using-iac-with-cluster-api/">Considerations for using IaC with Cluster API</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f02%2ftechnology-short-take-131%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f02%2ftechnology-short-take-131%2f&text=Technology%20Short%20Take%20131" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f10%2f02%2ftechnology-short-take-131%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2019/01/11/technology-short-take-109/">Technology Short Take 109</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2018/01/05/technology-short-take-92/">Technology Short Take 92</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

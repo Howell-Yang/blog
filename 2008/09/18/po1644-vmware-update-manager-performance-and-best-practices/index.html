@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>PO1644: VMware Update Manager Performance and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="PO1644: VMware Update Manager Performance and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="PO1644: VMware Update Manager Performance and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/09/18/po1644-vmware-update-manager-performance-and-best-practices/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">PO1644: VMware Update Manager Performance and Best Practices</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1211 words (estimated 6 minutes to read)</span>
+  <p>This is PO1644, VMware Update Manager Performance and Best Practices. The presenter is John Liang.</p>
+<p>Covering some terminology before moving forward, the presenter covered the idea of a patch store (a location where patches are stored), baseline, compliance (the state of the host or VM when compared to the baseline; falls into compliant/not compliant/unknown/not applicable), scan (either VM scan or host scan; VM scans can be either online or offline); and remediation (the idea of applying patches to a host or VM).</p>
+<p>VUM has two deployment models. In the Internet-connected model, the VUM server knows and has connectivity to the VMware patch repository, and VUM will work closely with VirtualCenter. VUM can also be connected to multiple VC servers on multiple subnets.</p>
+<p>In an Internet-disconnected model, VUM has no direct connectivity to the Internet and is not able to download patches for deployment. In this model, a separate Update Manager Deployment Server (UMDS) instance can download the patches. The patches can be exported to physical media and transferred to the VUM server for use in scanning and remediation.</p>
+<p>Next, the presenter moved into a discussion of VUM sizing. VUM uses a separate database. A small deployment (20 hosts, 200 VMs, 4 scans/month for VMs, 2 scans/month for hosts) will generate 17MB/month in database storage. A medium deployment ups to 109MB/month, and a large deployment would generate 552MB/month in database storage.</p>
+<p>The presenter provided some guidelines for patch store disk space, but I couldn&rsquo;t capture that information before he proceeded to the next slide.</p>
+<p>There are a number of VUM deployment models. VUM can be deployed on the same server as VC and use the same database server as VC. However, for medium deployments, consider separating the VUM database to a different database server. Consider a medium deployment to be 500 VMs or 50 hosts. For even larger deployments, both VC and VUM should use separate servers and separate databases. The recommendation is to separate VUM from VC is there are more than 1000 VMs or 100 hosts. In addition, the VUM database should be on different disks than the VC database, use at least 2GB of RAM for caching (more is better), and finally to separate VC and VUM onto separate servers for maximal performance.</p>
+<p>Next, the presenter discussed some performance results for VUM. The host running VC and VUM and the database was a dual socket/dual core host with 16GB of RAM, managing VMware ESX hosts with 32GB of RAM. The results that were presented:</p>
+<ul>
+<li>
+<p>8 seconds to download the VM guest agent</p>
+</li>
+<li>
+<p>27 seconds to scan a powered-off Windows VM</p>
+</li>
+<li>
+<p>36 seconds to scan a powered-on Windows VM</p>
+</li>
+<li>
+<p>8 seconds to scan a Linux VM</p>
+</li>
+</ul>
+<p>Next, the presenter showed some results of resource consumption during these various tasks. Compared to other operations, scanning a powered-off Windows VM took the most CPU usage on the VUM server itself. For the same task, the VC server CPU was not tremendously impacted, VMware ESX CPU was not impacted, and disk and database performance was essentially equivalent across all operations. Again, these results are all for single-operation scenarios. Out of all the tasks, the most (relative) expensive operation was an offline Windows VM scan.</p>
+<p>VUM is limited to 5 VM remediation tasks per VMware ESX host (48 per VUM server), 6 powered-on Windows scans per VMware ESX host (42 per VUM server) , 10 powered-off Windows scans per VMware ESX host (10 per VUM server), 6 powered-on Linux scans per VMware ESX host (72 per VUM server), 1 VMware ESX scan per VMware ESX host (72 per VUM server), and 1 VMware remediation task per VMware ESX host (48 per VUM server). Some of these limits make sense; you can&rsquo;t scan more than one VMware ESX host per VMware ESX host, for example.</p>
+<p>The presenter gave a quick of wanting to scan 5000 Windows VM across 100 hosts, each host with 50 VMs and each scan taking 60 seconds? The answer: just shy of 105 minutes. I won&rsquo;t go into the math details.</p>
+<p>Entering maintenance mode can be blocked for the following reasons:</p>
+<ul>
+<li>
+<p>VMware HA is configured with only two hosts</p>
+</li>
+<li>
+<p>VMware DRS fails to VMotion a VM to another host</p>
+</li>
+<li>
+<p>VMware DRS is configured for manual mode instead of automatic mode</p>
+</li>
+<li>
+<p>Without VMware DRS, there is a VM powered on</p>
+</li>
+</ul>
+<p>To correct these problems, use VMware DRS and configure it to use automatic mode, and use more than 2 hosts in a cluster.</p>
+<p>It&rsquo;s important to remember that the guest agent is single-threaded, and the Shavlik scan and remediation are also single-threaded. Using multiple vCPUs won&rsquo;t necessary help with guest OS performance with regards to patching.</p>
+<p>What is the impact of patching on guest memory? VUM will create virtual CD-ROM images, attach them to the guest, and then issue the remediation command to the VM. This will trigger a fairly significant amount of network traffic between the VUM server and the VMs being remediated. This can have a significant impact on network performance. The remediation process itself is also memory intensive, which can be further exacerbated by larger patches (Windows XP SP3 is 331MB, for example). To help with performance, VMware recommends at least 1GB of RAM for Windows VMs.</p>
+<p>Next, the presenter tackles the subject of the impact of high-latency networks on VUM operation. The time taken by various operations (online scans, offline scans, remediation, etc.) is directly related to network latency; the higher the latency, the longer the operation takes. Online VM scans are the only exception; they remain constant and very low.</p>
+<p>To help address this potential problem, VMware recommends deploying the VUM server as close to the VMware ESX hosts as possible. This will help reduce network latency and packet drops. In addition, use online scans on high-latency networks to minimize the impact of network latency.</p>
+<p>An offline scan works by having the VUM server mount the VMDKs for the offline Windows VMs and then scan them directly from the VUM server. This explains why the CPU utilization on the VUM server is so directly impacted as a result of performing offline Windows VM scans; it has to mount the VMDK and scan the Registry and disks locally on the VUM server.</p>
+<p>To help optimize offline scan, exclude &ldquo;\Device\vstor*&rdquo; in any on-access anti-virus software on the VUM server itself. This will prevent the VUM server from performing more I/O operations than necessary. Making this optimization helps improve performance by reducing latency by almost 50% on a high-latency network. The impact is almost negligible on a low-latency network. The presenter walks through excluding the appropriate device/location in anti-virus, something with which most users in here are probably already familiar.</p>
+<ul>
+<li>
+<p>Use VMware DRS in automatic mode for host patching.</p>
+</li>
+<li>
+<p>Separate physical disks for patch store and VUM database.</p>
+</li>
+<li>
+<p>Use at least 2GB RAM for VUM server host to cache patch files in memory.</p>
+</li>
+<li>
+<p>Separate the VUM server database from the VC database if the inventory is large enough.</p>
+</li>
+<li>
+<p>Using multiple vCPUs in guests won&rsquo;t necessarily help performance.</p>
+</li>
+<li>
+<p>Deploy VUM close to ESX hosts where possible.</p>
+</li>
+<li>
+<p>Prefer online scan on high-latency networks.</p>
+</li>
+<li>
+<p>Configure on-access anti-virus appropriately on the VUM server.</p>
+</li>
+</ul>
+<p>At this point, the presenter closes the session with a summary of VUM and its role in a VMware Infrastructure deployment.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2008">VMworld2008</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/09/18/no-liveblog-for-ta2441/">No Liveblog for TA2441</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/09/18/po2061-vmware-virtualcenter-25-database-best-practices/">PO2061: VMware VirtualCenter 2.5 Database Best Practices</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f18%2fpo1644-vmware-update-manager-performance-and-best-practices%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f18%2fpo1644-vmware-update-manager-performance-and-best-practices%2f&text=PO1644%3a%20VMware%20Update%20Manager%20Performance%20and%20Best%20Practices" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f18%2fpo1644-vmware-update-manager-performance-and-best-practices%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/04/24/book-review-vmware-esx-server-in-the-enterprise/">Book Review: VMware ESX Server in the Enterprise</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2008/09/17/ta2659-managing-esx-in-a-cos-less-world/">TA2659: Managing ESX in a COS-less World</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2008/09/16/ta2668-vmware-esx-architectural-directions/">TA2668: VMware ESX Architectural Directions</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

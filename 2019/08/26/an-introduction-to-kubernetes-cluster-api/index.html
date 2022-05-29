@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>An Introduction to Kubernetes Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="An Introduction to Kubernetes Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="An Introduction to Kubernetes Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/08/26/an-introduction-to-kubernetes-cluster-api/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">An Introduction to Kubernetes Cluster API</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;833 words (estimated 4 minutes to read)</span>
+  <p>In this post, I&rsquo;d like to provide a high-level introduction to <a href="https://cluster-api.sigs.k8s.io/">the Kubernetes Cluster API</a>. The aim of Cluster API (CAPI, for short) is, as outlined in <a href="https://github.com/kubernetes-sigs/cluster-api">the project&rsquo;s GitHub repository</a>, &ldquo;a Kubernetes project to bring declarative, Kubernetes-style APIs to cluster creation, configuration, and management&rdquo;. This high-level introduction serves to establish some core terminology and concepts upon which I&rsquo;ll build in future posts about CAPI.</p>
+<p>First, let&rsquo;s start with some terminology:</p>
+<p><em>Bootstrap cluster:</em> The bootstrap cluster is a temporary cluster optionally used by CAPI. When it <em>is</em> used, it&rsquo;s used to create a more permanent cluster that is CAPI-enabled (the management cluster). Typically, the bootstrap cluster is created locally using <code>kind</code> (other options are possible), and is destroyed once the management cluster is up and running.</p>
+<p><em>Management cluster:</em> The management cluster is a long-lived cluster that has the CAPI Custom Resource Definitions (CRDs) and runs the CAPI controllers. Typically, users would use the management cluster to create and manage the lifecycle of one or more workload clusters. This cluster can be an already running cluster into which users install the CAPI CRDs and controllers, or the management cluster can be an entirely new CAPI-enabled cluster created by the temporary bootstrap cluster.</p>
+<p><em>Workload cluster:</em> This is a cluster whose lifecycle is managed by CAPI via the management cluster, but isn&rsquo;t actually CAPI-enabled itself and it doesn&rsquo;t manage the lifecycle of other clusters. Workload clusters won&rsquo;t have any knowledge of the CAPI CRDs. Typically, users would end up with multiple workload clusters.</p>
+<p>There are two basic tools a user uses to interact with Cluster API:</p>
+<ul>
+<li><code>clusterctl</code> is used to create management clusters via the use of a bootstrap cluster (which is typically ephemeral). Users would also use <code>clusterctl</code> to tear down a management cluster. The individual providers may have additional tools; for example, the AWS provider also uses a tool named <code>clusterawsadm</code>. In the v1alpha1 release of CAPI, <code>clusterctl</code> was provider-specific and bundled with the various providers. In the v1alpha2 release of CAPI, <code>clusterctl</code> was decoupled from the providers and is no longer provider-specific. Although <code>clusterctl</code> works with v1alpha2, it is now deprecated (and is slated to be removed in a future release).</li>
+<li><code>kubectl</code>, on the other hand, is used to create workload clusters (via the management cluster). For example, with a properly-formed manifest containing a CAPI definition of a cluster, <code>kubectl apply -f cluster.yaml</code> would create a new workload cluster.</li>
+</ul>
+<p>In general, the workflow of using CAPI looks something like this:</p>
+<ol>
+<li>Users create a management cluster. This can be done by installing the CAPI CRDs and controllers into an existing Kubernetes cluster using <code>kubectl</code>, or by using <code>clusterctl create</code> to create a temporary bootstrap cluster which then, in turn, creates a new cluster as the management cluster. In the case of applying the CAPI CRDs and controllers to an existing cluster, steps two through five do not happen.</li>
+<li>(Only when using <code>clusterctl</code> and a temporary bootstrap cluster) The bootstrap cluster is enabled for CAPI (the CRDs and controllers are installed), and the definition for the management cluster&mdash;which was passed in via parameters to the <code>clusterctl create</code> command&mdash;is applied to the bootstrap cluster.</li>
+<li>(Only when using <code>clusterctl</code> and a temporary bootstrap cluster) The controllers in the bootstrap cluster see the CAPI definitions applied and begin the reconciliation process. This usually means creating resources using the given CAPI provider.</li>
+<li>(Only when using <code>clusterctl</code> and a temporary bootstrap cluster) Once the management cluster has been bootstrapped, the CAPI CRDs and controllers are &ldquo;pivoted&rdquo; (moved) from the bootstrap cluster to the management cluster. From this point forward, the management cluster is responsible for completing the reconciliation of the manifests initially applied to create it.</li>
+<li>(Only when using <code>clusterctl</code> and a temporary bootstrap cluster) The bootstrap cluster&mdash;which no longer contains any of the CAPI definitions or state, as all that was moved into the management cluster&mdash;is destroyed.</li>
+<li>Users use <code>kubectl</code> to apply CAPI manifests to the management cluster in order to create, manage, and destroy workload clusters. Workload clusters don&rsquo;t have the CAPI components installed.</li>
+</ol>
+<p>The end result of all this is users now have a far simpler way (once the management cluster is up and running) to create Kubernetes clusters. Users have the option of creating their own infrastructure and having CAPI consume it, or having CAPI provision infrastructure and then consume it. Both models are supported by CAPI.</p>
+<p>In future posts, I&rsquo;ll build on this high-level overview by outlining more detailed steps for using CAPI with various providers/platforms. The first of those posts is available <a href="/2019/08/27/bootstrapping-a-kubernetes-cluster-on-aws-with-clusterapi/">here for the Cluster API AWS provider</a> (for the CAPI v1alpha1 release). Myles Gray has <a href="https://blah.cloud/kubernetes/first-look-automated-k8s-lifecycle-with-clusterapi/">a good write-up on the Cluster API vSphere provider</a>, so I probably won&rsquo;t write an article for vSphere.</p>
+<p>If you have any questions or need more information, feel free to find me in <a href="https://kubernetes.slack.com/">the Kubernetes Slack</a> (<a href="http://slack.k8s.io/">sign up here</a> if you don&rsquo;t have an account) or <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>. Thanks!</p>
+<p><strong>UPDATE 12 September 2019:</strong> I&rsquo;ve updated this post with information from the CAPI v1alpha2 release.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/08/26/liveblog-vmworld-2019-day-1-general-session/">Liveblog: VMworld 2019 Day 1 General Session</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/08/27/bootstrapping-a-kubernetes-cluster-on-aws-with-clusterapi/">Bootstrapping a Kubernetes Cluster on AWS with Cluster API</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f26%2fan-introduction-to-kubernetes-cluster-api%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f26%2fan-introduction-to-kubernetes-cluster-api%2f&text=An%20Introduction%20to%20Kubernetes%20Cluster%20API" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f26%2fan-introduction-to-kubernetes-cluster-api%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2019/08/26/liveblog-vmworld-2019-day-1-general-session/">Liveblog: VMworld 2019 Day 1 General Session</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2019/08/23/technology-short-take-118/">Technology Short Take 118</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

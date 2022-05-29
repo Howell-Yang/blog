@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Converting URLs to Jekyll References - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Converting URLs to Jekyll References - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Converting URLs to Jekyll References - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/01/08/converting-urls-jekyll-refs/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Converting URLs to Jekyll References</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;394 words (estimated 2 minutes to read)</span>
+  <p>In my post about <a href="/2015/01/06/the-story-behind-the-migration/">the story behind the migration</a>, I mentioned that I made extensive use of regular expressions (&ldquo;regexes&rdquo;) to help reformat portions of the Markdown documents that are used by Jekyll to build this site. In this post, I wanted to briefly share one of the regexes I used (and am still using) to convert URLs to Jekyll references.</p>
+<p>First, let me clarify what I mean by <em>Jekyll references.</em> Jekyll offers a tag (not to be confused with content tags, more like a function) named <code>post_url</code> that will automatically build the correct URL when passed the filename of a content source. For example, if my <code>_posts</code> directory had a Markdown file named <code>2015-01-02-my-first-blog-post-of-2015.md</code>, then I could use the filename (<code>2015-01-02-my-first-blog-post-of-2015</code>) inside a <code>post_url</code> tag, and Jekyll would automatically convert that to the appropriate permalink (URL) for that blog post. If the permalink ever changed for whatever reason, whenever the site is regenerated Jekyll would convert that tag to the new permalink. This helps you ensure that every time you update your site (which, when used on GitHub Pages like I&rsquo;m doing, means every time you push commits to GitHub using <code>git push origin master</code>) your permalink references are up to date and correct. Nifty, eh?</p>
+<p>&lt;aside&gt;Converting hard-coded URLs for other blog posts to Jekyll references with <code>post_url</code> is one of the things that took so much time during the migration.&lt;/aside&gt;</p>
+<p>To help simplify this process, I wrote a regex that I used in conjunction with TextSoap that converts a URL pointing to a post on my site into a Jekyll reference.</p>
+<p>Here&rsquo;s the regex that matches against URLs to posts on my own site:</p>
+<pre><code>(\(?)http://blog.scottlowe.org/(2[0-9]{3})/([0-9]{2})/([0-9]{2})/(.*)/(\)?)
+</code></pre>
+<p>Using backreferences, the matching text is replaced with this:</p>
+<pre><code>{% post_url $2-$3-$4-$5 %}
+</code></pre>
+<p>This takes a URL like this (this is the URL for the very first post on my site):</p>
+<pre><code>http://blog.scottlowe.org/2005/05/11/welcome/
+</code></pre>
+<p>And turns it into this:</p>
+<pre><code>{% post_url 2005-05-11-welcome %}
+</code></pre>
+<p>The nice thing about this regex is that it&rsquo;s still useful even after the migration. Why? Well, it&rsquo;s a lot easier to find the article I want to reference via an Internet search engine like DuckDuckGo or Google than it is to search through the Markdown source files. So, I find the article I want to reference, copy the URL, then use this regex to turn it into a Jekyll reference in another blog post. Handy!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/jekyll">Jekyll</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/markdown">Markdown</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/01/07/technology-short-take-47/">Technology Short Take #47</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/01/12/citrix-acquires-sanbolic/">Citrix Acquires Sanbolic</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f08%2fconverting-urls-jekyll-refs%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f08%2fconverting-urls-jekyll-refs%2f&text=Converting%20URLs%20to%20Jekyll%20References" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f08%2fconverting-urls-jekyll-refs%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/01/06/the-story-behind-the-migration/">The Story Behind the Migration</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/05/31/reducing-the-friction-bbedit-to-marsedit/">Reducing the Friction: BBEdit to MarsEdit</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2015/01/05/blog-migration-complete/">Blog Migration Complete</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

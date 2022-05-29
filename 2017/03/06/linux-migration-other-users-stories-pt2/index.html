@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Other Users&#39; Stories, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Other Users&#39; Stories, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Other Users&#39; Stories, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/06/linux-migration-other-users-stories-pt2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Other Users&#39; Stories, Part 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;680 words (estimated 4 minutes to read)</span>
+  <p>This post is part of a series of posts sharing the stories of other users who have decided to migrate to Linux as their primary desktop OS. Each person&rsquo;s migration (and their accompanying story) is unique; some people have embraced Linux only on their home computer; others are using it at work as well. I believe that sharing this information will help readers who may be considering a migration of their own, and who have questions about whether this is right for them and their particular needs.</p>
+<p>For more information about other migrations, see <a href="/2017/03/01/linux-migration-other-users-stories-pt1/">part 1</a> or part 2 of the series.</p>
+<p>This time around we&rsquo;re sharing the story of Rynardt Spies.</p>
+<p><strong>Q: Why did you switch to Linux?</strong></p>
+<p>In short, I&rsquo;ve always been at least a part-time Linux desktop user and a heavy RHEL server user. My main work machine is Windows. However, because of my work with AWS, Docker, etc., I find that being on a Linux machine with all the Linux tools at hand (especially OpenSSL and simple built-in tools like SSH) is invaluable when working in a Linux world. However, I&rsquo;ve always used <a href="https://linuxmint.com/">Linux Mint</a>, or <a href="https://www.ubuntu.com/">Ubuntu</a> (basically <a href="https://www.debian.org/">Debian</a>-derived distributions) for my desktop work, and RHEL/<a href="https://centos.org/">CentOS</a> for server workloads.</p>
+<p><strong>Q: Which distribution of Linux did you choose?</strong></p>
+<p>At first, I tried a <a href="https://spins.fedoraproject.org/en/cinnamon/">Fedora 25 Cinnamon</a> desktop. I come from a RHEL background, so could never really warm to Ubuntu. Now that desktop ports on RH Fedora seems close to be on par with Ubuntu/Mint, I think the switch back to RHEL from Ubuntu is possible for desktop, at least for me. After a few weeks, I switched from Cinnamon back to <a href="https://www.gnome.org/gnome-3/">GNOME 3</a>, and that&rsquo;s where I am currently.</p>
+<p><strong>Q: What sort of hardware are you using?</strong></p>
+<p>I&rsquo;m using a Lenovo X201 (an old laptop I&rsquo;ve had laying around for a while). I&rsquo;ve upgraded the memory to 8GB RAM, and replaced the old spindle with a Samsung 850 PRO 256GB SSD for this Linux trial. I&rsquo;ll see where this goes from a functionality point of view before spending money on new hardware.</p>
+<p>So far, I&rsquo;ve got just about everything working that I need.</p>
+<p><strong>Q: What applications are you using on Linux?</strong></p>
+<p>Some of the tools/applications that I regularly use include:</p>
+<ul>
+<li>Dropbox</li>
+<li>Google Chrome (mainly for Postman, Tweetdeck, and other Chrome-based applications or extensions)</li>
+<li>Firefox</li>
+<li>Cryptkeeper as a front-end to EncFS (which I use to encrypt/decrypt Dropbox folders, using BoxCryptor on Windows/Android)</li>
+<li>KeePass 2.x (I&rsquo;ve been using this for years for password management and have it set up well across multiple systems)</li>
+<li>Skype client (although the Skype web app seems to be better)</li>
+<li>LibreOffice</li>
+<li>Google Docs</li>
+<li>Cisco AnyConnect VPN client</li>
+<li>Evolution (for mail and calendar)</li>
+<li>Git (of course)</li>
+<li>Arduino IDE (for some electronics projects I enjoy)</li>
+<li>Docker</li>
+<li>Inkscape, MyPaint, Shutter, Krita</li>
+<li>KRDC for RDP access (still trying to find a better solution, but this works)</li>
+<li>Sublime Text 3</li>
+</ul>
+<p>I also play with some of the other tools on the system from time to time, but they aren&rsquo;t all worth mentioning.</p>
+<p><strong>Q: Anything else you&rsquo;d like others to know?</strong></p>
+<p>Although most of the applications run well and the workflow for using the distribution is effortless, there are a few niggles that come up from time to time. However, none of them are show stoppers. One of the issues I have is that the display driver crashes randomly, but those crashes are few and far between.</p>
+<p>I started out on Fedora 25 using the Cinnamon desktop, a desktop system which I had used extensively in the past. In fact, I used Cinnamon with Linux Mint 13 for two years as my main work machine without any issues. At first all worked well on this new Fedora build. However, I soon started seeing issues with stability, and there were times when I couldn’t even log in due to the desktop system not responding at all. So in the end I made the decision to switch to GNOME. It’s definitely not as customizable as Cinnamon, but it does work well enough for me to want to stick with it for now.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/03/technology-short-take-79/">Technology Short Take #79</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/07/linux-migration-creating-presentations/">The Linux Migration: Creating Presentations</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f06%2flinux-migration-other-users-stories-pt2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f06%2flinux-migration-other-users-stories-pt2%2f&text=The%20Linux%20Migration%3a%20Other%20Users%27%20Stories%2c%20Part%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f06%2flinux-migration-other-users-stories-pt2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/07/09/linux-ad-integration-with-windows-server-2008/">Linux-AD Integration with Windows Server 2008</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2006/09/12/embracing-diversity/">Embracing Diversity</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

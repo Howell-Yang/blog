@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>MA6580: Bridge the ESX/ESXi Management Gap with vMA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="MA6580: Bridge the ESX/ESXi Management Gap with vMA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="MA6580: Bridge the ESX/ESXi Management Gap with vMA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/09/01/ma6580-bridge-the-esxesxi-management-gap-with-vma/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">MA6580: Bridge the ESX/ESXi Management Gap with vMA</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;659 words (estimated 4 minutes to read)</span>
+  <p>This is MA6580, titled &ldquo;Bridge the ESX/ESXi Management Gap with the vSphere Management Assistant (vMA), Tips and Tricks Included&rdquo;. The presenters are Chris Monfet and Tim Murnane. This is my first session of Day 3 of VMworld 2010 in San Francisco. Following this is a whirlwind of vendor meetings, video interviews, a book signing, and more sessions this afternoon.</p>
+<p>The focus on the vMA is due to the shift in focus from VMware from VMware ESX (vSphere 4.1 will be the last version with VMware ESX) to VMware ESXi. vMA is based on CentOS (will they switch to SuSE like they are for all other virtual appliances?) and supports VMware ESX/ESXi 3.5 Update 2 or later. The vMA uses 512MB of RAM and has a 5GB VMDK. It does use hardware version 4 in order to provide support for VI3 environments. You can deploy the vMA directly from the vSphere Client or by downloading the OVF and then deploying it.</p>
+<p>The <code>/opt/vmware/vima/bin/vmware-vma-netconf.pl</code> script allows you to reconfigure vMA network settings if necessary.</p>
+<p>The <code>vma-update</code> command (with the parameters info, update, or scan) allows you to patch or update the vMA. If you have a proxy server, you&rsquo;ll want to update <code>/etc/vmware/esxupdate/vmaupdate.conf</code> file accordingly.</p>
+<p>By default, vMA does not run the NTP daemon, although it is preconfigured to use the pool.ntp.org servers. You can use <code>chkconfig</code> to enable the NTP daemon. You&rsquo;ll also want to update the time zone configuration.</p>
+<p>The preferred target for vMA is vCenter Server, and you can also use it as a remote log host for VMware ESX/ESXi. You can also run vMA outside of the actual vSphere environment; for example, you can run it under VMware Workstation.</p>
+<p>With regard to authentication, vMA uses interactive logon (prompted for username and password for every command), FastPass (stores credentials locally in a file), or Active Directory (using Likewise Open integration).</p>
+<p>When using FastPass, you&rsquo;ll use the <code>vifp addserver</code>, <code>vifp removeserver</code>, <code>vifp listservers</code> commands. There&rsquo;s also a <code>vifp rotatepassword</code> option to automatically rotate passwords between the vMA and the VMware ESX/ESXi hosts.</p>
+<p>With Active Directory integration, you only need to use the <code>domainjoin-cli</code> command to join the Active Directory domain. From there, authentication will happen automatically.</p>
+<p>As I mentioned earlier, you can also use the vMA as a remote loghost. The <code>vi-logger</code> command is what you use to set this up. This is particularly important for VMware ESXi. Note that vxpa logs are not sent to syslog (see VMware KB 1017658). All log files go to <code>/var/log/vmware/&lt;hostname&gt;</code>.</p>
+<p>The presenters now move into some use case/operational discussions. There are lots of examples provided; a bit more detail is provided for using the vMA to configure storage with the <code>esxcli</code> command. Examples are also provided for setting the MTU size on a vSwitch (using <code>vicfg-vswitch</code>), setting up log collection with <code>vi-logger</code>, and customizing management services. New to vMA 4.1 is the <code>vicfg-hostops</code> command, which you can use to put hosts into (and out of?) maintenance mode.</p>
+<p>Now the session moves into a few best practices for vMA:</p>
+<ul>
+<li>
+<p>One vMA per 100 VMware ESX/ESXi hosts when using <code>vi-logger</code>.</p>
+</li>
+<li>
+<p>Place vMA on your management LAN/VLAN.</p>
+</li>
+<li>
+<p>Use a static IP address, a fully qualified domain name, and correct DNS settings. This is especially important for AD integration.</p>
+</li>
+<li>
+<p>Configure the vMA as a remote log host.</p>
+</li>
+<li>
+<p>Enable NTP and configure it for UTC (VMware ESXi uses UTC).</p>
+</li>
+<li>
+<p>The recommended target for vMA/vCLI is vCenter Server (much in the same way vCenter Server is the recommended target for the vSphere Client).</p>
+</li>
+<li>
+<p>You might need to leave a VMware ESX host for tools like <code>mbralign</code>; this functionality still hasn&rsquo;t been migrated over to VMware ESXi or the vMA.</p>
+</li>
+<li>
+<p>Cleanup local accounts on your VMware ESX/ESXi when using a new VMA or destroying one.</p>
+</li>
+<li>
+<p>Try to limit the use of <code>resxtop</code>, and use it for real-time troubleshooting not monitoring.</p>
+</li>
+</ul>
+<p>The session wraps up with a few pre-recorded demos of bulk adding servers, bulk adding users, and running <code>resxtop</code>.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/31/dv7706-view-composer-technical-deep-dive-and-best-practices/">DV7706: View Composer Technical Deep Dive and Best Practices</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/09/01/ta8233-prioritizing-storage-resource-allocation-using-storage-io-control/">TA8233: Prioritizing Storage Resource Allocation Using Storage I/O Control</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f01%2fma6580-bridge-the-esxesxi-management-gap-with-vma%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f01%2fma6580-bridge-the-esxesxi-management-gap-with-vma%2f&text=MA6580%3a%20Bridge%20the%20ESX%2fESXi%20Management%20Gap%20with%20vMA" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f01%2fma6580-bridge-the-esxesxi-management-gap-with-vma%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/23/new-users-guide-to-configuring-vmware-esxi-networking-via-cli/">New User&#39;s Guide to Configuring VMware ESXi Networking via CLI</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2010/05/18/virtualization-short-take-40/">Virtualization Short Take #40</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2010/01/07/virtualization-short-take-33/">Virtualization Short Take #33</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

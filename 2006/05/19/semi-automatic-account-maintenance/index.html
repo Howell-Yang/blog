@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Semi-Automatic Account Maintenance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Semi-Automatic Account Maintenance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Semi-Automatic Account Maintenance - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/05/19/semi-automatic-account-maintenance/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Semi-Automatic Account Maintenance</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;357 words (estimated 2 minutes to read)</span>
+  <p>Continuing in my &ldquo;semi-automatic&rdquo; theme, here&rsquo;s some information on using command-line utilities to help automate account maintenance. By combining <code>dsquery</code> and a third-party replacement for <code>dsmove</code> (since dsmove has some problems), we can streamline account maintenance policies for Active Directory.</p>
+<p>First, the problem with <code>dsmove</code>. The <code>dsmove.exe</code> utility is supposed to be able to take DNs on standard input (stdin) and move them (with or without a rename operation at the same time) to a new location in Active Directory. Unfortunately, it doesn&rsquo;t work; for some reason, <code>dsmove</code> won&rsquo;t accept the output of <code>dsquery</code>, even though that output works with <code>dsmod</code> and <code>dsrm</code>. I found numerous references to this same problem (<a href="http://www.codecomments.com/archive305-2004-4-163477.html">here&rsquo;s one</a>) via a <a href="http://www.google.com/search?hl=en&amp;q=dsmove+pipe+dsquery&amp;btnG=Google+Search">Google search</a>, so I know I&rsquo;m not alone.</p>
+<p>Fortunately, there&rsquo;s a free third-party replacement that steps up to the plate to fill in for <code>dsmove</code>, and it&rsquo;s called <a href="http://www.joeware.net/win/free/tools/admod.htm"><code>AdMod</code></a>. <code>AdMod</code> does more than just move objects; it can also modify objects as well. For our purposes, however, we&rsquo;re just going to use it to move objects.</p>
+<p>We&rsquo;ll start out with the <code>dsquery</code> command again, this time to find inactive accounts:</p>
+<pre><code>dsquery user -inactive 4
+</code></pre>
+<p>This will find all the user accounts have have been inactive (not logged into) for more than 4 weeks. Pipe this into the <code>dsmod</code> command to automatically disable them:</p>
+<pre><code>dsquery user -inactive 4 | dsmod user -disabled yes
+</code></pre>
+<p>This ensures that any account that has not been used in more than 4 weeks will be automatically disabled. Now, we can bring in <code>AdMod</code> to help us keep those disabled accounts manageable:</p>
+<pre><code>dsquery user -disabled | admod -move &quot;ou=Disabled 
+Accounts,dc=example,dc=net&quot; -safety 100
+</code></pre>
+<p>This will automatically gather all the disabled accounts and move them into the Disabled Accounts OU automatically. Note the &ldquo;-safety 100&rdquo; parameter; this means that if more than 100 objects will be affected, the command won&rsquo;t proceed. This can be replaced with the &ldquo;-unsafe&rdquo; parameter if this fail-safe isn&rsquo;t necessary.</p>
+<p>So, put this into a batch file, schedule it to run once a week, and it will take care of those inactive accounts that are no longer being used. (This will make those security guys pretty happy.)</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/05/19/semi-automatic-security-groups/">Semi-Automatic Security Groups</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/05/22/follow-up-on-8021q-problem-with-macs/">Follow Up on 802.1Q Problem With Macs</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-account-maintenance%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-account-maintenance%2f&text=Semi-Automatic%20Account%20Maintenance" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f19%2fsemi-automatic-account-maintenance%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/05/19/semi-automatic-security-groups/">Semi-Automatic Security Groups</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2006/05/16/mass-password-changes-in-ad-revisited/">Mass Password Changes in AD Revisited</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2006/05/09/follow-up-on-windows-server-2003-r2-schema/">Follow Up on Windows Server 2003 R2 Schema</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #41 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #41 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #41 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/05/25/virtualization-short-take-41/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #41</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;898 words (estimated 5 minutes to read)</span>
+  <p>It has been a busy week since I last posted, and the blogging/micro-blogging world has been quite busy. I&rsquo;ve gathered quite the collection of links and posts over the last week or so; here are a few that caught my eye. Welcome to Virtualization Short Take #41!</p>
+<ul>
+<li>
+<p>About a month ago Rick Vanover posted a quick note about <a href="http://virtualizationreview.com/blogs/everyday-virtualization/2010/04/vsphere-performance-tweaks.aspx">the use of Disk.SchedNumReqOutstanding as a potential performance tweak</a>. As Rick mentions at the end of his article, it&rsquo;s important to &ldquo;test before and after with an intensive workload&rdquo;; otherwise, you could find yourself actually hurting performance. Like so many performance tweaks, it really depends upon your specific environment and your specific workloads. Definitely refer to some of the linked resources at the end of Rick&rsquo;s article (<a href="http://www.yellow-bricks.com/">Duncan&rsquo;s stuff</a> is always helpful) for more details.</p>
+</li>
+<li>
+<p>Speaking of Duncan, his <a href="http://www.yellow-bricks.com/2010/05/18/limiting-your-vcpu/">post on vCPU limits</a> is a great read and helps dispel a common misconception about vCPU limits. Remember the <a href="http://www.merriam-webster.com/dictionary/hertz">definition of a hertz</a> folks&ndash;300 million cycles per second (300MHz) means 300 million cycles <em>per second</em>. It doesn&rsquo;t mean 500 million cycles per second, or 700 million cycles per second.</p>
+</li>
+<li>
+<p>Frank Denneman&rsquo;s article on <a href="http://frankdenneman.nl/2010/05/resource-pools-memory-reservations/">memory reservations and resource pools</a> is also a really good read.</p>
+</li>
+<li>
+<p>Kenneth van Ditmarsch has a good post on <a href="http://virtualkenneth.com/2010/05/18/vmfs-datastore-permissions-usefull-for-srm/">using datastore permissions</a> to help ensure that VMs are properly placed based on SLAs. This is the kind of operational advice that I think many organizations still need.</p>
+</li>
+<li>
+<p>Continuing our theme of resource allocation, here&rsquo;s a good post on the <a href="http://www.jume.nl/articles/vmware/157-shares-low-normal-high">effect of shares</a>.</p>
+</li>
+<li>
+<p>If you&rsquo;re interested in an early look at some of the features targeted for inclusion in VMware View 4.5, have a look at Matthijs Haverink&rsquo;s <a href="http://virtualfuture.info/2010/05/vmware-view-4-5-expected-features/">post on View 4.5 expected features</a>. If Matthijs&rsquo; information is accurate, it looks like VMware has some good stuff planned.</p>
+</li>
+<li>
+<p>I had a URL in my Yojimbo collection for part 5 of the series on Hyper-V dynamic memory, but it doesn&rsquo;t seem to work anymore. I think the blog post was pulled. If anyone has a working link (yes, I&rsquo;ve already checked Google), feel free to post it in the comments.</p>
+</li>
+<li>
+<p>Jeremy Waldrop of Varrow brings to light <a href="http://jeremywaldrop.wordpress.com/2010/05/20/cisco-ucs-palo-and-emc-powerpath-ve-incompatibility/">a potential issue</a> with the Cisco &ldquo;Palo&rdquo; adapter (now called the Virtual Interface Controller, or VIC) and PowerPath/VE. There is a workaround that fixes the problem. It&rsquo;s important to note that the Cisco VIC isn&rsquo;t fully vetted or validated for Vblock yet; that&rsquo;s still in progress.</p>
+</li>
+<li>
+<p>As a follow up from my mention of this issue in <a href="/2010/05/18/virtualization-short-take-40/">VST #40</a>, I have more information on the Changed Block Tracking (CBT) issue. <a href="http://blogs.vmware.com/uptime/2010/05/changed-block-tracking-mismatch.html">This post from VMware</a> has more information on the specific conditions needed to produce the problem. I have to say, it looks like a pretty specific set of circumstances. I&rsquo;m curious to know your thoughts: is this a corner case, or a really significant problem? Personally, I&rsquo;m leaning toward the former.</p>
+</li>
+<li>
+<p>EMC virtual appliances are really taking off; Chad <a href="http://virtualgeek.typepad.com/virtual_geek/2010/05/get-yer-emc-fma-virtual-appliance-here.html">unwrapped the FMA virtual appliance</a> and fellow vSpecialist team member Nick Weaver <a href="http://nickapedia.com/2010/05/19/besser-uber-celerra-vsa-uber-v2/">unveiled v2 of the &ldquo;Uber&rdquo; Celerra VSA</a> as well. I haven&rsquo;t had the chance to play with the FMA virtual appliance yet, but I&rsquo;m traveling tonight so maybe I&rsquo;ll mess around with it on my laptop tonight from the hotel. (Yes, I&rsquo;m a geek. What can I say?)</p>
+</li>
+<li>
+<p>Following Citrix&rsquo;s announcement of XenClient, their bare metal client hypervisor, and VMware&rsquo;s <a href="http://blogs.vmware.com/view/2010/05/real-byoc-and-view-client.html">response</a> that perhaps the bare metal client hypervisor&rsquo;s use cases are more limited than many might think, Citrix has responded by <a href="http://community.citrix.com/display/ocb/2010/05/18/Explaining+XenClient+to+Our+Friends+at+VMware">explaining XenClient to VMware</a>. Bare metal hypervisors, unmanaged type 2 hypervisors, and policy-managed type 2 hypervisors all have value in the desktop virtualization space. Perhaps VMware should write a response to Citrix explaining the idea behind check-out/check-in of policy-controlled VMs? While I&rsquo;m sure that I won&rsquo;t be very popular with VMware for saying this, I do have to agree with Citrix here: discounting the value of bare metal client hypervisors on the basis of a single use case is a bit disingenuous, especially when you&rsquo;ve been promoting client hypervisors for a while.</p>
+</li>
+<li>
+<p>Looking to stay sharp and stay relevant in today&rsquo;s changing IT landscape? Mike DiPetrillo offers <a href="http://blogs.vmware.com/vcloud/2010/05/skills-needed-for-building-clouds.html">some suggestions for skills</a> that IT folks should embrace.</p>
+</li>
+<li>
+<p>Kevin Goodman shared some information <a href="http://blog.colovirt.com/2010/05/24/cisco-vmware-cisco-ucs-b6620-vmware-consolidation-ratio/">here</a> on consolidation ratios with his Cisco UCS environment. He admits he is constrained by RAM, which is common in many data centers today. There are two answers to that problem today: full-width UCS blades with support for massive amounts of RAM; or expensive, high-capacity RAM modules to drive memory capacity higher. It also looks like the Nehalem EX chipset is going to help address that problem with support for more memory buses and more memory slots. Once again I find it interesting that virtualization is helping to drive hardware development.</p>
+</li>
+<li>
+<p>Forbes Guthrie has published <a href="http://www.vreference.com/2010/02/23/firewall-diagram-version-5/">v5 of his connections and ports diagram</a> for VMware ESX/ESXi. Definitely a useful resource!</p>
+</li>
+<li>
+<p>This <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1020524">VMware KB article</a> helps clarify the behavior of TPS with Intel Xeon 5500 (Nehalem)-based systems. This isn&rsquo;t new information (I believe Duncan might have pointed it out first?), but it&rsquo;s nice to see clarification of the behavior.</p>
+</li>
+<li>
+<p>OK, I&rsquo;m probably showing my ignorance here (I haven&rsquo;t had the opportunity to spend as much time with View Manager as I would like), but who knew View Manager had <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1019335">a command-line tool</a>?</p>
+</li>
+</ul>
+<p>I guess that will wrap things up for this issue of Virtualization Short Takes. I hope you&rsquo;ve found something useful!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/citrix">Citrix</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/05/18/virtualization-short-take-40/">Virtualization Short Take #40</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/05/25/vm6-vmex-21-release/">VM6 VMex 2.1 Release</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f25%2fvirtualization-short-take-41%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f25%2fvirtualization-short-take-41%2f&text=Virtualization%20Short%20Take%20%2341" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f25%2fvirtualization-short-take-41%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/07/05/virtualization-short-take-12/">Virtualization Short Take #12</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2008/05/31/virtualization-short-take-9/">Virtualization Short Take #9</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2008/05/26/virtualization-short-take-8/">Virtualization Short Take #8</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

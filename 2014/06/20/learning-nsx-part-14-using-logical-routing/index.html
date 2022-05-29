@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NSX, Part 14: Using Logical Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NSX, Part 14: Using Logical Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NSX, Part 14: Using Logical Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/06/20/learning-nsx-part-14-using-logical-routing/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NSX, Part 14: Using Logical Routing</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1777 words (estimated 9 minutes to read)</span>
+  <p>Welcome to part 14 of the Learning NSX blog series, in which I discuss the ability for VMware NSX to do Layer 3 routing in logical networks. This post will also include a look at a very cool feature within VMware NSX known as <em>distributed logical routing</em>. This post will take a closer look at distributed logical routing within the context of an OpenStack environment that&rsquo;s been integrated with VMware NSX. (Although NSX isn&rsquo;t necessarily tied to OpenStack, I&rsquo;ll assume you&rsquo;re using OpenStack just to simplify the discussion.)</p>
+<p>If you&rsquo;re new to this series, you can find links to all the articles on <a href="/learning-nvp-nsx/">my Learning NVP/NSX page</a>. Ideally, I&rsquo;d recommend you read <em>all</em> the articles, but if you&rsquo;re just interested in some of the high-level concepts you probably don&rsquo;t need to do that. For those interested in the deep technical details, I&rsquo;d suggest catching up on the series before proceeding.</p>
+<h2 id="overview-of-logical-routing">Overview of Logical Routing</h2>
+<p>One of the features of VMware NSX that can be useful, depending on customer requirements, is the ability to create complex network topologies. For example, creating a multi-tier network topology like the one shown below is easily accomplished via VMware NSX:</p>
+<p><img src="/public/img/logical-network-topology.png" alt="Sample network topology"></p>
+<p>Note that this topology has two tenant-specific routing entities&mdash;these are <em>logical routers</em>. A logical router is an abstraction created and maintained by VMware NSX on behalf of your cloud management platform (like OpenStack, which I&rsquo;ll assume you&rsquo;re using here). These logical entities perform the routing process just like a physical router would (forwarding traffic based on a routing table, changing the source and destination MAC address, maintaining an ARP cache of MAC addresses, decrementing the TTL, etc.). Of course, they are not <em>exactly</em> the same as physical routers; you can&rsquo;t, for example, connect two logical routers directly to each other.</p>
+<p>Logical routers also act as the logical boundary between one or more logical networks and an external network. Logical routers can be connected to multiple logical networks (each logical network with its own logical router interface), but can only be connected to a single external network. Thus, you can&rsquo;t use a logical router as a transit path between two external networks (two VLANs, for example).</p>
+<p>Now that you have a good understanding of logical routing, let&rsquo;s take a closer look at the various components inside VMware NSX.</p>
+<h2 id="components-of-logical-routing">Components of Logical Routing</h2>
+<p>The components are pretty straightforward. In addition to the logical router abstraction that I&rsquo;ve discussed already, you also have logical router ports (naturally, these are the ports on a logical router that connect it to a logical network or an external network), network address translation (NAT) rules (for handling address translation tasks), and a routing table (forwell, routing).</p>
+<p>You can see all of these components in NSX Manager. Once you&rsquo;re logged into NSX Manager, select Network Components &gt; Logical Layer &gt; Logical Routers, then click on a specific logical router from the list. This will display the screen shown below (click the image for a larger version):</p>
+<p><a href="/public/img/part-14-lr-detail.png"><img src="/public/img/part-14-lr-detail-small.png" alt="Logical router detail in NSX Manager"></a></p>
+<p>A few things to note here:</p>
+<ul>
+<li>
+<p>You&rsquo;ll note that the logical router has a port whose attachment is listed as &ldquo;L3GW&rdquo;. This denotes an attachment to a Layer 3 Gateway Service, an entity I described in <a href="/2014/02/26/learning-nsx-part-9-adding-a-gateway-service/">part 9</a> of the series. This Layer 3 Gateway Service is itself comprised of two NSX gateway appliances; <a href="/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">part 6</a> in the series discussed how to add a gateway appliance to your installation. The relationship between logical router, Layer 3 Gateway Service, and gateway appliance can be confusing for some; I plan to discuss that in more detail in the next post.</p>
+</li>
+<li>
+<p>This particular logical router is not configured as a distributed logical router. This means that the actual routing function resides on a Layer 3 Gateway Service. The routing functionality is instantiated in a highly available configuration on two different gateway appliances within the Layer 3 Gateway Service.</p>
+</li>
+<li>
+<p>NAT Synchronization is set to on; this refers to keeping NAT state synchronized between the active and standby routing functions instantiated on the gateway appliances.</p>
+</li>
+<li>
+<p>As noted under Replication Mode, this router uses an NSX service node (refer to <a href="/2014/02/27/learning-nsx-part-10-adding-a-service-node/">part 10</a> for more details on service nodes) for packet replication/BUM traffic.</p>
+</li>
+<li>
+<p>You might notice that one of the logical router ports is assigned the IP address 169.254.169.253 (and you&rsquo;ll also note a corresponding &ldquo;no NAT&rdquo; rule and routing table entries for that same network). Astute readers recognize this as the network for Automatic Private IP Addressing (APIPA), also known as IPv4 Link-Local Addresses per RFC 3927. This exists to support an OpenStack-specific feature known as <a href="http://docs.openstack.org/admin-guide-cloud/content/section_metadata-service.html">the metadata service</a>, and is created automatically by OpenStack. (I&rsquo;ll talk more about OpenStack later in this post.)</p>
+</li>
+</ul>
+<p>All of these components and settings are accessible via the NSX API, and since NSX Manager is completely an API client (it merely consumes NSX APIs and does not provide standalone functionality outside of some logging features), you could create, modify, and delete any of the logical routing components directly within NSX Manager. (Or, if you were so inclined, you could make the API calls yourself to do these tasks.) Typically, though, these tasks would be handled via integration between NSX and your cloud management platform, like OpenStack.</p>
+<p>One key component of NSX&rsquo;s logical routing functionality that you <em>can&rsquo;t</em> see in NSX Manager is how the routing is actually implemented in the data plane. As with most features in NSX, the actual data plane implementation is handled via Open vSwitch (OVS) and a set of flow rules pushed down by the NSX controllers. These flow rules control the flow of traffic within and between logical networks (logical switches in NSX). You can see some of the flow rules in OVS using the <code>ovs-dpctl dump-flows</code> command, which will produce output something like what&rsquo;s shown in this screenshot (note that the addresses are highlighted because I used <code>grep</code> to show only the flows matching a certain IP address):</p>
+<p><a href="/public/img/part-14-ovs-flow-list.png"><img src="/public/img/part-14-ovs-flow-list-small.png" alt="List of flows in OVS"></a></p>
+<p><em>(Click the image above for a larger version.)</em></p>
+<p>These flow rules include actions like re-writing source and destination MAC addresses and decrementing the TTL, both tasks carried out by &ldquo;normal&rdquo; routers when routing traffic between networks. These flow rules also provide some insight into the differences between a logical router and a distributed logical router. While both are logical entities, the way in which the data plane is implemented is different for each:</p>
+<ul>
+<li>
+<p>For a logical router, the flow rules will direct traffic to the appropriate gateway appliance in the Layer 3 Gateway Service. The logical router is actually instantiated on a gateway appliance, so all routed traffic must go to the logical router, get &ldquo;routed&rdquo; (routing table consulted, source and destination MAC re-written, TTL decremented, NAT rules applied, etc.), then get sent on to the final destination (which might be a VM on a hypervisor in NSX or might be a physical network outside of NSX).</p>
+</li>
+<li>
+<p>For a distributed logical router, the flow rules will direct traffic <em>either</em> to the appropriate gateway appliance in the Layer 3 Gateway Service <em>or</em> to the destination hypervisor directly. Why the &ldquo;either/or&rdquo;? If the traffic is north/south traffic&mdash;that is, traffic being routed out of a logical network onto the physical network&mdash;then it must go to the gateway appliance (which, as I have mentioned before, is where traffic is unencapsulated and placed onto the physical network). However, if the traffic is east/west traffic&mdash;traffic that is moving from one server on a logical network to another server on a logical network&mdash;then the traffic is &ldquo;routed&rdquo; directly on the source hypervisor and then sent across an encapsulated connection to the hypervisor where the destination VM resides.</p>
+</li>
+</ul>
+<p>In both cases, there is only <strong>one</strong> logical router. For a non-distributed logical router, the data plane is instantiated on a gateway appliance only. For a distributed logical router, the data plane is instantiated both on the local hypervisors as well as on a gateway appliance. (This is assuming you&rsquo;ve set an uplink on the logical router, meaning you have a north/south connection. If you haven&rsquo;t set an uplink, then the routing functionality is instantiated on the hypervisors only.)</p>
+<p>This should provide a good overview of how logical routing is implemented in VMware NSX, but there&rsquo;s one more aspect I want to cover: logical routers in OpenStack with NSX.</p>
+<h2 id="logical-routers-in-openstack">Logical Routers in OpenStack</h2>
+<p>As you work with OpenStack Networking&mdash;Neutron, as it&rsquo;s commonly called&mdash;you&rsquo;ll find that the abstractions Neutron uses map really well to the abstractions that NSX uses. So, to create a logical router in NSX, you just create a logical router in OpenStack. Attaching an OpenStack logical router to a logical network tells NSX to create the logical switch port, create the logical router port, and connect the two ports together.</p>
+<p>In OpenStack, there are a number of different ways to create a logical router:</p>
+<ul>
+<li>
+<p>OpenStack Dashboard (Horizon)</p>
+</li>
+<li>
+<p>Command-line interface (CLI)</p>
+</li>
+<li>
+<p>OpenStack Orchestration (Heat) template</p>
+</li>
+<li>
+<p>API calls directly</p>
+</li>
+</ul>
+<p>When using the web-based Dashboard user interface, you can only create centralized logical routers, not distributed logical routers. The Dashboard UI also doesn&rsquo;t provide any way of knowing if a logical router is distributed or not; for that, you&rsquo;ll need the CLI (the command is provided shortly).</p>
+<p>On a system with the <code>neutron</code> CLI client installed, you can create a logical router like this:</p>
+<pre><code>neutron router-create &lt;router name&gt;
+</code></pre>
+<p>This creates a centralized logical router. If you want to create a distributed logical router, it&rsquo;s as simple as this:</p>
+<pre><code>neutron router-create &lt;router name&gt; --distributed True
+</code></pre>
+<p>The <code>neutron router-show</code> command will return output about the specified logical router; that output will tell you if it is a distributed logical router.</p>
+<p>The <code>neutron</code> CLI client also offers commands to update a logical router&rsquo;s routing table (to add or remove static routes, for example), or to connect a logical router to an external network (to set an uplink, in other words).</p>
+<p>If you want to create a logical router as part of a stack created via OpenStack Orchestration (Heat), you could use this YAML snippet in a HOT-formatted template to create a distributed logical router (click <a href="https://gist.github.com/scottslowe/6affeae4551e4fb0aafb">here</a> for an option to download this code snippet):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">heat_template_version</span>: <span style="color:#e6db74">2013-05-23</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">description</span>: &gt;<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  </span>  <span style="color:#ae81ff">A simple Heat template to create a distributed logical router.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">router0</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">OS::Neutron::Router</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">properties</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">admin_state_up</span>: <span style="color:#66d9ef">True</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">distributed-router</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">value_specs</span>: { <span style="color:#f92672">distributed</span>: <span style="color:#e6db74">&#34;True&#34;</span> }
+</span></span></code></pre></div><p>OpenStack Heat also offers resource types for setting the router&rsquo;s external gateway and creating router interfaces (logical router ports). If you aren&rsquo;t familiar with OpenStack Heat, you might find <a href="/2014/05/01/an-introduction-to-openstack-heat/">this introduction</a> useful.</p>
+<p>That wraps up this post on logical routing with VMware NSX. As always, I welcome your courteous feedback, so feel free to speak up in the comments below. In the next post, I&rsquo;ll spend a bit of time discussing logical routers, gateway servies, and gateway appliances. See you next time!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvp">NVP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/06/13/openstack-architecture-and-design-book-sprint/">OpenStack Architecture and Design Book Sprint</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/07/14/examining-the-needs-of-a-policy-solution/">Examining the Needs of a Policy Solution</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f20%2flearning-nsx-part-14-using-logical-routing%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f20%2flearning-nsx-part-14-using-logical-routing%2f&text=Learning%20NSX%2c%20Part%2014%3a%20Using%20Logical%20Routing" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f20%2flearning-nsx-part-14-using-logical-routing%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/04/28/learning-nsx-part-13-revisiting-logical-networking/">Learning NSX, Part 13: Revisiting Logical Networking</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">Learning NSX, Part 12: Integrating VMware NSX with OpenStack</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">Learning NSX, Part 11: Reviewing OpenStack Integration Basics</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

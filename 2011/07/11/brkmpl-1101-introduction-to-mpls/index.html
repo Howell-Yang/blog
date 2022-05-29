@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BRKMPL-1101: Introduction to MPLS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BRKMPL-1101: Introduction to MPLS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BRKMPL-1101: Introduction to MPLS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/11/brkmpl-1101-introduction-to-mpls/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BRKMPL-1101: Introduction to MPLS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1399 words (estimated 7 minutes to read)</span>
+  <p>This session is BRKMPL-1101, Introduction to MPLS (Multiprotocol Label Switching). The presenter is Hari Rakotoranto, a product manager for MPLS at Cisco. I&rsquo;m looking forward to this session as I&rsquo;ve always heard a lot about MPLS, but haven&rsquo;t ever had the opportunity to really learn more about it. Hopefully this session won&rsquo;t be too far over my head.</p>
+<p>MPLS is used for a variety of purposes; two of the most common are Layer 3 VPNs and Layer 2 VPNs. But why MPLS? What are the business drivers for MPLS? One of the first use cases was SP/carrier networks, where they needed to consolidate networks, provide multiple L2/L3 services, support increasingly stringent SLAs, and handle the increasing scale and complexity of IP-based networks. From the enterprise space, the trend picked up later and was driven by multi-site configurations and the need for network segmentation. MPLS originated in the mid-1990s and evolved through approximately 2004 when MPLS OAM became available.</p>
+<p>MPLS is built on labels. Every packet is stamped with a label, then MPLS will switch that packet through the network based on the label. There is an MPLS forwarding plane (where labeled packets are switched instead of routed) and an MPLS control/signaling plane (where MPLS leverages existing IP-based control protocols and extensions).</p>
+<p>Within the enterprise space, there are two general types of MPLS deployments:</p>
+<ul>
+<li>
+<p>The enterprise is subscribed to an MPLS-based network from a provider</p>
+</li>
+<li>
+<p>The enterprise has deployed MPLS in it&rsquo;s own network</p>
+</li>
+</ul>
+<p>Continuing with the enterprise space, there are three major reasons for deploying/using MPLS:</p>
+<ol>
+<li>
+<p>Network segmentation (network virtualization, distribution application virtualization)</p>
+</li>
+<li>
+<p>Network realignment/migration (consolidation of multiple networks)</p>
+</li>
+<li>
+<p>Network optimization (full-mesh and hub-and-spoke deployments, Traffic Engineering [TE] for bandwidth protection)</p>
+</li>
+</ol>
+<p>The presenter now shifts gears to the technology components of MPLS.</p>
+<p>The core of MPLS is the MPLS signaling and forwarding components. Within the MPLS network, there is a Label Switched Path (LSP) from one end to the other end based on a label. There are a number of different terms applied in an MPLS network:</p>
+<ul>
+<li>
+<p>PE (Provider Edge): This is an edge router that adds labels (on ingress) or removes lables (on egress).</p>
+</li>
+<li>
+<p>P (Provider) router: This is a label-switching router or a core router.</p>
+</li>
+<li>
+<p>CE (Customer Edge)</p>
+</li>
+</ul>
+<p>The MPLS label itself is a 32-bit structure. The first part of the label is the actual MPLS label, which occupies 20 bits. Then you have the EXP/COS bits for QoS handling, and then you have the S bit; the S bit represents the bottom of the stack. (The S bit facilitates multiple layers of MPLS labels.) The label wraps up with an 8 bit TTL. The MPLS label is usually placed just after the transport header (for example, just after the MAC header for Ethernet).</p>
+<p>Some additional terms to understand:</p>
+<ul>
+<li>
+<p>Label imposition: Occurs at the PE at ingress; classify and label packets</p>
+</li>
+<li>
+<p>Label swapping or switching: Occurs at the P router; forwards packets based on label and indicates service class and destination</p>
+</li>
+<li>
+<p>Label disposition: Occurs at a PE on egress; remove label and forward packets</p>
+</li>
+</ul>
+<p>The Forwarding Equivalence Class (FEC) is the mechanism to map Layer 2/3 packets onto an LSP by the ingress PE router. There are a variety of FEC mappings possible. (The presenter advanced the slide before I could capture some of that information.)</p>
+<p>Label Distribution Protocol (LDP) handles exchanging label information between and among MPLS nodes. There is a push operation (used on the ingress PE node to know which label to use for a given FEC), swap operation (occurs on the core P node), pop operation (occurs at egress PE node to inform node about FEC mapping). LDP is a superset of Cisco-specific TDP, and you can also use BGP with some extensions as well. As an MPLS control plane protocol, it is L3 based (runs over IP) and uses a specific set of TCP ports and protocols to communicate MPLS label information.</p>
+<p>The presenter next walked through the general steps involved in MPLS forwarding.</p>
+<p>MPLS supports various IGPs: EIGRP, IS-IS, OSPF on core facing and core links. RSVP and LDP are supported on core and/or core-facing links. MP-iBGP runs on edge routers.</p>
+<p>I mentioned the S bit (Bottom of Stack) bit earlier; one of the real superpowers of MPLS is label stacking. This allows organizations to stack labels for QoS, security, traffic engineering, segmentation, etc.</p>
+<p>One of the key drivers for MPLS is VPN: both Layer 3 and Layer 2 VPNs. The connection to the MPLS network is handled by the PE-CE link; this is the connection between the PE (for ingress/egress) and the CE. Once the traffic enters the MPLS network, then all the advantages of MPLS (via labels and label stacking) become available.</p>
+<p>Options for MPLS VPNs include:</p>
+<ul>
+<li>
+<p>Layer 2 VPNs (point-to-point and multi-point): Routing is always CE-CE; no SP involvement</p>
+</li>
+<li>
+<p>Layer 3 VPNs</p>
+</li>
+</ul>
+<p>Focusing a bit more on L3 VPNs. In this case, the CE has a peering link with the PE and there is IP routing/forwarding across the PE-CE link. In this case, the MPLS VPN is part of the customer&rsquo;s IP routing domain. MPLS VPNs enable full-mesh, hub-and-spoke, and hybrid connectivity among connected CE sites.</p>
+<p>Components of an L3 MPLS VPN:</p>
+<ul>
+<li>
+<p>PE-CE link</p>
+</li>
+<li>
+<p>MPLS L3 VPN control plane</p>
+</li>
+<li>
+<p>MPLS L3 VPN forwarding plane</p>
+</li>
+</ul>
+<p>VRFs (Virtual Routing and Forwarding instances) are created for each customer VPN on the PE router. Each VRF is associated with one or more customer interfaces, has its own routing table (RIB) and forwarding table (CEF) and has its own instance for PE-CE configured routing protocols.</p>
+<p>MP-iBGP is Multi-Protocol BGP extensions; this is for supporting non-IP protocols over BGP. Typically BGP RR (Route Reflector) to improve scalability.</p>
+<p>MPLS uses a Route Distinguisher (RD) along with a VPNv4 address to help ensure that all customer routes are unique across the MPLS network.</p>
+<p>Hari (the presenter) next walked through several use cases for MPLS VPNs (traffic separation, network integration, shared access to services, and simplified hub-and-spoke designs).</p>
+<p>Next, the presenter dove into L2 VPNs with MPLS. A new term was introduced: AToM (Any Transport over MPLS). L2 VPNs enable the transport of any Layer 2 traffic over an MPLS network by building PE-to-PE pseudowires. Other new terms are introduced as well: Attachment Circuits (ACs), which are the PE-CE links; VC, for virtual circuit; and PWES, for Pseudo Wire End Services.</p>
+<p>Use cases for MPLS L2 VPNs include L2 network interconnect (data center interconnect?) and Virtual Private LAN Service (VPLS) to emulate an IEEE Ethernet bridge. The presenter went into some additional detail about VPLS, VPLS components, and VPLS operations. Some key thoughts I was able to capture: VPLS uses a targeted LDP session between PEs to establish the VC and pass traffic. Multiple VSIs (Virtual Switching Instances) exist to pass traffic. You might use VPLS to create a &ldquo;Metro Ethernet&rdquo; backbone connect multiple sites together in a full mesh network.</p>
+<p>After wrapping up L2 VPNs, Hari moves &ldquo;back&rdquo; down the MPLS stack to discuss MPLS QoS. MPLS mostly leverages existing IP QoS architecture based on DiffServ model. MPLS uses the EXP bits instead of the IP ToS field. Most MPLS providers supply 3 to 5 service classes. The ingress PE router maps DSCP values into EXP bits. (I&rsquo;m guessing this would be part of the FEC mappings, so that different DSCP values would translate into different FEC mappings. Is that accurate?) There are different modes of MPLS QoS that do or do not preserve the DSCP values (Uniform, Pipe, and Short Pipe).</p>
+<p>The next topic is MPLS TE (Traffic Engineering). You might use MPLS TE when you want to optimize your network traffic. This could be due to any number of reasons: congestion, link/node failures, or new services coming online. Generally speaking, IP networks will forward based on a &ldquo;shortest path&rdquo; algorithm. Because this typically doesn&rsquo;t include bandwidth constraints, this model can create some congested links. MPLS TE can help address this issue. MPLS TE uses ISIS-TE or OSPF-TE (to distribute link information), CSPF (to calculate the shortest path), and RSVP-TE (to setup up the path). MPLS TE can also be used to provide Fast Reroute (FRR); this provides a pre-provisioned backup tunnel (path) in the event the primary tunnel (path) has a failure. FRR can provide faster failover times (~50 ms, depending on topology and other factors).</p>
+<p>The session wraps up with a discussion of MPLS management. The discussion centers around SNMP MIBs and OAM.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ciscolive2011">CiscoLive2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/07/11/brkcrs-2031-multilayer-campus-architectures-and-design-principles/">BRKCRS-2031: Multilayer Campus Architectures and Design Principles</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/12/brkcom-3002-network-redundancy-and-load-balancing-designs-for-ucs-blade-servers/">BRKCOM-3002: Network Redundancy and Load Balancing Designs for UCS Blade Servers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkmpl-1101-introduction-to-mpls%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkmpl-1101-introduction-to-mpls%2f&text=BRKMPL-1101%3a%20Introduction%20to%20MPLS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkmpl-1101-introduction-to-mpls%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/11/brkcrs-2031-multilayer-campus-architectures-and-design-principles/">BRKCRS-2031: Multilayer Campus Architectures and Design Principles</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2011/06/17/my-cisco-live-2011-schedule/">My Cisco Live 2011 Schedule</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2011/05/16/technology-short-take-12-networking-edition/">Technology Short Take #12: Networking Edition</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

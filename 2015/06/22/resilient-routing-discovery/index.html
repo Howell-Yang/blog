@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: Resilient Routing and Discovery - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: Resilient Routing and Discovery - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: Resilient Routing and Discovery - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/06/22/resilient-routing-discovery/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: Resilient Routing and Discovery</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;782 words (estimated 4 minutes to read)</span>
+  <p>This is a liveblog of the DockerCon 2015 session on resilient routing and discovery, part of the &ldquo;Advanced Tech&rdquo; track. Simon Eskilden (<a href="https://twitter.com/sirupsen">@Sirupsen</a> on Twitter) from Shopify is the speaker for this session.</p>
+<p>Not surprisingly (you&rsquo;d understand this if you walked Eskilden&rsquo;s presentation from DockerCon EU 2015), he starts out with a mention of the walrus (his favorite animal). Eskilden starts with a brief overview of Shopify (his employer) and Shopify&rsquo;s production deployment of Docker (they&rsquo;ve had Docker in production for over a year). Eskilden freely acknowledges that moving to a microservices-based architecture increases complexity and is not &ldquo;free&rdquo;. In order to help address the complexity brought on by microservices-based architectures, Eskilden wants to talk about resiliency, service discovery, and routing.</p>
+<p>Eskilden reinforces that companies shouldn&rsquo;t be implementing Docker solely for the sake of implementing Docker; it should be for a reason, a purpose (for him, it&rsquo;s making sure Shopify&rsquo;s services stay up and available). Resiliency is about building a reliable system from a bunch of unreliable components. Total availability is the availability per service to the power of the number of services. This means that the more services there are, the lower the total availability is. (To help understand this, realize that 100 services who individually have 99.99% availability will, together, have about 90% availability.)</p>
+<p>One very important and powerful optimization is that applications should be designed to provide a fallback level of functionality. The failure of a single service should not cause the entire application to be unavailable; instead, limited functionality should continue to be available.</p>
+<p>One way of testing the behavior of application is to use a Shopify project called Toxiproxy (available at <a href="https://github.com/shopify/toxiproxy">https://github.com/shopify/toxiproxy</a>). This allows users to test all the various parts of an application that might have failed, be unreachable, or be responding slowly. Slowness is the killer in distributed systems&mdash;a refused connection is a luxury. Beating Little&rsquo;s Law is the first priority as you add services (Little&rsquo;s Law says that as latency goes up, throughput goes down).</p>
+<p>Eskilden next provides an overview of the &ldquo;resiliency pyramid&rdquo;&mdash;going from no resiliency efforts to application-specific fallbacks all the way up to the Region Gorilla (part of the Netflix Simian Army).</p>
+<p>This leads into a discussion of discovery. There are three sources of data that may be useful in discovery: services, metadata, and orchestration. Will discovery data be limited to a regional scope, or a global scope? Eskilden provides a list of desirable properties for a discovery backbone:</p>
+<ul>
+<li>No single point of failure</li>
+<li>Stale reads are better than no reads (A &gt; C)</li>
+<li>Reads occur orders of magnitude larger than writes</li>
+<li>Fast convergence can be important (in some cases)</li>
+</ul>
+<p>What kinds of solutions are available? There are a lot: DNS, Chef, Puppet, network-level protocols, hardcoded values (these are the &ldquo;old school&rdquo; methods), as well as tools like Consul, etcd, Eureka, ZooKeeper (these are the &ldquo;new school&rdquo; methods). The new school methods may not be as battle-hardened and reliable as the old school methods.</p>
+<p>For Shopify, pure DNS worked really, really well. Eskilden recommends using DNS as long as possible. For many, many people, using a new system won&rsquo;t outweigh the added complexity. DNS is resilient, simple, and supported, and often can be API-driven. It does have some drawbacks: failovers, slow convergence, not a data store, not for orchestration. Eskilden shares that Shopify found they only really needed high-level global discovery and orchestration&mdash;not anything more complex than that. Shopify also needed a way to route shops to the right data center, although this is something they haven&rsquo;t rolled out yet (coming later this year, according to Eskilden).</p>
+<p>Shopify settled on ZooKeeper because Shopify felt was ZooKeeper was the most mature, most stable, and most battle-tested of the &ldquo;new school&rdquo; discovery solutions. However, ZooKeeper is not without its drawbacks. It&rsquo;s not a complete discovery solution, the clients are complex, and there is significant operational overhead involved in managing a ZooKeeper cluster.</p>
+<p>The final topic Eskilden touches on is routing (what some people call networking). He shares a complex comparison matrix showing various solutions (Nginx, HAProxy, Vulcand, Finagle, etc.), but it ends up that Shopify settled on DNS. The final Shopify solution combines DNS, Chef, and ZooKeeper (ZK). The servers connect to ZK through a ZK proxy to discover load balancers. Ultimately, Shopify plans to remove Chef from the discovery layer and add more resiliency to the routing layer.</p>
+<p>Eskilden wraps up the session with a reminder to the attendees: Be careful, be sure to map out what you <em>really</em> need. Don&rsquo;t overcompensate! Reliability is your metric. Build resiliency into the system, don&rsquo;t make it optional, and make sure the infrastructure teams own the integration points.</p>
+<p>At this point, the session wraps up.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2015">DockerCon2015</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/22/top-secret-session-docker-plugins/">Liveblog: Secret Session (Docker Plugins)</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/06/22/docker-networking/">Liveblog: Docker Networking</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f22%2fresilient-routing-discovery%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f22%2fresilient-routing-discovery%2f&text=Liveblog%3a%20Resilient%20Routing%20and%20Discovery" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f22%2fresilient-routing-discovery%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/06/22/top-secret-session-docker-plugins/">Liveblog: Secret Session (Docker Plugins)</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2015/06/22/docker-con-day1-general-session/">Liveblog: DockerCon 2015 Day 1 General Session</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2015/05/22/technology-short-take-51/">Technology Short Take #51</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

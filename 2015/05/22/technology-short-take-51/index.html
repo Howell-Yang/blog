@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #51 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #51 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #51 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/05/22/technology-short-take-51/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #51</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;990 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #51, another collection of posts and links about key data center technologies like networking, virtualization, cloud management, and applications/operating systems. Here&rsquo;s hoping you find something useful in this collection!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>I&rsquo;m not sure if this falls here or into the &ldquo;Cloud Computing/Cloud Computing&rdquo; category, but Shannon McFarland&mdash;fellow co-conspirator with the Denver OpenStack Meetup group&mdash;has a nice article describing some <a href="http://www.debug-all.com/?p=52">design and deployment considerations for IPv6 in the OpenStack Kilo release</a>.</li>
+<li>I&rsquo;m pretty sure I&rsquo;ve mentioned Open Virtual Network (OVN) here before, as I&rsquo;m pretty jazzed about the work going on with this project. If you&rsquo;re unfamiliar with OVN, Gal Sagie has a couple of articles that might help. I&rsquo;d start with the later of the two articles, which provides <a href="http://galsagie.github.io/sdn/openstack/ovs/2015/04/20/ovn-1/">an introduction to OVN</a>, before moving on to Gal&rsquo;s discussion of <a href="http://galsagie.github.io/ovs/virtualization/2015/01/16/ovn-distributed-controller/">OVN and the distributed controller</a> and his article on <a href="http://galsagie.github.io/sdn/openstack/ovs/2015/04/26/ovn-containers/">OVN and containers</a>.</li>
+<li>Speaking of OVN, Russell Bryant has a detailed description of <a href="http://blog.russellbryant.net/2015/05/14/an-ez-bake-ovn-for-openstack/">using OVN with OpenStack Neutron</a> (via DevStack).</li>
+<li>Using Jinja2 templates for automating network device configuration is a topic that&rsquo;s getting a fair amount of attention (there were at least two sessions discussing this technique while I was at Interop). Rick Sherman has an article on <a href="http://vulgarpython.com/jinja2-templates-for-network-automation/">using Jinja2 templates for network automation</a>, including a practical example.</li>
+<li>If you&rsquo;d like to manually wire up a quick GRE tunnel-based network across multiple Docker hosts, here&rsquo;s a walk-through on <a href="http://wiredcraft.com/blog/multi-host-docker-network/">a multi-host Docker network</a>.</li>
+<li>VXLAN overlay networks between AWS and GCE? Sure! <a href="http://blog.mwpreston.net/2015/04/27/vxlan-on-ravello-between-google-and-amazon-ec2/">Here&rsquo;s one way</a>, using Ravello Systems.</li>
+<li>Flavio Leitner has a nice article <a href="http://flavioleitner.blogspot.com.br/2015/05/open-vswitch-internal-ports-and-linux.html">comparing OVS internal ports with Linux veth devices</a>. This topic is the subject of some debate given that some claim OVS internal ports perform much better than Linux veth devices. Flavio&rsquo;s research shows the performance differential appears to be negligible overall.</li>
+<li>MAC learning on OVS under OpenStack? <a href="http://networkinferno.net/enable-mac-learning-on-ovs-under-openstack">Here you go</a>, thanks to Anthony Burke.</li>
+<li>Dave Tucker&mdash;formerly of Socketplane, now of Docker&mdash;has <a href="https://blog.docker.com/2015/04/docker-networking-takes-a-step-in-the-right-direction-2/">a post outlining the direction of Docker networking</a>. This is a good read for those of you who are interested in understanding where networking with Docker containers is headed.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>I suppose this could go under &ldquo;Networking&rdquo;, but it&rsquo;s really focused on hardware&mdash;specifically, the <a href="http://noviflow.com/products/noviswitch/">NoviSwitch line of OpenFlow-optimized switches</a> from NoviFlow.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>There&rsquo;s a lot of talk about container security, but now there&rsquo;s something you can actually <em>do</em> about it. Along with Docker, VMware worked with the Center for Internet Security (CIS) to prepare a security benchmark for Docker 1.6 (available <a href="http://benchmarks.cisecurity.org/downloads/show-single/index.cfm?file=docker16.100">here</a>), and has updated VMware vRealize Configuration Manager to support assessing containerized environments against this benchmark. More details, along with screenshots and explanations of some of the CIS benchmark settings, are found in <a href="http://blogs.vmware.com/security/2015/05/vmware-releases-security-compliance-solution-docker-containers.html">this VMware blog post</a>.</li>
+<li>Cody Bunch (re-)posted <a href="http://blog.codybunch.com/2015/05/12/Update-Userdata-Hardening-Script/">a hardening script for Ubuntu</a> that is intended to be supplied as userdata (of some sort) when deploying to a cloud platform. Also from Cody is <a href="http://blog.codybunch.com/2015/05/15/Using-the-CIS-Ansible-Role-against-CentOSRHEL/">this post</a> talking about using the CIS Ansible role to apply the CIS benchmark against CentOS/RHEL systems.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>The topic of HA (high availability) in cloud computing environments, particularly OpenStack environments, is a topic with many different aspects. Russell Bryant explores some of <a href="http://blog.russellbryant.net/2015/03/10/the-different-facets-of-openstack-ha/">the different facts of OpenStack HA</a> in a comprehensive and (in my opinion) well-written article.</li>
+<li>Interesting in building your own NSX lab, but don&rsquo;t have the equipment in your own home lab? Here&rsquo;s an article on how one person used Ravello Systems&rsquo; new functionality supporting nested ESXi to <a href="http://www.ravellosystems.com/blog/vmware-nsx-lab-on-aws/">build an NSX lab on AWS</a>.</li>
+<li>Juan Manuel Rey walks you through <a href="https://jreypo.wordpress.com/2015/04/29/how-to-patch-your-vio-environment/">applying a patch to your VMware Integrated OpenStack (VIO) environment</a>. Pretty painless, to be honest.</li>
+<li>Darryl Cauldwell has a write-up on <a href="http://darrylcauldwell.com/vrealize-log-insight-for-vmware-integrated-openstack/">using VMware Log Insight with VMware Integrated OpenStack</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>In late March there was a &ldquo;Docker in Production&rdquo; meetup, and a summary post from that meetup&mdash;with links to videos of the presentations&mdash;is available <a href="http://blog.heavybit.com/blog/2015/3/23/dockermeetup">via the Heavybit blog</a>. Companies sharing their Docker production stories included Iron.io, ClusterHQ, RelateIQ, and Docker Inc.</li>
+<li>A new release of Docker Compose&mdash;version 1.2&mdash;happened in mid-April, with some new features. The new <code>extends</code> feature is perhaps the most notable one, which allows for sharing configurations between services and environments. Have a look at <a href="http://blog.docker.com/2015/04/easily-configure-apps-for-multiple-environments-with-compose-1-2-and-much-more/">this blog post</a> for all the details.</li>
+<li>Frank Hinek has a basic&mdash;but very thorough and very useful&mdash;post on <a href="http://frankhinek.com/maintaining-bind-dns-records/">maintaining DNS records in BIND</a>. It&rsquo;s a great resource for both BIND newbies as well as those who don&rsquo;t muck around enough in BIND to have this stuff memorized (like me).</li>
+<li>Here&rsquo;s a guide to <a href="http://www.damagehead.com/blog/2015/04/28/deploying-a-dns-server-using-docker/">deploying a DNS server using Docker</a>.</li>
+<li>I keep waffling between Ansible and SaltStack as my &ldquo;next-generation&rdquo; configuration management solution. In the event you&rsquo;re in the same boat, here&rsquo;s something to tip the scales in the SaltStack direction: <a href="http://blog.codybunch.com/2015/04/28/SaltStack-and-Multi-Minions-with-Vagrant/">a Vagrant environment to build a SaltStack multi-minion setup</a>.</li>
+<li>Eric Gray has a nice write-up on <a href="http://www.vcritical.com/2015/05/use-lightwave-to-authenticate-ssh-logins-to-photon/">using Lightwave for authentication with Photon</a>.</li>
+<li>Google shook up the container world recently when it announced integration between Kubernetes and AppC. Some took that as a knock against Docker; Google was quick to respond, via <a href="http://blog.kubernetes.io/2015/05/docker-and-kubernetes-and-appc.html">this blog post</a>, to say that Docker is still important to Google and to containers in general.</li>
+<li>This is pretty cool: a <em>cross-platform</em> (ARM and x86_64) hybrid cloud built on top of Docker. Get all the details <a href="http://java.dzone.com/articles/cross-platform-hybrid-cloud">here</a>.</li>
+<li>Cool&mdash;<a href="https://github.com/m451/coopto">a Docker plugin for vRealize Orchestrator</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time around, but I&rsquo;ll keep my eyes peeled for content to include in future posts.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Based on <a href="http://www.thomasmaurer.ch/2015/05/hyper-v-vnext-is-going-to-support-nested-virtualization/">this report</a>, it looks like the next revision of Microsoft Hyper-V will support nested virtualization. VMware fans have been able to take advantage of nested virtualization for a while, and with the addition of this functionality now Microsoft fans will be able to do the same (hat tip to William Lam).</li>
+<li>This list of <a href="http://blog.codybunch.com/2015/04/28/VMware--Vagrant-Performance-Hacks/">VMware and Vagrant performance hacks</a> is quite handy. Thanks Cody!</li>
+</ul>
+<p>I still have so much more to share with you, but I&rsquo;d better wrap this up now before it gets any longer. Otherwise, I&rsquo;ll have to start calling these posts &ldquo;Technology Long Takes&rdquo;!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovn">OVN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/05/21/using-apt-proxy/">Using an Apt Proxy</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/05/26/bootstrap-servers-ansible/">Bootstrapping Servers into Ansible</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f22%2ftechnology-short-take-51%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f22%2ftechnology-short-take-51%2f&text=Technology%20Short%20Take%20%2351" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f05%2f22%2ftechnology-short-take-51%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2015/01/07/technology-short-take-47/">Technology Short Take #47</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

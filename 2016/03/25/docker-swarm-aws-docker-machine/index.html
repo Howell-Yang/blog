@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Docker Swarm on AWS using Docker Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Docker Swarm on AWS using Docker Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Docker Swarm on AWS using Docker Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/03/25/docker-swarm-aws-docker-machine/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Docker Swarm on AWS using Docker Machine</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;794 words (estimated 4 minutes to read)</span>
+  <p>In this post I&rsquo;m going to talk about how to use <a href="https://www.docker.com/products/docker-machine">Docker Machine</a> to build a <a href="https://www.docker.com/products/docker-swarm">Docker Swarm</a> cluster on <a href="https://aws.amazon.com/">Amazon Web Services (AWS)</a>. This post is an adaptation of <a href="https://docs.docker.com/swarm/provision-with-machine/">this Docker documentation post</a> that shows how to build a Swarm cluster using <a href="https://www.virtualbox.org/">VirtualBox</a>.</p>
+<p>This post builds on the earlier post I wrote on <a href="/2016/03/22/using-docker-machine-with-aws/">using Docker Machine with AWS</a>, so feel free to refer back to that post for more information or more details anywhere along the way.</p>
+<p>At a high level, the process looks like this:</p>
+<ol>
+<li>Obtain a Swarm cluster token.</li>
+<li>Provision the Swarm master.</li>
+<li>Provision the Swarm nodes.</li>
+</ol>
+<p>Let&rsquo;s take a look at these steps in a bit more detail.</p>
+<h2 id="obtain-a-swarm-cluster-token">Obtain a Swarm Cluster Token</h2>
+<p>There&rsquo;s at least a couple ways to do this, but they pretty much all involve a Linux VM using the Swarm Docker image. It&rsquo;s up to you exactly how you want to do this&mdash;you can use a local VM, or you can use an AWS instance. The Docker documentation tutorial uses a local VM with the VirtualBox driver:</p>
+<pre><code>docker-machine create -d virtualbox local
+env $(docker-machine env local)
+docker run swarm create
+</code></pre>
+<p>The first command above creates a VirtualBox VM (named &ldquo;local&rdquo;) and provisions Docker Engine on that VM. The second command configures the local Docker client to use this VM as its Docker host, and the final command runs <code>swarm create</code>, which pulls down the Docker Swarm image, contacts Docker Hub, and obtains a Swarm discovery token (which is output to the screen).</p>
+<p>You could do the same thing with Docker Machine&rsquo;s <a href="http://www.vmware.com/products/fusion/">VMware Fusion</a> driver, which would change the first command to this:</p>
+<pre><code>docker-machine create -d vmwarefusion local
+</code></pre>
+<p>Similarly, you could use an existing VM and use Docker Machine&rsquo;s generic driver. I described this process in an earlier post about <a href="/2015/08/04/using-vagrant-docker-machine-together/">using Docker Machine and Vagrant together</a>.</p>
+<p>Finally, you could use an AWS instance, which would change the first command to something like this:</p>
+<pre><code>docker-machine create -d amazonec2 token
+</code></pre>
+<p>This command uses the default values of Docker Machine&rsquo;s Amazon EC2 driver (uses the us-east-1 region, Ubuntu 15.10, &ldquo;ubuntu&rdquo; user, and a generated SSH key). Because we&rsquo;re using a different name in this command, then the second command would need to reference this new name:</p>
+<pre><code>eval $(docker-machine env token)
+</code></pre>
+<p>Once you have the output from the final <code>docker run swarm create</code> command, note that discovery token somewhere safe, as you&rsquo;ll need it in just a couple moments.</p>
+<h2 id="provision-the-swarm-master">Provision the Swarm Master</h2>
+<p>With the Swarm discovery token from Docker Hub safely in hand, you&rsquo;re now ready to provision the Swarm master. The idea here is to provision the entire Swarm cluster on EC2, so the command would look something like this:</p>
+<pre><code>docker-machine create -d amazonec2 \
+--swarm --swarm-master \
+--swarm-discovery token://&lt;Swarm discovery token&gt; \
+master-node
+</code></pre>
+<p>This command uses the default values for Docker Machine&rsquo;s Amazon EC2 driver; refer back to <a href="/2016/03/22/using-docker-machine-with-aws/">my earlier post on Docker Machine with AWS</a> for some examples of how to customize this behavior (to provision into a specific region, for example).</p>
+<p>When the Swarm master is done provisioning, you&rsquo;re ready to proceed with provisioning the Swarm nodes.</p>
+<h2 id="provision-the-swarm-nodes">Provision the Swarm Nodes</h2>
+<p>The command to provision the Swarm nodes will look pretty much like the command to provision the Swarm master, but without the <code>--swarm-master</code> flag:</p>
+<pre><code>docker-machine create -d amazonec2 \
+--swarm --swarm-discovery token://&lt;Swarm discovery token&gt; \
+node-01
+</code></pre>
+<p>Repeat this command as needed (specifying a unique name for each node you add). This example command uses Docker Machine&rsquo;s default values for the Amazon EC2 driver; you might need to add extra flags to modify the behavior (to use a different AMI, a different SSH user, a custom SSH key, or a different AWS region).</p>
+<p>After you&rsquo;re done provisioning the nodes, then there&rsquo;s just one thing left: connecting to the cluster using your local Docker client.</p>
+<h2 id="connecting-to-the-cluster">Connecting to the Cluster</h2>
+<p>The <code>docker-machine</code> CLI has a small extra parameter needed when you connect to a Swarm cluster: the <code>--swarm</code> parameter. Here&rsquo;s an example:</p>
+<pre><code>eval $(docker-machine env --swarm master-node)
+</code></pre>
+<p>This will populate the appropriate environment variables so that you can run commands like <code>docker info</code> and it will connect to the Swarm cluster running on AWS.</p>
+<p>Note also that Docker Machine&rsquo;s Amazon EC2 driver will automatically create and populate a security group that allows in the appropriate Docker-related traffic.</p>
+<h2 id="decommissioning-the-cluster">Decommissioning the Cluster</h2>
+<p>Unless you&rsquo;re running this cluster for production workloads, you&rsquo;re going to want to shut down the cluster (and the corresponding AWS instances) when you&rsquo;re done (to avoid a hefty AWS bill). Just run <code>docker-machine rm &lt;name&gt;</code> for each of the AWS instances listed in the output of <code>docker-machine ls</code>. Docker Machine will automatically shut down and terminate the AWS instances.</p>
+<p>There you have it&mdash;now you can go create Swarm clusters running on AWS using Docker Machine. Have fun!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/03/24/learning-tools-updates/">Learning Tools Updates</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/03/28/adding-git-docker-machine-awareness-osx/">Adding Git and Docker Machine Awareness to OS X</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f25%2fdocker-swarm-aws-docker-machine%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f25%2fdocker-swarm-aws-docker-machine%2f&text=Docker%20Swarm%20on%20AWS%20using%20Docker%20Machine" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f25%2fdocker-swarm-aws-docker-machine%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/03/24/learning-tools-updates/">Learning Tools Updates</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2016/03/22/using-docker-machine-with-aws/">Using Docker Machine with AWS</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2016/01/28/docker-macvlan-interfaces/">Using Docker with macvlan Interfaces</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

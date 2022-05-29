@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Region and Endpoint Match in AWS API Requests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Region and Endpoint Match in AWS API Requests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Region and Endpoint Match in AWS API Requests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/02/27/region-endpoint-match-in-aws-api-requests/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Region and Endpoint Match in AWS API Requests</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;754 words (estimated 4 minutes to read)</span>
+  <p>Interacting directly with the AWS APIs&mdash;using a tool like <a href="https://www.postman.com/">Postman</a> (or, since I switched back to macOS, an application named <a href="https://paw.cloud/">Paw</a>)&mdash;is something I&rsquo;ve been doing off and on for a little while as a way of gaining a slightly deeper understanding of the APIs that tools like <a href="https://www.terraform.io/">Terraform</a>, <a href="https://www.pulumi.com/">Pulumi</a>, and others are calling when automating AWS. For a while, I struggled with AWS authentication, and after seeing Mark Brookfield&rsquo;s post on <a href="https://virtualhobbit.com/2020/02/26/wednesday-tidbit-using-postman-to-authenticate-to-aws/">using Postman to authenticate to AWS</a> I thought it might be helpful to share what I learned as well.</p>
+<p>The basis of Mark&rsquo;s post (I highly encourage you to go read it) is that he was having a hard time getting authenticated to AWS in order to automate the creation of some Route 53 DNS records. The root of his issue, as it turns out, was a mismatch between the region specified in his request and the API endpoint for Route 53. I know this because I ran into the exact same issue (although with a different service).</p>
+<p>The secret to uncovering this mismatch can be found in <a href="https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf">this &ldquo;AWS General Reference&rdquo; PDF</a>. Specifically with regard to Route 53, check out this quote from the document:</p>
+<blockquote>
+<p>When you submit requests using the AWS CLI or SDKs, either leave the Region and endpoint unspecified, or specify us-east-1 as the Region. When you submit requests using the Route 53 API, use the us-east-1 Region to sign requests.</p>
+</blockquote>
+<p>Also note that the list of API endpoints further down the page show that for all regions, the API endpoint is simply &ldquo;route53.amazonaws.com&rdquo;.</p>
+<p>This directly mirrors Mark&rsquo;s experience&mdash;even though he was working in the &ldquo;eu-west-1&rdquo; region, he had to use &ldquo;us-east-1&rdquo; as the region for authentication and the API endpoint was not region-specific.</p>
+<p>Now let&rsquo;s compare that to working with the EC2 API (see page 130 of the linked general reference PDF). Note that it does not provide any guidance like it did for Route 53, and note that region-specific API endpoints are listed. In cases like this&mdash;and this is where I was getting tripped up for a while in my efforts&mdash;<em>the region specified for signing the authentication request must match the region specified in the API endpoint.</em></p>
+<p>Here&rsquo;s an example from my own experiments. The screenshots below are taken from Paw, a macOS-native peer to Postman.</p>
+<p>If you want to follow along and try something like this yourself, you&rsquo;ll need to first install the &ldquo;AWS Signature 4 Auth Dynamic Value&rdquo; extension (Paw extensions are available <a href="https://paw.cloud/extensions/">here</a>):</p>
+<p><img src="/public/img/paw-auth-extension.jpg" alt="Paw extensions" title="Paw AWS Signature 4 Auth extension"></p>
+<p>Once the extension is installed, you can create a request. Add an Authorization header, and specify the AWS Signature 4 Auth extension as the value. Then configure the extension with the right values:</p>
+<p><img src="/public/img/paw-endpoint-auth-region-match.jpg" alt="AWS Signature 4 Auth extension configuration" title="Configuring the extension"></p>
+<p>(I&rsquo;m using environment variables here to provide my access key and secret key.)</p>
+<p>The key takeaway here is to note that the API endpoint (<code>https://ec2.us-west-2.amazonaws.com</code>) for the request matches the region specified in the extension configuration&mdash;and it&rsquo;s the value specified in the extension configuration that&rsquo;s used to sign the authentication request. If these two values are mismatched&mdash;for example, if the request is sent to <code>https://ec2.amazonaws.com</code> but the signing region is set to &ldquo;us-west-2&rdquo;, then the authentication will fail. (You can follow the discussion about the errors I was seeing on <a href="https://github.com/badslug/Paw-AWSSignature4DynamicValue/issues/20">this GitHub issue</a>.)</p>
+<p>Knowing when you need to use a region-specific endpoint (and thus match the region in the request) and when you can/should use a generic endpoint is where <a href="https://docs.aws.amazon.com/general/latest/gr/aws-general.pdf">the general reference PDF</a> comes in. Unfortunately, for other services that use a generic API endpoint&mdash;like IAM&mdash;it&rsquo;s not clear if you should leave the region blank or specify &ldquo;us-east-1&rdquo; (it&rsquo;s not called out like it is for Route 53). A quick test with Paw shows that IAM calls should be handled like Route 53 calls, but it would be great if the API documentation was updated to reflect this (I also took a look at <a href="https://docs.aws.amazon.com/IAM/latest/APIReference/iam-api.pdf">the IAM API reference</a> to see if it was called out there, but didn&rsquo;t find it).</p>
+<p>Anyway, this is all just a long-winded way of saying that for AWS services that have region-specific API endpoints you&rsquo;ll need to be sure to use a matching region in the Authorization header; for AWS services that have a generic API endpoint (like Route 53 or IAM), you&rsquo;ll most likely need to either leave the region blank or specify &ldquo;us-east-1&rdquo;.</p>
+<p>Hit me up <a href="https://twitter.com/scott_lowe">on Twitter</a> if you have more information, additional resources that other readers may find useful, or if something I&rsquo;ve said above needs to be corrected. (You can also just say hi if you&rsquo;d like.)</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/02/19/retrieving-kubeconfig-cluster-api-workload-cluster/">Retrieving the Kubeconfig for a Cluster API Workload Cluster</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/03/02/technology-short-take-124/">Technology Short Take 124</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f02%2f27%2fregion-endpoint-match-in-aws-api-requests%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f02%2f27%2fregion-endpoint-match-in-aws-api-requests%2f&text=Region%20and%20Endpoint%20Match%20in%20AWS%20API%20Requests" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f02%2f27%2fregion-endpoint-match-in-aws-api-requests%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/02/18/setting-up-k8s-on-aws-kubeadm-manual-certificate-distribution/">Setting up K8s on AWS with Kubeadm and Manual Certificate Distribution</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2020/02/05/building-an-isolated-kubernetes-cluster-on-aws/">Building an Isolated Kubernetes Cluster on AWS</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2020/01/25/creating-aws-vpc-endpoint-with-pulumi/">Creating an AWS VPC Endpoint with Pulumi</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VIR358: Hyper-V Architecture, Scenarios, and Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VIR358: Hyper-V Architecture, Scenarios, and Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VIR358: Hyper-V Architecture, Scenarios, and Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/06/12/vir358-hyper-v-architecture-scenarios-and-networking/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VIR358: Hyper-V Architecture, Scenarios, and Networking</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1417 words (estimated 7 minutes to read)</span>
+  <p>Day 3 of Tech-Ed 2008 is upon me, and the first session of the day is another session with Jeff Woolsey. This session, VIR358, is titled &ldquo;Windows Server 2008 Hyper-V Architecture, Scenarios, and Networking.&rdquo; I suspect there will be some duplicate content from <a href="/2008/06/10/vir367-hyper-v-security-and-best-practices/">Jeff&rsquo;s Day 1 session</a>, and I&rsquo;ll try to weed that out wherever possible. I&rsquo;m particularly interested in the networking discussions, as I was unable to gather any real information on Hyper-V networking from the Day 1 session or from <a href="/2008/06/10/a-discussion-with-jeff-woolsey/">my private discussion with Jeff</a>.</p>
+<p>As the session begins, Jeff reminds everyone of the MAP 3.1 beta. I described MAP in more detail in a <a href="/2008/06/11/vir361-introducing-map-for-windows-server-2008-hyper-v/">session yesterday</a>. This new version adds some additional functionality and features, primarily around Windows Server 2008 Hyper-V. Jeff went into some additional detail about MAP, but I won&rsquo;t worry about covering that again here.</p>
+<p>Jeff&rsquo;s agenda lists a virtualization comparison. I&rsquo;m guessing that will mean a comparison of Hyper-V with other virtualization solutions. Will that comparison be against other vendors&rsquo; products?</p>
+<p>According to IDC, virtualization penetration is estimated to be only 17% in 2010, up from 5% in 2005.</p>
+<p>(The session is <em>very</em> crowded, perhaps the most crowded session I&rsquo;ve attended thus far.)</p>
+<p>With regards to system requirements, Hyper-V requires hardware assists (Intel VT or AMD-V) and hardware-enabled data execution prevention (DEP; in the form of AMD NX or Intel XD). Without these features, Hyper-V will not operate. Hyper-V is 64-bit also, meaning that you must use x64 processors.</p>
+<p>Jeff describes the hypervisor itself as running in &ldquo;Ring -1&rdquo;, which he explains as less than Ring 0 due to the hardware assists provided by Intel VT or AMD V. This allows child partitions (guest VMs) to run at native Ring 0.</p>
+<p>The architecture slide that Jeff takes some time to walk through contains much of the same information as VIR367 on Day 1. Going back to I/O again, Jeff revisits the concept of emulation (used in Virtual Server) vs. synthetic devices. Emulation provides great backward compatibility, but performance was awful. Hyper-V uses &ldquo;driver enlightenment,&rdquo; or synthetic devices, which leverage VMBus. VMBus is a point-to-point high-speed connection between a child partition and the parent partition. Note that synthetic devices are only available to &ldquo;enlightened&rdquo; guest operating systems. You can consider Hyper-V&rsquo;s synthetic devices and their corresponding drivers to be the equivalent of VMware Tools, VI Tools, etc. Some vendors also call these paravirtualized drivers. Virtualization Service Providers (VSPs) and Virtualization Service Clients (VSCs) are part of this synthetic device architecture and VMBus.</p>
+<p>The partnerships between Microsoft and Linux vendors (like Novell) allows for enlightened drivers to be available for Linux distributions as well, preventing them from having to use emulation and suffering the performance penalty that results.</p>
+<p>Hyper-V features checklist includes support for up to 64GB of RAM per VM, up to 4 logical CPUs per VM, integrated cluster support (this provides both HA and Quick Migration functionality), support for BitLocker (earlier sessions seemed to question Hyper-V support for BitLocker), live VM backups through integration with Volume Shadow Service (VSS), pass-through disk access for VMs, VLAN and load balancing support, and snapshots. For the most part, this puts Hyper-V on par with most other virtualization solutions, with the glaring exception of live migration. Live migration is supported by VMware, XenServer, and Virtual Iron, among others. Microsoft does have an advantage with the VSS support for live VM backups.</p>
+<p>Jeff references a white paper due to be published soon that details how to use BitLocker with Hyper-V.</p>
+<p>Jeff did cover one slide on Hyper-V security. I won&rsquo;t reproduce that stuff again; refer back to my coverage of Jeff&rsquo;s discussion on Day 1 in VIR367.</p>
+<p>Next, Jeff reviews the results of the TAP, RDP, and MSIT deployments. Based on thousands of VMs running on Hyper-V running in production across a variety of industries, Jeff says there have been zero performance blockers, zero deployment blockers, zero application compatibility bugs, and zero scalability blockers. According to Jeff, &ldquo;the little red phone&rdquo; that TAP or RDP customers can call if there&rsquo;s a problem hasn&rsquo;t rung even once. He also revisits the use of Hyper-V for the TechNet and MSDN web sites.</p>
+<p>Mike Sterling then takes over to provide a demo of Hyper-V. Following the demo of Hyper-V, Mike also provides a brief demo of System Center Virtual Machine Manager (SCVMM) 2008. I&rsquo;ve covered that product extensively in <a href="/2008/06/11/vir253-microsoft-system-center-vmm-2008-part-1-of-2/">other</a> <a href="/2008/06/11/vir360-microsoft-system-center-vmm-2008-part-2-of-2/">sessions</a>, so I won&rsquo;t cover that material again here.</p>
+<p>Once Mike concludes his demo, Jeff starts into a discussion of networking. Microsoft recommends <em>at least</em> two network adapters; obviously, more would be better. If you are going to use iSCSI, use another dedicated NIC for storage. That brings it up to three NICs at a minimum. I recommend an absolute minimum of three adapters with other virtualization solutions, so this is nothing surprising or unusual. In terms of connecting the NICs, connect one NIC to a management network (this is where the parent partition will communicate) and separate NICs connected to storage and production networks. Only VMs should be exposed to production networks.</p>
+<p>We now move into some networking examples. In example 1, we have 4 adapters. One adapter will be assigned to the parent partition for management, and the remaining three NICs will be used for VM networking. Storage in this case will not be iSCSI; it will be Fibre Channel or direct attached. In the Hyper-V configuration, selecting these three NICs for use with VM traffic creates <em>three</em> separate virtual switches. What about NIC bonding for virtual switches?</p>
+<p>In example 2, we have 4 adapters again, but this time 1 NIC will be used for iSCSI traffic. This leaves only two NICs for VM traffic. This example shows multiple VMs sharing a single virtual switch, but I still don&rsquo;t see anything with multiple NICs assigned to a single virtual switch.</p>
+<p>When looking at the properties for NICs assigned to the parent partition, all the typical components will be bound. Conversely, for NICs assigned to virtual switches, only the Virtual Switch Protocol will be bound to the NIC.</p>
+<p>When looking at a VM, emulated NICs will be listed as &ldquo;Legacy Network Adapter,&rdquo; whereas the new synthetic adapters will be listed simply as &ldquo;Network Adapter.&rdquo;</p>
+<p>If you&rsquo;d like to run Hyper-V on a laptop (perhaps for demos or testing), Hyper-V does not provide any support for wireless networks. It also doesn&rsquo;t support sleep or hibernation, and multiple spindles (multiple physical hard disks) are highly recommended. You also need a laptop that uses the Santa Rosa chipset or a later chipset. These newer chipsets will allow you to use 4GB of RAM or more in the laptop.</p>
+<p>Jeff went through a few more slides, describing his personal laptop configuration (dual-boot Windows Server 2008 and Windows Vista with dual hard drives), a cheap test/dev system, and the overall procedure for creating new VMs. I believe I described the process for creating new VMs earlier, but if you&rsquo;ve used a virtualization solution before there&rsquo;s nothing new here. Jeff speaks highly of the rapid deployment capabilities that are possible now with Hyper-V, SCVMM, and VM libraries; I would dare to say this kind of functionality is pretty standard with most every virtualization solution out there. That&rsquo;s not a knock against Hyper-V, just a &ldquo;level set&rdquo; that this isn&rsquo;t something that doesn&rsquo;t exist with other platforms. This just brings Hyper-V on the same level with other products.</p>
+<p>The next few slides were all material that&rsquo;s already been covered else, like SCVMM, SCOM integration with SCVMM, other System Center components, etc. I won&rsquo;t bore you with all the details again. If there is one thing that I&rsquo;m tired of hearing here at Tech-Ed this year, it&rsquo;s the story about bringing all of System Center together with Hyper-V. Every single session says it.</p>
+<p>The virtualization comparison first compares Hyper-V with Virtual Server 2005 R2, and then moves on to compare Hyper-V with ESX 3.5. I don&rsquo;t necessarily agree with the way in which Jeff makes the comparisons with ESX; for example, he lists Hyper-V as having &ldquo;unified physical and virtual management&rdquo; but ESX as having only &ldquo;virtual management.&rdquo; It&rsquo;s not Hyper-V that provides this functionality; that&rsquo;s System Center Operations Manager. That kind of comparison is, in my opinion, playing loose and fast with the boundaries of the products and related products. I may just have to perform and publish my own comparison&hellip;</p>
+<p>That wrapped up the session. They gave away three copies of Windows Server 2008, SQL Server, Visual Studio, but I didn&rsquo;t win. Bummer.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/teched2008">TechEd2008</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/06/12/small-tech-ed-schedule-change/">Small Tech-Ed Schedule Change</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/06/12/significant-networking-problem-with-hyper-v/">Significant Networking Problem with Hyper-V</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f12%2fvir358-hyper-v-architecture-scenarios-and-networking%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f12%2fvir358-hyper-v-architecture-scenarios-and-networking%2f&text=VIR358%3a%20Hyper-V%20Architecture%2c%20Scenarios%2c%20and%20Networking" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f12%2fvir358-hyper-v-architecture-scenarios-and-networking%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/06/11/mgt374-offline-virtual-machine-servicing-tool/">MGT374: Offline Virtual Machine Servicing Tool</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2008/06/11/vir361-introducing-map-for-windows-server-2008-hyper-v/">VIR361: Introducing MAP for Windows Server 2008 Hyper-V</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2008/06/11/vir250-advanced-storage-connectivity-for-vms/">VIR250: Advanced Storage Connectivity for VMs</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

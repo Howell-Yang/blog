@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Reducing the Friction: BBEdit to MarsEdit - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Reducing the Friction: BBEdit to MarsEdit - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Reducing the Friction: BBEdit to MarsEdit - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/05/31/reducing-the-friction-bbedit-to-marsedit/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Reducing the Friction: BBEdit to MarsEdit</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;543 words (estimated 3 minutes to read)</span>
+  <p>In some of the presentations that I give on productivity and efficiency, one of the things I mention is <em>reducing the friction</em>; that is, making processes more streamlined so they&rsquo;re easier to perform. In this post, I&rsquo;m going to describe one way I reduced the friction for producing and publishing blog posts using <a href="http://www.barebones.com/products/bbedit/">BBEdit</a>, <a href="http://www.unmarked.com/textsoap/">TextSoap</a>, <a href="http://www.read-sweater.com/marsedit/">MarsEdit</a>, and some AppleScript.</p>
+<p>It&rsquo;s no secret that I&rsquo;ve become a huge fan of <a href="http://daringfireball.com/markdown/">Markdown</a>, the human-readable plain text &ldquo;markup&rdquo; format created by Jon Gruber. The <em>vast</em> majority of all my content is now created in Markdown, and then converted to RTF (to share with my Office-using co-workers), PDF (for broader publication), or HTML (for publishing online). Until very recently, my blog publishing process looked something like this:</p>
+<ol>
+<li>
+<p>Write the blog post in Markdown, using <a href="http://macromates.com/">TextMate</a>.</p>
+</li>
+<li>
+<p>Using a built-in Markdown binary in TextMate, convert the Markdown into HTML.</p>
+</li>
+<li>
+<p>Run the raw HTML through TextSoap (very handy tool) to remove smart quotes and curly apostrophes.</p>
+</li>
+<li>
+<p>Paste the parsed HTML into MarsEdit for publication to my blog.</p>
+</li>
+</ol>
+<p>While it seems complicated, it wasn&rsquo;t terribly complicated&mdash;but it wasn&rsquo;t as seamless as it could be. So, I set out to improve the process. The first big change was a switch from TextMate to BBEdit, which is more extensible (and kept up to date by the developer). That change allowed me to do two things:</p>
+<ul>
+<li>
+<p>Switch from the built-in Markdown support in TextMate to using a separate (and more up-to-date) MultiMarkdown binary maintained by Fletcher Penny.</p>
+</li>
+<li>
+<p>Introduce an AppleScript (BBEdit has outstanding support for AppleScript) to automate some portion of the process.</p>
+</li>
+</ul>
+<p>My first pass at automating the process just got me back to where I was before&mdash;writing Markdown in BBEdit, converting to HTML, cleaning the HTML with TextSoap, and pasting into MarsEdit. Not too impressive, but acceptable, and a process with which I was familiar. I stuck with that process for a while, primarily because it was a known entity. A couple of days ago, though, I asked myself: Can I do better? Can I be more efficient?</p>
+<p>So, my second pass at automating the process is much more comprehensive. The AppleScript I wrote as a result of challenging myself to <em>reduce the friction</em> does the following:</p>
+<ul>
+<li>
+<p>Takes the Markdown from BBEdit and converts it to HTML.</p>
+</li>
+<li>
+<p>Using the HTML produced by the standalone MultiMarkdown binary, it then calls TextSoap to (in the background) clean the HTML according to a custom cleaner I&rsquo;d created (the custom cleaner, called &ldquo;Replace HTML Entities,&rdquo; just replaces curly quotes and curly apostrophes, which don&rsquo;t translate well on my site).</p>
+</li>
+<li>
+<p>Creates a new, blank blog post in MarsEdit, into which it pastes the cleaned HTML as the body of the post.</p>
+</li>
+</ul>
+<p>I store the script in BBEdit&rsquo;s scripts folder, which means I can invoke the script easily from within BBEdit.</p>
+<p>The entire AppleScript is available <a href="https://gist.github.com/scottslowe/5686217">right here</a> as a GitHub Gist.</p>
+<p>Now, I can write my Markdown in BBEdit, invoke the script, and get dropped out to HTML code sitting in a new blog post in MarsEdit. All I need to do to publish the post at that point is supply the metadata (tags, categories, title, excerpt) and click Send to Blog. Done. (I used this process for this post, in fact.) How&rsquo;s that for reduced friction?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/markdown">Markdown</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/05/30/a-use-case-for-policy-routing-with-kvm-and-open-vswitch/">A Use Case for Policy Routing with KVM and Open vSwitch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/06/04/technology-short-take-33/">Technology Short Take #33</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f31%2freducing-the-friction-bbedit-to-marsedit%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f31%2freducing-the-friction-bbedit-to-marsedit%2f&text=Reducing%20the%20Friction%3a%20BBEdit%20to%20MarsEdit" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f31%2freducing-the-friction-bbedit-to-marsedit%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/18/exporting-outlines-as-markdown/">Exporting Outlines as Markdown</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2011/10/05/content-creation-and-mind-mapping/">Content Creation and Mind Mapping</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2009/01/07/managing-information-flow/">Managing Information Flow</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

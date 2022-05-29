@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>I Tried to Like Postbox, I Really Did - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="I Tried to Like Postbox, I Really Did - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="I Tried to Like Postbox, I Really Did - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/01/i-tried-to-like-postbox-i-really-did/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">I Tried to Like Postbox, I Really Did</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;594 words (estimated 3 minutes to read)</span>
+  <p>If you haven&rsquo;t yet heard about <a href="http://www.postbox-inc.com/">Postbox</a>, it&rsquo;s a new Mac OS X e-mail application built on Mozilla technology that intends to offer a new and different way of working with e-mail. From the Postbox web site, you can look at some of the <a href="http://www.postbox-inc.com/features">features</a> the application offers as well as see some <a href="http://www.postbox-inc.com/screenshots">screenshots</a>.</p>
+<p>I&rsquo;ve been testing Postbox off and on since I was first invited into the beta, and at first I was really excited about Postbox. You see, I have my complaints about Mail.app, but there really aren&rsquo;t any good alternatives. Given that Postbox is based on <a href="http://www.mozillamessaging.com/en-US/thunderbird/">Mozilla Thunderbird</a> and I&rsquo;d heard good things about Thunderbird, I was excited that someone was releasing a more &ldquo;Mac-native&rdquo; version. I didn&rsquo;t want just a Mac port of an existing application, but rather a Mac-integrated build. That&rsquo;s why, for example, I use <a href="http://www.caminobrowser.org/">Camino</a> instead of the Mac version of Firefox.</p>
+<p>Although Postbox is a really nice application with features that some users will love, for me it just wasn&rsquo;t (and isn&rsquo;t) the right fit. Here are my reasons why. Keep in mind as you read this that YMMV (your mileage may vary).</p>
+<ul>
+<li>
+<p>I switch back and forth a lot between my home network, which has an HTTP proxy, and other networks that do not have an HTTP proxy. Currently I use <a href="http://www.blacktree.com/">Quicksilver</a> to switch between two network locations that are identical except for the proxy settings. Postbox doesn&rsquo;t honor the systemwide proxy settings, so switching back and forth between networks now requires another step. (This is one of those things that makes Postbox feel like a Mac port, not a Mac-native build.)</p>
+</li>
+<li>
+<p>Postbox doesn&rsquo;t integrate with the Mac OS X Keychain.</p>
+</li>
+<li>
+<p>It appears that Postbox&rsquo;s search functionality isn&rsquo;t tied to Spotlight. Why not leverage Spotlight?</p>
+</li>
+<li>
+<p>Postbox offers integration with the Mac OS X Address Book but also maintains its own address book. Why?</p>
+</li>
+<li>
+<p>I don&rsquo;t need Facebook, FriendFeed, or even Twitter integration in my e-mail client. I have other applications for those services.</p>
+</li>
+<li>
+<p>I don&rsquo;t like tabbed interfaces. Postbox does offer the ability to open messages in a new window instead of a new tab (thankfully!), but you can&rsquo;t turn the tabs off. I suppose this would be difficult given the UI layout and how it&rsquo;s used for the search features.</p>
+</li>
+<li>
+<p>Speaking of search features, I don&rsquo;t really need web search integration in my e-mail message windows. I also don&rsquo;t need image searching features. I&rsquo;m sure that home users that are sharing pictures with family members and friends would find that feature helpful, but not me.</p>
+</li>
+<li>
+<p>I&rsquo;d like to be able to turn off features that I don&rsquo;t want to see, like the preview pane (a long time complaint of mine with Mail.app as well!), the Compose Sidebar, and the web search pane. But you can&rsquo;t, at least not as far as I can tell.</p>
+</li>
+<li>
+<p>I&rsquo;d love to see AppleScript support. That would include the ability to launch an AppleScript from a message filter.</p>
+</li>
+</ul>
+<p>All of this is not to say that Postbox is a bad application; quite the opposite, in fact. It&rsquo;s just not the <em>right application for me.</em> Other users with other needs will likely find it to be a great fit for them. For me, I need an e-mail application that is focused on doing just one thing and doing it really, really well: managing e-mail. So far, I&rsquo;m still searching.</p>
+<p>Anyone else out there using Postbox? I&rsquo;d love to hear someone who&rsquo;s using it and loving it (and who&rsquo;s not a Postbox employee!). Feel free to speak up in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/03/31/storage-alignment-document/">Storage Alignment Document</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/02/partner-exchange-schedule/">Partner Exchange Schedule</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f01%2fi-tried-to-like-postbox-i-really-did%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f01%2fi-tried-to-like-postbox-i-really-did%2f&text=I%20Tried%20to%20Like%20Postbox%2c%20I%20Really%20Did" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f01%2fi-tried-to-like-postbox-i-really-did%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/01/20/configuring-mailapp-and-iphone-with-google-imap/">Configuring Mail.app and iPhone with Google IMAP</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2008/12/12/google-apps-doesnt-play-nice-with-mailtags/">Google Apps Doesn&#39;t Play Nice with MailTags</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2008/08/16/plain-text-messages-with-mailapp/">Plain Text Messages with Mail.app</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

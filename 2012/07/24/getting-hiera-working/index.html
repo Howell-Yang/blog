@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Getting Hiera Working - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Getting Hiera Working - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Getting Hiera Working - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/07/24/getting-hiera-working/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Getting Hiera Working</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;627 words (estimated 3 minutes to read)</span>
+  <p>As I mentioned in <a href="/2012/07/09/updated-multi-os-puppet-configuration/">a previous post</a>, the next iteration of my Puppet explorations involves the use of <a href="http://projects.puppetlabs.com/projects/hiera">Hiera</a>. Hiera, a project also managed by Puppet Labs, is described as &ldquo;a simple pluggable hierarchical database.&rdquo; In the Puppet world, what that means is we can use Hiera to store data values outside of the manifests, then look them up dynamically as the configurations are being compiled and applied to the nodes. In a future post, I&rsquo;ll provide an example of how you could use Hiera in a multi-OS Puppet environment.</p>
+<p>For now, though, I just want to talk about how to get Hiera up and running and working in a Puppet environment, as it wasn&rsquo;t as straightforward as I expected it to be.</p>
+<p>I&rsquo;m using the same virtual environment for this post as I&rsquo;ve used in previous posts. I have a Puppet master server running on an Ubuntu 12.04 LTS VM; this master server services client VMs running Ubuntu 12.04 LTS, CentOS 5.8, and OpenBSD 5.1. Keep in mind that if you are using a different distribution of Linux than what I&rsquo;m using here, your specific directories and paths might be slightly different.</p>
+<p>Here are the steps that I took to get Hiera up and running on the Puppet master server:</p>
+<ol>
+<li>
+<p>First, I used <code>gem install hiera hiera-puppet</code> to install Hiera and Hiera-Puppet (the connecting code between Hiera and Puppet).</p>
+</li>
+<li>
+<p>Optionally, you can next run <code>gem list</code> to verify that Hiera and Hiera-Puppet are included in the list of installed Ruby gems.</p>
+</li>
+<li>
+<p>You&rsquo;ll need to know exactly where the Hiera-Puppet files are found on your system, so run <code>gem list -d</code> to show the details of the installed gems. This will include the path where the files are found. On my Ubuntu 12.04 LTS Puppet master server, Hiera and Hiera-Puppet were installed to <code>/var/lib/gems/1.8/gems</code> (in their own directories, respectively).</p>
+</li>
+<li>
+<p>Next, you&rsquo;ll need to know where Puppet stores its modules. Run <code>puppet master --configprint modulepath</code> to get the list of directories where Puppet modules are stored. On my Ubuntu 12.04 LTS Puppet master server, that included <code>/etc/puppet/modules</code>.</p>
+</li>
+<li>
+<p>Copy the Hiera-Puppet directory (found in step 3) to one of the Puppet module directories (found in step 4). This ensures that Puppet can actually leverage Hiera. Note that <a href="http://puppetlabs.com/blog/first-look-installing-and-using-hiera/">this Puppet Labs post</a> provides a different process for accomplishing this; I found that their process didn&rsquo;t work in my environment.</p>
+</li>
+<li>
+<p>Hiera will need a directory to store its configuration files; I used <code>/etc/puppet/hieradata</code>. I don&rsquo;t think it matters where the directory is; just make a note of where.</p>
+</li>
+<li>
+<p>You&rsquo;ll need to create a Hiera configuration file located in the main Puppet directory (on my Ubuntu 12.04 LTS Puppet master server, this was <code>/etc/puppet</code>). This file is called <code>hiera.yaml</code> and will probably need to look something like this (you&rsquo;d specify the directory created in step 6 on the last line here):</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">:hierarchy</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">%{operatingsystem}</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">common</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">:backends</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">:yaml</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">:datadir</span>: <span style="color:#e6db74">&#39;/etc/puppet/hieradata&#39;</span>
+</span></span></code></pre></div><p>At this point, you should now have a working Hiera installation. In a future post, I&rsquo;ll show you how I used Hiera with Puppet to create OS-based customized configuration files.</p>
+<p>In the directory you created for Hiera and specified in <code>hiera.yaml</code>, you&rsquo;ll need to create the YAML files for your hierarchy. Since I&rsquo;m using a hierarchy based on operating system, I created YAML files for OpenBSD, CentOS, Ubuntu, etc. One note: the file names must match the operating system name returned by Facter <strong>exactly</strong>, including case (i.e., <code>OpenBSD.yaml</code> instead of <code>openbsd.yaml</code>).</p>
+<p>In working to get Hiera up and running, I found the following websites and pages to be helpful:</p>
+<p><a href="http://puppetlabs.com/blog/first-look-installing-and-using-hiera/">First Look: Installing and Using Hiera (part 1 of 2)</a></p>
+<p><a href="http://www.craigdunn.org/2011/10/puppet-configuration-variables-and-hiera/">Puppet configuration variables and Hiera</a></p>
+<p>Corrections, suggestions for improvement, or questions are always welcome! Speak up in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/07/22/seeking-feedback-on-infrastructure-coders-denver/">Seeking Feedback on Infrastructure Coders Denver</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/07/25/advanced-spotlight-queries-in-the-mac-gui/">Advanced Spotlight Queries in the Mac GUI</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f24%2fgetting-hiera-working%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f24%2fgetting-hiera-working%2f&text=Getting%20Hiera%20Working" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f24%2fgetting-hiera-working%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/07/09/updated-multi-os-puppet-configuration/">Updated Multi-OS Puppet Configuration</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2012/07/05/using-puppet-with-multiple-operating-systems/">Using Puppet with Multiple Operating Systems</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2012/07/06/open-source-tools-and-projects-i-should-learn/">Open Source Tools and Projects I Should Learn</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

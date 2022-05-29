@@ -1,0 +1,3168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/tags/virtualization/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  <link rel="alternate" type="application/rss+xml" href="https://www.howellyang.com/tags/virtualization/feed.xml" title="Scott's Weblog" />
+    <link rel="feed" type="application/rss+xml" href="https://www.howellyang.com/tags/virtualization/feed.xml" title="Scott's Weblog" />
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+
+
+<div class="post">
+  <h1 class="post-title">All Posts With Tag &ldquo;Virtualization&rdquo;</h1>
+  <span class="post-date"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Back to <a href="/tags/">Content Tags</a> &middot; <i class="fa fa-rss" aria-hidden="true"></i> <a href="/tags/virtualization/feed.xml">RSS Feed</a> for this tag</span>
+  <ul id="list">
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2022/05/27/technology-short-take-155/">Technology Short Take 155</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2022/04/29/technology-short-take-154/">Technology Short Take 154</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2022/04/15/technology-short-take-153/">Technology Short Take 153</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2022/02/28/technology-short-take-152/">Technology Short Take 152</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2022/01/21/technology-short-take-151/">Technology Short Take 151</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2021/12/31/technology-short-take-150/">Technology Short Take 150</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2021/12/10/technology-short-take-149/">Technology Short Take 149</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2021/11/19/technology-short-take-148/">Technology Short Take 148</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2021/10/29/technology-short-take-147/">Technology Short Take 147</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2021/10/08/technology-short-take-146/">Technology Short Take 146</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2021/09/24/technology-short-take-145/">Technology Short Take 145</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2021/08/27/technology-short-take-144/">Technology Short Take 144</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2021/08/06/technology-short-take-143/">Technology Short Take 143</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2021/07/16/technology-short-take-142/">Technology Short Take 142</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2021/06/18/technology-short-take-141/">Technology Short Take 141</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2021/05/07/technology-short-take-140/">Technology Short Take 140</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2021/04/02/technology-short-take-139/">Technology Short Take 139</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2021/03/12/technology-short-take-138/">Technology Short Take 138</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2021/02/12/technology-short-take-137/">Technology Short Take 137</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2021/01/15/technology-short-take-136/">Technology Short Take 136</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2020/12/11/technology-short-take-135/">Technology Short Take 135</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2020/11/25/technology-short-take-134/">Technology Short Take 134</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2020/11/06/technology-short-take-133/">Technology Short Take 133</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2020/10/23/technology-short-take-132/">Technology Short Take 132</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2020/10/02/technology-short-take-131/">Technology Short Take 131</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2020/08/21/technology-short-take-130/">Technology Short Take 130</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2020/07/17/technology-short-take-129/">Technology Short Take 129</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2020/06/23/fixes-for-some-vagrant-issues-on-fedora/">Fixes for Some Vagrant Issues on Fedora</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2020/06/19/technology-short-take-128/">Technology Short Take 128</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2020/05/29/technology-short-take-127/">Technology Short Take 127</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2020/04/24/technology-short-take-126/">Technology Short Take 126</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2020/03/20/technology-short-take-125/">Technology Short Take 125</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2020/03/02/technology-short-take-124/">Technology Short Take 124</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2020/01/17/technology-short-take-123/">Technology Short Take 123</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2019/12/27/technology-short-take-122/">Technology Short Take 122</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2019/12/06/technology-short-take-121/">Technology Short Take 121</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2019/11/22/technology-short-take-120/">Technology Short Take 120</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2019/09/27/technology-short-take-119/">Technology Short Take 119</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2019/08/26/liveblog-vmworld-2019-day-1-general-session/">Liveblog: VMworld 2019 Day 1 General Session</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2019/08/23/technology-short-take-118/">Technology Short Take 118</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2019/08/02/technology-short-take-117/">Technology Short Take 117</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2019/07/05/technology-short-take-116/">Technology Short Take 116</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2019/06/21/technology-short-take-115/">Technology Short Take 115</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2019/05/17/technology-short-take-114/">Technology Short Take 114</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2019/05/05/a-sandbox-for-learning-pulumi/">A Sandbox for Learning Pulumi</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2019/05/03/technology-short-take-113/">Technology Short Take 113</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2019/04/19/technology-short-take-112/">Technology Short Take 112</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2019/03/01/technology-short-take-111/">Technology Short Take 111</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2019/02/01/technology-short-take-110/">Technology Short Take 110</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2019/01/11/technology-short-take-109/">Technology Short Take 109</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2018/12/21/technology-short-take-108/">Technology Short Take 108</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2018/11/30/technology-short-take-107/">Technology Short Take 107</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2018/11/09/technology-short-take-106/">Technology Short Take 106</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2018/10/05/technology-short-take-105/">Technology Short Take 105</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2018/09/07/technology-short-take-104/">Technology Short Take 104</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2018/08/17/technology-short-take-103/">Technology Short Take 103</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2018/07/13/technology-short-take-102/">Technology Short Take 102</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2018/06/08/quadruple-provider-vagrant-environment/">A Quadruple-Provider Vagrant Environment</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2018/06/08/technology-short-take-101/">Technology Short Take 101</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2018/05/25/technology-short-take-100/">Technology Short Take 100</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2018/05/11/technology-short-take-99/">Technology Short Take 99</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2018/04/27/technology-short-take-98/">Technology Short Take 98</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2018/03/30/technology-short-take-97/">Technology Short Take 97</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2018/03/16/technology-short-take-96/">Technology Short Take 96</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2018/02/24/technology-short-take-95/">Technology Short Take 95</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2018/02/09/technology-short-take-94/">Technology Short Take 94</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2018/01/24/update-on-using-docker-machine-with-vagrant/">An Update on Using Docker Machine with Vagrant</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2018/01/19/technology-short-take-93/">Technology Short Take 93</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2018/01/05/technology-short-take-92/">Technology Short Take 92</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2017/12/08/technology-short-take-91/">Technology Short Take 91</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2017/12/06/using-vagrant-with-libvirt-on-fedora/">Using Vagrant with Libvirt on Fedora 27</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2017/11/10/technology-short-take-90/">Technology Short Take 90</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2017/11/07/lessons-learned-running-container-native-cloud/">Lessons Learnt from Running a Container-Native Cloud</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2017/10/27/technology-short-take-89/">Technology Short Take 89</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2017/10/14/technology-short-take-88/">Technology Short Take 88</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2017/09/22/technology-short-take-87/">Technology Short Take 87</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2017/08/25/technology-short-take-86/">Technology Short Take 86</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2017/08/11/technology-short-take-85/">Technology Short Take 85</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2017/06/19/technology-short-take-84/">Technology Short Take 84</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2017/05/26/technology-short-take-83/">Technology Short Take 83</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2017/05/05/technology-short-take-82/">Technology Short Take 82</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2017/04/07/technology-short-take-81/">Technology Short Take 81</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2017/03/24/technology-short-take-80/">Technology Short Take 80</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2017/03/03/technology-short-take-79/">Technology Short Take #79</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2017/02/24/adding-metadata-arista-veos-vagrant-box/">Adding Metadata to the Arista vEOS Vagrant Box</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2017/02/17/technology-short-take-78/">Technology Short Take #78</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2017/02/07/installing-virtualbox-51-fedora-25/">Installing VirtualBox 5.1 on Fedora 25</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2017/02/03/technology-short-take-77/">Technology Short Take #77</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2017/01/19/technology-short-take-76/">Technology Short Take #76</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2016/12/30/technology-short-take-75/">Technology Short Take #75</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2016/12/09/technology-short-take-74/">Technology Short Take #74</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2016/12/09/using-ovn-with-kvm-libvirt/">Using OVN with KVM and Libvirt</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2016/11/18/technology-short-take-73/">Technology Short Take #73</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2016/11/10/intro-to-vbox-cli/">An Introduction to the VirtualBox CLI</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2016/10/10/technology-short-take-72/">Technology Short Take #72</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2016/10/05/triple-provider-vagrant-environment/">A Triple-Provider Vagrant Environment</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2016/09/28/why-now-using-virtualbox-with-vagrant/">Why I&#39;m Now Using VirtualBox with Vagrant</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2016/09/09/technology-short-take-71/">Technology Short Take #71</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2016/08/12/technology-short-take-70/">Technology Short Take #70</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2016/07/22/technology-short-take-69/">Technology Short Take #69</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2016/06/30/technology-short-take-68/">Technology Short Take #68</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2016/06/03/technology-short-take-67/">Technology Short Take #67</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2016/05/13/technology-short-take-66/">Technology Short Take #66</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2016/05/04/building-vmw-cumulus-vx-box/">Building a VMware-Formatted Cumulus VX Vagrant Box</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2016/04/22/technology-short-take-65/">Technology Short Take #65</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2016/04/04/technology-short-take-64/">Technology Short Take #64</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2016/03/18/technology-short-take-63/">Technology Short Take #63</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2016/03/17/on-topic-of-lock-in/">On the Topic of Lock-In</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2016/03/09/technology-short-take-62/">Technology Short Take #62</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2016/02/12/technology-short-take-61/">Technology Short Take #61</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2016/02/09/using-kvm-libvirt-macvtap-interfaces/">Using KVM with Libvirt and macvtap Interfaces</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2016/01/29/technology-short-take-60/">Technology Short Take #60</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2016/01/15/technology-short-take-59/">Technology Short Take #59</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2016/01/14/improved-way-yaml-vagrant/">An Improved Way to use YAML with Vagrant</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2016/01/08/full-stack-journey-ep001/">Full Stack Journey Episode #1: Bart Smith</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2015/12/18/technology-short-take-58/">Technology Short Take #58</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2015/12/11/technology-short-take-57/">Technology Short Take #57</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2015/11/17/technology-short-take-56/">Technology Short Take #56</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2015/11/03/calling-all-switchers/">Calling All Switchers</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2015/10/22/technology-short-take-55/">Technology Short Take #55</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2015/09/23/technology-short-take-54/">Technology Short Take #54</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2015/09/22/spousetivites-vmworld-emea/">Spousetivities at VMworld EMEA</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2015/09/01/vmworld2015-day2-keynote-liveblog/">VMworld 2015 Day 2 Keynote Liveblog</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2015/08/31/vmworld2015-day1-general-session/">VMworld 2015 Day 1 General Session Liveblog</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2015/08/25/technology-short-take-53/">Technology Short Take #53</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2015/08/14/spousetivities-vmworld-2015/">Spousetivities at VMworld 2015</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2015/08/04/using-vagrant-docker-machine-together/">Using Vagrant and Docker Machine Together</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2015/07/14/technology-short-take-52/">Technology Short Take #52</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2015/05/22/technology-short-take-51/">Technology Short Take #51</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2015/05/11/using-pxe-with-virt-install/">Using PXE with virt-install</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2015/04/24/technology-short-take-50/">Technology Short Take #50</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2015/04/21/running-photon-fusion-vagrant/">Running Photon on Fusion via Vagrant</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2015/04/19/running-etcd-backed-docker-swarm-cluster/">Running an etcd-Backed Docker Swarm Cluster</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2015/03/10/technology-short-take-49/">Technology Short Take #49</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2015/03/06/running-own-docker-swarm-cluster/">Running a Small Docker Swarm Cluster</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2015/02/17/quick-thought-mesos-dns/">A Quick Thought About Mesos-DNS</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2015/02/10/technology-short-take-48/">Technology Short Take #48</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2015/02/05/vagrant-coreos-etcd-fleet-docker/">Using Vagrant with CoreOS, etcd, fleet, and Docker</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2015/02/03/first-git-now-vagrant/">First Git, now Vagrant</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2015/01/30/thinking-out-loud-does-docker-on-windows-matter/">Thinking Out Loud: Does Docker on Windows Matter?</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2015/01/12/citrix-acquires-sanbolic/">Citrix Acquires Sanbolic</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2015/01/07/technology-short-take-47/">Technology Short Take #47</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2014/11/07/technology-short-take-46/">Technology Short Take #46</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2014/11/03/learning-nsx-part-18-routing-without-network-address-translation/">Learning NSX, Part 18: Routing Without Network Address Translation</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2014/10/27/learning-nsx-part-17-adding-external-l2-connectivity/">Learning NSX, Part 17: Adding External L2 Connectivity</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2014/10/22/multi-machine-vagrant-with-yaml/">Multi-Machine Vagrant with YAML</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2014/10/13/learning-nsx-part-16-routing-to-multiple-external-vlans/">Learning NSX, Part 16: Routing to Multiple External VLANs</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2014/10/08/technology-short-take-45/">Technology Short Take #45</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2014/09/12/a-quick-introduction-to-vagrant/">A Quick Introduction to Vagrant</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2014/09/09/idf2014-bare-metal-docker-containers-and-virtualization/">IDF 2014: Bare Metal, Docker Containers, and Virtualization</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2014/09/03/technology-short-take-44/">Technology Short Take #44</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2014/08/26/vmworld-2014-day-2-keynote/">VMworld 2014 Day 2 Keynote</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2014/08/25/vmworld-2014-day-1-keynote/">VMworld 2014 Day 1 Keynote</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2014/08/22/a-heat-template-for-docker-containers/">A Heat Template for Docker Containers</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2014/08/13/deploying-coreos-on-openstack-using-heat/">Deploying CoreOS on OpenStack Using Heat</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2014/08/12/cloud-hosted-cloud-management-via-platform9/">Cloud-Hosted Cloud Management via Platform9</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2014/08/11/running-arista-veos-on-kvm/">Running Arista vEOS on KVM</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2014/08/08/technology-short-take-43/">Technology Short Take #43</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2014/08/05/sessions-at-the-fall-openstack-summit/">Sessions at the Fall OpenStack Summit</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2014/08/04/spousetivities-at-vmworld-2014-2/">Spousetivities at VMworld 2014</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2014/07/31/installing-the-docker-plugin-for-heat/">Installing the Docker Plugin for Heat</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2014/07/28/giving-back-to-the-community/">Giving Back to the Community</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2014/07/21/spousetivities-at-vmworld-2014/">Spousetivities at VMworld 2014</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2014/07/18/fix-for-strange-issue-booting-kvm-guests/">Fix for Strange Issue Booting KVM Guests</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2014/07/16/learning-nsx-part-15-nsx-gateways-gateway-services-and-logical-routers/">Learning NSX, Part 15: NSX Gateways, Gateway Services, and Logical Routers</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2014/06/20/learning-nsx-part-14-using-logical-routing/">Learning NSX, Part 14: Using Logical Routing</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2014/06/11/technology-short-take-42/">Technology Short Take #42</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2014/06/09/docker-making-its-move/">Docker Making Its Move</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2014/05/09/technology-short-take-41/">Technology Short Take #41</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2014/04/30/vsphere-network-health-check-and-cisco-ucs/">vSphere Network Health Check and Cisco UCS</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2014/04/28/learning-nsx-part-13-revisiting-logical-networking/">Learning NSX, Part 13: Revisiting Logical Networking</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">Learning NSX, Part 12: Integrating VMware NSX with OpenStack</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2014/04/08/technology-short-take-40/">Technology Short Take #40</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2014/03/17/modifying-qcow-images-with-guestfish/">Modifying QCOW Images with Guestfish</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">Learning NSX, Part 11: Reviewing OpenStack Integration Basics</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2014/03/11/a-quick-introduction-to-docker/">A Quick Introduction to Docker</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2014/03/07/technology-short-take-39/">Technology Short Take #39</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2014/02/27/learning-nsx-part-10-adding-a-service-node/">Learning NSX, Part 10: Adding a Service Node</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2014/02/26/learning-nsx-part-9-adding-a-gateway-service/">Learning NSX, Part 9: Adding a Gateway Service</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2014/02/06/technology-short-take-38/">Technology Short Take #38</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2014/01/23/automatically-connecting-lxc-to-open-vswitch/">Automatically Connecting LXC to Open vSwitch</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2013/12/11/talking-network-virtualization-on-runas-radio/">Talking Network Virtualization on RunAs Radio</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2013/12/06/technology-short-take-37/">Technology Short Take #37</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2013/12/05/learning-nvp-part-8-an-update-on-the-nvp-to-nsx-transition/">Learning NVP, Part 8: An Update on the NVP to NSX Transition</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2013/12/03/connecting-lxc-to-open-vswitch-using-libvirt/">Connecting LXC to Open vSwitch Using Libvirt</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2013/12/02/connecting-bare-metal-workloads-using-gre-tunnels-and-ovs/">Connecting Bare Metal Workloads Using GRE Tunnels and OVS</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2013/11/27/linux-containers-via-lxc-and-libvirt/">Linux Containers via LXC and Libvirt</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2013/11/26/lxc-open-vswitch-and-gre-tunnels/">LXC, Open vSwitch, and GRE Tunnels</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2013/11/25/a-brief-introduction-to-linux-containers-with-lxc/">A Brief Introduction to Linux Containers with LXC</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2013/11/22/an-update-on-using-gre-tunnels-with-open-vswitch/">An Update on Using GRE Tunnels with Open vSwitch</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2013/11/01/learning-nvp-part-7-handling-the-nvp-to-nsx-transition/">Learning NVP, Part 7: Handling the NVP to NSX Transition</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">Learning NVP, Part 6: Adding an NVP Gateway</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2013/10/23/technology-short-take-36/">Technology Short Take #36</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2013/09/18/putting-the-user-back-in-vmware-user-group/">Putting the User Back in VMware User Group</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2013/09/11/idf-2013-virtualizing-the-network-to-enable-sdi/">IDF 2013: Virtualizing the Network to Enable SDI</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2013/09/10/idf-2013-enhancing-openstack-with-intel-technologies/">IDF 2013: Enhancing OpenStack with Intel Technologies</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2013/09/10/adjusting-vnc-console-access-via-libvirt-xml/">Adjusting VNC Console Access via Libvirt XML</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">Learning NVP, Part 5: Creating a Logical Network</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2013/09/03/technology-short-take-35/">Technology Short Take #35</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2013/08/30/thinking-out-loud-diy-network-virtualization/">Thinking Out Loud: DIY Network Virtualization?</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2013/08/27/vmworld-2013-day-2-keynote/">VMworld 2013 Day 2 Keynote</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2013/08/26/announcing-mastering-vmware-vsphere-5-5/">Announcing Mastering VMware vSphere 5.5</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2013/08/26/vmworld-2013-day-1-keynote/">VMworld 2013 Day 1 Keynote</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">Learning NVP, Part 4: Adding Hypervisors to NVP</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2013/08/21/accessing-vnc-consoles-of-kvm-guests-via-ssh/">Accessing VNC Consoles of KVM Guests via SSH</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2013/08/21/state-of-devtest-infrastructure-survey/">State of Dev/Test Infrastructure Survey</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2013/08/19/learning-nvp-part-3-nvp-manager/">Learning NVP, Part 3: NVP Manager</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2013/08/16/learning-nvp-part-2-nvp-controllers/">Learning NVP, Part 2: NVP Controllers</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2013/07/22/technology-short-take-34/">Technology Short Take #34</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2013/06/20/thinking-out-loud-the-future-of-vlans/">Thinking Out Loud: The Future of VLANs</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2013/06/12/resources-for-networking-and-network-virtualization/">Resources for Networking and Network Virtualization</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2013/06/04/technology-short-take-33/">Technology Short Take #33</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2013/05/30/a-use-case-for-policy-routing-with-kvm-and-open-vswitch/">A Use Case for Policy Routing with KVM and Open vSwitch</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2013/05/21/learning-nvp-part-1-high-level-architecture/">Learning NVP, Part 1: High-Level Architecture</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2013/05/14/joint-openstack-denver-and-infracoders-denver-meetup/">Joint OpenStack Denver and Infracoders Denver Meetup</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2013/05/07/using-gre-tunnels-with-open-vswitch/">Using GRE Tunnels with Open vSwitch</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2013/05/06/very-early-thoughts-about-emc-vipr/">Very Early Thoughts about EMC ViPR</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2013/05/03/technology-short-take-32/">Technology Short Take #32</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2013/04/30/on-network-virtualization-and-sdn/">On Network Virtualization and SDN</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2013/04/16/openstack-summit-2013-networking-in-the-cloud-an-sdn-primer/">OpenStack Summit 2013: Networking In the Cloud, an SDN Primer</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2013/04/16/network-overlays-vs-network-virtualization/">Network Overlays vs. Network Virtualization</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2013/04/08/technology-short-take-31/">Technology Short Take #31</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2013/04/05/highly-recommended-quantum-and-open-vswitch-resource/">Highly Recommended Quantum and Open vSwitch Resource</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2013/04/03/thinking-out-loud-targeting-the-real-problem/">Thinking Out Loud: Targeting the Real Problem</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2013/04/01/vsphere-design-guide-giveaway/">vSphere Design Guide Giveaway</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2013/03/19/announcing-vmware-vsphere-design-2nd-edition/">Announcing VMware vSphere Design, 2nd Edition</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2013/03/05/technology-short-take-30/">Technology Short Take #30</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2013/02/04/technology-short-take-29/">Technology Short Take #29</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2013/01/25/new-year-new-challenges-new-opportunities/">New Year, New Challenges, New Opportunities</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2013/01/22/using-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3/">Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2013/01/16/building-libvirt-1-0-1-rpms-for-centos-6-3/">Building Libvirt 1.0.1 RPMs for CentOS 6.3</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2013/01/10/technology-short-take-28/">Technology Short Take #28</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2013/01/07/looking-back-2012-project-report-card/">Looking Back: 2012 Project Report Card</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2013/01/03/inaugural-openstack-denver-meetup/">Inaugural OpenStack Denver Meetup</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2012/12/11/examining-some-networking-virtualization-chimeras/">Examining Some Networking-Virtualization Chimeras</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/12/06/technology-short-take-27/">Technology Short Take #27</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2012/11/29/presentation-from-portland-vmug/">Presentation from Portland VMUG</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2012/11/25/presentation-from-uk-vmug/">Presentation from UK VMUG</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/11/12/libvirt-ovs-integration-revisited/">Libvirt-OVS Integration Revisited</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/11/12/infrastructure-coders-denver-and-openstack-denver-meetups/">Infrastructure Coders Denver and OpenStack Denver Meetups</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2012/11/08/a-call-for-open-vswitch-topics/">A Call for Open vSwitch Topics</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2012/11/07/using-vlans-with-ovs-and-libvirt/">Using VLANs with OVS and libvirt</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/11/06/a-quick-warning-about-compiling-libvirt/">A Quick Warning About Compiling libvirt</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2012/11/05/compiling-libvirt-1-0-0-on-ubuntu-12-04-and-12-10/">Compiling libvirt 1.0.0 on Ubuntu 12.04 and 12.10</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2012/10/29/technology-short-take-26/">Technology Short Take #26</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2012/10/26/link-aggregation-and-vlan-trunking-with-brocade-fastiron-switches/">Link Aggregation and VLAN Trunking with Brocade FastIron Switches</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2012/10/23/why-mess-around-with-libvirt/">Why Mess Around with libvirt?</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2012/10/19/vlans-with-open-vswitch-fake-bridges/">VLANs with Open vSwitch Fake Bridges</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">Link Aggregation and LACP with Open vSwitch</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2012/10/16/openstack-summit-day-1-recap-links/">OpenStack Summit Day 1 Recap Links</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2012/10/10/vmworld-emea-day-2-keynote/">VMworld EMEA Day 2 Keynote</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2012/10/05/technology-short-take-25/">Technology Short Take #25</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2012/10/04/some-insight-into-open-vswitch-configuration/">Some Insight into Open vSwitch Configuration</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2012/09/18/calling-for-the-best-storage-recommendations/">Calling for the Best Storage Recommendations</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/09/12/clds006-exploring-new-xeon-e5-optimizations-for-10-gb-ethernet/">CLDS006: Exploring New Xeon E5 Optimizations for 10 Gb Ethernet</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2012/09/11/coms002-next-generation-cloud-infrastructure-with-data-plane-virtualization/">COMS002: Next Generation Cloud Infrastructure with Data Plane Virtualization</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2012/09/10/a-vmworld-2012-wrap-up/">A VMworld 2012 Wrap-Up</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2012/09/10/subduing-openstack-is-a-bit-strong/">Subduing OpenStack Is a Bit Strong</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2012/09/07/compiling-libvirt-0-10-1-on-ubuntu-12-04/">Compiling libvirt 0.10.1 on Ubuntu 12.04</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/09/06/compiling-libvirt-0-10-1-on-centos-6-3/">Compiling libvirt 0.10.1 on CentOS 6.3</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/09/06/installing-kvm-on-centos-6-3/">Installing KVM on CentOS 6.3</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2012/08/30/app-cap2956-inside-the-hadoop-machine/">APP-CAP2956: Inside the Hadoop Machine</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2012/08/28/inf-bco2655-ft-for-smp-vms-tech-preview/">INF-BCO2655: FT for SMP VMs Tech Preview</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2012/08/28/app-cap2165-operating-cloud-foundry/">APP-CAP2165: Operating Cloud Foundry</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2012/08/28/vmworld-2012-keynote-day-2/">VMworld 2012 Keynote, Day 2</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2012/08/27/inf-vsp1423-esxtop-for-advanced-users/">INF-VSP1423: esxtop for Advanced Users</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2012/08/27/vmworld-2012-keynote-day-1/">VMworld 2012 Keynote, Day 1</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2012/08/21/working-with-kvm-guests/">Working with KVM Guests</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2012/08/21/my-vmworld-2012-schedule/">My VMworld 2012 Schedule</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2012/08/17/installing-kvm-and-open-vswitch-on-ubuntu/">Installing KVM and Open vSwitch on Ubuntu</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2012/08/07/so-long-status-quo-again/">So Long, Status Quo (Again)</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2012/07/30/technology-short-take-24/">Technology Short Take #24</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2012/07/30/designing-vmware-infrastructure-video-training-available/">Designing VMware Infrastructure Video Training Available</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2012/07/27/spouse-activities-at-vmworld-2012/">Spouse Activities at VMworld 2012</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/07/06/open-source-tools-and-projects-i-should-learn/">Open Source Tools and Projects I Should Learn</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2012/07/03/vsphere-on-nfs-design-considerations-presentation/">vSphere on NFS Design Considerations Presentation</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2012/07/02/presentation-from-south-florida-vmug/">Presentation from South Florida VMUG</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2012/06/28/installing-xcp-xapi-on-ubuntu-server-12-04-lts/">Installing XCP-XAPI on Ubuntu Server 12.04 LTS</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2012/06/26/thoughts-on-a-vmworld-unconference/">Thoughts on a VMworld Unconference</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2012/06/26/thinking-out-loud-why-not-mpls-in-ip/">Thinking Out Loud: Why Not MPLS-in-IP?</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2012/06/25/mid-year-project-update/">Mid-Year Project Update</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/06/12/technology-short-take-23/">Technology Short Take #23</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2012/06/02/thoughts-on-a-couple-of-books/">Thoughts on a Couple of Books</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2012/05/03/technology-short-take-22/">Technology Short Take #22</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2012/04/30/carolinas-vmware-users-summit-2012/">Carolinas VMware Users Summit 2012</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2012/04/26/vmware-end-user-computing-virtual-conference/">VMware End-User Computing Virtual Conference</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2012/04/23/srm-and-stretched-clusters-webinar/">SRM and Stretched Clusters Webinar</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/04/12/technology-short-take-21/">Technology Short Take #21</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2012/04/06/announcement-vmware-vsphere-training-video/">Announcement: VMware vSphere Training Video</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2012/03/29/the-hypervisor-is-only-part-of-the-picture/">The Hypervisor is Only Part of the Picture</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2012/03/28/the-os-is-dead-long-live-the-os/">The OS is Dead, Long Live the OS</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2012/03/19/why-sr-iov-on-vsphere/">Why SR-IOV on vSphere?</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2012/03/18/sr-iov-support-in-the-next-version-of-hyper-v/">SR-IOV Support in the Next Version of Hyper-V</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2012/03/12/some-thoughts-and-questions-about-stt/">Some Thoughts and Questions About STT</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2012/03/05/presentation-from-vmware-partner-exchange/">Presentation from VMware Partner Exchange</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2012/03/05/presentation-from-australia-vmug-conferences/">Presentation from Australia VMUG Conferences</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2012/02/14/general-session-at-vmware-pex-2012-day-1/">General Session at VMware PEX 2012 Day 1</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2012/02/08/thinking-out-loud-is-a-dvfabric-closer-than-we-think/">Thinking Out Loud: Is A dvFabric Closer Than We Think?</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2012/01/20/technology-short-take-20/">Technology Short Take #20</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2012/01/16/what-does-fcoe-have-to-do-with-vm-mobility/">What Does FCoE Have To Do With VM Mobility?</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2012/01/13/vsi-5-1-issue-and-fixes/">VSI 5.1 Issue and Fixes</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2012/01/03/technology-short-take-19/">Technology Short Take #19</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2012/01/02/some-projects-for-2012/">Some Projects for 2012</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2011/12/22/otv-and-vxlan-layer-3-connectivity-compared/">OTV and VXLAN Layer 3 Connectivity Compared</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2011/12/16/vmware-view-client-for-mac-with-pcoip/">VMware View Client for Mac with PCoIP</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2011/12/15/uimoperations-3-0-now-ga/">UIM/Operations 3.0 Now GA</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2011/12/11/technology-short-take-18/">Technology Short Take #18</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2011/12/07/revisiting-vxlan-and-layer-3-connectivity/">Revisiting VXLAN and Layer 3 Connectivity</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2011/12/02/examining-vxlan/">Examining VXLAN</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2011/11/30/vxlan-and-layer-3-connectivity/">VXLAN and Layer 3 Connectivity</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2011/11/29/setting-up-software-fcoe-on-vsphere-5/">Setting up Software FCoE on vSphere 5</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2011/11/28/technology-short-take-17/">Technology Short Take #17</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2011/11/25/problem-with-vmxnet3-driver/">Problem with VMXNET3 Driver</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2011/11/14/some-vsphere-5-video-content/">Some vSphere 5 Video Content</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/11/12/vsphere-ha-and-vapps/">vSphere HA and vApps</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2011/11/09/new-version-of-uimp/">New Version of UIM/P</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2011/11/07/technology-short-take-16/">Technology Short Take #16</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2011/11/01/fate-free-will-virtualization-and-storage/">Fate, Free Will, Virtualization, and Storage</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2011/10/06/mastering-vmware-vsphere-5-now-available/">Mastering VMware vSphere 5 Now Available</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2011/10/03/updated-stretched-cluster-presentation/">Updated Stretched Cluster Presentation</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2011/10/03/technology-short-take-15/">Technology Short Take #15</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2011/09/22/hidden-vaai-command/">Hidden VAAI Command</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2011/09/21/spousetivities-at-vmworld-emea-2011/">Spousetivities at VMworld EMEA 2011</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2011/09/20/exclusion-or-not/">Exclusion or Not?</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2011/09/19/determining-an-optimal-design/">Determining an Optimal Design</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2011/09/16/the-right-vsphere-design-perspective/">The Right vSphere Design Perspective</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2011/09/14/the-end-of-the-infrastructure-engineer/">The End of the Infrastructure Engineer?</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/09/12/technology-short-take-14/">Technology Short Take #14</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2011/08/31/a-couple-vendor-meetings-at-vmworld-2011/">A Couple Vendor Meetings at VMworld 2011</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2011/08/31/vsp2117-virtualization-aware-datacenter-networks/">VSP2117: Virtualization-Aware Datacenter Networks</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2011/08/30/vmworld-2011-tuesday-general-session/">VMworld 2011 Tuesday General Session</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2011/08/29/vmworld-2011-monday-general-session/">VMworld 2011 Monday General Session</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2011/08/29/vsp3205-tech-preview-vstorage-apis/">VSP3205: Tech Preview, vStorage APIs</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2011/08/29/vsp1682-vmware-vsphere-clustering-qa/">VSP1682: VMware vSphere Clustering Q&amp;A</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2011/08/25/technology-short-take-13/">Technology Short Take #13</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2011/08/25/looking-again-at-vasa/">Looking Again at VASA</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2011/08/15/thinking-out-loud-logical-link-multiplexing-sort-of/">Thinking Out Loud: Logical Link Multiplexing (Sort Of)</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/08/12/a-deeper-look-at-vasa/">A Deeper Look at VASA</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2011/08/08/thinking-out-loud-what-if-vsphere-supported-fabricpath/">Thinking Out Loud: What if vSphere Supported FabricPath?</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2011/07/26/vmworld-2011-spousetivities/">VMworld 2011 Spousetivities</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2011/07/21/vsphere-networking-design-presentation/">vSphere Networking Design Presentation</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2011/07/18/video-of-stretched-cluster-presentation/">Video of Stretched Cluster Presentation</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2011/07/14/brkdct-9131-mobility-and-virtualization-with-lisp-and-otv/">BRKDCT-9131: Mobility and Virtualization with LISP and OTV</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2011/07/13/announcing-mastering-vmware-vsphere-5/">Announcing Mastering VMware vSphere 5</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/07/12/vmwares-launch-event/">VMware&#39;s Launch Event</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/07/12/brkcom-3002-network-redundancy-and-load-balancing-designs-for-ucs-blade-servers/">BRKCOM-3002: Network Redundancy and Load Balancing Designs for UCS Blade Servers</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2011/06/22/rdp-printer-redirection-with-vmware-view-on-a-mac/">RDP Printer Redirection with VMware View on a Mac</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2011/06/16/using-vaai-to-maintain-control/">Using VAAI to Maintain Control?</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2011/05/16/distance-vmotion-stretched-cluster/">Distance vMotion = Stretched Cluster?</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2011/05/12/stretched-clusters-distance-vmotion-and-l2-adjacency/">Stretched Clusters, Distance vMotion and L2 Adjacency</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2011/05/10/stretched-clustering-presentation/">Stretched Clustering Presentation</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2011/05/04/a-few-references-for-ccna-certification/">A Few References for CCNA Certification</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2011/04/27/vmware-esxi-local-disks-showing-as-remote/">VMware ESXi Local Disks Showing as Remote</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2011/04/26/is-the-pot-calling-the-kettle-black/">Is the Pot Calling the Kettle Black?</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2011/04/18/design-question-from-a-reader/">Design Question from a Reader</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2011/04/14/some-technical-books-im-reading/">Some Technical Books I&#39;m Reading</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2011/04/09/2011-carolina-vmware-user-summit-coming-up/">2011 Carolina VMware User Summit Coming Up</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2011/03/30/ciscos-data-center-launch/">Cisco&#39;s Data Center Launch</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2011/03/25/installing-esxi-though-ucsm-kvm-via-rdc-on-os-x/">Installing ESXi though UCSM KVM via RDC on OS X</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2011/02/18/performance-troubleshooting-for-vsphere-4-1/">Performance Troubleshooting for vSphere 4.1</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2011/02/17/technology-short-take-11/">Technology Short Take #11</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2011/01/31/announcing-vmware-vsphere-design/">Announcing VMware vSphere Design</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2011/01/29/presentation-on-vmware-vsphere-4-1-storage-features/">Presentation on VMware vSphere 4.1 Storage Features</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2011/01/27/technology-short-take-10/">Technology Short Take #10</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2011/01/26/has-virtualization-really-stalled/">Has Virtualization Really Stalled?</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2011/01/20/clearing-up-the-bad-reputation-of-vmwares-paravirtualized-drivers/">Clearing Up the Bad Reputation of VMware&#39;s Paravirtualized Drivers</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2011/01/20/additional-recoverpoint-vaai-update/">Additional RecoverPoint-VAAI Update</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2011/01/05/new-vsphere-resource-by-train-signal/">New vSphere Resource by Train Signal</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2010/12/29/technology-short-take-9/">Technology Short Take #9</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2010/12/17/technology-short-take-8/">Technology Short Take #8</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2010/12/16/some-emc-product-updates/">Some EMC Product Updates</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2010/12/13/a-quick-review-of-vplex-storage-objects/">A Quick Review of VPLEX Storage Objects</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2010/12/09/presentations-from-midwest-regional-vmug/">Presentations from Midwest Regional VMUG</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2010/11/29/technology-short-take-7/">Technology Short Take #7</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2010/11/21/upcoming-podcasts/">Upcoming Podcasts</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2010/11/10/technology-short-take-6/">Technology Short Take #6</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/11/01/sioc-event-with-emc-mirrorview/">SIOC Event with EMC MirrorView</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/11/01/recoverpoint-and-vaai-update/">RecoverPoint and VAAI Update</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/11/01/storage-integration-presentation-from-east-tn-vmug/">Storage Integration Presentation from East TN VMUG</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2010/10/29/disabling-vaai-using-the-cli/">Disabling VAAI Using the CLI</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2010/10/28/recoverpoint-and-vaai-interoperability/">RecoverPoint and VAAI Interoperability</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2010/10/24/netronome-1-year-later/">Netronome, 1 Year Later</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2010/10/16/emc-unified-storage-plugin-version-2-now-available/">EMC Unified Storage Plugin Version 2 Now Available</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2010/10/09/technology-short-take-5/">Technology Short Take #5</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/10/01/vmworld-emea-spousetivities-update/">VMworld EMEA Spousetivities Update</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2010/09/30/stretched-cluster-presentation-from-denver-vmug/">Stretched Cluster Presentation from Denver VMUG</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2010/09/28/a-collection-of-vcloud-director-links/">A Collection of vCloud Director Links</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2010/09/28/technology-short-take-4/">Technology Short Take #4</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2010/09/10/technology-short-take-3/">Technology Short Take #3</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2010/09/09/keep-your-eyes-on-hytrust/">Keep Your Eyes on HyTrust</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2010/09/08/vsphere-41-links/">vSphere 4.1 Links</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2010/09/02/vmworld-2010-general-session-day-4/">VMworld 2010 General Session, Day 4</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/09/01/ta8233-prioritizing-storage-resource-allocation-using-storage-io-control/">TA8233: Prioritizing Storage Resource Allocation Using Storage I/O Control</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2010/09/01/ma6580-bridge-the-esxesxi-management-gap-with-vma/">MA6580: Bridge the ESX/ESXi Management Gap with vMA</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2010/08/31/dv7706-view-composer-technical-deep-dive-and-best-practices/">DV7706: View Composer Technical Deep Dive and Best Practices</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2010/08/31/vmworld-2010-keynote-day-2/">VMworld 2010 Keynote, Day 2</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2010/08/30/vmworld-announcements-day-1/">VMworld Announcements, Day 1</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2010/08/30/ta8037-vapps-ovf-and-advanced-vm-templates/">TA8037: vApps, OVF, and Advanced VM Templates</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2010/08/28/technology-short-take-2/">Technology Short Take #2</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2010/08/25/my-book-project-has-been-canceled/">My Book Project Has Been Canceled</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2010/08/24/some-pre-vmworld-product-announcements/">Some Pre-VMworld Product Announcements</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2010/08/23/new-users-guide-to-configuring-vmware-esxi-networking-via-cli/">New User&#39;s Guide to Configuring VMware ESXi Networking via CLI</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2010/08/22/vmworld-2010-spouse-activities-calendar/">VMworld 2010 Spouse Activities Calendar</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2010/08/20/virtual-storage-integrator-for-hyper-v/">Virtual Storage Integrator for Hyper-V</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2010/08/19/vmotion-layer-2-adjacency-requirement/">vMotion Layer 2 Adjacency Requirement</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/08/18/storage-vmotion-with-rdms/">Storage vMotion with RDMs</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/08/18/some-ucs-links/">Some UCS Links</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/08/18/technology-short-take-1/">Technology Short Take #1</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2010/08/13/my-vmworld-2010-schedule/">My VMworld 2010 Schedule</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2010/08/05/spouse-activities-update/">Spouse Activities Update</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2010/08/03/vplex-webcast/">VPLEX Webcast</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2010/07/21/changing-rdp-settings-in-vmware-view-open-client-for-mac/">Changing RDP Settings in VMware View Open Client for Mac</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2010/07/12/spouse-activities-back-for-another-year/">Spouse Activities: Back for Another Year!</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2010/07/12/vmotion-practicality/">vMotion Practicality</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2010/06/13/the-vmotion-reality/">The vMotion Reality</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2010/06/07/a-deeper-look-at-vplex/">A Deeper Look at VPLEX</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2010/06/05/vmware-vexpert-2010-thank-you/">VMware vExpert 2010: Thank You!</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2010/05/26/some-vblock-posts/">Some Vblock Posts</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2010/05/25/vm6-vmex-21-release/">VM6 VMex 2.1 Release</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2010/05/25/virtualization-short-take-41/">Virtualization Short Take #41</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/05/18/virtualization-short-take-40/">Virtualization Short Take #40</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/05/18/carolina-vmware-users-summit-2010/">Carolina VMware Users Summit 2010</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2010/05/17/a-quick-look-at-vplex-and-vmware-srm/">A Quick Look at VPLEX and VMware SRM</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2010/05/17/more-vplex-linkage/">More VPLEX Linkage</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2010/05/11/creating-ucs-service-profiles-part-4-all-together-now/">Creating UCS Service Profiles Part 4: All Together Now</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2010/05/10/creating-ucs-service-profiles-part-3-other-elements/">Creating UCS Service Profiles Part 3: Other Elements</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2010/05/10/emc-vplex-launches-today/">EMC VPLEX Launches Today</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">Creating UCS Service Profiles Part 1: Networking Elements</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2010/05/03/virtualization-short-take-39/">Virtualization Short Take #39</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2010/04/26/continuing-the-consolidation-discussion/">Continuing the Consolidation Discussion</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2010/04/22/setting-up-a-ccna-study-environment-with-gns3-and-vmware/">Setting up a CCNA Study Environment with GNS3 and VMware</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2010/04/19/another-collection-of-ucs-posts/">Another Collection of UCS Posts</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2010/04/17/virtualization-short-take-38/">Virtualization Short Take #38</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2010/04/13/the-everything-vmware-at-emc-community/">The Everything VMware at EMC Community</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2010/04/06/congrats-to-the-script-o-mania-winners/">Congrats to the Script-O-Mania Winners</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2010/04/03/the-view-from-the-other-side/">The View from the Other Side</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2010/03/24/virtualization-short-take-37/">Virtualization Short Take #37</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2010/03/21/how-niv-and-fcoe-play-together/">How NIV and FCoE Play Together</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2010/03/17/a-quick-and-simple-guide-to-building-an-openbsd-vm/">A Quick and Simple Guide to Building an OpenBSD VM</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2010/03/16/understanding-network-interface-virtualization/">Understanding Network Interface Virtualization</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2010/03/11/vss-can-cause-problems-with-rm/">VSS Can Cause Problems with RM</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2010/03/09/virtualization-short-take-36/">Virtualization Short Take #36</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2010/03/05/vmware-esx-emc-clariion-arrays-and-multiple-protocols/">VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2010/03/02/pxe-booting-vmware-esx-40/">PXE Booting VMware ESX 4.0</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2010/02/26/congrats-to-hytrust/">Congrats to HyTrust</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2010/02/19/on-the-vcdx-defense/">On the VCDX Defense</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2010/02/18/virtualization-short-take-35/">Virtualization Short Take #35</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2010/02/11/vmware-vsphere-pro-video-training/">VMware vSphere Pro Video Training</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2010/02/11/partner-exchange-2010-session-techdv0721/">Partner Exchange 2010 Session TECHDV0721</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2010/02/11/partner-exchange-2010-session-techmgt0921/">Partner Exchange 2010 Session TECHMGT0921</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2010/02/09/partner-exchange-2010-session-techbc0320/">Partner Exchange 2010 Session TECHBC0320</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2010/02/04/moving-lab-manager-datastores/">Moving Lab Manager Datastores</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2010/02/04/using-ip-based-storage-with-vmware-vsphere-on-cisco-ucs/">Using IP-Based Storage with VMware vSphere on Cisco UCS</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2010/01/31/emc-celerra-optimizations-for-vmware-on-nfs/">EMC Celerra Optimizations for VMware on NFS</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2010/01/24/virtualization-short-take-34/">Virtualization Short Take #34</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2010/01/19/congrats-to-hyper9/">Congrats to Hyper9</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2010/01/19/thinking-out-loud-its-not-just-the-technology/">Thinking Out Loud: It&#39;s Not Just the Technology</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2010/01/13/resetting-the-root-password-on-vmware-esx-40/">Resetting the Root Password on VMware ESX 4.0</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2010/01/07/virtualization-short-take-33/">Virtualization Short Take #33</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2010/01/05/vmware-zimbra-and-why-im-not-an-analyst/">VMware, Zimbra, and Why I&#39;m Not an Analyst</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2010/01/04/vote-early-but-dont-vote-often/">Vote Early (But Don&#39;t Vote Often)</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/12/23/a-bit-harsh-dont-you-think/">A Bit Harsh, Don&#39;t You Think?</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/12/22/virtualization-short-take-32/">Virtualization Short Take #32</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/12/09/vmware-vsphere-4-administration-instant-reference-now-available/">VMware vSphere 4 Administration Instant Reference Now Available</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/12/04/multiport-uplink-driver/">Multiport Uplink Driver</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/12/02/what-is-sr-iov/">What is SR-IOV?</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/12/02/vsphere-40-quick-start-guide/">vSphere 4.0 Quick Start Guide</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2009/11/30/triangle-area-vmug-meeting-next-week/">Triangle Area VMUG Meeting Next Week</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/11/18/virtualization-short-take-31/">Virtualization Short Take #31</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2009/11/17/storage-short-take-5/">Storage Short Take #5</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2009/11/16/thinking-out-loud-is-vmware-legitimizing-the-competition/">Thinking Out Loud: Is VMware Legitimizing the Competition?</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/11/05/gestaltit-tech-field-day/">GestaltIT Tech Field Day</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/11/05/vcdx-design-exam-post-mortem/">VCDX Design Exam Post-Mortem</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2009/10/31/vm-hardware-version-7-and-windows-server-2008/">VM Hardware Version 7 and Windows Server 2008</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2009/10/30/vmware-ha-vmware-ft-and-os-clustering/">VMware HA, VMware FT, and OS Clustering</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/10/23/cutting-yourself-on-the-double-edged-sword/">Cutting Yourself on the Double-Edged Sword</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/10/22/io-virtualization-and-the-double-edged-sword/">I/O Virtualization and the Double-Edged Sword</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/10/04/vmware-lab-manager-design-considerations/">VMware Lab Manager Design Considerations </a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/10/01/virtualization-short-take-30/">Virtualization Short Take #30</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2009/09/24/im-a-bad-student/">I&#39;m a Bad Student</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2009/09/24/more-on-vswitch-load-balancing/">More on vSwitch Load Balancing</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/09/22/vmfs-isnt-the-problem-here/">VMFS Isn&#39;t the Problem Here</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/09/07/cleaning-out-some-vmworld-info/">Cleaning Out Some VMworld Info</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/09/02/ta2384-deploying-the-nexus-1000v/">TA2384 - Deploying the Nexus 1000V</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/09/02/some-additional-vmworld-vendor-meetings/">Some Additional VMworld Vendor Meetings</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/09/02/notes-on-some-vmworld-vendor-meetings/">Notes on Some VMworld Vendor Meetings</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/09/02/vmworld-2009-day-2-keynote/">VMworld 2009 Day 2 Keynote</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/09/01/bc3209-and-dv2484/">BC3209 and DV2484</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/09/01/vmware-vcloud-event-with-paul-maritz/">VMware vCloud Event with Paul Maritz</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/09/01/bc1500-site-recovery-manager-best-practices/">BC1500 - Site Recovery Manager Best Practices</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/09/01/vmworld-day-0-wrap-up-and-links/">VMworld Day 0 Wrap-Up and Links</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/09/01/vmworld-2009-day-1-keynote/">VMworld 2009 Day 1 Keynote</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2009/08/28/thinking-out-loud-hp-flex-10-design-considerations/">Thinking Out Loud: HP Flex-10 Design Considerations</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2009/08/24/hytrust-appliance-15/">HyTrust Appliance 1.5</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/08/23/my-vmworld-2009-schedule/">My VMworld 2009 Schedule</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/08/22/planning-for-fcoe-in-your-data-center-today/">Planning for FCoE in Your Data Center Today</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/08/22/vmworld-2009-spouse-activities-faqs-and-updates/">VMworld 2009 Spouse Activities FAQs and Updates</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/08/18/virtualization-short-take-28/">Virtualization Short Take #28</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/08/18/mastering-vmware-vsphere-4-is-out/">Mastering VMware vSphere 4 is Out!</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2009/08/13/getting-qlogic-gen2-cnas-working-with-esx-4/">Getting QLogic Gen2 CNAs Working with ESX 4</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/08/04/netronome-and-io-virtualization/">Netronome and I/O Virtualization</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/08/04/vmworld-2009-ask-the-experts-session-call-for-questions/">VMworld 2009 Ask the Experts Session: Call For Questions!</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2009/07/29/vmworld-2009-spouse-activities-update/">VMworld 2009 Spouse Activities Update</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2009/07/28/are-you-a-vmware-developer/">Are You a VMware Developer?</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/07/27/dont-forget-to-submit-your-question/">Don&#39;t Forget to Submit Your Question!</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/07/27/ucs-training-day-1-wrap-up/">UCS Training, Day 1 Wrap-Up</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/07/27/potential-ucs-issue-northbound-fcoe-connectivity/">Potential UCS Issue: Northbound FCoE Connectivity</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2009/07/26/ucs-training-this-week/">UCS Training This Week</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/07/22/new-version-of-hyper9-available/">New Version of Hyper9 Available</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/07/22/new-version-of-esxpress-supports-vsphere/">New Version of esXpress Supports vSphere</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2009/07/13/vmware-releases-a-trio-of-new-products/">VMware Releases a Trio of New Products</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/07/09/follow-up-about-multiple-vlans-virtual-connect-and-flex-10/">Follow-Up About Multiple VLANs, Virtual Connect, and Flex-10</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/07/09/using-multiple-vlans-with-hp-virtual-connect-flex-10/">Using Multiple VLANs with HP Virtual Connect Flex-10</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/07/07/submit-a-question-for-vmworld-2009-ask-the-experts-session/">Submit a Question for VMworld 2009 Ask the Experts Session</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/07/07/altor-announces-vmsafe-integrated-altor-vf-30/">Altor Announces VMsafe-Integrated Altor VF 3.0</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/07/06/using-vmware-esx-virtual-switch-tagging-with-hp-virtual-connect/">Using VMware ESX Virtual Switch Tagging with HP Virtual Connect</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/07/05/another-reason-not-to-use-pvscsi-or-vmxnet3/">Another Reason Not to Use PVSCSI or VMXNET3</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2009/07/03/republished-flexclones-or-deduplication/">Republished: FlexClones or Deduplication?</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/07/01/republished-dispelling-some-vmware-over-nfs-myths/">Republished: Dispelling Some VMware over NFS Myths</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2009/06/29/blades-wont-die-but-they-will-change/">Blades Won&#39;t Die, But They Will Change</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2009/06/29/snapshot-issue-with-vmware-data-recovery/">Snapshot Issue with VMware Data Recovery</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2009/06/26/i-love-having-my-content-stolen/">I Love Having My Content Stolen</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2009/06/25/virtualization-short-take-27/">Virtualization Short Take #27</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2009/06/24/svvp-certifications-for-vmware-vsphere/">SVVP Certifications for VMware vSphere</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/06/23/new-user-networking-config-guide/">New User&#39;s Guide to Configuring VMware ESX Networking via CLI</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/06/22/vsphere-book-news/">vSphere Book News</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/06/22/vote-for-my-site/">Vote for My Site!</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2009/06/19/vmworld-2009-spouse-activities/">VMworld 2009 Spouse Activities</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2009/06/12/ta2259-ask-the-experts-at-vmworld-2009/">TA2259 Ask the Experts at VMworld 2009</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2009/06/10/xeon-5500-cpus-and-evc-in-vsphere/">Xeon 5500 CPUs and EVC in vSphere</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2009/06/10/articles-on-cpu-masking-in-vmware-environments/">Articles on CPU Masking in VMware Environments</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2009/06/10/hyper9-vmm-released/">Hyper9 VMM Released</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2009/06/08/vwire-launched/">vWire Launched</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/06/05/adaptec-support-in-vsphere-revoked/">Adaptec Support in vSphere Revoked?</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/06/05/the-return-of-virtualization-short-takes/">The Return of Virtualization Short Takes</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/06/04/spouse-activities-for-vmworld-2009/">Spouse Activities for VMworld 2009</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/06/04/vmware-vsphere-review-in-the-works/">VMware vSphere Review in the Works</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/06/01/vsphere-virtual-machine-upgrade-process/">vSphere Virtual Machine Upgrade Process</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2009/05/30/this-vmworld-thing-is-like-watching-a-train-wreck/">This VMworld Thing is Like Watching a Train Wreck</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2009/05/28/vmware-this-is-wrong/">VMware, This is Wrong</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2009/05/21/vsphere-4-available-for-download/">vSphere 4 Available for Download</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2009/05/21/vmware-vsphere-vds-vmkernel-ports-and-jumbo-frames/">VMware vSphere vDS, VMkernel Ports, and Jumbo Frames</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/05/18/vmware-vsphere-generates-insane-amounts-of-io/">VMware vSphere Generates Insane Amounts of I/O</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/05/18/summary-of-cdp-articles/">Summary of CDP Articles</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2009/05/14/hyper9-virtualization-mobile-manager-beta-invitations/">Hyper9 Virtualization Mobile Manager Beta Invitations</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2009/05/11/pre-order-mastering-vmware-vsphere-4/">Pre-Order Mastering VMware vSphere 4</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/05/06/iforum-218-what-the-other-virtualization-guys-dont-want-you-to-know/">iForum 218: What the Other Virtualization Guys Don&#39;t Want You to Know</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/05/06/vc105-the-marriage-of-figaro/">VC105: The Marriage of Figaro</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/05/06/citrix-synergy-day-2-keynote/">Citrix Synergy Day 2 Keynote</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/05/05/hytrust-appliance-community-edition/">HyTrust Appliance Community Edition</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/05/05/citrix-synergy-day-1-keynote/">Citrix Synergy Day 1 Keynote</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2009/04/28/app-store-for-the-enterprise/">App Store for the Enterprise?</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/04/27/desktop-virtualization-interview-with-eric-hanselman-of-leostream/">Desktop Virtualization Interview with Eric Hanselman of Leostream</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2009/04/21/mastering-vmware-vsphere-40/">Mastering VMware vSphere 4.0</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2009/04/20/marathon-everrun-2g-and-everrun-vm-lockstep/">Marathon everRun 2G and everRun VM Lockstep</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/04/09/cloud-computing-interview-with-dave-malcom-cto-of-surgient/">Cloud Computing Interview with Dave Malcolm, CTO of Surgient</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2009/04/08/3010-a-multistore-primer/">3010: A MultiStore Primer</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/04/07/hps-proliant-g6-servers/">HP&#39;s ProLiant G6 Servers</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/04/07/attending-the-next-generation-vmware-launch-event/">Attending the Next-Generation VMware Launch Event</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/04/06/hytrust-launches-security-appliance/">HyTrust Launches Security Appliance</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/04/06/double-take-softwares-workload-optimization-suite/">Double-Take Software&#39;s Workload Optimization Suite</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2009/04/03/a-collection-of-viewpoints-on-cisco-ucs/">A Collection of Viewpoints on Cisco UCS</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2009/04/02/partner-exchange-schedule/">Partner Exchange Schedule</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2009/03/31/storage-alignment-document/">Storage Alignment Document</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2009/03/25/next-gen-stuff-verifying-the-sha-1-fingerprint/">Next-Gen Stuff: Verifying the SHA-1 Fingerprint</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2009/03/24/viewing-cdp-data-on-vmware-esx/">Viewing CDP Data on VMware ESX</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/03/23/welcome-to-hyper9/">Welcome to Hyper9!</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2009/03/19/hyper9-goes-ga/">Hyper9 Goes GA</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2009/03/18/cisco-ucs-virtualization-optimized-cnas/">Cisco UCS Virtualization-Optimized CNAs</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2009/03/16/linux-vdi-and-mobile-vm-admin/">Linux VDI and Mobile VM Admin</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2009/03/16/more-on-cisco-ucs/">More on Cisco UCS</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2009/03/16/cisco-ucs-announcements/">Cisco UCS Announcements</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2009/03/13/next-gen-stuff-enabling-cdp-in-esxesxi/">Next-Gen Stuff: Enabling CDP in ESX/ESXi</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2009/03/10/bluestripe-extends-factfinder-to-red-hat-linux/">BlueStripe Extends FactFinder to Red Hat Linux</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/03/05/book-status-report/">Book Status Report</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2009/02/27/hyper9-apparently-in-good-shape/">Hyper9 Apparently in Good Shape</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2009/02/26/open-source-vmfs-driver/">Open Source VMFS Driver</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2009/02/25/vmware-vexpert-awards/">VMware vExpert Awards</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/02/23/its-official-xenserver-available-for-free/">It&#39;s Official: XenServer Available for Free</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2009/02/19/citrix-open-sources-their-vhd-implementation/">Citrix Open Sources Their VHD Implementation</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2009/02/16/blades-and-virtualization-arent-mutually-exclusive-part-four-hp-traditional-expansion-options/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Four, HP Traditional Expansion Options</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2009/02/13/blades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2009/02/12/new-virtualization-wiki/">New Virtualization Wiki</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2009/02/10/what-if-hypervisors-shared-a-file-system/">What If Hypervisors Shared a File System?</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/02/07/blades-and-virtualization-arent-mutually-exclusive-part-two-ibm-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Two, IBM Power Sizing</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/02/07/virtualization-short-take-26-hyper-v-edition/">Virtualization Short Take #26, Hyper-V Edition</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2009/02/04/blades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2009/01/29/im-writing-a-book/">I&#39;m Writing a Book!</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2009/01/23/im-speaking-at-virtualization-congress-2009/">I&#39;m Speaking at Virtualization Congress 2009!</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2009/01/22/vmm-beta-15-is-here/">VMM Beta 1.5 is Here</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2009/01/15/svmotion-syntax/">SVMotion Syntax</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2009/01/14/free-sanbolic-licenses-for-windows-server-2008-r2-beta-users/">Free Sanbolic Licenses for Windows Server 2008 R2 Beta Users</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2009/01/14/vmware-vexpert-program-officially-launched/">VMware vExpert Program Officially Launched</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2009/01/12/vmware-esx-and-esxi-san-io-issue/">VMware ESX and ESXi SAN I/O Issue</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/01/09/a-quick-thought-regarding-cloud-computing/">A Quick Thought Regarding Cloud Computing</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/01/09/sanbolic-optimizes-melio-fs-adds-virtualization-support/">Sanbolic Optimizes Melio FS, Adds Virtualization Support</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2009/01/09/marathon-to-bring-everrun-vm-to-hyper-v/">Marathon to Bring EverRun VM to Hyper-V</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2009/01/08/creating-a-bootable-esxi-usb-stick-on-mac-os-x/">Creating a Bootable ESXi USB Stick on Mac OS X</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2009/01/08/windows-server-2008-r2-public-beta/">Windows Server 2008 R2 Public Beta</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2009/01/07/virtualization-short-take-25/">Virtualization Short Take #25</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2009/01/06/virtualization-congress-2009-sessions/">Virtualization Congress 2009 Sessions</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/01/05/partial-case-sensitivity-with-esxcfg-advcfg/">Partial Case Sensitivity with esxcfg-advcfg</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2009/01/05/changing-vnic-port-group-assignment-in-vmware-with-powershell/">Changing vNIC Port Group Assignment in VMware with PowerShell</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/01/01/blasts-from-the-past/">Blasts from the Past</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2009/01/01/one-of-the-top-virtualization-blogs-of-2008/">One of the &#34;Top Virtualization Blogs&#34; of 2008</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/12/23/random-reboots-with-vmware-esx-35-update-3/">Random Reboots with VMware ESX 3.5 Update 3</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2008/12/22/free-veeam-monitor/">Free Veeam Monitor</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/12/19/get-used-to-vsphere/">Get Used to vSphere</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/12/19/vmware-esx-networking-articles/">VMware ESX Networking Articles</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/12/16/using-vmware-vim-cmd-to-modify-a-portgroup/">Using vmware-vim-cmd to Modify a Portgroup</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/12/15/enabling-enhanced-vmxnet/">Enabling Enhanced VMXNet</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/12/15/youve-got-to-be-kidding-me/">You&#39;ve Got to be Kidding Me</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/12/15/virtualization-short-take-24/">Virtualization Short Take #24</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/12/12/vmware-ha-problem-with-update-3/">VMware HA Problem with Update 3</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/12/12/new-tool-from-veeam/">New Tool from Veeam?</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/12/11/3183-vmware-srm-on-netapp-storage/">3183: VMware SRM on NetApp Storage</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/12/05/installing-the-vi-power-documenter/">Installing the VI Power Documenter</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/12/05/vmware-srm-10-update-1-released/">VMware SRM 1.0 Update 1 Released</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/12/03/searchmyvm-2-launched/">SearchMyVM 2 Launched</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/12/03/more-hyper9-beta-invitations-available/">More Hyper9 Beta Invitations Available</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/12/01/4198-hyper-v-on-netapp-deep-dive/">4198: Hyper-V on NetApp Deep Dive</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/11/19/virtualization-short-take-23/">Virtualization Short Take #23</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/11/19/need-an-esx-cheat-sheet/">Need an ESX Cheat Sheet?</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/11/17/fcoe-versus-mr-iovhuh/">FCoE versus MR-IOV...huh?</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2008/11/13/comparemyvm/">CompareMyVM</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/11/11/recent-vmware-security-notice/">Recent VMware Security Notice</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/11/11/virtualization-short-take-22/">Virtualization Short Take #22</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/11/10/bluestripe-releases-factfinder-11/">BlueStripe Releases FactFinder 1.1</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/11/07/vmware-esx-35-update-3-is-available/">VMware ESX 3.5 Update 3 is Available</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/11/07/where-is-bluebear-going-with-kodiak/">Where is Bluebear Going with Kodiak?</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/11/03/virtualization-short-take-21/">Virtualization Short Take #21</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/11/03/p2v-with-ibm-blades/">P2V With IBM Blades</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/11/02/a-couple-more-articles-published-2/">A Couple More Articles Published</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/10/29/is-power-the-key-to-controlling-the-cloud/">Is Power the Key to Controlling the Cloud?</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2008/10/28/vima-rolls-out/">VIMA Rolls Out</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2008/10/27/quick-note-on-esx-and-esxi-storage-multipathing/">Quick Note on ESX and ESXi Storage Multipathing</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/10/24/hyper9-beta-invitations/">Hyper9 Beta Invitations</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/10/23/virtualization-short-take-20/">Virtualization Short Take #20</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/10/20/kodiak-continues-to-develop/">Kodiak Continues to Develop</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/10/18/important-note-regarding-vmware-over-nfs/">Important Note Regarding VMware over NFS</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/10/16/a-couple-of-product-announcements/">A Couple of Product Announcements</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/10/15/vmware-expands-svvp-certifications/">VMware Expands SVVP Certifications</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/10/14/virtualization-short-take-19/">Virtualization Short Take #19</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/10/08/more-on-vmware-esx-nic-utilization/">More on VMware ESX NIC Utilization</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/10/03/netapp-igroup-strategies-for-vmware-esx/">NetApp iGroup Strategies for VMware ESX</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/10/02/im-honored-again/">I&#39;m Honored Again</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/10/02/now-ciscos-participation-in-svvp-becomes-clearer/">Now Cisco&#39;s Participation in SVVP Becomes Clearer</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/10/01/hyper-v-server-released/">Hyper-V Server Released</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2008/09/27/virtualization-short-take-vmworld-2008-edition/">Virtualization Short Take - VMworld 2008 Edition</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/09/26/everrun-vm-vmware-ha-and-vmware-ft/">everRun VM, VMware HA, and VMware FT</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/09/25/a-collection-of-hyper-v-links/">A Collection of Hyper-V Links</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/09/24/workstation-65-and-server-20-released/">Workstation 6.5 and Server 2.0 Released</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/09/24/hyper-v-update-released/">Hyper-V Update Released</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/09/23/vmware-esx-svvp-validation-apparently-limited/">VMware ESX SVVP Validation Apparently Limited</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/09/18/po2061-vmware-virtualcenter-25-database-best-practices/">PO2061: VMware VirtualCenter 2.5 Database Best Practices</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/09/18/po1644-vmware-update-manager-performance-and-best-practices/">PO1644: VMware Update Manager Performance and Best Practices</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/09/18/no-liveblog-for-ta2441/">No Liveblog for TA2441</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/09/18/ta2644-networking-io-virtualization/">TA2644: Networking I/O Virtualization</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/09/18/vmware-keynote-automating-dr-with-vmware-srm/">VMware Keynote - Automating DR with VMware SRM</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/more-vmworld-2008-day-2-coverage/">More VMworld 2008 Day 2 Coverage</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/ovf-format-released-vman-initiative-launched/">OVF Format Released, VMAN Initiative Launched</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/ta2659-managing-esx-in-a-cos-less-world/">TA2659: Managing ESX in a COS-less World</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/vd2422-offline-vdi/">VD2422: Offline VDI</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/very-brief-thoughts-on-the-keynote/">Very Brief Thoughts on the Keynote</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/09/17/vmworld-2008-day-2-keynote/">VMworld 2008 Day 2 Keynote</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/other-vmworld-2008-resources/">Other VMworld 2008 Resources</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/bc1693-architecting-dr-solutions-with-vmware-srm/">BC1693: Architecting DR Solutions with VMware SRM</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/dont-believe-me/">Don&#39;t Believe Me?</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/fusion-20-released/">Fusion 2.0 Released</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/ta2668-vmware-esx-architectural-directions/">TA2668: VMware ESX Architectural Directions</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/bc2621-fault-tolerant-vms-in-vi-operations-and-best-practices/">BC2621: Fault-Tolerant VMs in VI: Operations and Best Practices</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/todays-vendor-meetings/">Today&#39;s Vendor Meetings</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/09/16/vmworld-2008-day-1-keynote/">VMworld 2008 Day 1 Keynote</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/follow-up-on-the-vdc-os-announcement/">Follow Up on the VDC-OS Announcement</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/vmwares-virtual-datacenter-os/">VMware&#39;s Virtual Datacenter OS</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/a-new-slogan-for-vmware/">A New Slogan for VMware</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/marathon-and-xenserver-ha/">Marathon and XenServer HA</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/citrix-announces-citrix-cloud-center/">Citrix Announces Citrix Cloud Center</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/09/15/citrix-announces-xenserver-5/">Citrix Announces XenServer 5</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/09/14/for-me-vmworld-begins-today/">For Me, VMworld Begins Today</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2008/09/13/vmworld-2008-last-minute-spouse-activities-update/">VMworld 2008 Last Minute Spouse Activities Update</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/09/10/the-changing-face-of-virtualization/">The Changing Face of Virtualization</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/09/09/more-exposure/">More Exposure!</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/09/09/virtualization-short-take-18/">Virtualization Short Take #18</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/09/09/as-expected-rosenblum-leaves-vmware/">As Expected, Rosenblum Leaves VMware</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/09/08/live-migration-with-hyper-v/">Live Migration with Hyper-V</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/09/08/eg-innovations-now-supporting-multiple-virtualization-platforms/">eG Innovations Now Supporting Multiple Virtualization Platforms</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/09/08/sanbolic-now-providing-shared-lun-access-for-hyper-v-guests/">Sanbolic Now Providing Shared LUN Access for Hyper-V Guests</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/09/05/vmware-esx-nic-teaming-and-vlan-trunking-with-hp-procurve/">VMware ESX, NIC Teaming, and VLAN Trunking with HP ProCurve</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/09/05/setting-vmware-esx-vswitch-load-balancing-policy-via-cli/">Setting VMware ESX vSwitch Load Balancing Policy via CLI</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/09/03/searchmyvm/">SearchMyVM</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/09/03/vmware-esx-35-u2-validated-via-svvp/">VMware ESX 3.5 U2 Validated via SVVP</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/09/02/embotics-v-scout/">Embotics V-Scout</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/09/01/spouse-activities-confirmation/">Spouse Activities Confirmation</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/08/29/bluebear-and-kodiak/">Bluebear and Kodiak</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2008/08/28/virtualization-short-take-17/">Virtualization Short Take #17</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/08/26/first-look-altor-networks-vnsa/">First Look: Altor Networks VNSA</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/08/25/new-blog-to-add-to-your-reader/">New Blog to Add to Your Reader</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/08/25/more-on-my-vmworld-2008-schedule/">More on my VMworld 2008 Schedule</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2008/08/21/vmsight-in-vdi-environments/">vmSight in VDI Environments</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/08/20/vmworld-2008-spouse-activities-schedule/">VMworld 2008 Spouse Activities Schedule</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/08/20/thinking-on-microsofts-licensing-changes/">Thinking on Microsoft&#39;s Licensing Changes</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/08/19/my-vmworld-2008-schedule/">My VMworld 2008 Schedule</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/08/19/a-quick-note-to-vmware/">A Quick Note to VMware</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/08/14/ok-this-is-funny/">OK, This is Funny</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/08/14/storage-protocol-performance-whitepaper-from-netapp/">Storage Protocol Performance Whitepaper from NetApp</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/08/11/apparent-datetime-issue-with-update-2/">Apparent Date/Time Issue With Update 2</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/08/11/virtualization-short-take-16/">Virtualization Short Take #16</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/08/11/virtual-iron-tackles-power-usage-with-new-release/">Virtual Iron Tackles Power Usage with New Release</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/08/07/liveblogging-at-vmworld-2008/">Liveblogging at VMworld 2008</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/08/06/a-few-srm-discussion-points/">A Few SRM Discussion Points</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/08/06/virtualization-interview-posted/">Virtualization Interview Posted</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/08/05/flexclones-versus-deduplication-with-vmware-infrastructure/">FlexClones Versus Deduplication with VMware Infrastructure</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2008/08/04/vmware-lab-manager-30-released/">VMware Lab Manager 3.0 Released</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/08/03/vmworld-spouse-activities/">VMworld Spouse Activities</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/08/01/vmware-workstation-beats-hyper-v/">VMware Workstation Beats Hyper-V?</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/08/01/xsigo-io-director-tips-and-tricks/">Xsigo I/O Director Tips and Tricks</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2008/07/31/more-on-hyper-v-for-the-esx-engineer/">More on Hyper-V for the ESX Engineer</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2008/07/31/virtualization-short-take-15/">Virtualization Short Take #15</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2008/07/31/fusion-20-beta-2-available/">Fusion 2.0 Beta 2 Available</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/07/26/vmware-releases-update-2/">VMware Releases Update 2</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/07/25/my-take-on-free-esxi/">My Take on Free ESXi</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/07/23/virtualization-short-take-14/">Virtualization Short Take #14</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/07/17/virtualization-short-take-13/">Virtualization Short Take #13</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/07/16/im-honored-too/">I&#39;m Honored, Too</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/07/16/understanding-nic-utilization-in-vmware-esx/">Understanding NIC Utilization in VMware ESX</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/07/15/in-the-works/">In the Works</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/07/11/vmware-ha-configuration-notes/">VMware HA Configuration Notes</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/07/08/sanbolic-looking-to-capitalize-on-hyper-v-opportunity/">Sanbolic Looking to Capitalize on Hyper-V Opportunity</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/07/08/greene-is-out-whats-next/">Greene is Out; What&#39;s Next?</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/07/05/virtualization-short-take-12/">Virtualization Short Take #12</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2008/07/01/citrix-hyper-v-and-the-future-of-xenserver/">Citrix, Hyper-V, and the Future of XenServer</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2008/06/30/vmware-esx-cpu-scheduling-information/">VMware ESX CPU Scheduling Information</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2008/06/27/hyper-v-storage-scenarios/">Hyper-V Storage Scenarios</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/06/26/virtualization-short-take-11/">Virtualization Short Take #11</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/06/26/hyper-v-released/">Hyper-V Released</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/06/24/vlans-on-esx-with-nortel-switches/">VLANs on ESX with Nortel Switches</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/06/23/more-on-hyper-v-and-nic-teaming/">More on Hyper-V and NIC Teaming</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2008/06/22/hyper-v-clustering-scenarios/">Hyper-V Clustering Scenarios</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/06/17/virtualization-short-take-10/">Virtualization Short Take #10</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/06/16/melio-fs-hyper-v-and-vmware-esx/">Melio FS, Hyper-V, and VMware ESX</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/06/12/vir350-system-center-vmm-advanced-integration/">VIR350: System Center VMM Advanced Integration</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/06/12/significant-networking-problem-with-hyper-v/">Significant Networking Problem with Hyper-V</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/06/12/vir358-hyper-v-architecture-scenarios-and-networking/">VIR358: Hyper-V Architecture, Scenarios, and Networking</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/06/12/small-tech-ed-schedule-change/">Small Tech-Ed Schedule Change</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/06/11/mgt374-offline-virtual-machine-servicing-tool/">MGT374: Offline Virtual Machine Servicing Tool</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/06/11/vir361-introducing-map-for-windows-server-2008-hyper-v/">VIR361: Introducing MAP for Windows Server 2008 Hyper-V</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/06/11/vir250-advanced-storage-connectivity-for-vms/">VIR250: Advanced Storage Connectivity for VMs</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/06/11/vir360-microsoft-system-center-vmm-2008-part-2-of-2/">VIR360: Microsoft System Center VMM 2008, Part 2 of 2</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/06/11/vir253-microsoft-system-center-vmm-2008-part-1-of-2/">VIR253: Microsoft System Center VMM 2008, Part 1 of 2</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/06/10/a-discussion-with-jeff-woolsey/">A Discussion with Jeff Woolsey</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/06/10/vir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v/">VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/06/10/announcement-double-takes-hyper-v-product-support/">Announcement: Double-Take&#39;s Hyper-V Product Support</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/06/10/vir367-hyper-v-security-and-best-practices/">VIR367: Hyper-V Security and Best Practices</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/06/10/tech-ed-2008-keynote-liveblog/">Tech-Ed 2008 Keynote Liveblog</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/06/08/isolation-of-misbehaving-vms/">Isolation of Misbehaving VMs</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/06/06/spouses-at-vmworld/">Spouses at VMworld</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/06/06/vi-java/">VI Java</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2008/06/04/storage-array-snapshots-with-vmware/">Storage Array Snapshots with VMware</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2008/06/04/teched-schedule/">TechEd Schedule</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2008/05/31/virtualization-short-take-9/">Virtualization Short Take #9</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2008/05/30/brief-leostream-update/">Brief Leostream Update</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/05/29/netapp-ossv-with-vmware-esx-server/">NetApp OSSV with VMware ESX Server</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2008/05/27/xen-trademark-policy/">Xen Trademark Policy</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/05/26/virtualization-short-take-8/">Virtualization Short Take #8</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2008/05/13/headed-to-tech-ed-2008/">Headed to Tech-Ed 2008</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/05/08/partner-exchange-wrap-up/">Partner Exchange Wrap-Up</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/05/07/virtualization-short-take-7/">Virtualization Short Take #7</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/05/07/vmware-converter-update/">VMware Converter Update</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/05/06/vmware-fusion-20-beta-1/">VMware Fusion 2.0 Beta 1</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/05/05/vmware-partner-exchange-starts-tomorrow/">VMware Partner Exchange Starts Tomorrow</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/04/29/virtualization-short-take-6/">Virtualization Short Take #6</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/04/29/intro-to-io-virtualization/">Intro to I/O Virtualization</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2008/04/28/fibre-channel-to-software-iscsi-failover-failures/">Fibre Channel to Software iSCSI Failover Failures</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/04/25/my-thoughts-on-the-live-migration-quick-migration-discussion/">My Thoughts on the Live Migration-Quick Migration Discussion</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/04/24/book-review-vmware-esx-server-in-the-enterprise/">Book Review: VMware ESX Server in the Enterprise</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/04/24/vmware-fusion-112-now-available/">VMware Fusion 1.1.2 Now Available</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2008/04/22/esx-server-ip-storage-and-jumbo-frames/">ESX Server, IP Storage, and Jumbo Frames</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/04/18/live-migration-and-vm-failover-for-oracle-vm/">Live Migration and VM Failover for Oracle VM?</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/04/18/vi-programming-book-on-the-horizon/">VI Programming Book on the Horizon</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/04/17/a-couple-more-articles-published/">A Couple More Articles Published</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/04/16/the-dark-side-of-virtualization/">The Dark Side of Virtualization</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/04/11/vmwares-switch-to-fusion-contest/">VMware&#39;s Switch to Fusion Contest</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/04/09/keeping-thin-vmdks-using-netapp-snaprestore/">Keeping Thin VMDKs Using NetApp SnapRestore</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2008/04/04/virtualization-short-take-5/">Virtualization Short Take #5</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/04/03/quick-migration-revisited/">Quick Migration Revisited</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/04/03/unity-coming-to-vmware-workstation-65/">Unity Coming to VMware Workstation 6.5</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/04/02/potential-problem-with-esx-30x-and-virtualcenter-25/">Potential Problem with ESX 3.0.x and VirtualCenter 2.5</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2008/03/31/only-thin-provisioned-in-the-beginning/">Only Thin Provisioned in the Beginning</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/03/24/virtualization-sea-change/">Virtualization Sea Change?</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2008/03/19/vi-toolkit-for-windows-in-beta/">VI Toolkit for Windows in Beta</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/03/18/more-on-memory-overcommitment/">More on Memory Overcommitment</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2008/03/17/vmware-workstation-update/">VMware Workstation Update</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/03/14/virtualization-short-take-4/">Virtualization Short Take #4</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/03/12/in-case-you-hadnt-noticed/">In Case You Hadn&#39;t Noticed</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/03/12/in-depth-look-at-the-asr-router/">In-Depth Look at the ASR Router</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2008/03/12/microsoft-buying-kidaro/">Microsoft Buying Kidaro</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/03/11/identifying-esx-server-nics-in-blades/">Identifying ESX Server NICs in Blades</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/03/11/walking-a-fine-line/">Walking a Fine Line</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/03/07/configuration-for-protecting-vmotion/">Configuration for Protecting VMotion</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2008/03/05/vmotion-and-vlan-security/">VMotion and VLAN Security</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/03/03/virtualization-short-take-3/">Virtualization Short Take #3</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2008/03/02/invoke/">Invoke</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2008/02/28/i-love-it-but-its-not-available/">I Love It, But It&#39;s Not Available</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2008/02/27/moving-past-the-hype/">Moving Past the Hype</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2008/02/26/vdi-announcements-at-vmworld-europe-2008/">VDI Announcements at VMworld Europe 2008</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/02/25/vi-plugins-expose-a-problem/">VI Plugins Expose a Problem</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2008/02/25/vendor-responsiveness/">Vendor Responsiveness</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2008/02/24/new-vi-plugin/">New VI Plugin</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2008/02/21/final-article-in-vdi-series/">Final Article in VDI Series</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/02/20/a-quick-follow-up-on-catbird/">A Quick Follow Up on Catbird</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/02/20/a-few-thoughts-on-xen/">A Few Thoughts on Xen</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/02/20/vi-plugin-guide-available/">VI Plugin Guide Available</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2008/02/18/virtualization-short-take-2/">Virtualization Short Take #2</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2008/02/16/vipluginscom/">VIPlugins.com</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/02/14/storage-vmotion-plugin/">Storage VMotion Plugin</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2008/02/13/recommended-esx-service-console-partitioning/">Recommended ESX Service Console Partitioning</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2008/02/11/xenserver-taking-advantage-of-netapp-functionality/">XenServer Taking Advantage of NetApp Functionality</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/02/09/im-glad-im-not-the-only-one/">I&#39;m Glad I&#39;m Not The Only One</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/02/09/graphical-front-end-for-storage-vmotion/">Graphical Front-End for Storage VMotion</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/02/08/virtualization-short-take-1/">Virtualization Short Take #1</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2008/02/08/vmware-fusion-team-blog/">VMware Fusion Team Blog</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2008/02/06/windows-server-2008-and-vista-sp1/">Windows Server 2008 and Vista SP1</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2008/01/30/hp-virtualconnect-clarification/">HP VirtualConnect Clarification</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2008/01/30/momentum-building-around-xen/">Momentum Building Around Xen</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/01/29/book-review-xen-virtualization/">Book Review: Xen Virtualization</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2008/01/29/vmware-fusion-update-released-2/">VMware Fusion Update Released</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2008/01/23/new-article-on-hp-virtualconnect/">New Article on HP VirtualConnect</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2008/01/21/a-new-role/">A New Role</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/01/20/recent-virtualization-links/">Recent Virtualization Links</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2008/01/20/cpu-spike-with-drs-and-vmotion/">CPU Spike with DRS and VMotion</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2008/01/15/new-vdi-article-at-searchvmware/">New VDI Article at SearchVMware</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2008/01/14/proving-vmware-over-nfs/">Proving VMware Over NFS</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2008/01/10/esx-server-301-patch-needed-for-vc-25/">ESX Server 3.0.1 Patch Needed for VC 2.5</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2008/01/09/local-logins-refused-in-ad-integration-scenarios/">Local Logins Refused in AD Integration Scenarios</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/01/07/vmware-ha-clarification/">VMware HA Clarification?</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2008/01/07/underwhelmed-by-the-remote-cli/">Underwhelmed by the Remote CLI</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2008/01/03/some-things-im-working-on/">Some Things I&#39;m Working On</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2007/12/31/hyper-v-architectural-issue/">Hyper-V Architectural Issue</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2007/12/31/vmware-ha-failover-capacity-changes/">VMware HA Failover Capacity Changes</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/12/27/hyper-v-off-to-a-rocky-start/">Hyper-V Off to a Rocky Start</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2007/12/20/latest-vdi-article-published/">Latest VDI Article Published</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/12/11/ok-i-had-to-comment-on-this/">OK, I Had to Comment on This</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2007/12/07/more-discussion-on-vmware-ha-failover-capacity/">More Discussion on VMware HA Failover Capacity</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2007/12/07/new-vlan-article-at-searchvmwarecom/">New VLAN Article at SearchVMware.com</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2007/12/04/calculating-vmware-ha-failover-capacity/">Calculating VMware HA Failover Capacity</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2007/11/16/customizing-the-sysprepinf-created-by-virtualcenter/">Customizing the Sysprep.inf Created by VirtualCenter</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2007/11/14/vmware-referral-program/">VMware Referral Program</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/11/13/esx-server-and-the-native-vlan/">ESX Server and the Native VLAN</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/11/13/second-vdi-article-published/">Second VDI Article Published</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/11/12/vmware-fusion-update-released/">VMware Fusion Update Released</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2007/11/02/my-first-articles/">My First Articles!</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2007/10/31/virtual-mac-os-x/">Virtual Mac OS X</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/10/23/using-scponly-on-esx-server/">Using scponly on ESX Server</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/10/23/virtualization-security-guidelines/">Virtualization Security Guidelines</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/10/21/when-an-os-is-not-an-os/">When an OS is not an OS</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/10/11/disabling-rdp-clipboard-redirection/">Disabling RDP Clipboard Redirection</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2007/10/08/vm-file-level-recovery-with-netapp-snapshots/">VM File-Level Recovery with NetApp Snapshots</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2007/10/08/full-vm-recovery-with-netapp-snapshots/">Full VM Recovery with NetApp Snapshots</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/10/06/various-odds-and-ends/">Various Odds and Ends</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2007/10/05/troubleshooting-vmware-ha-isolation-response/">Troubleshooting VMware HA Isolation Response</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2007/10/04/vi-35-expected-in-december/">VI 3.5 Expected in December</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2007/10/03/sanrad-configuration-basics/">Sanrad Configuration Basics</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/09/27/apple-and-vmwareor-xen/">Apple and VMware...or Xen?</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/09/27/nifty-nfs-vmware-trick/">Nifty NFS-VMware Trick</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/09/21/nfs-for-vmware-storage/">NFS for VMware Storage</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-top-support-issues-session/">VMworld 2007 Top Support Issues Session</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-ip-based-storage-sessions/">VMworld 2007 IP-Based Storage Sessions</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-vcb-solutions-session/">VMworld 2007 VCB Solutions Session</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-day-3-keynote-liveblog/">VMworld 2007 Day 3 Keynote Liveblog</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/enhanced-vmotion-announcement/">Enhanced VMotion Announcement</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/a-collection-of-vmworld-2007-links/">A Collection of VMworld 2007 Links</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/vmworld-2007-session-on-advanced-diagnostics-log-analysis/">VMworld 2007 Session on Advanced Diagnostics Log Analysis</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/vmworld-2007-session-on-esx-patch-management/">VMworld 2007 Session on ESX Patch Management</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/vmworld-2007-day-2-keynote-liveblog/">VMworld 2007 Day 2 Keynote Liveblog</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/09/12/other-vmworld-news-and-views/">Other VMworld News and Views</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/09/11/first-session-of-vmworld-2007-day-1/">First Session of VMworld 2007, Day 1</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/09/11/vmworld-2007-day-1-keynote-liveblog/">VMworld 2007 Day 1 Keynote Liveblog</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/09/11/vmware-acquires-dunes/">VMware Acquires Dunes</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/09/10/vmworld-2007-partner-day-sessions/">VMworld 2007 Partner Day Sessions</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/09/10/vmworld-2007-partner-day/">VMworld 2007 Partner Day</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/09/10/interesting-new-vmware-storage-product/">Interesting New VMware Storage Product</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/09/06/invalid-configuration-error-creating-new-vms/">Invalid Configuration Error Creating New VMs</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/09/06/solaris-10-update-4-on-esx-server-2/">Solaris 10 Update 4 on ESX Server</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2007/09/05/centos-5-on-esx-server/">CentOS 5 on ESX Server</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2007/09/05/liveblogging-from-vmworld-2007/">Liveblogging from VMworld 2007</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2007/08/29/swsoft-disagrees-with-cnet-benchmarks/">SWsoft Disagrees with CNET Benchmarks</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/08/27/my-vmworld-schedule/">My VMworld Schedule</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2007/08/25/user-profile-management-in-vdi-deployments/">User Profile Management in VDI Deployments</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2007/08/22/error-connecting-to-vm-console/">Error Connecting to VM Console</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/08/21/xensource-bidding-war/">XenSource Bidding War</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2007/08/19/the-linux-kernel-binary-modules-and-esx-server/">The Linux Kernel, Binary Modules, and ESX Server</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2007/08/18/vmware-addressing-virtual-security-concerns/">VMware Addressing Virtual Security Concerns</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2007/08/15/citrix-to-buy-xensource/">Citrix to buy XenSource</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2007/08/09/next-generation-virtual-infrastructure/">Next-Generation Virtual Infrastructure</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2007/08/07/strange-vcb-error/">Strange VCB Error</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2007/08/07/a-few-more-quick-thoughts-on-fusion/">A Few More Quick Thoughts on Fusion</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/08/06/fusion-released/">Fusion Released</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2007/08/02/fusion-ship-date-announced/">Fusion Ship Date Announced</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2007/08/01/heading-to-vmworld-2007/">Heading to VMworld 2007!</a></li>
+
+    
+      <li>319 May 313131 - <a href="https://www.howellyang.com/2007/07/31/mks-client-updated/">MKS Client Updated</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2007/07/29/cisco-switches-on-vmware/">Cisco Switches on VMware</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/07/23/live-migration-vs-quick-migration/">Live Migration vs. Quick Migration</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2007/07/18/assorted-vmware-tools/">Assorted VMware Tools</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/07/12/hanging-around-vmware/">Hanging Around #vmware</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/07/10/esx-server-ad-integration/">ESX Server-AD Integration</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2007/06/29/esx-iscsi-basic-configuration-from-the-cli/">ESX iSCSI Basic Configuration from the CLI</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2007/06/26/optimizing-iscsi-traffic-with-esx/">Optimizing iSCSI Traffic with ESX</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/06/21/cliff-ive-used-vmware-in-production/">Cliff, I&#39;ve Used VMware in Production</a></li>
+
+    
+      <li>199 May 191919 - <a href="https://www.howellyang.com/2007/06/19/more-on-cpu-masking/">More on CPU Masking</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2007/06/15/moving-esx-into-firmware/">Moving ESX Into Firmware</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2007/06/15/leaving-esx-for-virtual-server/">Leaving ESX for Virtual Server?</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2007/06/08/unity-definitely-real/">Unity: Definitely Real!</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/06/06/unity-real-or-rumor/">Unity: Real or Rumor?</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2007/06/04/why-is-microsoft-fighting-so-hard/">Why is Microsoft Fighting so Hard?</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/05/23/windows-server-2008-beta-3-on-esx-server/">Windows Server 2008 Beta 3 on ESX Server</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/05/23/openbsd-41-on-esx-server-301/">OpenBSD 4.1 on ESX Server 3.0.1</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2007/05/17/netapp-flexclones-with-vmware-part-2/">NetApp FlexClones with VMware, Part 2</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2007/05/15/resizing-disks-inside-guests/">Resizing Disks Inside Guests</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2007/05/15/netapp-flexclones-with-vmware-part-1/">NetApp FlexClones with VMware, Part 1</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2007/05/11/how-to-provision-vms-using-netapp-flexclones/">How to Provision VMs Using NetApp FlexClones</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/05/10/viridian-feature-set-trimmed/">Viridian Feature Set Trimmed</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/04/27/vmworld-2007-proposal-submitted/">VMworld 2007 Proposal Submitted</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2007/04/12/vmware-as-middleware/">VMware as Middleware</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/04/06/vmware-fusion-beta-3/">VMware Fusion Beta 3</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/04/06/esx-security-vulnerabilities/">ESX Security Vulnerabilities</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2007/04/05/open-source-virtualization-thoughts/">Open Source Virtualization Thoughts</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/03/27/new-vmotion-boundary/">New VMotion Boundary</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/03/27/using-fpk-in-vdi-deployments/">Using FPK in VDI Deployments</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2007/03/23/vdi-and-leostream-connection-broker/">VDI and Leostream Connection Broker</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2007/03/18/various-vmware-links/">Various VMware Links</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2007/03/14/virtual-security-concerns/">Virtual Security Concerns</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2007/03/09/autopatching-esx/">Autopatching ESX</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2007/03/06/restoring-vcb-full-backups-with-vmware-converter/">Restoring VCB Full Backups with VMware Converter</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2007/03/05/vmware-consolidated-backup/">VMware Consolidated Backup</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2007/03/02/fusion-beta-2/">Fusion Beta 2</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2007/02/28/more-on-microsoft-versus-vmware/">More on Microsoft versus VMware</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2007/02/27/return-of-the-old-microsoft/">Return of the Old Microsoft</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/02/21/storage-time-bomb/">Storage Time Bomb?</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2007/02/21/vmware-converter/">VMware Converter</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2007/02/02/dst-changes-and-esx-server/">DST Changes and ESX Server</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2007/01/22/vmware-ha-in-action/">VMware HA in Action</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2007/01/10/esx-security-issues/">ESX Security Issues</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2007/01/09/pending-articles/">Pending Articles</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a></li>
+
+    
+      <li>289 May 282828 - <a href="https://www.howellyang.com/2006/12/28/personal-computing-as-a-collection-of-vms/">Personal Computing as a Collection of VMs?</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2006/12/27/ssh-from-esx-server-to-data-ontap/">SSH from ESX Server to Data ONTAP</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2006/12/26/application-agnosticism/">Application Agnosticism</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2006/12/22/vmware-fusion-public-beta/">VMware Fusion Public Beta</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2006/12/15/iscsi-from-netapp-to-esx-server/">iSCSI from NetApp to ESX Server</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2006/12/12/vm-portability-round-3/">VM Portability, Round 3</a></li>
+
+    
+      <li>69 May 6066 - <a href="https://www.howellyang.com/2006/12/06/vm-portability-again/">VM Portability Again</a></li>
+
+    
+      <li>59 May 5055 - <a href="https://www.howellyang.com/2006/12/05/the-future-of-the-os/">The Future of the OS</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/12/04/esx-server-nic-teaming-and-vlan-trunking/">ESX Server, NIC Teaming, and VLAN Trunking</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/12/04/macintosh-virtualization-heating-up/">Macintosh Virtualization Heating Up</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2006/11/29/solaris-10-x86-on-mac-os-x/">Solaris 10 x86 on Mac OS X</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2006/11/29/vm-portability/">VM Portability</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2006/11/24/virtualcenter-patch-released/">VirtualCenter Patch Released</a></li>
+
+    
+      <li>239 May 232323 - <a href="https://www.howellyang.com/2006/11/23/vmotion-compatibility/">VMotion Compatibility</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2006/11/20/virtual-consoles-inside-virtual-machines/">Virtual Consoles Inside Virtual Machines</a></li>
+
+    
+      <li>149 May 141414 - <a href="https://www.howellyang.com/2006/11/14/security-fixes-for-esx/">Security Fixes for ESX</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2006/11/09/vmworld-2006-day-3-and-wrap-up/">VMworld 2006 Day 3 and Wrap-Up</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2006/11/08/vmworld-2006-day-2-keynote/">VMworld 2006 Day 2 Keynote</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2006/11/08/vmworld-2006-day-1-part-2/">VMworld 2006 Day 1, Part 2</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2006/11/07/vmworld-2006-day-1-part-1/">VMworld 2006 Day 1, Part 1</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2006/11/07/partner-day-at-vmworld-2006/">Partner Day at VMworld 2006</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/11/04/vmware-fusion-first-impressions/">VMware Fusion First Impressions</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2006/10/24/nexenta-alpha-6-on-esx-server/">Nexenta Alpha 6 on ESX Server</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2006/09/25/sneaking-around-vmotion-limitations/">Sneaking Around VMotion Limitations</a></li>
+
+    
+      <li>119 May 111111 - <a href="https://www.howellyang.com/2006/09/11/esx-firewall-oddity/">ESX Firewall Oddity</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2006/08/07/vmware-on-mac-os-x/">VMware on Mac OS X</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2006/07/10/iscsi-and-esx-server-3/">iSCSI and ESX Server 3</a></li>
+
+    
+      <li>299 May 292929 - <a href="https://www.howellyang.com/2006/06/29/strange-esx-server-error/">Strange ESX Server Error</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2006/06/27/netapp-ontap-simulator-and-esx-server/">NetApp ONTAP Simulator and ESX Server</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/06/04/strataguard-free/">StrataGuard Free</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2006/06/03/my-thoughts-on-windows-hypervisor/">My Thoughts on Windows Hypervisor</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2006/05/18/openbsd-39-on-esx-server/">OpenBSD 3.9 on ESX Server</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2006/05/16/follow-up-on-esx-server-integration/">Follow Up on ESX Server Integration</a></li>
+
+    
+      <li>129 May 121212 - <a href="https://www.howellyang.com/2006/05/12/miscellaneous-tidbits/">Miscellaneous Tidbits</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2006/05/01/permissions-in-the-esx-server-mui/">Permissions in the ESX Server MUI</a></li>
+
+    
+      <li>19 May 1011 - <a href="https://www.howellyang.com/2006/05/01/virtualization-layers/">Virtualization Layers</a></li>
+
+    
+      <li>279 May 272727 - <a href="https://www.howellyang.com/2006/04/27/centos-on-esx-server/">CentOS on ESX Server</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2006/04/25/windows-and-os-x/">Windows and OS X</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2006/04/18/cisco-investing-in-file-virtualization/">Cisco Investing in File Virtualization</a></li>
+
+    
+      <li>189 May 181818 - <a href="https://www.howellyang.com/2006/04/18/microsoft-virtual-server-management-tool-being-readied/">Microsoft Virtual Server Management Tool Being Readied</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2006/04/17/vlans-and-port-groups/">VLANs and Port Groups</a></li>
+
+    
+      <li>179 May 171717 - <a href="https://www.howellyang.com/2006/04/17/freenas-on-esx-server/">FreeNAS on ESX Server</a></li>
+
+    
+      <li>99 May 9099 - <a href="https://www.howellyang.com/2006/04/09/open-virtual-disk-formats/">Open Virtual Disk Formats</a></li>
+
+    
+      <li>89 May 8088 - <a href="https://www.howellyang.com/2006/04/08/mac-os-x-virtualization-products/">Mac OS X Virtualization Products</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2006/04/03/new-category-added/">New Category Added</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2006/04/03/xen-momentum-growing/">Xen Momentum Growing</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2006/04/03/microsoft-virtual-server-now-free-also/">Microsoft Virtual Server Now Free Also</a></li>
+
+    
+      <li>39 May 3033 - <a href="https://www.howellyang.com/2006/04/03/openbsd-on-esx-server/">OpenBSD on ESX Server</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2006/03/30/upcoming-articles/">Upcoming Articles</a></li>
+
+    
+      <li>309 May 303030 - <a href="https://www.howellyang.com/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a></li>
+
+    
+      <li>259 May 252525 - <a href="https://www.howellyang.com/2006/03/25/apple-leopard-virtualization-rumor/">Apple Leopard Virtualization Rumor</a></li>
+
+    
+      <li>229 May 222222 - <a href="https://www.howellyang.com/2006/03/22/installing-vmware-workstation-on-ubuntu/">Installing VMware Workstation on Ubuntu</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2006/03/21/my-new-job/">My New Job</a></li>
+
+    
+      <li>219 May 212121 - <a href="https://www.howellyang.com/2006/03/21/virtual-security/">Virtual Security</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2006/03/15/synergies/">Synergies</a></li>
+
+    
+      <li>29 May 2022 - <a href="https://www.howellyang.com/2006/03/02/application-virtualization/">Application Virtualization</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2006/02/20/a-pair-of-asterisk-articles/">A Pair of Asterisk Articles</a></li>
+
+    
+      <li>209 May 202020 - <a href="https://www.howellyang.com/2006/02/20/apple-virtualization-drawing-near/">Apple Virtualization Drawing Near</a></li>
+
+    
+      <li>169 May 161616 - <a href="https://www.howellyang.com/2006/02/16/os2-lives-on/">OS/2 Lives On!</a></li>
+
+    
+      <li>159 May 151515 - <a href="https://www.howellyang.com/2006/02/15/open-source-hardware/">Open Source Hardware</a></li>
+
+    
+      <li>139 May 131313 - <a href="https://www.howellyang.com/2006/02/13/apple-and-virtualization/">Apple and Virtualization</a></li>
+
+    
+      <li>79 May 7077 - <a href="https://www.howellyang.com/2006/02/07/update-on-vmware-server/">Update on VMware Server</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/02/04/brief-thoughts-on-virtual-server-2005/">Brief Thoughts on Virtual Server 2005</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2006/02/04/vmware-giving-away-server-for-free/">VMware Giving Away Server for Free?</a></li>
+
+    
+      <li>249 May 242424 - <a href="https://www.howellyang.com/2006/01/24/gsx-upgrade-much-smoother-this-time/">GSX Upgrade Much Smoother This Time</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2006/01/10/new-open-source-virtualization-project/">New Open Source Virtualization Project</a></li>
+
+    
+      <li>109 May 101010 - <a href="https://www.howellyang.com/2006/01/10/gsx-server-upgrade-woes/">GSX Server Upgrade Woes</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2005/12/26/security-flaw-found-in-vmware/">Security Flaw Found in VMware</a></li>
+
+    
+      <li>49 May 4044 - <a href="https://www.howellyang.com/2005/11/04/openbsd-pcn0-driver-issue-resolved/">OpenBSD pcn0 Driver Issue Resolved</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2005/06/26/running-windows-apps-on-an-intel-based-mac/">Running Windows Apps on an Intel-Based Mac</a></li>
+
+    
+      <li>269 May 262626 - <a href="https://www.howellyang.com/2005/06/26/virtualization/">Virtualization</a></li>
+
+    
+  </ul>
+</div>
+
+      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>
+

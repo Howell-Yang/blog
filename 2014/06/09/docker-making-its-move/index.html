@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Docker Making Its Move - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Docker Making Its Move - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Docker Making Its Move - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/06/09/docker-making-its-move/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Docker Making Its Move</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/news">News</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;391 words (estimated 2 minutes to read)</span>
+  <p>Today marked the start of <a href="http://dockercon.com">Dockercon</a>, and Docker, Inc., the commercial entity behind the incredibly popular open source Docker project, is taking this opportunity to make its move. Already the focus of quite a bit of attention (some might say a disproportionate amount of attention), Docker is making several announcements today that indicate an intent to broaden its reach:</p>
+<ul>
+<li>
+<p>Docker (also referred to as Docker Engine) 1.0 is released today, signaling the project&rsquo;s readiness to be officially used in production environments (although many firms were/are already using pre-1.0 releases in production)</p>
+</li>
+<li>
+<p>Docker is introducing a new Enterprise Support program to give enterprises the warm cuddlies that using Docker in production environments is safe. The new program aims to provide (in Docker&rsquo;s words) &ldquo;training, expertise, and support necessary to stand-up mission-critical workloads built on the Docker platform.&rdquo;</p>
+</li>
+<li>
+<p>Docker is announcing a set of ten systems integrator partners to help drive commercial adoption.</p>
+</li>
+<li>
+<p>Docker is also unveiling Docker Hub, a cloud-based service (naturally!) for users, content, and workflows. Docker Hub will offer a registry for a comprehensive list of &ldquo;Dockerized&rdquo; applications (taking the place of the Docker Index, I assume), along with a management console, user authentication, an automated build service, the Docker Hub API, and collaboration tools to help users manage and share applications.</p>
+</li>
+<li>
+<p>A key part of Docker Hub is Official Repositories; these are &ldquo;Dockerized&rdquo; applications that are maintained, supported, and available to all Docker Hub users. This will initially include applications like MongoDB, MySQL, Nginx, Redis, and WordPress, but it is open to any community group or ISV. ()Obviously, there are some requirements around committing to maintenance of the application on an ongoing basis.)</p>
+</li>
+</ul>
+<p>I&rsquo;m certainly a fan of using Docker (or other container technologies) where it makes sense. I fear, though, that the intense focus (some might say hype) around Docker will lead more than a few organizations down a path of trying to make Docker containers their &ldquo;be all end all&rdquo; solution. If that trend grows too large, that could be as damaging (if not more damaging) to Docker than being ignored. Time will tell. In the meantime, I&rsquo;d strongly recommend getting a grasp on the basics of Docker so that you can better understand how it might fit into your overall solution. (My <a href="/2014/03/11/a-quick-introduction-to-docker/">introductory post on Docker</a>, while a bit dated, might prove useful in that regard.)</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lxc">LXC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/06/09/thinking-out-loud-handling-career-evolution/">Thinking Out Loud: Handling Career Evolution</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/06/11/technology-short-take-42/">Technology Short Take #42</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f09%2fdocker-making-its-move%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f09%2fdocker-making-its-move%2f&text=Docker%20Making%20Its%20Move" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f06%2f09%2fdocker-making-its-move%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/03/11/a-quick-introduction-to-docker/">A Quick Introduction to Docker</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/01/23/automatically-connecting-lxc-to-open-vswitch/">Automatically Connecting LXC to Open vSwitch</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/12/03/connecting-lxc-to-open-vswitch-using-libvirt/">Connecting LXC to Open vSwitch Using Libvirt</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

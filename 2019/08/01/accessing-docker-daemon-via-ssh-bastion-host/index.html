@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Accessing the Docker Daemon via an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Accessing the Docker Daemon via an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Accessing the Docker Daemon via an SSH Bastion Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/08/01/accessing-docker-daemon-via-ssh-bastion-host/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Accessing the Docker Daemon via an SSH Bastion Host</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;477 words (estimated 3 minutes to read)</span>
+  <p>Today I came across <a href="https://medium.com/@sujaypillai/dockertips-connect-to-docker-daemon-over-ssh-using-docker-compose-f4b189dd8951">this article</a>, which informed me that (as of the 18.09 release) you can use SSH to connect to a <a href="https://www.docker.com/">Docker</a> daemon remotely. That&rsquo;s handy! The article uses <code>docker-machine</code> (a useful but underrated tool, I think) to demonstrate, but the first question in my mind was this: can I do this through an SSH bastion host? Read on for the answer.</p>
+<p>If you&rsquo;re not familiar with the concept of an SSH bastion host, it is a (typically hardened) host through which you, as a user, would proxy your SSH connections to other hosts. For example, you may have a bunch of EC2 instances in an AWS VPC that do not have public IP addresses. (That&rsquo;s reasonable.) You could use an SSH bastion host&mdash;which <em>would</em> require a public IP address&mdash;to enable SSH access to otherwise inaccessible hosts. I wrote a post about <a href="/2015/11/21/using-ssh-bastion-host/">using SSH bastion hosts back in 2015</a>; give that post a read for more details.</p>
+<p>The syntax for connecting to a Docker daemon via SSH looks something like this:</p>
+<pre><code>docker -H ssh://user@host &lt;command&gt;
+</code></pre>
+<p>So, if you wanted to run <code>docker container ls</code> to list the containers running on a remote system, you&rsquo;d run this command:</p>
+<pre><code>docker -H ssh://slowe@10.11.12.13 container ls
+</code></pre>
+<p>Note that there&rsquo;s no way to pass <code>sudo</code> via this syntax, so you&rsquo;ll need to ensure that the user you specify on the command line has the ability to run <code>docker</code> commands without privilege escalation. (You could add them to the &ldquo;docker&rdquo; group on the remote system, for example.)</p>
+<p>Now, what about doing this through an SSH bastion host? Let&rsquo;s say you have this configuration stanza in your <code>~/.ssh/config</code> file (the IP address shown below formerly belonged to an EC2 instance in one of my AWS accounts, but has since been terminated&mdash;<em>do not try to connect to this system!</em>):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Host bastion-host
+</span></span><span style="display:flex;"><span>  HostName 18.191.181.211
+</span></span><span style="display:flex;"><span>  User ubuntu
+</span></span><span style="display:flex;"><span>  IdentityFile ~/.ssh/sshkey_rsa
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Host 10.100.15.*
+</span></span><span style="display:flex;"><span>  User ubuntu
+</span></span><span style="display:flex;"><span>  IdentityFile ~/.ssh/sshkey_rsa
+</span></span><span style="display:flex;"><span>  ProxyCommand ssh bastion-host -W %h:%p
+</span></span></code></pre></div><p>Assuming there was an instance at 10.100.15.25, this configuration would allow you to simply run <code>ssh 10.100.15.25</code> and it would attempt to connect as user &ldquo;ubuntu&rdquo;, using the specified private key, through the SSH bastion host defined as &ldquo;bastion-host&rdquo;. (This is all described in detail in a number of posts all over the Internet, as well as <a href="/2015/12/04/use-case-ssh-bastion-host/">here</a>, <a href="/2015/12/24/running-ansible-through-ssh-bastion-host/">here</a>, <a href="/2016/09/13/ssh-bastion-host-follow-up/">here</a>, and <a href="/2017/05/26/bastion-hosts-custom-ssh-configs/">here</a> on this site).</p>
+<p>So, if you have a working SSH bastion configuration, the cool thing about accessing a remote Docker daemon over SSH is that the bastion host configuration is <em>totally transparent</em> and <em>just works.</em></p>
+<p>Using the working configuration described above, this command will work straight out of the box:</p>
+<pre><code>docker -H ssh://10.100.15.25 container ls
+</code></pre>
+<p>SSH will connect to the remote Docker daemon via the configured bastion host, with no additional effort or configuration required on your part. (All you need is a working SSH bastion host configuration already in place.)</p>
+<p>Nifty, eh?</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/07/31/decoding-a-kubernetes-service-account-token/">Decoding a Kubernetes Service Account Token</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/08/02/technology-short-take-117/">Technology Short Take 117</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f01%2faccessing-docker-daemon-via-ssh-bastion-host%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f01%2faccessing-docker-daemon-via-ssh-bastion-host%2f&text=Accessing%20the%20Docker%20Daemon%20via%20an%20SSH%20Bastion%20Host" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f01%2faccessing-docker-daemon-via-ssh-bastion-host%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2017/02/03/technology-short-take-77/">Technology Short Take #77</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2019/04/19/technology-short-take-112/">Technology Short Take 112</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

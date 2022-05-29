@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning Solaris - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning Solaris - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning Solaris - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/07/31/learning-solaris/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning Solaris</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;390 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;ve targeted <a href="http://www.sun.com/software/solaris/">Solaris</a> (specifically, Solaris 10 on x86) as the next major technology that I&rsquo;m going to try to learn. I&rsquo;ve always been fascinated with UNIX and UNIX-like operating systems such as Linux, and Linux&rsquo;s popularity on the x86 platform made it much easier to learn because I didn&rsquo;t have to acquire any exotic hardware. With Sun&rsquo;s (apparent) renewed interest in x86/x64, Solaris is much more accessible now than it was in the past.</p>
+<p>Obviously, I&rsquo;m not a complete newbie to the Solaris environment, having written a couple articles on Solaris-AD integration (the latest being found <a href="/2007/04/25/solaris-10-ad-integration-version-3/">here</a>). However, I don&rsquo;t feel like I have a solid understanding of the operating system and its architecture, and I&rsquo;d feel much more comfortable with that information under my belt. At some point, the IT industry being what it is, I&rsquo;ll need to seek some sort of Solaris certification, but that&rsquo;s not my primary goal. Understanding the product itself is my primary goal; certification will merely be a side effect.</p>
+<p>Here&rsquo;s what I&rsquo;ve done so far:</p>
+<ul>
+<li>
+<p>I&rsquo;ve created a Solaris 10 (32 bit) virtual machine on my <a href="http://www.vmware.com/products/vi/esx/">VMware ESX Server</a> farm; that&rsquo;s been the system I&rsquo;ve used mostly for testing the Active Directory integration instructions. I&rsquo;ve also done some work with the automounter (automounting home directories via NFS).</p>
+</li>
+<li>
+<p>I&rsquo;ve also just recently gotten a Solaris 10 (64 bit) VM running under <a href="http://www.vmware.com/beta/fusion/">VMware Fusion</a> on my <a href="http://www.apple.com/macbookpro/">MacBook Pro</a>; I&rsquo;ll use that system for more day-to-day operational tasks and getting used to the interface.</p>
+</li>
+<li>
+<p>I have a group of Solaris- and UNIX-related RSS feeds in NetNewsWire, including <a href="http://www.sun.com/bigadmin/home/index.html">BigAdmin</a> (What&rsquo;s New and Feature Articles), <a href="http://blog.louspringer.com/">Inchoate Curmudgeon</a>, and a del.icio.us tag feed, among others.</p>
+</li>
+</ul>
+<p>I&rsquo;d certainly appreciate any suggestions from those who may have already been down this path as to specific projects I should undertake, books I should acquire, websites to frequent, RSS feeds to which I should subscribe, etc. In addition, any guidance as to how I should balance Solaris vs. OpenSolaris (on which one should I focus more effort?) would be very helpful. And what builds of Solaris/Solaris Express are most beneficial to use? I&rsquo;m currently using Solaris 10 Update 3, but I&rsquo;m not sure if a different build would be better to work with. That&rsquo;s the kind of information that would be great to get from those wiser and more experienced.</p>
+<p>Wish me luck!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/solaris">Solaris</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sun">Sun</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/07/31/mks-client-updated/">MKS Client Updated</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/08/01/heading-to-vmworld-2007/">Heading to VMworld 2007!</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f31%2flearning-solaris%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f31%2flearning-solaris%2f&text=Learning%20Solaris" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f31%2flearning-solaris%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/06/27/statistically-secure/">Statistically Secure</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/11/21/greater-ad-integration-via-nfs-and-automounts/">Greater AD Integration via NFS and Automounts</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/10/27/delving-into-nfs-and-automounts/">Delving into NFS and Automounts</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

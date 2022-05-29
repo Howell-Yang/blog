@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using GRE Tunnels with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using GRE Tunnels with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using GRE Tunnels with Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/05/07/using-gre-tunnels-with-open-vswitch/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using GRE Tunnels with Open vSwitch</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1411 words (estimated 7 minutes to read)</span>
+  <p>I&rsquo;m back with another &ldquo;how to&rdquo; article on <a href="http://openvswitch.org/">Open vSwitch (OVS)</a>, this time taking a look at using GRE (Generic Routing Encapsulation) tunnels with OVS. OVS can use GRE tunnels between hosts as a way of encapsulating traffic and creating an overlay network. OpenStack Quantum can (and does) leverage this functionality, in fact, to help separate different &ldquo;tenant networks&rdquo; from one another. In this write-up, I&rsquo;ll walk you through the process of configuring OVS to build a GRE tunnel to build an overlay network between two hypervisors running KVM.</p>
+<p>Naturally, any sort of &ldquo;how to&rdquo; such as this always builds upon the work of others. In particular, I found a couple of Brent Salisbury&rsquo;s articles (<a href="http://networkstatic.net/open-vswitch-gre-tunnel-configuration/">here</a> and <a href="http://networkstatic.net/configuring-vxlan-and-gre-tunnels-on-openvswitch/">here</a>) especially useful.</p>
+<p>This process has 3 basic steps:</p>
+<ol>
+<li>
+<p>Create an isolated bridge for VM connectivity.</p>
+</li>
+<li>
+<p>Create a GRE tunnel endpoint on each hypervisor.</p>
+</li>
+<li>
+<p>Add a GRE interface and establish the GRE tunnel.</p>
+</li>
+</ol>
+<p>These steps assume that you&rsquo;ve already installed OVS on your Linux distribution of choice. I haven&rsquo;t explicitly done a write-up on this, but there are numerous posts from a variety of authors (in this regard, Google is your friend).</p>
+<p>We&rsquo;ll start with an overview of the topology, then we&rsquo;ll jump into the specific configuration steps.</p>
+<h2 id="reviewing-the-topology">Reviewing the Topology</h2>
+<p>The graphic below shows the basic topology of what we have going on here:</p>
+<p><img src="/public/img/ovs-gre-tun-overview.png" alt="Topology overview"></p>
+<p>We have two hypervisors (CentOS 6.3 and KVM, in my case), both running OVS (an older version, version 1.7.1). Each hypervisor has one OVS bridge that has at least one physical interface associated with the bridge (shown as <code>br0</code> connected to <code>eth0</code> in the diagram). As part of this process, you&rsquo;ll create the other internal interfaces (the <code>tep</code> and <code>gre</code> interfaces, as well as the second, isolated bridge to which VMs will connect. You&rsquo;ll then create a GRE tunnel between the hypervisors and test VM-to-VM connectivity.</p>
+<h2 id="creating-an-isolated-bridge">Creating an Isolated Bridge</h2>
+<p>The first step is to create the isolated OVS bridge to which the VMs will connect. I call this an &ldquo;isolated bridge&rdquo; because the bridge has no physical interfaces attached. (Side note: this idea of an isolated bridge is fairly common in OpenStack and NVP environments, where it&rsquo;s usually called the <em>integration bridge</em>. The concept is the same.)</p>
+<p>The command is very simple, actually:</p>
+<pre><code>ovs-vsctl add-br br2
+</code></pre>
+<p>Yes, that&rsquo;s it. Feel free to substitute a different name for <code>br2</code> in the command above, if you like, but just make note of the name as you&rsquo;ll need it later.</p>
+<p>To make things easier for myself, once I&rsquo;d created the isolated bridge I then <a href="/2012/11/07/using-vlans-with-ovs-and-libvirt/">created a libvirt network for it</a> so that it was dead-easy to attach VMs to this new isolated bridge.</p>
+<h2 id="configuring-the-gre-tunnel-endpoint">Configuring the GRE Tunnel Endpoint</h2>
+<p>The GRE tunnel endpoint is an interface on each hypervisor that will, as the name implies, serve as the endpoint for the GRE tunnel. My purpose in creating a separate GRE tunnel endpoint is to separate hypervisor management traffic from GRE traffic, thus allowing for an architecture that might leverage a separate management network (which is typically considered a recommended practice).</p>
+<p>To create the GRE tunnel endpoint, I&rsquo;m going to use the same technique I described in my post on <a href="/2012/10/30/running-host-management-on-open-vswitch/">running host management traffic through OVS</a>. Specifically, we&rsquo;ll create an internal interface and assign it an IP address.</p>
+<p>To create the internal interface, use this command:</p>
+<pre><code>ovs-vsctl add-port br0 tep0 -- set interface tep0 type=internal
+</code></pre>
+<p>In your environment, you&rsquo;ll substitute <code>br2</code> with the name of the isolated bridge you created earlier. You could also use a different name than <code>tep0</code>. Since this name is essentially for human consumption only, use what makes sense to you. Since this is a tunnel endpoint, <code>tep0</code> made sense to me.</p>
+<p>Once the internal interface is established, assign it with an IP address using <code>ifconfig</code> or <code>ip</code>, whichever you prefer. I&rsquo;m still getting used to using <code>ip</code> (more on that in a future post, most likely), so I tend to use <code>ifconfig</code>, like this:</p>
+<pre><code>ifconfig tep0 192.168.200.20 netmask 255.255.255.0
+</code></pre>
+<p>Obviously, you&rsquo;ll want to use an IP addressing scheme that makes sense for your environment. One important note: don&rsquo;t use the same subnet as you&rsquo;ve assigned to other interfaces on the hypervisor, or else you can&rsquo;t control that the GRE tunnel will originate (or terminate) on the interface you specify. This is because the Linux routing table on the hypervisor will control how the traffic is routed. (You could use source routing, a topic I plan to discuss in a future post, but that&rsquo;s beyond the scope of this article.)</p>
+<p>Repeat this process on the other hypervisor, and be sure to make note of the IP addresses assigned to the GRE tunnel endpoint on each hypervisor; you&rsquo;ll need those addresses shortly. Once you&rsquo;ve established the GRE tunnel endpoint on each hypervisor, test connectivity between the endpoints using <code>ping</code> or a similar tool. If connectivity is good, you&rsquo;re clear to proceed; if not, you&rsquo;ll need to resolve that before moving on.</p>
+<h2 id="establishing-the-gre-tunnel">Establishing the GRE Tunnel</h2>
+<p>By this point, you&rsquo;ve created the isolated bridge, established the GRE tunnel endpoints, and tested connectivity between those endpoints. You&rsquo;re now ready to establish the GRE tunnel.</p>
+<p>Use this command to add a GRE interface to the isolated bridge on each hypervisor:</p>
+<pre><code>ovs-vsctl add-port br2 gre0 -- set interface gre0 type=gre \
+options:remote_ip=&lt;GRE tunnel endpoint on other hypervisor&gt;
+</code></pre>
+<p>Substitute the name of the isolated bridge you created earlier here for <code>br2</code> and feel free to use something other than <code>gre0</code> for the interface name. I think using <code>gre</code> as the base name for the GRE interfaces makes sense, but run with what makes sense to you.</p>
+<p>Once you repeat this command on both hypervisors, the GRE tunnel should be up and running. (Troubleshooting the GRE tunnel is one area where my knowledge is weak; anyone have any suggestions or commands that we can use here?)</p>
+<h2 id="testing-vm-connectivity">Testing VM Connectivity</h2>
+<p>As part of this process, I spun up an Ubuntu 12.04 server image on each hypervisor (using <code>virt-install</code> as I outlined <a href="/2012/08/21/working-with-kvm-guests/">here</a>), attached each VM to the isolated bridge created earlier on that hypervisor, and assigned each VM an IP address from an entirely different subnet than the physical network was using (in this case, 10.10.10.x).</p>
+<p>Here&rsquo;s the output of the <code>route -n</code> command on the Ubuntu guest, to show that it has <em>no</em> knowledge of the &ldquo;external&rdquo; IP subnet&mdash;it knows only about its own interfaces:</p>
+<pre><code>ubuntu:~ root$ route -n
+Kernel IP routing table
+Destination  Gateway       Genmask        Flags Metric Ref Use Iface
+0.0.0.0      10.10.10.254  0.0.0.0        UG    100    0   0   eth0
+10.10.10.0   0.0.0.0       255.255.255.0  U     0      0   0   eth0
+</code></pre>
+<p>Similarly, here&rsquo;s the output of the <code>route -n</code> command on the CentOS host, showing that it has <em>no</em> knowledge of the guest&rsquo;s IP subnet:</p>
+<pre><code>centos:~ root$ route -n
+Kernel IP routing table
+Destination  Gateway        Genmask        Flags Metric Ref Use Iface
+192.168.2.0  0.0.0.0        255.255.255.0  U     0      0   0   tep0
+192.168.1.0  0.0.0.0        255.255.255.0  U     0      0   0   mgmt0
+0.0.0.0      192.168.1.254  0.0.0.0        UG    0      0   0   mgmt0
+</code></pre>
+<p>In my case, VM1 (named <code>web01</code>) was given 10.10.10.1; VM2 (named <code>web02</code>) was given 10.10.10.2. Once I went through the steps outlined above, I was able to successfully ping VM2 from VM1, as you can see in this screenshot:</p>
+<p><img src="/public/img/ovs-gre-tun-vm-ping-test.png" alt="VM-to-VM connectivity over GRE tunnel"></p>
+<p>(Although it&rsquo;s not shown here, connectivity from VM2 to VM1 was obviously successful as well.)</p>
+<p>&ldquo;OK, that&rsquo;s cool, but why do I care?&rdquo; you might ask.</p>
+<p>In this particular context, it&rsquo;s a bit of a science experiment. However, if you take a step back and begin to look at the bigger picture, then (hopefully) something starts to emerge:</p>
+<ul>
+<li>
+<p>We can use an encapsulation protocol (GRE in this case, but it could have just as easily been STT or VXLAN) to isolate VM traffic from the physical network and from other VM traffic. (Think multi-tenancy.)</p>
+</li>
+<li>
+<p>While this process was manual, think about some sort of controller (an OpenFlow controller, perhaps?) that could help automate this process based on its knowledge of the VM topology.</p>
+</li>
+<li>
+<p>Using a virtualized router or virtualized firewall, I could easily provide connectivity into or out of this isolated (encapsulated) private network. (This is probably something I&rsquo;ll experiment with later.)</p>
+</li>
+<li>
+<p>What if we wrapped some sort of orchestration framework around this, to help deploy VMs, create networks, add routers/firewalls automatically, all based on the customer&rsquo;s needs? (OpenStack Networking, anyone?)</p>
+</li>
+</ul>
+<p>Anyway, I hope this is helpful to someone. As always, I welcome feedback and suggestions for improvement, so feel free to speak up in the comments below. Vendor disclosures, where appropriate, are greatly appreciated. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/gre">GRE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/05/06/very-early-thoughts-about-emc-vipr/">Very Early Thoughts about EMC ViPR</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/05/14/joint-openstack-denver-and-infracoders-denver-meetup/">Joint OpenStack Denver and Infracoders Denver Meetup</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f07%2fusing-gre-tunnels-with-open-vswitch%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f07%2fusing-gre-tunnels-with-open-vswitch%2f&text=Using%20GRE%20Tunnels%20with%20Open%20vSwitch" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f07%2fusing-gre-tunnels-with-open-vswitch%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/01/07/looking-back-2012-project-report-card/">Looking Back: 2012 Project Report Card</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/10/29/technology-short-take-26/">Technology Short Take #26</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Other Users&#39; Stories, Part 4 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Other Users&#39; Stories, Part 4 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Other Users&#39; Stories, Part 4 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/22/linux-migration-other-users-stories-pt4/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Other Users&#39; Stories, Part 4</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1041 words (estimated 5 minutes to read)</span>
+  <p>This post is part of a series of posts sharing other users&rsquo; stories about their migration to Linux as their primary desktop OS. As I mentioned in <a href="/2017/03/01/linux-migration-other-users-stories-pt1/">part 1 of the series</a>, there seemed to be quite a bit of pent-up interest in using Linux as your primary desktop OS. I thought it might be helpful to readers to hear not just about my migration, but also about others&rsquo; migrations. You may also find it interesting/helpful to read <a href="/2017/03/06/linux-migration-other-users-stories-pt2/">part 2</a> and <a href="/2017/03/10/linux-migration-other-users-stories-pt3/">part 3</a> of this series for more migration stories.</p>
+<p>This time around I&rsquo;ll share with you some information from Ajay Chenampara about his Linux migration. Note that although these stories are all structured in a &ldquo;question-and-answer&rdquo; format, the information is unique&mdash;just as each person&rsquo;s migration and the reasons for the migration are unique.</p>
+<p><strong>Q: Why did you switch to Linux?</strong></p>
+<p>I have been a long-time Linux user, but I have only really used it as a media server or for casual browsing. Recently, I inherited a 7 year old laptop from my wife, and decided to focus on making it my primary system for writing my blog and for OSS efforts. Plus, I kept hearing about <a href="https://www.debian.org/releases/jessie/">Debian &ldquo;Jessie&rdquo;</a> from the blogosphere, so I wanted to give that distribution a shot as well.</p>
+<p>Additionally, I recently changed jobs. At my new job, I have the option to use any operating system (OS), and I naturally gravitated toward Linux.</p>
+<p><strong>Q: What hardware are you using with Linux?</strong></p>
+<p>At first, I was using an older laptop that I inherited from my wife. I used this to get started on my Linux migration journey, focusing on writing my blog and other open source efforts. After changing jobs, though, I did some in-depth research and ended up a Lenovo P50 with a 6820HQ processor and 40GB of RAM (<a href="https://forums.lenovo.com/t5/Linux-Discussion/P50-P70-linux-experiences/td-p/2251327">here&rsquo;s a thread</a> of other people&rsquo;s experience with Linux on the P50). I tend to run lots of VMs, so the extra RAM is really helpful.</p>
+<p><strong>Q: What were you using before switching to Linux?</strong></p>
+<p>At my previous job, I had been using an Apple MacBook Pro. I realized that 80-90% the applications I used on the MacBook Pro were pretty much identical to what I&rsquo;d use on Linux. This made the switch a no-brainer, especially given the additional control I get on the system.</p>
+<p>The applications I use mostly are:</p>
+<ol>
+<li><a href="https://www.gnu.org/software/emacs/index.html">Emacs</a>
+<ul>
+<li>It serves as my primary text editor</li>
+<li>It&rsquo;s also my organizer (org-mode for the win!)</li>
+<li>My primary integrated development environment (IDE) (projectile + python + magit is pretty much what I use)</li>
+<li>My primary slide/presentation editor (org-reveal + reveal.js is awesome)</li>
+</ul>
+</li>
+<li>Vim (I am a long time vim user and sometimes just revert to vim)</li>
+<li>O365 + OmniGraffle (note: I haven&rsquo;t really tested out the O365 equivalent on the Linux laptop, given that it is not my work. For drawings, I think LibreOffice is satisfactory, at least for now)</li>
+</ol>
+<p><strong>Q: What sort of challenges did you encounter, and how did you overcome them?</strong></p>
+<p>Wi-Fi and WebEx were the worst. On the older laptop, I had a Broadcom wireless chip and used the b43 kernel module. However, in spite of having the firmware, I kept running into random Wi-Fi drops. At this point, I have tried so many things that I no longer know which step actually fixed it, but for now, I have reliable connectivity.</p>
+<p>Getting WebEx to work was the other big-time killer. I first went with Chromium (open source version of Chrome), and then realized that the 32-bit <a href="https://wiki.debian.org/Iceweasel">Iceweasel</a> plugin was the way to go. (For those who don&rsquo;t know, Iceweaseal is the Debian-branded version of Firefox.) However, if you are going down this path, please remember to uninstall the old plugin. Without that step, the new plugin is of no help.</p>
+<p>Going with a basic distro, however, I had to install a bunch of software to get my environment the way I liked it (Docky, scudcloud, terminator, tmux, synapse, etc.). None of this was too complex. I do love the Greybeard theme on XFCE. Given that I was using a 7-year-old laptop at the time, it really flew!</p>
+<p>On my new Lenovo, I installed a pre-release testing version of <a href="https://www.debian.org/releases/stretch/">Debian &ldquo;Stretch&rdquo;</a> (the next major version of Debian) after creating a recovery disk for the installation of Windows 10 Pro that came on the laptop. Unfortunately, the HDMI port wouldn&rsquo;t work. I tried all the various suggestions I found online (such as <a href="https://forums.lenovo.com/t5/ThinkPad-P-and-W-Series-Mobile/Lenovo-P50-HDMI-not-working/td-p/2264525">this thread</a>), but realized I would need to pivot. I installed <a href="https://help.webex.com/docs/DOC-3921">Xubuntu</a>&mdash;I wanted to preserve my XFCE experience&mdash;and found that the external display now worked. After spending a fair amount of time customizing my environment, installing applications, setting up my &ldquo;dot-files&rdquo; (configuration files), and even getting WebEx Meeting Center working, I then realized that there was no support for WebEx personal meeting rooms on Linux.</p>
+<p>This was a problem for me. I spent another afternoon and evening restoring Windows 10 Pro&mdash;but only long enough to perform a physical-to-virtual (P2V) conversion into a disk image. I then re-loaded Xubuntu and spun up my Windows 10 Pro instance using VMware Player.</p>
+<p>To this moment, WebEx has been the biggest thorn in my Linux migration. Even with Meeting Center, which works natively, I cannot use the computer audio. <a href="https://help.webex.com/docs/DOC-3921">This document</a>, originally written in 2015 and updated in 2017, still proclaims no support for Linux. I&rsquo;m baffled why that&rsquo;s the case.</p>
+<p>This forces me into a bit of an ugly hack when I need to share my Linux desktop. I have to start the x11vnc server (so that I can console into the Linux instance via RDP from Windows), spin up the Windows VM, and RDP back to the host. It works, but it&rsquo;s definitely a hack.</p>
+<p><strong>Q: What benefits have you seen after the switch?</strong></p>
+<p>Well, for one I have a beautiful work environment that requires minimal mouse movement and is really fast! I have a great deal of power and control over the environment, and I have an environment that makes it easier to contribute back to the community and learn more about how computers and operating systems work.</p>
+<p><strong>Q: Anything else you&rsquo;d like others to know?</strong></p>
+<p>You should really try out emacs org-mode! <a href="https://www.youtube.com/watch?v=SzA2YODtgK4">Here&rsquo;s a video</a> that will help you get started.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/debian">Debian</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/24/technology-short-take-80/">Technology Short Take 80</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f22%2flinux-migration-other-users-stories-pt4%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f22%2flinux-migration-other-users-stories-pt4%2f&text=The%20Linux%20Migration%3a%20Other%20Users%27%20Stories%2c%20Part%204" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f22%2flinux-migration-other-users-stories-pt4%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2017/03/10/linux-migration-other-users-stories-pt3/">The Linux Migration: Other Users&#39; Stories, Part 3</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/01/19/plain-text-productivity-redux/">Plain Text Productivity Redux</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

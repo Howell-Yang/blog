@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>More on Setting up etcd with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="More on Setting up etcd with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="More on Setting up etcd with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/10/29/more-on-setting-up-etcd-with-kubeadm/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">More on Setting up etcd with Kubeadm</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;752 words (estimated 4 minutes to read)</span>
+  <p>A while ago I wrote about <a href="/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/">using <code>kubeadm</code> to bootstrap an etcd cluster with TLS</a>. In that post, I talked about one way to establish a secure etcd cluster using <code>kubeadm</code> and running etcd as systemd units. In this post, I want to focus on a slightly different approach: running etcd as static pods. The information on this post is intended to build upon the information already available in the Kubernetes official documentation, not serve as a replacement.</p>
+<p>For reference, the Kubernetes official documentation has a write-up on using <code>kubeadm</code> to establish an etcd cluster with etcd running as static pods. For Kubernetes 1.12.x (the current version as of this writing), that information is <a href="https://kubernetes.io/docs/setup/independent/setup-ha-etcd-with-kubeadm/">here</a>; for Kubernetes 1.11.x, that same information is <a href="https://v1-11.docs.kubernetes.io/docs/tasks/administer-cluster/setup-ha-etcd-with-kubeadm/">here</a>.</p>
+<p>When using these instructions for use with Kubernetes 1.11.x, the official guide leaves something out that is very important: reconfiguring the kubelet to operate in a standalone fashion (without the Kubernetes control plane). This information <em>is</em> present in the 1.12.x documentation, but it applies to both versions.</p>
+<p>Now, lest you think you can just follow the 1.12.x documentation for a 1.11.x cluster, you need to know that the <code>kubeadm</code> API changed from 1.11.x (where it is v1alpha2) to 1.12.x (where it is v1alpha3), and this means a number of changes elsewhere as well. This means that the <code>kubeadm</code> config files in the 1.12.x guide won&rsquo;t work for 1.11.x. Additionally, I found that the 1.12.x guide leaves out one additional piece of information that might be necessary in order to get a working kubelet.</p>
+<p>The extra step that is needed for 1.11.x (but that is included in the 1.12.x version of the documentation) is to provide an additional systemd drop-in file that configures the kubelet as a standalone kubelet. What the 1.12.x instructions are <em>potentially</em> missing&mdash;depending on your Linux distribution and/or the configuration of the Docker container runtime&mdash;is matching the kubelet&rsquo;s cgroup driver to the runtime&rsquo;s cgroup driver. If these two are mismatched, the kubelet will fail to start.</p>
+<p>In my testing on Ubuntu 16.04 images prepared using <a href="https://github.com/heptiolabs/wardroom">Wardroom</a>, the Docker container runtime was using the systemd cgroup driver. The kubelet, however, was not, and this caused the kubelet to fail even after adding the drop-in from the 1.12.x documentation.</p>
+<p>If this affects you, you can amend the 1.12.x systemd drop-in to add a <code>--cgroup-driver=systemd</code> flag, so that the complete drop-in now looks like this:</p>
+<pre tabindex="0"><code>[Service]
+ExecStart=
+ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests --allow-privileged=true --cgroup-driver=systemd
+Restart=always
+</code></pre><p>Put this file in <code>/etc/systemd/system/kubelet.service.d</code> with a higher priority than any other drop-ins found there. I found that, per the 1.12.x instructions, using the filename <code>20-etcd-service-manager.conf</code> was sufficient. Once this file is in place, then doing a <code>systemctl daemon-reload</code> and <code>systemctl restart kubelet</code> should be enough to get a running kubelet that can run etcd as a static pod.</p>
+<p>The official docs&mdash;for both 1.11.x and 1.12.x&mdash;also assume that you&rsquo;ll run all the <code>kubeadm alpha phase</code> commands from one specific host, then copy files around to the other hosts as appropriate. This <em>will</em> work, but if you do it this way the certificates generated by <code>kubeadm</code> will have an extra hostname attached to them: the hostname from the system generating the certificates. To avoid having this extra hostname attached to the certificates generated by <code>kubeadm</code>, you&rsquo;ll need to instead copy the <code>kubeadm</code> configuration files to each node, then run the <code>kubeadm alpha phase</code> commands on each node. This also means that you&rsquo;ll need to copy <em>both</em> the <code>ca.crt</code> <em>and</em> the <code>ca.key</code> generated on the first node to the second and third nodes. The instructions only say to copy the <code>ca.crt</code> file, but this is because it isn&rsquo;t needed on the other nodes when you&rsquo;re generating all the certificates on one node.</p>
+<p>Aside from these two (very) minor issues, the procedures in the official docs will get you a working etcd cluster, properly secured with TLS certificates, and running as static pods under the kubelet (instead of as systemd units). Between the official docs plus these notes (which I&rsquo;ll see about getting merged into the official docs) or my earlier article about running etcd as systemd units, you now have a couple of different approaches to setting up a properly-secured etcd cluster that can back your Kubernetes infrastructure.</p>
+<p>Feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> if you have any questions, or if you feel I&rsquo;ve made a mistake or misrepresented anything. Thanks!</p>
+<p><strong>UPDATE 2020-01-31:</strong> As of the Kubernetes 1.13 release, <code>kubeadm alpha phase</code> was replaced by <code>kubeadm init phase</code>, so be sure to adjust the commands above accordingly.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/etcd">etcd</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubeadm">Kubeadm</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/10/20/validating-raml-files-using-docker/">Validating RAML Files Using Docker</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/10/29/spousetivities-at-dockercon-eu-18/">Spousetivities at DockerCon EU 18</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f10%2f29%2fmore-on-setting-up-etcd-with-kubeadm%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f10%2f29%2fmore-on-setting-up-etcd-with-kubeadm%2f&text=More%20on%20Setting%20up%20etcd%20with%20Kubeadm" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f10%2f29%2fmore-on-setting-up-etcd-with-kubeadm%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/">Bootstrapping an etcd Cluster with TLS using Kubeadm</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2018/10/05/technology-short-take-105/">Technology Short Take 105</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2018/09/07/technology-short-take-104/">Technology Short Take 104</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

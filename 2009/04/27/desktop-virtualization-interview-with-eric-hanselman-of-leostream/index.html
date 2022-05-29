@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Desktop Virtualization Interview with Eric Hanselman of Leostream - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Desktop Virtualization Interview with Eric Hanselman of Leostream - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Desktop Virtualization Interview with Eric Hanselman of Leostream - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/27/desktop-virtualization-interview-with-eric-hanselman-of-leostream/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Desktop Virtualization Interview with Eric Hanselman of Leostream</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/interview">Interview</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;758 words (estimated 4 minutes to read)</span>
+  <p>Continuing on in our series of executive interviews, next up we have Eric Hanselman, Director of Professional and Technical Services for <a href="http://www.leostream.com/">Leostream</a>. Eric and I discussed the current state of desktop virtualization and what may be keeping organizations from fully adopting desktop virtualization.</p>
+<h2 id="the-interview">The Interview</h2>
+<p><strong><em>Scott Lowe (SL): Experts and analysts have been predicting for the last couple of years &ldquo;this year is the year of desktop virtualization.&rdquo; Do you think is true for 2009? Why or why not?</em></strong></p>
+<p>Eric Hanselman (EH): There are a number of influences that are converging to push VDI forward this year. Desktop refresh efforts have been holding for some time, and there&rsquo;s been a significant pause before moving to Windows Vista. With the official close of easy Windows XP purchasing, organizations have been prodded into considering next steps.</p>
+<p>At the same time, virtualization infrastructures have matured. IT teams are moving out of the frenzied times of server virtualization and are now seeing the operational benefits that it brings. Economic drivers such as consolidation and mergers are pushing a greater demand for cost reduction. And to top it all off, client and viewing solution offerings in s have matured. The result is that very capable VDI solutions can now be built that address the needs of the enterprise.</p>
+<p><strong><em>SL: Do you feel that adoption of desktop virtualization is accelerating? If so, what factors do you think are driving the increased rate of adoption? If not, what factors are slowing it down?</em></strong></p>
+<p>EH: Yes, we see adoption accelerating. There are two main drivers of accelerated adoption of virtual desktops: compliance and operational efficiency. The compliance aspect is driven by a growing desire to prevent data loss and more stringent data access requirements driven by increasingly sophisticated auditors. VDI is a great way to manage and control where critical data flows in the organization.</p>
+<p>On the operational efficiency front, VDI has the ability to significantly reduce operating expenses by centralizing desktop maintenance and reducing desk-side support needs.</p>
+<p><strong><em>SL: If you had to pick the top three challenges that absolutely must be addressed in order for an organization to be successful in a desktop virtualization implementation, what would those challenges be?</em></strong></p>
+<p>EH: First would be managing the end user experience of moving to VDI. The most successful implementations address end user concerns by making the VDI experience as much like traditional desktop as possible. This includes keeping the user authentication process the same (no additional logins), delivering screen layouts that behave in the same way that physical do (splitting, rather than spanning multiple display systems), and giving the best possible display performance.</p>
+<p>The second would be to address the structural and political aspects of VDI in the organization early in the implementation cycle. VDI touches many different aspects of IT operations. It brings the desktop realm into tight integration with the server and storage infrastructure. This means that two groups that don&rsquo;t often work together (in larger enterprises, at least) find themselves working together very closely. Issues around policy management and control will definitely arise. Savvy project leaders will address these issues early on, before they can become a significant problem.</p>
+<p>The third is to understand the changes required when an organization moves from relatively simple proof of concept tests to full production deployment. Often, the requirements of the production deployment aren&rsquo;t fully explored in early testing. For example, functionality such as end user authentication and integration into the production authentication environment aren&rsquo;t examined and delineated in the first phases. Other issues, such as remote access are often left until late in the project, which can lead to unpleasant surprises in the transition from pilot to production.</p>
+<p><strong><em>SL: Technical folks love to debate the merits of the various transport protocols (RDP, ICA, ALP, etc.) In your opinion, how important is the transport protocol as part of the overall solution?</em></strong></p>
+<p>EH: Very important. The transport of the viewing protocol is a critical design decision in any VDI project. Different viewing technologies have varying strengths and weaknesses. Successful implementations embrace the ability to match the right viewing protocol to the correct end-user environment. A viewing protocol that works well on a local network connection may perform poorly in a more challenging network environment.</p>
+<h2 id="the-closing">The Closing</h2>
+<p>I can attest that I, too, have seen an increase in interest around desktop virtualization, although that doesn&rsquo;t necessarily match up to an increase in actual deployments. What about you, the readers? How does desktop virtualization play into your short-term and long-term plans? Please feel free to share your thoughts in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/22/new-folders-with-quicksilver/">New Folders with Quicksilver</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/28/app-store-for-the-enterprise/">App Store for the Enterprise?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f27%2fdesktop-virtualization-interview-with-eric-hanselman-of-leostream%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f27%2fdesktop-virtualization-interview-with-eric-hanselman-of-leostream%2f&text=Desktop%20Virtualization%20Interview%20with%20Eric%20Hanselman%20of%20Leostream" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f27%2fdesktop-virtualization-interview-with-eric-hanselman-of-leostream%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/03/16/linux-vdi-and-mobile-vm-admin/">Linux VDI and Mobile VM Admin</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2009/01/01/blasts-from-the-past/">Blasts from the Past</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2008/11/03/virtualization-short-take-21/">Virtualization Short Take #21</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

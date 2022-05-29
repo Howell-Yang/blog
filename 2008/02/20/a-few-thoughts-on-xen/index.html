@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Few Thoughts on Xen - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Few Thoughts on Xen - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Few Thoughts on Xen - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/02/20/a-few-thoughts-on-xen/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Few Thoughts on Xen</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;537 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;ll start this blog posting with the disclaimer that I am not a Xen expert (at least, not yet). That being said, I had some questions, thoughts, rants, etc., that I wanted to get out of my system after a lengthy meeting with some <a href="http://www.citrix.com/English/ps2/products/product.asp?contentID=683148">Citrix XenServer</a> folks today.</p>
+<p>For any readers out there that are intimately familiar with the Xen hypervisor and, specifically, Citrix XenServer, feel free to provide factual, relevant technical information in the comments. Salespeople and marketing drones, spare us all the advertisting and public relations drivel.</p>
+<p>First, the XenServer folks had a lot to say about how their 64-bit hypervisor was better than VMware&rsquo;s hypervisor because VMware&rsquo;s product was &ldquo;only&rdquo; a 32-bit hypervisor. My main response to that statement is this: what key benefit do you derive from being a 64-bit hypervisor? Access to more system RAM? No, VMware Infrastructure 3.5 supports 256GB of RAM, while XenServer 4.0.1 supports 128GB of RAM. Do you gain the ability to run 64-bit guests? Well, VMware&rsquo;s products can run 64-bit guests as long as the Intel VT/AMD V extensions are present. (Before you say that Xen doesn&rsquo;t need the extensions to run 64-bit guests, better stop and think about the requirements to run <em>unmodified</em> guests of any bitness under Xen.) The ability to provide more RAM to guests? No, VMware beats Xen on that one, too&ndash;64GB versus 32GB. Hmmm&hellip;I&rsquo;m stumped. So what does having a 64-bit hypervisor get you, then?</p>
+<p>My second question centers around how the Xen hypervisor is so small and slim and petite versus VMware&rsquo;s bloated 2GB hybrid OS-hypervisor (their description, not mine). Of course, it&rsquo;s easy to make that distinction when you exclude the Linux-based Xen dom0 but include the Linux-based ESX Server Service Console. If want to compare hypervisor to hypervisor, fine; compare Xen itself with VMkernel. But don&rsquo;t compare the Xen hypervisor with the whole ESX Server product; you&rsquo;re not making an accurate comparison.</p>
+<p>Third, let&rsquo;s talk about paravirtualization. The Citrix XenServer folks loved to talk about paravirtualization and how Xen uses it but VMware doesn&rsquo;t. What they seemed to omit, however, is the context in which we discuss paravirtualization. Does Xen use paravirtualization? Certainly&mdash;with guests that support paravirtualization, which does not include Windows. And they use paravirtualized drivers, to help optimize performance of the guest OS. Does VMware use paravirtualization? Yes, with guests that support paravirtualization, and that does not include Windows. Oh, and they do have paravirtualized drivers to help with guest OS performance. Where&rsquo;s the difference? Feel free to tell me I&rsquo;m missing something here.</p>
+<p>Forgive me if it seems like I&rsquo;m bashing Xen; that is most definitely <em>not</em> my intention. In fact, I&rsquo;d love to get to know Xen much better than I do now. Products such as XenServer and Virtual Iron&mdash;both based on the open source Xen hypervisor&mdash;have the potential to make a huge splash in the market, and I for one want to be prepared to support these solutions when the time is right. I will tell you this, though: the <em>wrong</em> way to get to guys like me is with misinformation and marketing. Talk honestly and openly about your product&rsquo;s strengths and weaknesses, and let your product stand, or fall, on its own merits.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/citrix">Citrix</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/02/20/vi-plugin-guide-available/">VI Plugin Guide Available</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/02/20/a-quick-follow-up-on-catbird/">A Quick Follow Up on Catbird</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f20%2fa-few-thoughts-on-xen%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f20%2fa-few-thoughts-on-xen%2f&text=A%20Few%20Thoughts%20on%20Xen" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f20%2fa-few-thoughts-on-xen%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/09/27/apple-and-vmwareor-xen/">Apple and VMware...or Xen?</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/05/01/virtualization-layers/">Virtualization Layers</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2008/02/13/recommended-esx-service-console-partitioning/">Recommended ESX Service Console Partitioning</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

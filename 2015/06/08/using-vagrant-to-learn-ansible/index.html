@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Vagrant to Help Learn Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Vagrant to Help Learn Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Vagrant to Help Learn Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/06/08/using-vagrant-to-learn-ansible/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Vagrant to Help Learn Ansible</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;821 words (estimated 4 minutes to read)</span>
+  <p>I&rsquo;ve been spending some time with <a href="http://www.ansible.com/home">Ansible</a> recently, and I have to say that it&rsquo;s really growing on me. While Ansible doesn&rsquo;t have a steep learning curve, there <em>is</em> still a learning curve&mdash;albeit a smaller/less steep curve&mdash;so I wanted to share here a &ldquo;trick&rdquo; that I found for using <a href="https://www.vagrantup.com">Vagrant</a> to help with learning Ansible. (I say &ldquo;trick&rdquo; here because it isn&rsquo;t that this is complicated or undocumented, but rather that it may not be immediately obvious how to combine these two.)</p>
+<p>Note that this is not to be confused with using Ansible from within Vagrant as a provisioner; that&rsquo;s something different (see <a href="https://docs.vagrantup.com/v2/provisioning/ansible.html">the Vagrant docs</a> for more information on that use case). What I&rsquo;m talking about is having a setup where you can easily explore how Ansible works and iterate through your playbooks using a Vagrant-managed VM.</p>
+<p>Here are the key components:</p>
+<ol>
+<li>You&rsquo;ll need a Vagrant environment (you know, a working <code>Vagrantfile</code> and any associated support files).</li>
+<li>You&rsquo;ll need Ansible installed on the system where you&rsquo;ll be running Vagrant and the appropriate back-end virtualization platform (I tested this with <a href="http://www.vmware.com/products/fusion/">VMware Fusion</a>, but there&rsquo;s nothing VMware-specific here).</li>
+<li>In the same directory as the <code>Vagrantfile</code>, you&rsquo;ll need an Ansible configuration file and an Ansible inventory file (more on both of these in just a moment).</li>
+</ol>
+<p>With the right setup (and I&rsquo;ll go into details on the setup shortly), you&rsquo;ll be able to do this:</p>
+<ul>
+<li>Run <code>vagrant up</code> to turn up the VMs in the <code>Vagrantfile</code>.</li>
+<li>Then run Ansible commands (ad-hoc commands or playbooks) against the VMs in the Vagrant environment.</li>
+<li>Use <code>vagrant destroy</code> to kill the VMs and wipe the environment clean.</li>
+<li>Run <code>vagrant up</code> again in order to start again with a fresh configuration for additional playbook testing or other ad-hoc commands.</li>
+</ul>
+<p>Maybe this doesn&rsquo;t seem like a big deal to you, but having this ability to <em>easily</em> iterate over an Ansible playbook, or to test an Ansible playbook against various Linux distributions, has come in extraordinarily handy as I&rsquo;ve been learning Ansible.</p>
+<p>The &ldquo;trick&rdquo; here lies in the Ansible configuration file and the Ansible inventory. Ansible, by default, will look in the current directory for a file named <code>ansible.cfg</code> for its configuration. By placing an Ansible configuration file with this name in the same directory as the Vagrantfile, we can configure Ansible specific for <em>that particular Vagrant environment.</em></p>
+<p>Here&rsquo;s a very generic Ansible configuration file I use:</p>
+<pre tabindex="0"><code>[defaults]
+inventory = ./hosts
+private_key_file = /Users/slowe/.vagrant.d/insecure_private_key
+remote_user = vagrant
+host_key_checking = False
+</code></pre><p>The <a href="http://docs.ansible.com/intro_configuration.html">documentation on the Ansible configuration file</a> can explain these in greater detail, but here&rsquo;s a quick breakdown of each line:</p>
+<ul>
+<li>Look in the current directory for the inventory in a file named <code>hosts</code>.</li>
+<li>Use the default Vagrant insecure SSH key, which (pretty much) every Vagrant box out there has pre-installed.</li>
+<li>Tell Ansible to use the &ldquo;vagrant&rdquo; account, which&mdash;like the SSH key&mdash;every Vagrant box out there has pre-defined.</li>
+<li>Don&rsquo;t bother with checking host SSH keys.</li>
+</ul>
+<p>Then, in the Ansible inventory file (named <code>hosts</code> in the same directory as the Ansible configuration file and the <code>Vagrantfile</code>), you simply place the IP addresses of each VM in the Vagrant environment. If you&rsquo;re assigning IP addresses in the <code>Vagrantfile</code> (recommended), then it&rsquo;s a cinch to put this in the Ansible inventory as well. (I&rsquo;m working on a way to automate this via Ruby in the <code>Vagrantfile</code>.)</p>
+<p>With this configuration, Ansible will use the inventory file in the same directory as the <code>Vagrantfile</code>, which is where you&rsquo;d need to be to run <code>vagrant up</code> anyway. This will tell Ansible to work on the VMs defined in the Vagrant environment, using the default &ldquo;vagrant&rdquo; user and the default (insecure) SSH key. No special inventory variables, no command-line variables, nothing special needed&hellip;just run your Ansible commands or Ansible playbooks. Easy!</p>
+<p>The complete workflow looks something like this:</p>
+<ul>
+<li>
+<p>If you are statically assining IP addresses in the <code>Vagrantfile</code>, copy those same addresses to the file named <code>hosts</code> in the same directory.</p>
+</li>
+<li>
+<p>From that directory, run <code>vagrant up</code> to create the VMs defined in the <code>Vagrantfile</code>.</p>
+</li>
+<li>
+<p>Once the VMs are provisioned, run Ansible ad-hoc commands (or run playbooks using <code>ansible-playbook</code>). For example, I wanted to verify some of the facts that are gathered by Ansible across various Linux distributions. I can show that information with this command:</p>
+<pre><code>  ansible -m setup all
+</code></pre>
+<p>No need to specify the username (found in the configuration file named <code>ansible.cfg</code> in the same directory), the authentication method (it will use the private SSH key from the configuration file), or the inventory (also supplied by the configuration file). Just run Ansible and be done.</p>
+</li>
+<li>
+<p>When you&rsquo;re done with the environment, just run <code>vagrant destroy</code>. If you want to start with a clean, fresh environment, then <code>vagrant up</code> again and you&rsquo;re off to the races.</p>
+</li>
+</ul>
+<p>As I said earlier, I don&rsquo;t think there&rsquo;s anything terribly unique here, but it <em>is</em> a pretty useful configuration (for me, at least). Hopefully others will find it useful as well.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/01/cumulus-networking-concepts/">Some Cumulus Linux Networking Concepts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/06/09/automatic-ansible-inventory-with-vagrant/">Automatic Ansible Inventory with Vagrant</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f08%2fusing-vagrant-to-learn-ansible%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f08%2fusing-vagrant-to-learn-ansible%2f&text=Using%20Vagrant%20to%20Help%20Learn%20Ansible" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f08%2fusing-vagrant-to-learn-ansible%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/04/21/running-photon-fusion-vagrant/">Running Photon on Fusion via Vagrant</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2015/04/19/running-etcd-backed-docker-swarm-cluster/">Running an etcd-Backed Docker Swarm Cluster</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2015/04/15/running-etcd-20-cluster/">Running an etcd 2.0 Cluster on Ubuntu 14.04</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

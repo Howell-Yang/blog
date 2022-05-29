@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Microsoft Update Troubles Again - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Microsoft Update Troubles Again - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Microsoft Update Troubles Again - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/11/06/microsoft-update-troubles-again/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Microsoft Update Troubles Again</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;460 words (estimated 3 minutes to read)</span>
+  <p>It seems like Microsoft just doesn&rsquo;t learn. OK, I&rsquo;ll grant you, it&rsquo;s hard for a multi-billion dollar company with tens of thousands of employees to move quickly or respond nimbly to customer concerns, but I can only justify their actions so far. Here we are again, for the second time in as many months, talking about Microsoft pushing software to Windows machines when that software was unapproved or unwanted.</p>
+<p>Last time something like this happened, Microsoft was updating their Windows Auto Update client, even when automatic updates were turned off. The explanation was something along the lines of &ldquo;we needed to update the auto-update client so it would work&rdquo;, failing to recognize that if it was turned off it didn&rsquo;t really need to work, did it?</p>
+<p>This time, we find Microsoft unexpectedly changing the applicability scope for an update delivered via Windows Server Update Services (WSUS) and delivering that update as a revision. Because most WSUS installations are set to auto-approve revisions&mdash;this helps reduce the administrative overhead of managing the update list&mdash;this update was pushed out to all systems. And because this update was a full installation, not just an update, then suddenly organizations find themselves with loads of machines running Windows Desktop Search (WDS). Oh, that includes the servers in the datacenter, too.</p>
+<p>The WSUS team at Microsoft posted a blog entry <a href="http://blogs.technet.com/wsus/archive/2007/10/25/wds-revision-update-expanded-applicability-rules-auto-approve-revisions.aspx">trying to explain the behavior</a> and, in my opinion, failing miserably. Since this was technically classified as a revision to an existing update, the WSUS team insists that this revision would <em>only</em> have been installed if prior WDS updates had also been approved. This is consistent with the automatic approval of revisions.</p>
+<p>Unfortunately, it would appear that Microsoft made poor judgment calls in a number of areas:</p>
+<ul>
+<li>
+<p>Listing this as a revision (which is supposed to be limited to changes in metadata or applicability rules, never changes in binaries) when in fact it appears to be an entirely new version of WDS</p>
+</li>
+<li>
+<p>Changing the applicability rules for this update to include all systems, including those that did not previously have WDS installed</p>
+</li>
+<li>
+<p>According to some customers, installing the update even when previous updates were <strong>not</strong> approved</p>
+</li>
+</ul>
+<p>In my opinion, this bodes poorly for Microsoft. Managing patches is already a huge task for many admins. Now administrators have to worry about &ldquo;updates&rdquo; getting installed that shouldn&rsquo;t have been because there&rsquo;s been an applicability change to the update, or it was listed as a revision when it&rsquo;s really a new set of binaries.</p>
+<p>If by chance you were hit with this, you can uninstall WDS with one of two different commands. You can use this command:</p>
+<pre><code>%windir%\$ntuninstallkb917013\spuninst\spuninst /quiet /norestart
+</code></pre>
+<p>Or this command:</p>
+<pre><code>MsiExec.exe /X{E72019B8-1287-4093-BE9B-1CFA7BA1A8D2} /quiet /norestart
+</code></pre>
+<p>Are there any readers out there who were actually affected by this issue?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/11/02/my-first-articles/">My First Articles!</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/11/12/vmware-fusion-update-released/">VMware Fusion Update Released</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f11%2f06%2fmicrosoft-update-troubles-again%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f11%2f06%2fmicrosoft-update-troubles-again%2f&text=Microsoft%20Update%20Troubles%20Again" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f11%2f06%2fmicrosoft-update-troubles-again%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/10/31/lessons-learned-about-exchange-server-2007/">Lessons Learned About Exchange Server 2007</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2007/10/21/when-an-os-is-not-an-os/">When an OS is not an OS</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2007/10/11/disabling-rdp-clipboard-redirection/">Disabling RDP Clipboard Redirection</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

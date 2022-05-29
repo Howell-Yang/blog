@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Deploying CoreOS on OpenStack Using Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Deploying CoreOS on OpenStack Using Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Deploying CoreOS on OpenStack Using Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/08/13/deploying-coreos-on-openstack-using-heat/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Deploying CoreOS on OpenStack Using Heat</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;790 words (estimated 4 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to illustrate one way to deploy <a href="http://coreos.com/">CoreOS</a> on <a href="http://www.openstack.org/">OpenStack</a> using Heat. By no means is this intended to be seen as the <em>only</em> way to use Heat to deploy CoreOS, but rather as <em>one</em> way of using Heat to deploy CoreOS. I&rsquo;m publishing this in the hopes that others will be able to use this as a building block for their own deployments.</p>
+<p>If you aren&rsquo;t already familiar with OpenStack Heat or CoreOS, you might want to take a moment and refer to this introductory posts for some foundational information:</p>
+<ul>
+<li>
+<p><a href="/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a></p>
+</li>
+<li>
+<p><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a></p>
+</li>
+<li>
+<p><a href="/2014/08/01/a-quick-introduction-to-coreos/">A Quick Introduction to CoreOS</a></p>
+</li>
+</ul>
+<p>Moving forward, OpenStack Heat is trying to standardize on OpenStack resource types (like <code>OS::Nova::Server</code>) and the HOT format (using YAML). Therefore, the Heat template I&rsquo;m presenting here will use OpenStack resource types and YAML. Note that it&rsquo;s certainly possible to do this using CloudFormation (CFN) resource types and JSON formatting. I&rsquo;ll leave the conversion of the template found here into CFN/JSON as an exercise for the readers.</p>
+<p>Here&rsquo;s the example Heat template you can use to deploy and customize CoreOS on OpenStack:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">heat_template_version</span>: <span style="color:#e6db74">2013-05-23</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">description</span>: &gt;<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  </span>  <span style="color:#ae81ff">A simple Heat template to deploy CoreOS into an existing cluster.</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">parameters</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">network_id</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">string</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">label</span>: <span style="color:#ae81ff">Network ID</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">description</span>: <span style="color:#ae81ff">ID of existing Neutron network to use</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#ae81ff">&lt;ID of Neutron network to which instances should connect&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">image_id</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">string</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">label</span>: <span style="color:#ae81ff">Glance Image ID</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">description</span>: <span style="color:#ae81ff">ID of existing Glance image to use</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">default</span>: <span style="color:#ae81ff">&lt;ID of CoreOS Glance image&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">instance0_port0</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">OS::Neutron::Port</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">properties</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">admin_state_up</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">network_id</span>: { <span style="color:#f92672">get_param</span>: <span style="color:#ae81ff">network_id }</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">security_groups</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#ae81ff">&lt;ID of security group to apply to this Neutron port&gt;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">instance0</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">type</span>: <span style="color:#ae81ff">OS::Nova::Server</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">properties</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">coreos-04</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">image</span>: { <span style="color:#f92672">get_param</span>: <span style="color:#ae81ff">image_id }</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">flavor</span>: <span style="color:#ae81ff">m1.small</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">networks</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">port</span>: { <span style="color:#f92672">get_resource</span>: <span style="color:#ae81ff">instance0_port0 }</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">key_name</span>: <span style="color:#ae81ff">&lt;Name of SSH key to inject into CoreOS instance&gt;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">user_data_format</span>: <span style="color:#ae81ff">RAW</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">user_data</span>: |<span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        #cloud-config
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        coreos:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          etcd:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            discovery: https://discovery.etcd.io/&lt;unique cluster ID here&gt;
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            addr: $private_ipv4:4001
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            peer-addr: $private_ipv4:7001
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">          units:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - name: etcd.service
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              command: start
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">            - name: fleet.service
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">              command: start</span>        
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/43ea98cf49ff91445d0f">here</a> to view the code block above as a GitHub Gist.)</p>
+<p>Let&rsquo;s walk through this template real quick:</p>
+<ul>
+<li>
+<p>On line 9, you&rsquo;ll need to provide the ID for the Neutron network to which the new CoreOS instance(s) should connect. You can get this a couple of different ways; running <code>neutron net-list</code> is one way.</p>
+</li>
+<li>
+<p>On line 14, you&rsquo;ll need to supply the ID for the CoreOS image you&rsquo;ve uploaded into Glance. Again, there are multiple ways to obtain this; running <code>glance image-list</code> is one way of getting that information.</p>
+</li>
+<li>
+<p>On line 22, replace the text (including the &ldquo;&lt;&rdquo; and &ldquo;&gt;&rdquo; symbols) with the ID of the security group you want applied to the CoreOS instance(s) being deployed. The <code>neutron security-group-list</code> command can give you the information you need to put here.</p>
+</li>
+<li>
+<p>On line 31, supply the name of the SSH key you want to inject into the instance(s).</p>
+</li>
+<li>
+<p>On line 37, you&rsquo;ll need to generate a unique cluster ID to place here for the configuration of etcd within the CoreOS instance(s). You can generate a new ID (also called a <em>token</em>) by visiting <code>https://discovery.etcd.io/new</code>. That will return another URL that contains the new etcd cluster token. Supply that token here to create a new etcd cluster out of the CoreOS instance(s) you&rsquo;re deploying with this template.</p>
+</li>
+<li>
+<p>This template only deploys a single CoreOS instance. To deploy multiple CoreOS instances, you&rsquo;ll need a separate <code>OS::Neutron::Port</code> and <code>OS::Nova::Server</code> resource for each instance. For each Neutron port, you can reference the same security group ID and network ID. For each instance, you can reference the same Glance image ID, same SSH key, and same etcd cluster token; the only thing that would change with each instance is line 30. Line 30 should point to a unique Neutron port resource created for each instance (something like <code>instance1_port0</code>, <code>instance2_port0</code>, etc.).</p>
+</li>
+</ul>
+<p>Now, there are obviously lots of other things you could do here&mdash;you could create your own Neutron network to host these CoreOS instances, you could create a logical router to provide external connectivity (which <em>is</em> required, by the way, in order for the etcd cluster token discovery to work correctly), and you could create and assign floating IPs to the instances. Examples of some of these tasks are in the articles I provided earlier; others are left as an exercise for the reader. (Or I&rsquo;ll write up something later. We&rsquo;ll see.)</p>
+<p>Once you have your template, you can deploy the stack using Heat, and then&mdash;after your CoreOS cluster is up and running&mdash;begin to deploy applications to the cluster using tools like fleet. That, my friends, is another story for another day.</p>
+<p>Any questions? Corrections? Clarifications? Feel free to start (or join) the discussion below. All courteous comments are welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/08/12/cloud-hosted-cloud-management-via-platform9/">Cloud-Hosted Cloud Management via Platform9</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/08/15/vmworld-2014-prayer-time/">VMworld 2014 Prayer Time</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f13%2fdeploying-coreos-on-openstack-using-heat%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f13%2fdeploying-coreos-on-openstack-using-heat%2f&text=Deploying%20CoreOS%20on%20OpenStack%20Using%20Heat" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f13%2fdeploying-coreos-on-openstack-using-heat%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2014/08/08/technology-short-take-43/">Technology Short Take #43</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

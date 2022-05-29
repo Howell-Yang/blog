@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Thinking Out Loud: Does Docker on Windows Matter? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Thinking Out Loud: Does Docker on Windows Matter? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Thinking Out Loud: Does Docker on Windows Matter? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/01/30/thinking-out-loud-does-docker-on-windows-matter/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Thinking Out Loud: Does Docker on Windows Matter?</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;690 words (estimated 4 minutes to read)</span>
+  <p>Nigel Poulton recently posted <a href="http://blog.nigelpoulton.com/esxi-vs-hyper-v-could-docker-support-be-significant/">an article</a> titled &ldquo;ESXi vs. Hyper-V - Could Docker Support Be Significant,&rdquo; in which he contemplates whether Microsoft&rsquo;s announcement of Docker support on Windows will be a factor in the hypervisor battle between ESXi and Hyper-V. His post got me thinking&mdash;which is a good thing, I&rsquo;d say&mdash;and I wanted to share my thoughts on the topic here.</p>
+<p>Naturally, it&rsquo;s worth pointing out that I work for VMware, although I do work in a business unit that makes a multi-hypervisor product (NSX).</p>
+<p>Nigel makes a few key points in his article:</p>
+<ul>
+<li>Open source is &ldquo;where it&rsquo;s at today&rdquo;</li>
+<li>Everyone &ldquo;is crazy with container fever&rdquo;</li>
+<li>VMware &ldquo;ditched&rdquo; Linux in the transition to ESXi</li>
+<li>Microsoft&rsquo;s support for Docker means Microsoft might &ldquo;ship a hypervisor platform (Windows Server/Hyper-V) that does VMs and Docker containers&rdquo;</li>
+<li>Azure could be made more relevant in the public cloud race through &ldquo;native support for Docker containers&rdquo; resulting in &ldquo;native Type-1 hypervisor, native Docker containers.&rdquo;</li>
+</ul>
+<p>To be completely fair, the article fully admits that all this is assumption and is just thinking out loud (his statement, not a play on the title of this post). As I said, I think it&rsquo;s a good thing to prompt readers to start thinking and come to conclusions of their own.</p>
+<p>Here&rsquo;s my take on it. First, it&rsquo;s important to understand that, as <a href="https://twitter.com/scott_lowe/status/561216003506311168">I mentioned on Twitter</a>, Docker on Windows isn&rsquo;t the same as Linux workloads on Windows. In other words, having Docker on Windows doesn&rsquo;t mean you can run Linux workloads on Windows. If open source is &ldquo;where it&rsquo;s at&rdquo; (to borrow Nigel&rsquo;s phrase, and I don&rsquo;t necessarily disagree), then that means people are going to want to use Linux workloads. And if Docker on Windows doesn&rsquo;t mean Linux workloads on Windows, then why use Docker on Windows? Why not stick with Docker on Linux?</p>
+<p>Second, if Docker on Windows doesn&rsquo;t mean Linux workloads on Windows, then it must mean Windows workloads on Windows. The problem, though, as Nick Weaver <a href="https://twitter.com/lynxbat/status/561203439917494272">mentioned on Twitter</a>, is that the challenge is wrapping commands into an image. How does one go about describing a Windows application in such a way that a full-featured Docker daemon could package that application into an image? Is it even possible?</p>
+<p>Third, the real value of Docker is in the workflow&mdash;the ability for a developer to create a simple set of instructions that allows him or her to quickly and easily build an image that remains relatively portable across systems (although the level of that portability is still the subject of some debate). At their core, Linux and Windows are quite different, and this is reflected in a number of ways. Is it even possible for the Docker DSL (the Dockerfile) to describe a Windows application? Or would it have to be extended for Windows applications, thus creating a &ldquo;Docker DSL for Linux&rdquo; and a &ldquo;Docker DSL for Windows&rdquo;? Doesn&rsquo;t this then diminish the value of the Docker workflow, when there are different commands for building Linux images vs. building Windows images? What about file system layers? Will they work the same on both Linux and Windows?</p>
+<p>Clearly, there are a <strong>lot</strong> of technical details that still have to be determined, so&mdash;as Nigel stated in his post&mdash;a lot of this is conjecture and assumption.</p>
+<p>My point, though, is this: Docker support on Windows (which, as far as we know, means a Docker daemon on Windows not the ability to run Linux workloads on Windows) won&rsquo;t necessarily benefit from a &ldquo;halo effect&rdquo; due to the popularity of open source. Therefore, it seems to me that &ldquo;Docker support&rdquo; on Hyper-V won&rsquo;t be a significant deciding factor in the ongoing battle of the hypervisors. I think that VMware and Microsoft have equal footing in the challenge to provide support for &ldquo;native Linux containers&rdquo; on their respective platforms, because it&rsquo;s native Linux containers&mdash;managed/coordinated/orchestrated via Docker and related tools and platforms&mdash;that seem to be the focus of everyone&rsquo;s attention at the moment. Whichever company does the best job of providing seamless support and outstanding performance for native Linux containers will, I think, gain the upper hand.</p>
+<p>Of course, these are my thoughts only.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/tol">ToL</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/01/28/why-no-comments-yet/">Why Comments Aren&#39;t Available Yet</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/02/03/first-git-now-vagrant/">First Git, now Vagrant</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f30%2fthinking-out-loud-does-docker-on-windows-matter%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f30%2fthinking-out-loud-does-docker-on-windows-matter%2f&text=Thinking%20Out%20Loud%3a%20Does%20Docker%20on%20Windows%20Matter%3f" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f01%2f30%2fthinking-out-loud-does-docker-on-windows-matter%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2013/08/30/thinking-out-loud-diy-network-virtualization/">Thinking Out Loud: DIY Network Virtualization?</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2012/06/12/technology-short-take-23/">Technology Short Take #23</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

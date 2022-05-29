@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting Up FCoE on a Nexus 5000 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting Up FCoE on a Nexus 5000 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting Up FCoE on a Nexus 5000 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/10/25/setting-up-fcoe-on-a-nexus-5000/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting Up FCoE on a Nexus 5000</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;654 words (estimated 4 minutes to read)</span>
+  <p>Fibre Channel over Ethernet (FCoE) is receiving a great deal of attention in the media these days. Fortunately, setting up FCoE on a Nexus 5000 series switch from Cisco isn&rsquo;t too terribly complicated, so don&rsquo;t be too concerned about deploying FCoE in your datacenter (assuming it makes sense for your organization). Configuring FCoE basically consists of three major steps:</p>
+<ol>
+<li>
+<p>Enable FCoE on the switch.</p>
+</li>
+<li>
+<p>Map a VSAN for FCoE traffic onto a VLAN.</p>
+</li>
+<li>
+<p>Create virtual Fibre Channel interfaces to carry the FCoE traffic.</p>
+</li>
+</ol>
+<p>The first step is incredibly easy. To enable FCoE on the switch, just use this command:</p>
+<pre><code>switch(config)# feature fcoe
+</code></pre>
+<p>The next part of the FCoE configuration is mapping a VSAN to a VLAN. What VSAN should you use? Well, if you are connecting to an existing Fibre Channel fabric, perhaps on a Cisco MDS switch, you&rsquo;ll need to make sure that the VSANs between the Nexus and the MDS are appropriately matched. Otherwise, traffic on one VSAN on the Nexus won&rsquo;t be able to reach devices on another VSAN on the MDS. If there&rsquo;s enough demand, I&rsquo;ll post a quick piece on this step as well.</p>
+<p>Note that this FCoE VSAN-to-VLAN mapping is a required step; if you don&rsquo;t do this, the FCoE side of the interfaces won&rsquo;t come up (as you&rsquo;ll see later in this post). Assuming the VSAN is already defined, perform these steps to map the VSAN to a VLAN:</p>
+<pre><code>switch(config)# vlan _XXX_  
+switch(config-vlan)# fcoe vsan _YYY_  
+switch(config-vlan)# exit
+</code></pre>
+<p>Obviously, you&rsquo;ll want to substitute <code>_XXX_</code> and <code>_YYY_</code> for the correct VLAN and VSAN numbers, respectively.</p>
+<p>After you&rsquo;ve enabled FCoE and mapped FCoE VSANs onto VLANs, then you are ready to create virtual Fibre Channel (vfc) interfaces. Each physical Nexus port that will carry FCoE traffic must have a corresponding vfc interface. Generally, you will want to create the vfc interface with the same number as the physical interface, although as far as I know you are not required to do so. It just makes management of the interfaces easier. The commands to create a vfc interface look like this (obviously you&rsquo;ll want to replace <code>_ZZ_</code> with the appropriate port number):</p>
+<pre><code>switch(config)# interface vfc _ZZ_  
+switch(config-if)# bind interface ethernet 1/_ZZ_  
+switch(config-if)# no shutdown  
+switch(config-if)# exit
+</code></pre>
+<p>At this point the vfc interface is created, but it won&rsquo;t work yet; you&rsquo;ll need to place it into an VSAN that is mapped to an FCoE enabled VLAN. If you don&rsquo;t, the <code>show interface vfc _&lt;number&gt;_</code> command will report this (asterisks added to show emphasis):</p>
+<pre><code>vfc13 is down **(VSAN not mapped to an FCoE enabled VLAN)**
+</code></pre>
+<p>As I mentioned earlier, if you haven&rsquo;t mapped the FCoE VSAN onto a VLAN, you won&rsquo;t be able to fix this problem. If you have mapped the FCoE VSAN onto a VLAN, then you only need to assign the vfc interface to the appropriate VSAN with these commands:</p>
+<pre><code>switch(config)# vsan database  
+switch(config-vsan-db)# vsan _&lt;number&gt;_ interface vfc _&lt;number&gt;_  
+switch(config-vsan-db)# exit
+</code></pre>
+<p>At this point, the vfc interface will report up, and you should be able to see the host&rsquo;s connection information with the <code>show flogi database</code> command.</p>
+<p>From this point&mdash;assuming that your storage is attached to a traditional Fibre Channel fabric, which is likely to be the case in the near future&mdash;you only need to create zones with the WWNs of the FCoE-attached hosts in order to grant them access to the storage. Refer to my posts on <a href="/2009/08/24/new-users-guide-to-configuring-cisco-mds-zones-via-cli/">creating zones</a> and <a href="/2009/10/20/new-users-guide-to-managing-cisco-mds-zones-via-cli/">managing zones</a> on a Cisco MDS for more information on this task.</p>
+<p>In my own experience, once FCoE was properly configured on the Nexus 5000 switch, then creating zones and zonesets on the Cisco MDS Fibre Channel switch and creating and masking LUNs on the Fibre Channel-attached storage is very straightforward. This, as has been stated on several previous occasions, is one of the strengths of FCoE: it&rsquo;s compatibility with existing Fibre Channel installations is outstanding.</p>
+<p>Feel free to submit any questions or clarifications in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nexus">Nexus</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/10/23/how-to-create-a-metalun/">How To Create a MetaLUN</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/10/30/vmware-ha-vmware-ft-and-os-clustering/">VMware HA, VMware FT, and OS Clustering</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f25%2fsetting-up-fcoe-on-a-nexus-5000%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f25%2fsetting-up-fcoe-on-a-nexus-5000%2f&text=Setting%20Up%20FCoE%20on%20a%20Nexus%205000" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f25%2fsetting-up-fcoe-on-a-nexus-5000%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/08/22/planning-for-fcoe-in-your-data-center-today/">Planning for FCoE in Your Data Center Today</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2009/08/11/why-no-multi-hop-fcoe/">Why No Multi-Hop FCoE?</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Modifying OpenStack Security Groups with Terraform - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Modifying OpenStack Security Groups with Terraform - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Modifying OpenStack Security Groups with Terraform - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/12/16/modifying-sec-groups-terraform/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Modifying OpenStack Security Groups with Terraform</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;685 words (estimated 4 minutes to read)</span>
+  <p>In this post I&rsquo;d like to discuss a potential (minor) issue with modifying <a href="http://www.openstack.org">OpenStack</a> security groups with <a href="http://terraform.io">Terraform</a>. I call this a &ldquo;potential minor&rdquo; issue because there is an easy workaround, which I&rsquo;ll detail in this post. I wanted to bring it to my readers&rsquo; attention, though, because as of this blog post this matter had not yet been documented.</p>
+<p>As you probably already know if you read <a href="/2015/11/25/intro-to-terraform/">my recent introduction to Terraform blog post</a>, Terraform is a way to create <em>configurations</em> that automate the creation or configuration of infrastructure components, possibly across a number of different providers and/or platforms. In the introductory blog post, I showed you how to write a Terraform configuration that would create an OpenStack logical network and subnet, create a logical router and attach it to the logical network, and then create an OpenStack instance and associate a floating IP. In that example, I used a key part of Terraform, known as <em>interpolation</em>.</p>
+<p>Broadly speaking, interpolation allows Terraform to reference variables or attributes of other objects created by Terraform. For example, how does one refer to a network that he or she has just created? Here&rsquo;s an example taken from the introductory blog post:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>   <span style="color:#e6db74">&#34;resource&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;openstack_compute_instance_v2&#34;</span>: {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;tf-instance&#34;</span>: {
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;tf-instance&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;image_name&#34;</span>: <span style="color:#e6db74">&#34;${var.image}&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;flavor_name&#34;</span>: <span style="color:#e6db74">&#34;${var.flavor}&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;key_pair&#34;</span>: <span style="color:#e6db74">&#34;${var.key_pair}&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;floating_ip&#34;</span>: <span style="color:#e6db74">&#34;${openstack_compute_floatingip_v2.tf-fip.address}&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;security_groups&#34;</span>: [
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;default&#34;</span>,
+</span></span><span style="display:flex;"><span>                    <span style="color:#e6db74">&#34;basic-services&#34;</span>
+</span></span><span style="display:flex;"><span>                ],
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;network&#34;</span>: {
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&#34;uuid&#34;</span>: <span style="color:#e6db74">&#34;${openstack_networking_network_v2.tf-net.id}&#34;</span>
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>I&rsquo;ll call your attention to the <code>floating_ip</code> and <code>uuid</code> lines, which reference an attribute from another object. In this case, I&rsquo;m referencing the address of the floating IP object and the UUID of the network object.</p>
+<p>Terraform can, as part of a configuration, create a security group. A simple security group might look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>    <span style="color:#e6db74">&#34;resource&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;openstack_compute_secgroup_v2&#34;</span>: {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;ssh&#34;</span>: {
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;ssh&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;Allow SSH traffic&#34;</span>,
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&#34;rule&#34;</span>: {
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&#34;from_port&#34;</span>: <span style="color:#e6db74">&#34;22&#34;</span>,
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&#34;to_port&#34;</span>: <span style="color:#e6db74">&#34;22&#34;</span>,
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&#34;ip_protocol&#34;</span>: <span style="color:#e6db74">&#34;tcp&#34;</span>,
+</span></span><span style="display:flex;"><span>                    <span style="color:#f92672">&#34;cidr&#34;</span>: <span style="color:#e6db74">&#34;0.0.0.0/0&#34;</span>
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span></code></pre></div><p>As you can probably determine, this allows TCP port 22 (SSH) from any remote source. If you later wanted to associate this security group, you&rsquo;d need to use interpolation to reference the security group when defining the instance.</p>
+<p>Here&rsquo;s where the potential issue comes into play. You can use interpolation to reference the security group by its UUID, like this:</p>
+<pre><code>&quot;${openstack_compute_secgroup_v2.ssh.id}&quot;
+</code></pre>
+<p>In this case, <code>ssh</code> is the name of the object (<em>not</em> the value of the <code>name</code> attribute, although I&rsquo;d recommend making them one and the same for your sanity), and you&rsquo;re referencing the UUID of the security group. This will work just fine&hellip;<em>until you need to modify the security group.</em></p>
+<p>If you modify the security group in the Terraform configuration (such as adding a rule, removing a rule, or changing the values in a rule) and you&rsquo;re referencing (via interpolation) the security group by UUID, when you run <code>terraform plan</code> or <code>terraform apply</code> Terraform will become hopelessly confused and become unable to reconcile the state of your environment with the configuration. Running <code>terraform refresh</code> will <em>not</em> recover it. You will have lost the ability to use Terraform to manage this particular set of infrastructure, period. (There may be a way to recover; I was unable to find any way to make it work again.)</p>
+<p>Fortunately, there is a workaround, and it&rsquo;s a simple (albeit currently undocumented) one. Instead of referencing the security group&rsquo;s UUID via interpolation, reference the security group&rsquo;s name attribute, like this:</p>
+<pre><code>&quot;${openstack_compute_secgroup_v2.ssh.name}&quot;
+</code></pre>
+<p>(Again, I&rsquo;ll remind you that <code>ssh</code> in the above example is the name of the object, <em>not</em> the value of the <code>name</code> attribute.) By simply switching from referencing the UUID to referencing the name, you&rsquo;ll work around the issue with updating security groups, and you&rsquo;ll once again be able to freely modify the security group&rsquo;s configuration using Terraform.</p>
+<p>As you can see in <a href="https://github.com/hashicorp/terraform/issues/4319">the GitHub issue for this problem</a>, it&rsquo;s likely that this potential problem will be documented in the Terraform documentation soon.</p>
+<p><strong>UPDATE:</strong> I issued a pull request (and it was subsequently merged) to add some documentation recommending that users reference the security group using the <code>name</code> attribute. As of today (17 Dec 2015), the update wasn&rsquo;t yet live on the Terraform website, but it should be soon.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/12/11/technology-short-take-57/">Technology Short Take #57</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/12/17/cloud-init-register-instance-into-consul/">Using Cloud-Init to Register an Instance into Consul</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f16%2fmodifying-sec-groups-terraform%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f16%2fmodifying-sec-groups-terraform%2f&text=Modifying%20OpenStack%20Security%20Groups%20with%20Terraform" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f16%2fmodifying-sec-groups-terraform%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/11/25/intro-to-terraform/">An Introduction to Terraform</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2015/01/07/technology-short-take-47/">Technology Short Take #47</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

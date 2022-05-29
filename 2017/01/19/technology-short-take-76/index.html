@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #76 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #76 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #76 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/01/19/technology-short-take-76/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #76</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1000 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #76, the first Technology Short Take of 2017. Normally, I&rsquo;d publish this on a Friday, but due to extenuating circumstances (my mother-in-law&rsquo;s funeral is tomorrow) I&rsquo;m posting it today. Here&rsquo;s hoping you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>As of Vagrant 1.9.1, the Cumulus plugin for Vagrant is no longer needed. See <a href="https://getsatisfaction.cumulusnetworks.com/cumulus/topics/cumulus-vx-and-vagrant-cumulus-plugin">this post</a> for more details.</li>
+<li>Ivan Pepelnjak (one of my absolutely favorite folks in the IT industry) has a great post on <a href="http://automation.ipspace.net/Example:Parsing_Text_Printouts_within_Ansible_Playbooks">using regex filters in Ansible to parse text printouts from network devices</a>. This is a super-practical post that anyone working with network automation can put to use right away.</li>
+<li>Craig Matsumoto has an informative article on <a href="https://www.sdxcentral.com/articles/news/machine-learning-hard-apply-networking/2017/01/">why machine learning is hard to apply to networking</a>. I&rsquo;ve heard David Meyer&mdash;who is quoted extensively in the article&mdash;speak several times, and most of the time his stuff is way beyond my understanding. At least now, though, I get the general direction he&rsquo;s heading.</li>
+<li>Interested in using OVS with VXLAN on Hyper-V, but <em>without</em> OpenStack? <a href="http://superuser.openstack.org/articles/manage-hyper-v-open-vswitch/">This article</a> by Alin Serdean from Cloudbase Solutions describes how it&rsquo;s done.</li>
+<li>Here&rsquo;s an article describing <a href="https://supportforums.cisco.com/blog/12926156/site-site-vpn-between-cisco-asa-and-microsoft-azure-virtual-network-arm">how to establish a site-to-site VPN between a Cisco ASA and Microsoft Azure</a>. Anecdotally, I&rsquo;ve also heard that it works for establishing a VPN between NSX and Azure.</li>
+<li>Major Hayden has a post describing <a href="https://major.io/2017/01/15/systemd-networkd-on-ubuntu-16-04-lts-xenial/">an issue with systemd-networkd</a> (for configuring networking) in systemd 229.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>I mentioned in a tweet a few weeks ago that I ordered my new corporate laptop, a Dell Latitude E7370 (which will run Ubuntu 16.04). Stay tuned for a quick review of the hardware once it arrives.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Andrew Langhorn discusses some aspects of <a href="https://www.awsadvent.com/2016/12/15/limiting-your-attack-surface-in-the-aws-cloud/">limiting your attack surface</a> when running workloads on AWS.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Out of the cloud(s) and <a href="https://www.openfogconsortium.org/">into the fog</a>. Interesting. (Hat tip to Kelsey Hightower for pointing this out on Twitter.)</li>
+<li>Luke Youngblood has a three-part series (so far) on immutable infrastructure with AWS and Ansible (<a href="http://vcdxpert.com/?p=105">part 1</a>, <a href="http://vcdxpert.com/?p=148">part 2</a>, and <a href="http://vcdxpert.com/?p=193">part 3</a>). These are some really good articles with useful information on using Ansible to create/destroy AWS resources. I&rsquo;m not new to this topic but still found some useful information here.</li>
+<li>Tomas Fojta shares a script to <a href="https://fojta.wordpress.com/2016/03/18/reboot-all-hosts-in-vcloud-director/">reboot all hosts in vCloud Director</a>, but to do so in a way that minimizes the impact to users/customers/tenants.</li>
+<li>Rowan Udell has <a href="http://blog.rowanudell.com/cloudformation-stack-resources-summary/">a quick AWS CLI command that prints an ordered list of all the resources</a> in a CloudFormation stack. Although Rowan doesn&rsquo;t specifically mention it, this command relies on tools like <code>tr</code>, <code>sort</code>, and <code>uniq</code>, so I&rsquo;m guessing it will only work on OS X/Linux/*BSD systems.</li>
+<li>Stephane Graber has an article explaining <a href="https://www.stgraber.org/2017/01/13/kubernetes-inside-lxd/">how to run Kubernetes in LXD</a>. He also has a nice post detailing the <a href="https://www.stgraber.org/2016/10/27/network-management-with-lxd-2-3/">networking functionality in LXD 2.3</a>, which is something I need to explore.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>It&rsquo;s probably confirmation bias, but now that I&rsquo;ve decided to step up my efforts to migrate from OS X to Linux (see <a href="/2016/12/16/linux-migration-initial-progress-report/">this post</a>) I noticed this post by Nicolas about <a href="https://nicolas.perriault.net/code/2016/from-osx-to-ubuntu/">moving from OS X to Ubuntu</a>. The post has a nice list of Linux replacements for popular OS X apps.</li>
+<li>If you&rsquo;ve heard all this hubbub about containers but still aren&rsquo;t really sure what&rsquo;s going on, this post by Eric Chiang on <a href="https://ericchiang.github.io/post/containers-from-scratch/">containers from scratch</a> will do a great job of explaining the underlying OS mechanisms that make containers possible (on Linux, at least).</li>
+<li>Rafael Benevides has a list of <a href="https://developers.redhat.com/blog/2016/02/24/10-things-to-avoid-in-docker-containers/">10 things to avoid in Docker containers</a>.</li>
+<li>Docker took a bit of a hit in a couple articles (perhaps more, but these were the ones that bubbled up for me) recently. First up is &ldquo;The HFT Guy&rdquo; with <a href="https://thehftguy.com/2016/11/01/docker-in-production-an-history-of-failure/">a post on a &ldquo;history of failure&rdquo; with Docker in production</a>. Then we have a post by David Pollak that outlines his position, which is that <a href="https://blog.goodstuff.im/docker_not_prime_time">Docker is not ready for prime-time</a>.</li>
+<li>As a counterpoint to the &ldquo;Docker isn&rsquo;t ready&rdquo; articles from the previous bullet, consider <a href="http://patrobinson.github.io/2016/11/05/docker-in-production/">this article</a>. The author (Pat Robinson, I&rsquo;m guessing from the URL) shares some viewpoints on why Docker is ready for production <em>for his use case.</em> (Hat tip to John Troyer for a pointer to this article.)</li>
+<li>Cody Bunch has this nice tip on <a href="http://blog.codybunch.com/2017/01/18/Disabling-Enabling-OSX-Finder-Tabs/">enabling/disabling OS X Finder tabs</a>.</li>
+<li>This post is a bit older, but still useful, I think. Zhenyun Zhuang and the LinkedIn Engineering time have a post on <a href="https://engineering.linkedin.com/blog/2016/08/don_t-let-linux-control-groups-uncontrolled">not letting Linux control groups be uncontrolled</a>. One key takeaway from the article is that control groups (cgroups) don&rsquo;t reserve memory, so it&rsquo;s still quite possible for memory contention to occur.</li>
+<li>Trishna Guha has an article on <a href="https://major.io/2017/01/15/systemd-networkd-on-ubuntu-16-04-lts-xenial/">using Docker remotely on Atomic Host</a> (something I struggled with myself).</li>
+<li>Want to get all your data out of Evernote following the revelation that their employees have access to your data? Check <a href="https://github.com/shawndaniel/evernote-exporter/">this</a> out.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>I don&rsquo;t have anything this time, but I&rsquo;ll keep alert for links or articles to include next time.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Feidhlim O&rsquo;Leary has a post warning of <a href="https://haveyoutriedreinstalling.com/2017/01/16/caution-vcha-user-password/">a potential concern with password expiration on the VCHA user account</a> (this is in the vSphere 6.5 release).</li>
+<li>Simon Sharwood of El Reg has the details on <a href="http://www.theregister.co.uk/2016/12/15/windows_server_2016s_vm_migration_tools_broken_by_a_patch/">a Windows Server 2016 Hotfix for Update Rollup 1</a> (how&rsquo;s that for a mouthful?). Apparently, the rollup introduces issues with live migrations, and the hotfix addresses those issues.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>I briefly entertained the idea of changing my Twitter handle (finally decided against it, for various reasons), but thought that <a href="https://thinkerbit.com/articles/change-twitter-username">this article</a> provided by one of my followers (thanks Paul!) might be useful to others.</li>
+<li>Andy Callow has <a href="https://medium.com/@andy.callow.hscic/exploring-pioneers-settlers-and-town-planners-239be83ae37c#.srcovq6sf">a nice summary of pioneer/settler/town planner (PST) articles and implementations</a>. If you&rsquo;re a fan of this three-mode model or just want to learn more, have a look at Andy&rsquo;s article. Andy also references <a href="http://www.onlydeadfish.co.uk/only_dead_fish/2016/04/pioneers-settlers-and-town-planners.html">this article</a> by Neil Perkin, which I found very useful as well.</li>
+</ul>
+<p>OK, that&rsquo;s it for this time around. I have a ton more content I&rsquo;d love to include, but this post is already packed to the gills as it is. I guess I&rsquo;ll just have to save it for the next one. Until then, enjoy!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lxc">LXC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/01/18/apple-mbp-wifi-fedora/">Enabling an Apple MBP Wireless Adapter with Fedora 25</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/01/19/plain-text-productivity-redux/">Plain Text Productivity Redux</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f19%2ftechnology-short-take-76%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f19%2ftechnology-short-take-76%2f&text=Technology%20Short%20Take%20%2376" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f01%2f19%2ftechnology-short-take-76%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/12/09/technology-short-take-74/">Technology Short Take #74</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2016/09/09/technology-short-take-71/">Technology Short Take #71</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2016/06/30/technology-short-take-68/">Technology Short Take #68</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

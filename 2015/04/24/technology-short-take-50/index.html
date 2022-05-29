@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #50 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #50 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #50 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/04/24/technology-short-take-50/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #50</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1260 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #50, the latest in my series of posts sharing various links and articles pertaining to key data center technologies. I hope that you find something useful here!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Tyler Christiansen recently published a post on a <a href="http://blog.tylerc.me/automation/2015/03/02/automation-workflow/">network automation workflow</a> that was based on a presentation he gave at the SF Network Automation meetup. The workflow incorporates Ansible, git, Jenkins, and Gerrit. If you&rsquo;re looking for more examples of how to incorporate these sorts of tools into your own network automation workflow, I&rsquo;d recommend having a look at this article.</li>
+<li><a href="http://aldrinisaac.blogspot.com/2015/03/evpn-essential-parts.html">This post</a> contains a link to a useful presentation on the essential parts of EVPN. It&rsquo;s quite useful if you (like me) need an introduction to this technology.</li>
+<li>Need to reset the CLI privileged mode password on your NSX Manager instance? <a href="https://virtuallygone.wordpress.com/2014/07/14/nsx-manager-cli-privileged-mode-password-reset/">Here&rsquo;s a walkthrough</a>. (Warning: as pointed out in the article, this is most likely <strong>not supported.</strong> Use at your own risk.)</li>
+<li><a href="http://blog.russellbryant.net/2015/04/08/ovn-and-openstack-integration-development-update/">This article</a> by Russell Bryant is a <em>great</em> overview and update of the work going on with Open Virtual Network (OVN). I&rsquo;m really excited about OVN and looking forward to seeing it develop and grow.</li>
+<li>This is kind of cool, and (in my humble opinion) a sign of changing times: Juniper has <a href="https://atlas.hashicorp.com/Juniper">Vagrant boxes</a> as well as <a href="https://github.com/JNPRAutomate/vagrant-junos">a Vagrant plugin</a> for working with vSRX (virtual firewall) VMs (via <a href="http://keepingitclassless.net/2015/03/go-go-gadget-networking-lab/">this article</a> from Matt Oswalt).</li>
+<li>Anthony Metcalf has a collection of posts over at PlanetVM on NSX packet walks (see <a href="http://planetvm.net/blog/?p=2818">here</a>, <a href="http://planetvm.net/blog/?p=2840">here</a>, and <a href="http://planetvm.net/blog/?p=2894">here</a>).</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Need a bit of help comparing the various blade server offerings from the different manufacturers? Kevin Houston&rsquo;s <a href="http://bladesmadesimple.com/2015/02/blade-server-comparisons-march-2015/">March 2015 blade server comparisons</a> might be a useful place to start.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>If you&rsquo;re interested in an update on how Docker security is evolving, <a href="https://opensource.com/business/15/3/docker-security-tuning">this article on Docker security enhancements</a> by Daniel Walsh is a good read. It&rsquo;s important to note that these security enhancements don&rsquo;t really represent &ldquo;net new&rdquo; functionality but rather reflect existing Linux security constructs now being exposed and usable by Docker. This is fairly low-level stuff, so be prepared for some potential fine-tuning as you use these newly-available features to lock down Docker containers.</li>
+<li>There&rsquo;s nothing new or amazing about this link, but I found it useful and so I&rsquo;m including it here in case others might need it. Logging is an important part of security, so ensuring that the right devices are logging (and logging to the right location) is important. <a href="http://maddhat.com/configure-syslog-forwarding-on-asa5510">Here are some general guidelines</a> for configuring syslog forwarding on a Cisco ASA firewall.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>By now you&rsquo;ve probably heard about VMware Integrated OpenStack (VIO), which was announced in early February. Juan Manual Rey has <a href="https://jreypo.wordpress.com/2015/02/02/a-first-look-into-vmware-integrated-openstack-vio/">a write-up on VIO</a> that might be worth reading, if you aren&rsquo;t already familiar with VIO.</li>
+<li>Having an application that automatically grows to accommodate demand is somewhat of a &ldquo;Holy Grail&rdquo; for cloud-based applications and cloud management platforms. OpenStack Orchestration (aka Heat) has an autoscaling function when used in conjunction with OpenStack Telemetry (aka Ceilometer), but it can be difficult for users to understand and/or deploy. Here&rsquo;s a post by Christian Berendt that provides <a href="https://blog.berendt.io/simple-auto-scaling-environment-with-heat/">an example of a simple autoscaling environment with Heat</a>.</li>
+<li>Kubernetes is something that a lot of people and organizations are exploring. If you&rsquo;re also a user of SaltStack, <a href="http://www.dasblinkenlichten.com/deploying-kubernetes-with-saltstack/">this guide</a> from Jon Langemak might prove useful to you.</li>
+<li>Kenneth Hui has a nice series running on Mesos. First, he provides <a href="http://cloudarchitectmusings.com/2015/03/23/apache-mesos-the-true-os-for-the-software-defined-data-center/">a high-level overview of Mesos</a>; that&rsquo;s followed up by <a href="http://cloudarchitectmusings.com/2015/03/26/digging-deeper-into-apache-mesos/">a slightly deeper look</a> at Mesos, then a discussion of <a href="http://cloudarchitectmusings.com/2015/03/31/dealing-with-persistent-storage-and-fault-tolerance-in-apache-mesos/">persistent storage and fault tolerance</a>. Finally, Ken provides <a href="http://cloudarchitectmusings.com/2015/04/08/playing-traffic-cop-resource-allocation-in-apache-mesos/">a review of resource allocation</a> in Mesos.</li>
+<li>If you&rsquo;re interested in some content on installing and configuring vRealize Automation 6.2, look no further&mdash;Jad El-Zein <a href="http://www.virtualjad.com/2014/12/vrealize-automation-62-install-and.html">has posted a ton of content</a> generated by an online &ldquo;install and config&rdquo; event he held right at the end of 2014. I haven&rsquo;t had the chance to go through the material, but I&rsquo;m confident there&rsquo;s some good stuff in here.</li>
+<li>Maish Saidel-Keesing wrote up a tutorial on <a href="http://technodrone.blogspot.com/2015/03/installing-openstack-cli-clients-on-mac.html">how to install the OpenStack CLI clients on Mac OS X</a>. It&rsquo;s not terribly complicated (this I say even though I haven&rsquo;t bothered to do it), but it&rsquo;s good that Maish took the time to write it up nevertheless.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I recently <a href="/2015/03/06/running-own-docker-swarm-cluster/">walked you through</a> running your own Docker Swarm cluster. <a href="https://crate.io/blog/deploying-crate-with-docker-machine-swarm/">Here&rsquo;s an article</a> that shows how to combine Docker Machine (to provision Docker Engine onto a node) and Docker Swarm (linking together multiple Docker Engine nodes).</li>
+<li>When I first saw <a href="http://stackengine.com/business-justification-for-docker/">this article</a>, I thought to myself, &ldquo;Great&mdash;someone is talking about the business aspects of adopting a technology like Docker!&rdquo; Unfortunately, I found some aspects of the article to be a bit more based on hype than reality. Yes, you <em>could</em> run Docker on bare metal and achieve (the author&rsquo;s words) &ldquo;massive CapEx benefits&rdquo; by &ldquo;eliminating expensive licensing&rdquo; for VMware. The funny thing here is that the author recognizes that enterprise-grade management and automation tools are needed for Docker, but fails to acknowledge the fact that those tools <em>don&rsquo;t yet exist</em> (unless you&rsquo;re willing to build them yourself). Clearly <a href="http://blog.gleanster.com/2015/03/10/truth-docker-lots-talk-little-experience/">this article</a> is spot on! That being said, there are a few good points in this article, so it may be worth spending a couple of minutes to review it.</li>
+<li>Much ado was made about the Microsoft-Docker announcement a while back regarding the availability of Docker on Windows. <a href="http://azure.microsoft.com/blog/2015/04/08/microsoft-unveils-new-container-technologies-for-the-next-generation-cloud/">This blog post</a> provides a bit more detail on the fruit of that announcement; specifically, the post talks about Hyper-V Containers, which are similar to Windows Server Containers but somehow&mdash;details are lacking at this point&mdash;leverage Hyper-V technology to provide better isolation and security. The post also mentions a new version of Windows, Nano Server. More details are Nano Server are available <a href="http://blogs.technet.com/b/windowsserver/archive/2015/04/08/microsoft-announces-nano-server-for-modern-apps-and-cloud.aspx">here</a>.</li>
+<li>Here&rsquo;s a great article on <a href="http://container-solutions.com/2015/04/running-docker-containers-with-systemd/">running Docker containers with systemd</a>; however, I also <em>strongly</em> encourage you to read <a href="https://github.com/ibuildthecloud/systemd-docker">the README.md from this GitHub repo</a> to get a better understanding of some of the challenges involved in running Docker containers with systemd.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Robin Harris (aka StorageMojo) weighs in on <a href="http://storagemojo.com/2015/04/13/how-doomed-is-netapp/">the future of NetApp</a> in the face of increasing use of object storage platforms, expanding availability (and dropping cost) of cloud-based storage, and downward margin pressure. The comments on the article are also interesting. I <a href="/2010/06/18/the-future-of-netapp/">questioned NetApp&rsquo;s future</a> 5 years ago (and was promptly branded as an EMC marketing shill), but I was genuinely curious what the future held for them. It seems that I&rsquo;m not the only one questioning what the future holds. (And before I&rsquo;m accused yet again of being a corporate spokesperson, yes, these same forces affect other players as well. Go read Robin&rsquo;s article and the comments&mdash;it&rsquo;s all laid out very well there.)</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Gabrie Van Zanten has a nice write-up on <a href="http://www.gabesvirtualworld.com/manage-your-vmware-metro-storage-cluster-with-tags/">using tags, along with some PowerCLI scripts, to help manage a VMware Metro Storage Cluster</a>. Tags are, in my humble opinion, one of the really unsung features in vSphere&mdash;so useful in many different ways.</li>
+<li>Alan Renouf has a nice write-up on <a href="http://www.virtu-al.net/2015/03/31/powercli-6-0-and-vcloud-air/">using PowerCLI 6.0 with vCloud Air</a>. It&rsquo;s pretty cool to be able to use PowerCLI to interact with both local resources as well as public cloud resources on vCloud Air (or vCloud Air Network).</li>
+<li>Speaking of PowerShell: check out this 3-part series (<a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/04/06/hyper-v-powershell-one-line-challenge.aspx">here</a>, <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/04/08/hyper-v-powershell-one-line-challenge-part-2.aspx">here</a>, and <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/04/15/hyper-v-powershell-one-line-challenge-part-3.aspx">here</a>) from Ben Armstrong on building impressive &ldquo;Hyper-V PowerShell one-liners&rdquo;.</li>
+</ul>
+<p>Well, this post has already gotten longer than it should, so let&rsquo;s wrap it up here. I hope that you&rsquo;ve found something useful here. Feel free to hit me up via Twitter if you&rsquo;d like to discuss or comment on anything shared here. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/04/23/ubuntu-openstack-heat-cloud-init/">Ubuntu, cloud-init, and OpenStack Heat</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/04/24/vsphere-on-aws-gce-ravello/">Running vSphere on AWS or GCE</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f24%2ftechnology-short-take-50%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f24%2ftechnology-short-take-50%2f&text=Technology%20Short%20Take%20%2350" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f24%2ftechnology-short-take-50%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2015/01/07/technology-short-take-47/">Technology Short Take #47</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2014/10/08/technology-short-take-45/">Technology Short Take #45</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

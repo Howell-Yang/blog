@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Updated Multi-OS Puppet Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Updated Multi-OS Puppet Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Updated Multi-OS Puppet Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/07/09/updated-multi-os-puppet-configuration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Updated Multi-OS Puppet Configuration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;438 words (estimated 3 minutes to read)</span>
+  <p>I received some great feedback on my post about <a href="/2012/07/05/using-puppet-with-multiple-operating-systems/">using Puppet with multiple operating systems</a>. One of the suggestions was to do a better job of following the &ldquo;official&rdquo; Puppet style guide for syntax and file layout. With that in mind, I installed <code>puppet-lint</code> on my Puppet master server using <code>apt-get install rubygems</code> followed by <code>gem install puppet-lint</code>.</p>
+<p>Using <code>puppet-lint</code>, I was able to correct all &ldquo;errors&rdquo; in the manifest, but was left with one warning regarding line length. This is, as far as I know, an uncorrectable warning, as the line that <code>puppet-lint</code> finds is the line that specifies the source of the OpenBSD packages. I can&rsquo;t shorten the URL to the packages because that&rsquo;s not under my control.</p>
+<p>In any case, here&rsquo;s the corrected Puppet manifests. I checked these with both <code>puppet parser validate</code> and <code>puppet-lint</code>, but if anyone has anything I&rsquo;ve missed feel free to point it out in the comments. Unless otherwise stated, all files are placed in the <code>modules/ntp/manifests</code> directory under the Puppet directory (which on my Puppet master server is <code>/etc/puppet</code>).</p>
+<p>First up is the <code>init.pp</code> manifest.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># NTP class definition
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>class ntp {
+</span></span><span style="display:flex;"><span>  include &#34;ntp::$::operatingsystem&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  file { &#39;ntp.conf&#39;:
+</span></span><span style="display:flex;"><span>    ensure        =&gt; present,
+</span></span><span style="display:flex;"><span>    path          =&gt; &#39;/etc/ntp.conf&#39;,
+</span></span><span style="display:flex;"><span>    owner         =&gt; &#39;root&#39;,
+</span></span><span style="display:flex;"><span>    group         =&gt; &#39;root&#39;,
+</span></span><span style="display:flex;"><span>    mode          =&gt; &#39;0644&#39;,
+</span></span><span style="display:flex;"><span>    source        =&gt; &#39;puppet:///modules/ntp/ntp.conf&#39;,
+</span></span><span style="display:flex;"><span>    require       =&gt; Package[&#39;ntp&#39;],
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  package { &#39;ntp&#39;:
+</span></span><span style="display:flex;"><span>    ensure        =&gt; installed,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  service { &#39;ntp&#39;:
+</span></span><span style="display:flex;"><span>    ensure        =&gt; running,
+</span></span><span style="display:flex;"><span>    subscribe     =&gt; File[&#39;ntp.conf&#39;],
+</span></span><span style="display:flex;"><span>    require       =&gt; File[&#39;ntp.conf&#39;],
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Next we have the subclasses for the various operating systems. Here&rsquo;s <code>openbsd.pp</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># NTP subclass for OpenBSD
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>class ntp::openbsd inherits ntp {
+</span></span><span style="display:flex;"><span>  File[&#39;ntp.conf&#39;] {
+</span></span><span style="display:flex;"><span>    path          =&gt; &#39;/etc/ntpd.conf&#39;,
+</span></span><span style="display:flex;"><span>    group         =&gt; &#39;wheel&#39;,
+</span></span><span style="display:flex;"><span>    source        =&gt; &#34;puppet:///modules/ntp/ntpd.conf.$::operatingsystem&#34;,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  Package[&#39;ntp&#39;] {
+</span></span><span style="display:flex;"><span>    source        =&gt; &#39;http://openbsd.mirrorcatalogs.com/pub/OpenBSD/5.1/packages/i386/&#39;,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  Service[&#39;ntp&#39;] {
+</span></span><span style="display:flex;"><span>    provider      =&gt; &#39;base&#39;,
+</span></span><span style="display:flex;"><span>    hasstatus     =&gt; false,
+</span></span><span style="display:flex;"><span>    start         =&gt; &#39;/usr/sbin/ntpd&#39;,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Here&rsquo;s the subclass for Ubuntu, stored in <code>ubuntu.pp</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># NTP subclass for Ubuntu Linux
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>class ntp::ubuntu inherits ntp {
+</span></span><span style="display:flex;"><span>  Service[&#39;ntp&#39;] {
+</span></span><span style="display:flex;"><span>    provider      =&gt; &#39;init&#39;,
+</span></span><span style="display:flex;"><span>    path          =&gt; &#39;/etc/init.d/&#39;,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>And finally, here&rsquo;s <code>centos.pp</code>, used for CentOS/Red Hat-based instances:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># NTP subclass for CentOS Linux
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>class ntp::centos inherits ntp {
+</span></span><span style="display:flex;"><span>  Service[&#39;ntp&#39;] {
+</span></span><span style="display:flex;"><span>    name          =&gt; &#39;ntpd&#39;,
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>I know that there are NTP modules for Puppet that &ldquo;take care&rdquo; of all this sort of thing for you, but creating this was, for me, part of the learning process. I&rsquo;m going to tackle SSH next, and&mdash;per the comments on my first Puppet post&mdash;I&rsquo;ve also started reading up on Hiera to see how that might fit in here. The initial reading I&rsquo;ve done leads me to believe that the combination of Puppet and Hiera could be quite powerful.</p>
+<p>As always, courteous comments are welcome. Feel free to speak up below!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/07/06/open-source-tools-and-projects-i-should-learn/">Open Source Tools and Projects I Should Learn</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/07/22/seeking-feedback-on-infrastructure-coders-denver/">Seeking Feedback on Infrastructure Coders Denver</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f09%2fupdated-multi-os-puppet-configuration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f09%2fupdated-multi-os-puppet-configuration%2f&text=Updated%20Multi-OS%20Puppet%20Configuration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f09%2fupdated-multi-os-puppet-configuration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/07/05/using-puppet-with-multiple-operating-systems/">Using Puppet with Multiple Operating Systems</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2012/07/06/open-source-tools-and-projects-i-should-learn/">Open Source Tools and Projects I Should Learn</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2006/02/15/open-source-hardware/">Open Source Hardware</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

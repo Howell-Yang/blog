@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: Deep Dive on Amazon Elastic File System - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: Deep Dive on Amazon Elastic File System - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: Deep Dive on Amazon Elastic File System - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/28/deep-dive-amazon-elastic-file-system/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: Deep Dive on Amazon Elastic File System</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1093 words (estimated 6 minutes to read)</span>
+  <p>This is a liveblog of the AWS re:Invent 2017 session titled &ldquo;Deep Dive on Amazon Elastic File System (EFS).&rdquo; The presenters are Edward Naim and Darryl Osborne, both with AWS. This is my last session of day 2 of re:Invent; thus far, most of my time has been spent in hands-on workshops with only a few breakout sessions today. EFS is a topic I&rsquo;ve watched, but haven&rsquo;t had time to really dig into, so I&rsquo;m looking forward to this session.</p>
+<p>Naim kicks off the session with looking at the four phases users go through when they are choosing/adopting a storage solution:</p>
+<ol>
+<li>Choosing the right storage solution</li>
+<li>Testing and optimizing</li>
+<li>Ingest (loading data)</li>
+<li>Running it (operating it in production)</li>
+</ol>
+<p>Starting with Phase 1, Naim outlines the three main things that people think about. The first item is storage type. The second is features and performance, and the third item is economics (how much does it cost). Diving into each of these items in a bit more detail, Naim talks about file storage, block storage, and object storage, and the characteristics of each of these approaches. Having covered these approaches, Naim returns to file storage (naturally) and talks about why file storage is popular:</p>
+<ul>
+<li>Works natively with operating systems</li>
+<li>Provides shared access while providing consistency guarantees and locking functionality</li>
+<li>Provides a hierarchical namespace</li>
+</ul>
+<p>Generally speaker, file storage hits the &ldquo;sweet spot&rdquo; between latency and throughput compared to block and object storage.</p>
+<p>According to Naim, the key features of EFS are:</p>
+<ul>
+<li>Simple (easy to use, operate, consume)</li>
+<li>Elastic (no problem growing to accommodate capacity)</li>
+<li>Scalable (consistent low latencies, thousands of concurrent connnections)</li>
+<li>Highly available and durable (all file system objects stored in multiple AZs)</li>
+</ul>
+<p>Next, Naim shows the typical &ldquo;customer logo&rdquo; slide to show how widely adopted EFS is by the AWs customer base and some of the use cases seen. Although the presenter said he wasn&rsquo;t going to go through all the logos, he spends more than a few minutes going through almost all of them.</p>
+<p>With regards to security, EFS offers a number of security-related features. Network access to EFS is controlled via security groups and NACLs. File and directory access is controlled via POSIX permissions; administrative access is managed via IAM. Encryption is also supported, with key storage in KMS.</p>
+<p>Naim next goes through some pricing comparisons showing how EFS is much cheaper than DIY storage solutions using EC2 instances and EBS volumes.</p>
+<p>EFS completes the &ldquo;trifecta&rdquo; of storage solutions that AWS offers, which cover the whole range of storage types (EFS for file, EBS for block, S3 for object).</p>
+<p>A new feature announced last week is EFS File Sync, which is designed to get data from on-premises file systems into EFS, and is designed to operate up to 5x faster than traditional Linux copy tool. Naim indicates that Osborne will discuss this in more detail later in the session.</p>
+<p>Next Naim discusses some architectural aspects of EFS, and how NFS clients on EC2 instances across various AZs might access EFS. EFS is POSIX-compliant and supports NFS v4.0 and v4.1. Of course, Naim points out that you should <em>always</em> test to verify that everything works as expected.</p>
+<p>Now Osborne steps up to talk specifically about performance. When creating an EFS instance, you can select either &ldquo;general purpose&rdquo; (the default) or &ldquo;max I/O&rdquo; (designed for very large scale-out workloads, at the cost of slightly higher latencies). GP may have lower latencies, but has a ceiling of 7K operations/second. For GP file systems, AWS does expose a CloudWatch metric that allows users to see where they fall within the 7K ops/sec limit.</p>
+<p>Osborne next compares EFS and EBS PIOPS (not sure what this stands for). Again, there are trade-offs (there are always trade-offs with technology decisions). As with any file system, throughput is a function of I/O size, meaning that larger I/O size will create more throughput. To really take advantage of EFS, Osborne indicates that parallelism is the key.</p>
+<p>Changing gears slightly, Osborne reviews the mount options for using EFS with Linux instances on EC2. Linux kernel 4.0 or higher is recommended, as is NFS v4.1. More details are available in the documentation, according to Osborne.</p>
+<p>Overall throughput is gated/tied to file system capacity; sustained throughput is 50 MBps per TB of storage, with bursts up to 100 MBps.</p>
+<p>Osborne shifts focus now to talk about ingest, i.e., getting data into EFS. He reviews a couple different options (connecting on-premises servers to EFS via Direct Connect or using a third-party VPN solution). Both of these options can, according to Osborne, be used not only for migration but also for bursting or backup/disaster recovery. In order to optimize data copy/ingest, parallelism is again the key. Osborne reviews a few standard Linux copy tools (like <code>rsync</code>, <code>cp</code>, <code>fpsync</code>, or <code>mcp</code>). According to Osborne, <code>rysnc</code> offers relatively poor performance. <code>fpsync</code> is essentially multi-threaded <code>rsync</code>; <code>mcp</code> is a drop-in replacement for <code>cp</code> developed by NASA; both of these tools offer better performance than their single-threaded counterparts. The best performance comes from combining tools with GNU Parallel.</p>
+<p>This dicussion of ingest performance and tools brings Osborne back to the topic of EFS File Sync, which is a multi-threaded tool that uses parallelism to maximize throughput, and offers encrypted transfers to EFS for security. EFS File Sync can be used to transfer from on-premises to EFS, between EFS instances in different regions, or from DIY shared storage solutions to EFS.</p>
+<p>Next, Osborne shows a recorded video of using EFS File Sync to copy data between two different EFS instances. The demo shows copying roughly 20GB of data in about 4 minutes.</p>
+<p>Naturally, you can move objects from Amazon S3 into EFS; this would involve using an EC2 instance that accesses S3 (perhaps via the AWS CLI) and an NFS mount backed by EFS. Osborne recommends maximizing parallelism to get the best possible ingest performance. GNU Parallel comes up here again.</p>
+<p>Naim steps up to take over to talk about operations. EFS exposes a number of CloudWatch metrics, and all EFS API calls can be logged to CloudTrail.</p>
+<p>Osborne comes back up to talk about some reference architectures using EFS. The first example is a highly-available WordPress architecture, followed by similar architectures for Drupal and Magento. Another example architecture is an EFS backup solution implemented via a CloudFormation template.</p>
+<p>Wrapping up the session, Naim reviews some additional resources available via the Amazon web site, and announces a new series of storage-focused training classes that provide more in-depth training on S3, EFS, and EBS. At this point, Naim closes out the session.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2017">reInvent2017</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/28/ipv6-in-cloud-protocol-service-overview/">Liveblog: IPv6 in the Cloud - Protocol and Service Overview</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/29/aws-reinvent-2017-keynote-andy-jassy/">AWS re:Invent 2017 Keynote with Andy Jassy</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fdeep-dive-amazon-elastic-file-system%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fdeep-dive-amazon-elastic-file-system%2f&text=Liveblog%3a%20Deep%20Dive%20on%20Amazon%20Elastic%20File%20System" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fdeep-dive-amazon-elastic-file-system%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/11/28/ipv6-in-cloud-protocol-service-overview/">Liveblog: IPv6 in the Cloud - Protocol and Service Overview</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2017/11/10/technology-short-take-90/">Technology Short Take 90</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/10/27/technology-short-take-89/">Technology Short Take 89</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

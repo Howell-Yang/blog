@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Interop Liveblog: The Post-Cloud - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Interop Liveblog: The Post-Cloud - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Interop Liveblog: The Post-Cloud - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/04/30/the-post-cloud/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Interop Liveblog: The Post-Cloud</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;971 words (estimated 5 minutes to read)</span>
+  <p>This session is titled &ldquo;The Post-Cloud,&rdquo; and the speaker is Nick Weaver, Director of SDI-X at Intel.</p>
+<p>Nick starts his presentation with a summary of our society: some people produce goods through an effort, and others consume what is produced. Things have changed over the years that have affected this production-consumption model, but Nick quickly turns his focus to the use of machines in the production portion of this cycle. As production efficiency increased, the level of consumption also increased. This is especially true for computing machines, and how people consume the services/information produced by the computing machines.</p>
+<p>This brings Nick around to a discussion of Jevons&rsquo; Paradox, which basically states that the increased efficiency of producing something actually leads to an increase in consumption, not a decrease of consumption.</p>
+<p>So what does efficiency in technology look like? Technology enables things; by itself, it doesn&rsquo;t really add value. Therefore, efficiency in technology means enabling more (or more powerful) things. Nick starts his discussion on technology efficiency with a discussion of DevOps, and what DevOps means. Although a number of technologies are involved to deal with the ever-increasing complexity and density that has emerged, DevOps is really about a culture change. DevOps favors automation over repetition, decoupling deployment from operations&mdash;it means making technology practitioners more effective and more efficient (thus enabling technology to enable more).</p>
+<p>This leads to a discussion of CloudFoundry and Platform-as-a-Service (PaaS). PaaS helps manage all the various &ldquo;things&rdquo; that are necessary to deploy an application, thus again making it easier to consume applications (and therefore enabling applications/technology to enable more). PaaS can help with microservice architectures, because PaaS often provides things like service discovery and other &ldquo;glue&rdquo; necessary to stitch all the various pieces together. PaaS increases efficiency.</p>
+<p>Now the discussion shifts to Docker containers. Nick takes a moment to explain some of the underpinnings (cgroups and namespaces) that make Docker containers possible, drawing an analogy between cgroups/namespaces with VMware resource pools in vCenter. He draws some comparisons between the use of full-machine virtualization (aka VMs) with the use of Linux containers&mdash;not that one is better or worse than the other, but that they are different and therefore have different characteristics and different use cases.</p>
+<p>After talking about containers internals and some of the (potential) benefits of containers, Nick shifts to a focus on Docker specifically. Docker&rsquo;s value is in streamlining the use of containers, i.e., making the experience super-easy. This includes the use of layers, and making these layers easy to share and recombine to create other things. Docker increases efficiency by reducing the cost of using containers both in operational overhead (time) and in needing particular expertise. Docker increases efficiency because it&rsquo;s easy to use.</p>
+<p>Next up in Nick&rsquo;s discussion is big data. The first problem is efficient access to data. The second problem is extracting useful information for a particular domain (and each domain is particular to a person, industry, task, etc.). Lots of tools here&mdash;Hadoop, Spark, Cloudera, Storm, etc. These tools provide efficiency in access, storing, and extracting information, which in turn enables efficient decision making.</p>
+<p>Now we&rsquo;re talking about Google. Nick mentions that Google makes extensive use of containers, to the order of creating and destroying 2 billion containers a week. (This number has been tossed around a few times.) This extensive use of containers has lead to the rise of scheduling/orchestration tools like Kubernetes, Mesos, and Docker Swarm. Naturally, the scheduling of containers at Google&rsquo;s scale can&rsquo;t be done manually, and has to be done intelligently. So how do these tools increase efficiency? They increase efficiency by making more effective use of utilizing resources to run applications/workloads/services.</p>
+<p>Nick begins to wrap things up with &ldquo;The Road to Awe.&rdquo; If the problem was &ldquo;I want to deploy my web service&rdquo;, the initial answer was the x86 server (which made computing power more accessible to people). The next answer was to use multiple virtual servers, for more density. Next we wanted workload mobility (live migration), and then deploying web services as a service (IaaS). That lead to &ldquo;automagically configured&rdquo; web services (PaaS). Then we wanted captured and immutable images of our web services (Docker), being able to turn them up extremely quickly (Linux containers and Docker) and easily integrated into our Continuous Development lifecycle. Finally, we wanted to be able to do all that on-demand, and quickly replaced on error (Mesos, CF Diego, Kubernetes). That, in turn, leads to wanting to be able to manage and place the workload intelligently based on data from any level&mdash;i.e., i just want to run a web service and have the data center do all the rest (the Post-Cloud).</p>
+<p>It&rsquo;s about pushing for the (Jevons&rsquo;) Paradox&mdash;-making things easier to produce so that others can consume what we are producing.</p>
+<p>Nick breaks things down into Watcher (it&rsquo;s watching and collecting data from all sorts), feeding that data into the Decider (which makes decisions). The decision is fed to the Actor, which acts upon decisions made by the Decider based on data collected by the Watcher. Finally, the entire cycle is &ldquo;wrapped&rdquo; together by a learning cycle that helps the Watcher-Decider-Actor cycle work better than it did before (i.e., integrate machine learning).</p>
+<p>So&hellip;what has to come next? What is needed to make this happen?</p>
+<ul>
+<li>Greater exposure of telemetry (more information from more sources, greater access to the state of things)</li>
+<li>Google Omega-style decision making for the masses (fed by knowledge built on telemetry)</li>
+<li>Brand new disciplines around extracting efficiency</li>
+<li>Massive cooperation of cloud domains</li>
+</ul>
+<p>What is &ldquo;the Post-Cloud&rdquo;? In conclusion, Nick defines the Post-Cloud as what emerges from the next evolution of efficiency in computing. It is also just a label for the computing that our grandchildren will take for granted as they provide their own value.</p>
+<p>With that, Nick opens the floor to questions and wraps up the session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cloud">Cloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interop2015">Interop2015</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/04/30/cloud-connect-keynote-liveblog/">Interop Liveblog: Thursday Cloud Connect Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/05/06/quick-intro-lxd/">A Quick Introduction to LXD</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f30%2fthe-post-cloud%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f30%2fthe-post-cloud%2f&text=Interop%20Liveblog%3a%20The%20Post-Cloud" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f30%2fthe-post-cloud%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/04/30/cloud-connect-keynote-liveblog/">Interop Liveblog: Thursday Cloud Connect Keynote</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2015/04/29/techniques-network-detective/">Interop Liveblog: Techniques of a Network Detective</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2015/04/29/ipv6-microsegmentation/">Interop Liveblog: IPv6 Microsegmentation</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

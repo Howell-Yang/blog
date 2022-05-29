@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Solaris 10-AD Integration, Version 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Solaris 10-AD Integration, Version 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Solaris 10-AD Integration, Version 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/04/25/solaris-10-ad-integration-version-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Solaris 10-AD Integration, Version 3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;2306 words (estimated 11 minutes to read)</span>
+  <p>Thanks to some very helpful individuals in the #solaris channel on irc.freenode.net, I&rsquo;ve been able to get ADS support working in <a href="http://www.samba.org/">Samba</a> on <a href="http://www.sun.com/software/solaris/">Solaris 10</a>, and thus have been able to incorporate the use of Samba in the Solaris 10-AD integration instructions.</p>
+<p>To refer to earlier versions of the Solaris 10-AD integration instructions, see <a href="/2006/10/16/refined-solaris-10-ad-integration-instructions/">this article</a> or <a href="/2006/08/15/solaris-10-and-active-directory-integration/">this article</a>. I would expect that you won&rsquo;t need to refer to those posts, though, and will be able to get most of what you need directly from this post.</p>
+<h2 id="assumptions">Assumptions</h2>
+<p>This procedure assumes that you are using <a href="http://www.microsoft.com/windowsserver2003/default.mspx">Windows Server 2003 R2</a>; if you are using a previous version, the LDAP attribute mapping will need to be modified to match the schema extensions found in Microsoft&rsquo;s Services for Unix (SfU) add-on product. This will require changes to the <code>ldapclient manual</code> command shown below, which handles the schema/attribute mapping. (I only have a single article written that includes pre-R2 attribute mapping, and that&rsquo;s <a href="/2005/12/22/complete-linux-ad-authentication-details/">this Linux-AD article</a>. The schema mapping should be very, very similar between that article and Solaris 10.)</p>
+<h2 id="preparing-active-directory-one-time">Preparing Active Directory (One-Time)</h2>
+<p>These steps only need to be performed once. Note that if you have performed any of these steps as part of authenticating Linux or Solaris to Active Directory, they do <em>not</em> need to be performed again. Simply make note of the information used earlier and re-use that information again this time.</p>
+<ol>
+<li>
+<p>Install the &ldquo;Server for NIS&rdquo; component on at least one Active Directory domain controller (DC), so that the Active Directory schema can be extended to become partially <a href="http://www.ietf.org/rfc/rfc2307.txt">RFC 2307</a>-compliant. Installing this component will also add a &ldquo;UNIX Attributes&rdquo; tab to objects inside the Active Directory Users and Computers MMC console. You may also need to install the Server for NIS administrative tools on your workstation to see the &ldquo;UNIX Attributes&rdquo; tab.</p>
+</li>
+<li>
+<p>Use the Schema Management MMC snap-in to index the uid attribute, which is not indexed by default. This will speed up the login process and reduce the overall load on your DCs. (For more information, refer to the <a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux-Windows Server 2003 R2 integration instructions</a>.) It may be possible to change the attribute that Solaris is looking for, but I haven&rsquo;t found a way to do that yet.</p>
+</li>
+<li>
+<p>Create an account in Active Directory that will be used to bind to Active Directory for LDAP queries. This account does <em>not</em> need any special privileges; in fact, making the account a member of Domain Guests and <em>not</em> a member of Domain Users is perfectly fine. I recommend giving this account a simple, short name; this will make specifying the DN of the account later easier to do.</p>
+</li>
+<li>
+<p>Create a global security group in Active Directory Users &amp; Computers and set the UNIX attributes for this group.</p>
+</li>
+</ol>
+<p>Once these one-time steps have been completed, we can proceed to configuring the individual users that will be authenticating to Active Directory from your Solaris server(s).</p>
+<h2 id="preparing-active-directory-each-user">Preparing Active Directory (Each User)</h2>
+<p>Each Active Directory account that will authenticate via Solaris must be configured with a uid and other UNIX attributes. This is accomplished via the new &ldquo;UNIX Attributes&rdquo; tab on the properties dialog box of a user account (this tab was made visible by the installation of the Server for NIS component). The attributes that must be populated are:</p>
+<ul>
+<li>
+<p>NIS domain: It&rsquo;s required on this tab in order to populate the other fields, but we won&rsquo;t be using it.</p>
+</li>
+<li>
+<p>UID: This is actually the UID number. Each user must have a unique UID; I believe that the Server for NIS defaults at a starting UID of 10000, which is pretty safe for most systems.</p>
+</li>
+<li>
+<p>GID: In addition, each member must have a GID (group ID); simply specify the group that was created earlier.</p>
+</li>
+<li>
+<p>Login Shell: Specify a login shell (such as <code>/usr/bin/csh</code> or <code>/sbin/sh</code>) for each user.</p>
+</li>
+<li>
+<p>Home Directory: Specify the home directory (such as <code>/export/home/slowe</code>) that will be used for this user. Keep in mind that these values may apply across multiple systems and platforms, and the path must be valid on all systems and platforms.</p>
+</li>
+</ul>
+<p>Based on my experience so far, the values for Solaris will often be very different than what might be specified for Linux-based logins. The only workarounds I&rsquo;ve found to address these issues is the clever use of symlinks and the use of <a href="/2006/11/21/greater-ad-integration-via-nfs-and-automounts/">NFS automounts for home directories</a>.</p>
+<p>After all the user accounts have been configured, then we are ready to perform the additional tasks within Active Directory and on the Solaris server(s) that will enable the authentication.</p>
+<h2 id="configuring-reverse-dns">Configuring Reverse DNS</h2>
+<p>On the DNS server handling the reverse lookup zones for the subnet on which the Solaris server is located, add a PTR record for the Solaris server and it&rsquo;s IP address. This will ensure that reverse DNS lookups work as expected. Make sure that each Solaris server that will be authenticating against Active Directory has a reverse lookup record in DNS, and ensure that both forward and reverse lookups work from each of the Solaris server(s).</p>
+<h2 id="configuring-solaris-each-server">Configuring Solaris (Each Server)</h2>
+<p>The following steps need to be performed on each Solaris server that will authenticate against Active Directory.</p>
+<h3 id="configuring-the-hosts-file">Configuring the hosts file</h3>
+<p>To enable reliable TGT validation (this ensures that the Kerberos ticket returned by a KDC actually came from the KDC and not a spoofed server), you&rsquo;ll need to edit the hosts file. On Solaris 10, this is found in <code>/etc/inet/hosts</code> and is read-only, even for root. Edit this file (changing permissions as necessary) so that the line with the server&rsquo;s IP address looks something like this:</p>
+<pre><code>10.1.1.1 hostname.example.com hostname loghost
+</code></pre>
+<p>What we&rsquo;re doing here is making sure that the server&rsquo;s fully qualified domain name (not just the short hostname) is the first name entry on the line for the server&rsquo;s IP address.</p>
+<p>There may or may not be other entries in the file; leave those entries untouched (unless you <em>know</em> you need to modify them).</p>
+<h3 id="installing-blastwave-packages">Installing Blastwave Packages</h3>
+<p><em>This</em> is the key to getting ADS support into Samba on Solaris 10. I won&rsquo;t go into excruciating detail on this since this process is amply covered elsewhere, but here&rsquo;s the basic idea of the process:</p>
+<ul>
+<li>
+<p>Use the standard <code>wget</code> (found in <code>/usr/sfw/bin</code>) to download the <code>pkg-get</code> file used by Blastwave.</p>
+</li>
+<li>
+<p>Use <code>pkgadd</code> to install <code>pkg-get</code>.</p>
+</li>
+<li>
+<p>Configure <code>pkg-get</code> to use the unstable packages (makes sure you get the latest builds).</p>
+</li>
+<li>
+<p>Use <code>pkg-get</code> to install the CSWsamba package and all requisite packages (there were quite a few dependency packages during my testing).</p>
+</li>
+</ul>
+<p>Once the CSWsamba package and related packages are installed, we&rsquo;ll need to configure Samba by creating <code>/opt/csw/etc/samba/smb.conf</code> with the following contents:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>workgroup = &lt;NetBIOS name of AD domain&gt; 
+</span></span><span style="display:flex;"><span>security = ads
+</span></span><span style="display:flex;"><span>realm = &lt;DNS name of AD domain&gt;
+</span></span><span style="display:flex;"><span>use kerberos keytab = true
+</span></span><span style="display:flex;"><span>password server = &lt;Space-delimited list of AD DCs&gt;
+</span></span></code></pre></div><p>At this point, we are ready to configure Kerberos and then proceed with testing the configuration and join the Active Directory domain.</p>
+<h3 id="configuring-kerberos">Configuring Kerberos</h3>
+<p>Solaris keeps its Kerberos configuration in the <code>/etc/krb5</code> directory as <code>krb5.conf</code>. Edit this file using your editor of choice to look something like the one below. Depending upon how you configured Solaris during the installation, some of this configuration may already be present.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ini" data-lang="ini"><span style="display:flex;"><span><span style="color:#66d9ef">[libdefaults]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">default_realm</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">EXAMPLE.COM
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        dns_lookup_kdc = true</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[realms]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">EXAMPLE.COM</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        kdc = dc01.example.com
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        kdc = dc02.example.com
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        admin_server = dc01.example.com
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[domain_realm]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">.example.com</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">EXAMPLE.COM
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        .subdomain.example.com = EXAMPLE.COM</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[logging]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">default</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">FILE:/var/krb5/kdc.log
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        kdc = FILE:/var/krb5/kdc.log
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        kdc_rotate = {
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        period = 1d
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        version = 10
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">[appdefaults]</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">kinit</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        renewable = true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        forwardable= true
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        }</span>
+</span></span></code></pre></div><p>There will also be a file named <code>cswkrb5.conf</code> in the <code>/etc</code> directory; you can configure this file with the contents of the [libdefaults], [realms], and [domain_realms] sections as listed above. You don&rsquo;t need to include the [logging] or [appdefaults] sections in this file.</p>
+<p>Note that you can&rsquo;t simply copy and paste from here to the Solaris configuration files, as you&rsquo;ll need to customize your version for your particular network, hostnames, domain names, etc. If you must copy and paste from here, put it into a text editor first to customize it for your implementation.</p>
+<h3 id="configuring-ldap">Configuring LDAP</h3>
+<p>We&rsquo;ll use the native Solaris <code>ldapclient</code> utility to configure the LDAP support in Solaris. The command you&rsquo;ll type in looks something like this (please <em>don&rsquo;t</em> copy and paste this, as it contains generic/incorrect information that won&rsquo;t work!):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>ldapclient manual \
+</span></span><span style="display:flex;"><span>-a credentialLevel=proxy \
+</span></span><span style="display:flex;"><span>-a authenticationMethod=simple \
+</span></span><span style="display:flex;"><span>-a proxyDN=cn=proxyuser,cn=Users,dc=example,dc=com \
+</span></span><span style="display:flex;"><span>-a proxyPassword=Password1 \
+</span></span><span style="display:flex;"><span>-a defaultSearchBase=dc=example,dc=com \
+</span></span><span style="display:flex;"><span>-a domainName=example.com \
+</span></span><span style="display:flex;"><span>-a &#34;defaultServerList=172.16.1.10&#34; \
+</span></span><span style="display:flex;"><span>-a attributeMap=group:userpassword=userPassword \
+</span></span><span style="display:flex;"><span>-a attributeMap=group:memberuid=memberUid \
+</span></span><span style="display:flex;"><span>-a attributeMap=group:gidnumber=gidNumber \
+</span></span><span style="display:flex;"><span>-a attributeMap=passwd:gecos=cn \
+</span></span><span style="display:flex;"><span>-a attributeMap=passwd:gidnumber=gidNumber \
+</span></span><span style="display:flex;"><span>-a attributeMap=passwd:uidnumber=uidNumber \
+</span></span><span style="display:flex;"><span>-a attributeMap=passwd:homedirectory=unixHomeDirectory \
+</span></span><span style="display:flex;"><span>-a attributeMap=passwd:loginshell=loginShell \
+</span></span><span style="display:flex;"><span>-a attributeMap=shadow:shadowflag=shadowFlag \
+</span></span><span style="display:flex;"><span>-a attributeMap=shadow:userpassword=userPassword \
+</span></span><span style="display:flex;"><span>-a objectClassMap=group:posixGroup=group \
+</span></span><span style="display:flex;"><span>-a objectClassMap=passwd:posixAccount=user \
+</span></span><span style="display:flex;"><span>-a objectClassMap=shadow:shadowAccount=user \
+</span></span><span style="display:flex;"><span>-a serviceSearchDescriptor=passwd:dc=example,dc=com?sub \
+</span></span><span style="display:flex;"><span>-a serviceSearchDescriptor=group:dc=example,dc=com?sub
+</span></span></code></pre></div><p>The easiest way to handle this would probably be to copy it into a blank text file, edit it to include the specific details for your network, and then paste it into a terminal session on the Solaris server.</p>
+<p>After this command has been run, Solaris will create the LDAP configuration in <code>/var/ldap</code> and will update <code>/etc/nsswitch.conf</code> to use LDAP. However, because we only want to use LDAP for specific purposes, we&rsquo;ll need to go back and edit <code>/etc/nsswitch.conf</code> again. Just remove &ldquo;ldap&rdquo; from all entries in <code>/etc/nsswitch.conf</code> except for passwd and group.</p>
+<p>While you&rsquo;re editing <code>/etc/nsswitch.conf</code>, be sure to add a &ldquo;dns&rdquo; entry at the end of the line for hosts:</p>
+<pre><code>hosts files dns
+</code></pre>
+<p>This will help ensure that Solaris is properly configured to use DNS for host name resolution.</p>
+<p>I think it&rsquo;s necessary at this point to restart the LDAP client service:</p>
+<pre><code>svcadm restart svc:/network/ldap/client:default
+</code></pre>
+<p>Use the <code>svcs -a | grep ldap</code> command to verify the exact name of the LDAP client service on your Solaris server.</p>
+<h3 id="configuring-the-dns-client">Configuring the DNS Client</h3>
+<p>You&rsquo;ll also need to make sure that the DNS client is enabled and running. Using <code>svcs -a | grep dns</code> will help you identify the correct service, which you can then enable with svcadm:</p>
+<pre><code>svcadm enable svc:/network/dns/client:default
+</code></pre>
+<p>Test DNS resolution using the <code>nslookup</code> command. As mentioned previously, be sure to test both forward and reverse lookups.</p>
+<h3 id="configuring-pam">Configuring PAM</h3>
+<p>The <code>/etc/pam.conf</code> file controls the PAM (Pluggable Authentication Mechanism) configuration on Solaris. You&rsquo;ll need to edit the <code>/etc/pam.conf</code> file to look something like what&rsquo;s shown below. I&rsquo;ve edited away all the non-essential sections, so only change the sections listed below.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># Default definition for Authentication management
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span>other   auth requisite          pam_authtok_get.so.1
+</span></span><span style="display:flex;"><span>other   auth required           pam_dhkeys.so.1
+</span></span><span style="display:flex;"><span>other   auth sufficient         pam_krb5.so.1
+</span></span><span style="display:flex;"><span>other   auth required           pam_unix_cred.so.1
+</span></span><span style="display:flex;"><span>other   auth required           pam_unix_auth.so.1
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span># Default definition for Account management
+</span></span><span style="display:flex;"><span>#
+</span></span><span style="display:flex;"><span>other   account requisite       pam_roles.so.1
+</span></span><span style="display:flex;"><span>other   account sufficient      pam_unix_account.so.1
+</span></span><span style="display:flex;"><span>other   account required        pam_ldap.so.1
+</span></span><span style="display:flex;"><span>#
+</span></span></code></pre></div><p>With this configuration in place, Solaris will use Kerberos authentication and will retrieve account information via LDAP.</p>
+<h3 id="reboot-the-solaris-server">Reboot the Solaris Server</h3>
+<p>I know this sounds stupid, but even after restarting LDAP and enabling/starting/restarting the DNS client, things still didn&rsquo;t work for me in the lab. However, after rebooting the Solaris server, it worked like a champ. So, just in case, reboot the Solaris server after completing the configuration.</p>
+<h2 id="testing-the-configuration">Testing the Configuration</h2>
+<p>Once all of the configuration steps have been completed, you can test the configuration with the following commands:</p>
+<ul>
+<li>
+<p>You can use <code>getent passwd &lt;Name of AD user&gt;</code> from the Solaris server; this command should return UID number, GID number, UNIX home directory, and login shell.</p>
+</li>
+<li>
+<p>You can use <code>kinit &lt;Name of AD user&gt;</code> to test Kerberos authentication. A succesful Kerberos test will not return any feedback, and the <code>klist</code> command will show a ticket granting ticket (TGT) from the Active Directory DC/KDC.</p>
+</li>
+</ul>
+<p>If either of these tests are unsuccessful, review the log files on the Solaris server and resolve the problems before continuing. Both of these tests will need to be successful in order for authentication to work correctly.</p>
+<p>If the tests are successful, then you should now be able to join the Solaris server to Active Directory using Samba.</p>
+<h2 id="joining-the-solaris-server-to-active-directory">Joining the Solaris Server to Active Directory</h2>
+<p>This is the final step. Don&rsquo;t try this step until you&rsquo;ve successfully tested the configuration. After this step is completed, you are finished and AD users will be able to login to the Solaris server (assuming the AD users have been properly configured).</p>
+<p>To join the Solaris server to Active Directory, follow these steps:</p>
+<ol>
+<li>
+<p>Verify the Samba configuration as outlined earlier. Key to the configuration are the &ldquo;security = ads&rdquo; and &ldquo;use kerberos keytab = true&rdquo; directives.</p>
+</li>
+<li>
+<p>Use <code>kdestroy</code> to destroy any existing Kerberos credentials you may have; then run <code>kinit &lt;Domain administrative account&gt;@AD.DOMAIN.NAME</code> to get a Kerberos ticket for an account that is a domain administrator account.</p>
+</li>
+<li>
+<p>Run <code>net ads join</code> to join the Solaris server to Active Directory. This command will automatically create a computer object in Active Directory and add the appropriate SPNs (service principal names) to the computer object. In addition, it will populate the local Kerberos key table (<code>/etc/krb5.keytab</code>, by default) with the correct entries for authentication against Active Directory. You may see an error about a missing userPrincipalName, but this does not appear to affect any functionality.</p>
+</li>
+</ol>
+<p>At this point, all properly configured AD users (those users who have UNIX attributes) should be able to login to the Solaris server using their Active Directory username and password. Of course, this assumes that you&rsquo;ve already dealt with home directories (or are automounting home directories).</p>
+<p>As with previous instructions, these instructions don&rsquo;t address password management (the ability to change an AD password from Solaris) and don&rsquo;t address how to handle home directories. Hey, I&rsquo;ve got to leave a few challenges for others to tackle, right?</p>
+<h2 id="how-i-tested">How I Tested</h2>
+<p>This testing was done using Solaris 10 11/06 (Update 3) running on VMware ESX Server 3.0.1. Active Directory was running on a pair of servers with Windows Server 2003 R2, also virtual machines on ESX Server. Authentication testing was performed using SSH from a client system running Mac OS X.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/solaris">Solaris</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/04/25/sshjail-in-centralized-environments/">SSHjail in Centralized Environments</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/04/27/vmworld-2007-proposal-submitted/">VMworld 2007 Proposal Submitted</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsolaris-10-ad-integration-version-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsolaris-10-ad-integration-version-3%2f&text=Solaris%2010-AD%20Integration%2c%20Version%203" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f04%2f25%2fsolaris-10-ad-integration-version-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/04/24/solaris-ad-integration-update-coming/">Solaris-AD Integration Update Coming</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2006/11/21/greater-ad-integration-via-nfs-and-automounts/">Greater AD Integration via NFS and Automounts</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

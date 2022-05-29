@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/11/19/virtualization-short-take-23/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #23</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;413 words (estimated 2 minutes to read)</span>
+  <p>A short while ago, I had a colleague in the blogging industry ask me if the reason I was writing &ldquo;Short Takes&rdquo; was because I was too busy to write in-depth articles. At the time, I told this colleague no, but now I&rsquo;m wondering if I should change that answer&hellip;</p>
+<p>In any event, here&rsquo;s my list of links and tidbits that I found interesting, amusing, or useful over the last week or so. Enjoy!</p>
+<ul>
+<li>
+<p>Eric Sloof of NTPRO.NL <a href="http://www.ntpro.nl/blog/archives/759-IP-Storage-and-VM-swap-files.html">points out</a> that VMware has updated their best practices to &ldquo;allow&rdquo; the placement of VM swap files on NFS, rather than recommending VMFS. Does anyone have a link to the VMware KB article with those updated recommendations?</p>
+</li>
+<li>
+<p>Edward Haletky points out a process for <a href="http://itknowledgeexchange.techtarget.com/virtualization-pro/secure-method-to-p2v-across-security-zones/">performing &ldquo;secure P2V&rdquo; operations</a>. Because the P2V process generally involves network communications with VirtualCenter and/or the VMware ESX Service Console, a straight P2V process would cross security boundaries. Edward&rsquo;s phased approach helps with that issue.</p>
+</li>
+<li>
+<p>Into PowerShell, but finding the process of modifying Offload Policies too difficult? <a href="http://www.peetersonline.nl/index.php/vmware/modifying-vswitch-offload-policy-with-powershell/">This should help out</a> significantly.</p>
+</li>
+<li>
+<p>Expanding upon some earlier work, Rick has added &ldquo;Resolution Paths&rdquo; to <a href="http://www.vmwarewolf.com/common-network-issues-in-vmware-infrastructure/">common network issues</a> and <a href="http://www.vmwarewolf.com/common-licensing-issues-in-vmware-infrastructure/">common licensing issues</a>. Excellent work!</p>
+</li>
+<li>
+<p>Leo provides some good information on <a href="http://lraikhman.blogsite.org/?p=346">monitoring VI3 with Zenoss</a>.</p>
+</li>
+<li>
+<p>Via <a href="http://www.virtualization.info/2008/11/tool-hvremote.html">Alessandro</a> and <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2008/11/18/new-hvremote-tool.aspx">Ben</a>, I learned about the HVRemote tool for automating the configuration steps for enabling remote management of Hyper-V. HVRemote was created by John Howard and more information is available <a href="http://blogs.technet.com/jhoward/archive/2008/11/14/configure-hyper-v-remote-management-in-seconds.aspx">here</a>.</p>
+</li>
+<li>
+<p>Symbolik shares his <a href="http://symbolik.wordpress.com/2008/11/15/esx-troubleshooting-psod-purple-screen-of-death/">experience in troubleshooting a PSoD</a> (Purple Screen of Death) with VMware ESX. In his case, the issue turned out to be related to NICs, but it&rsquo;s nice to see that he was able to zero in on the issue and get it resolved.</p>
+</li>
+<li>
+<p>Larger installations with lots of LUNs and an active/active SAN may find <a href="http://www.yellow-bricks.com/2008/04/01/load-balancing-activeactive-sans/">this script published by Duncan</a> very helpful. The problem that this script addressed underscores the need for robust multipathing support in VMware ESX such as that which will be allowed via the new vStorage APIs.</p>
+</li>
+<li>
+<p>Need more information on Enhanced VMotion Compatibility (EVC)? Both <a href="http://www.gabesvirtualworld.com/?p=101">Gabe</a> and <a href="http://vmetc.com/2008/11/16/enhanced-vmotion-compatibility-evc-%e2%80%93-intel-example/">Rich</a> have recently tackled the issue on their own blogs. If you&rsquo;re wondering what EVC is, the short answer is that it&rsquo;s a way to automate <a href="/2007/06/19/more-on-cpu-masking/">this process</a> in a supported fashion.</p>
+</li>
+</ul>
+<p>That&rsquo;s it for this time around. Thanks for reading!</p>
+<p><strong>UPDATE:</strong> Eric Sloof responded about the updated recommendations regarding VM swap files. The new information was disclosed in session TA2784 at VMworld 2008. See slide 38. Thanks for the information, Eric!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/11/19/no-solaris-ad-integration-update/">No Solaris-AD Integration Update</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/11/19/viscosity-a-mac-openvpn-client/">Viscosity, a Mac OpenVPN Client</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fvirtualization-short-take-23%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fvirtualization-short-take-23%2f&text=Virtualization%20Short%20Take%20%2323" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fvirtualization-short-take-23%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/08/20/thinking-on-microsofts-licensing-changes/">Thinking on Microsoft&#39;s Licensing Changes</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2008/09/08/sanbolic-now-providing-shared-lun-access-for-hyper-v-guests/">Sanbolic Now Providing Shared LUN Access for Hyper-V Guests</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2008/08/28/virtualization-short-take-17/">Virtualization Short Take #17</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

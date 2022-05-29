@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Running an etcd 2.0 Cluster on Ubuntu 14.04 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Running an etcd 2.0 Cluster on Ubuntu 14.04 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Running an etcd 2.0 Cluster on Ubuntu 14.04 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/04/15/running-etcd-20-cluster/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Running an etcd 2.0 Cluster on Ubuntu 14.04</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1143 words (estimated 6 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you how to set up a cluster of three nodes running <a href="https://github.com/coreos/etcd">etcd</a> 2.0 (specifically, etcd 2.0.9). While <a href="/2014/08/18/coreos-continued-etcd/">I&rsquo;ve discussed etcd before</a>, that was in the context of using etcd with <a href="https://coreos.com">CoreOS Linux</a>. In this case, I&rsquo;ll use Ubuntu 14.04 as the base OS, along with the latest released version of etcd.</p>
+<p>To help you follow along, I&rsquo;ve created a set of files that will allow you to use <a href="http://www.vagrantup.com/">Vagrant</a> to turn up an etcd 2.0 cluster on Ubuntu 14.04 (on your laptop, if so desired). You can find all these files in the &ldquo;etcd-2.0&rdquo; directory of <a href="https://github.com/scottslowe/learning-tools">my learning-tools GitHub repository</a>.</p>
+<h2 id="installing-the-base-os">Installing the Base OS</h2>
+<p>You don&rsquo;t need anything special when setting up etcd; a straightforward Ubuntu Server 14.04 x64 installation will work just fine. If you&rsquo;re using the files in <a href="https://github.com/scottslowe/learning-tools">my learning-tools repository</a>, you&rsquo;ll see that Vagrant simply turns up a VM based on a plain-jane Ubuntu 14.04 box. If you&rsquo;re building this from scratch (why?!), simply create a VM and install Ubuntu 14.04 into it. As long as it has Internet connectivity, that&rsquo;s all that&rsquo;s needed.</p>
+<h2 id="installing-etcd">Installing etcd</h2>
+<p>Installing etcd is very straightforward:</p>
+<ol>
+<li>
+<p>Download the etcd 2.0.9 release from <a href="https://github.com/coreos/etcd/releases/tag/v2.0.9">https://github.com/coreos/etcd/releases/tag/v2.0.9</a>.</p>
+</li>
+<li>
+<p>Unpack the downloaded <code>.tar.gz</code> file using <code>tar xvzf &lt;filename&gt;</code>.</p>
+</li>
+<li>
+<p>Create the <code>/var/etcd</code> directory for etcd to use as its data directory.</p>
+</li>
+<li>
+<p>Optionally, change into the newly-created directory (named <code>etcd-2.0.9-linux-amd64</code> by default) and use <code>mv</code> to move the <code>etcd</code> and <code>etcdctl</code> binaries to a more permanent location on your system. (These are statically linked binaries, so feel free to put them wherever it makes sense to you. I chose to put them in <code>/usr/local/bin</code>.)</p>
+</li>
+</ol>
+<p>That&rsquo;s it. Just make a note of where the <code>etcd</code> binary is stored, as you&rsquo;ll need to know that location later.</p>
+<h2 id="configuring-etcd-and-turning-up-the-cluster">Configuring etcd and Turning Up the Cluster</h2>
+<p>Earlier (pre-2.0) releases of etcd apparently supported a TOML-based configuration file, but that support was removed in the 2.0 release. Instead, you&rsquo;ll need to use either a) environment variables or b) command-line parameters. I chose to use environment variables, and&mdash;since I wanted to make this as &ldquo;production quality&rdquo; as possible, I chose to build an Upstart script for etcd. (If you don&rsquo;t want to use Upstart, I&rsquo;ll talk about that later in this section.)</p>
+<p>Here&rsquo;s an Upstart script you can use for etcd:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>description &#34;etcd 2.0 distributed key-value store&#34;
+</span></span><span style="display:flex;"><span>author &#34;Scott Lowe &lt;scott.lowe@scottlowe.org&gt;&#34;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>start on (net-device-up
+</span></span><span style="display:flex;"><span>          and local-filesystems
+</span></span><span style="display:flex;"><span>          and runlevel [2345])
+</span></span><span style="display:flex;"><span>stop on runlevel [016]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>respawn
+</span></span><span style="display:flex;"><span>respawn limit 10 5
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>script
+</span></span><span style="display:flex;"><span>  if [ -f &#34;/etc/default/etcd&#34; ]; then
+</span></span><span style="display:flex;"><span>    . /etc/default/etcd
+</span></span><span style="display:flex;"><span>  fi
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>chdir /var/etcd
+</span></span><span style="display:flex;"><span>exec /usr/local/bin/etcd &gt;&gt;/var/log/etcd.log 2&gt;&amp;1
+</span></span><span style="display:flex;"><span>end script
+</span></span></code></pre></div><p>This is a reasonably straightforward Upstart script, so I won&rsquo;t bother spending a great deal of time explaining it. Note that if you chose not to move the <code>etcd</code> binary to <code>/usr/local/bin</code>, you&rsquo;ll have to edit this Upstart script to point to the correct location of the binary. Also, if you choose to use something other than <code>/var/etcd</code> as the data directory, you&rsquo;ll need to edit this Upstart script appropriately. Consider the script above to be an example from which you can build one appropriate to your environment.</p>
+<p>I did find that the <code>if [ -f &quot;/etc/default/etcd&quot; ]; then</code> test&mdash;and subsequently sourcing the contents of that file&mdash;doesn&rsquo;t work with Upstart (they should be removed from this Upstart script, but I haven&rsquo;t bothered yet). The original idea was to define the necessary environment variables in <code>/etc/default/etcd</code>, but no amount of effort could make it work. I <em>could</em> embed the environment variables in the Upstart script itself, but that seemed like a hack (and not a good one). Finally, a couple folks pointed me to <a href="http://upstart.ubuntu.com/cookbook/#override-files">override files</a>, which worked perfectly.</p>
+<p>The Upstart script itself (listed above) goes into <code>/etc/init</code> as <code>etcd.conf</code>. The override file also goes into <code>/etc/init</code> but is named (quite intuitively) <code>etcd.override</code>. Here&rsquo;s the contents of the override file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span># Override file for etcd Upstart script providing some environment variables
+</span></span><span style="display:flex;"><span>env ETCD_INITIAL_CLUSTER=&#34;etcd-01=http://192.168.101.101:2380,etcd-02=http://192.168.101.102:2380,etcd-03=http://192.168.101.103:2380&#34;
+</span></span><span style="display:flex;"><span>env ETCD_INITIAL_CLUSTER_STATE=&#34;new&#34;
+</span></span><span style="display:flex;"><span>env ETCD_INITIAL_CLUSTER_TOKEN=&#34;etcd-cluster-01&#34;
+</span></span><span style="display:flex;"><span>env ETCD_INITIAL_ADVERTISE_PEER_URLS=&#34;http://192.168.101.101:2380&#34;
+</span></span><span style="display:flex;"><span>env ETCD_DATA_DIR=&#34;/var/etcd&#34;
+</span></span><span style="display:flex;"><span>env ETCD_LISTEN_PEER_URLS=&#34;http://192.168.101.101:2380&#34;
+</span></span><span style="display:flex;"><span>env ETCD_LISTEN_CLIENT_URLS=&#34;http://192.168.101.101:2379&#34;
+</span></span><span style="display:flex;"><span>env ETCD_ADVERTISE_CLIENT_URLS=&#34;http://192.168.101.101:2379&#34;
+</span></span><span style="display:flex;"><span>env ETCD_NAME=&#34;etcd-01&#34;
+</span></span></code></pre></div><p>By including all these environment variables in the override file, we&rsquo;re able to keep the Upstart script itself very clean and minimal. If you need to make changes to the configuration, then you edit the override file and just restart the service. Without the override file, all these parameters would have to be specified on the <code>etcd</code> command line itself, which has the following effects:</p>
+<ul>
+<li>You can&rsquo;t use the same Upstart script on multiple systems, since the script contains configuration data specific to a particular node (like the hostname and IP addresses).</li>
+<li>The Upstart script becomes unnecessarily complex and harder to debug and/or troubleshoot.</li>
+</ul>
+<p>Moving the environment variables into the override file solves both these problems. Machine-specific override files can be supplied for each system and used with a single, consistent Upstart script.</p>
+<p>If you&rsquo;re not really familiar with etcd, the environment variables defined in the override file deserve a bit of explanation. In this configuration, etcd is using <em>static discovery</em> to build the cluster. In other words, you (the user) are explicitly providing the hostnames and/or IP addresses of all of the members of the cluster (specified in the <code>ETCD_INITIAL_CLUSTER</code> variable). As described <a href="https://github.com/coreos/etcd/blob/master/Documentation/clustering.md">here</a>, the <code>ETCD_INITIAL_*</code> variables are <em>only</em> used on the first run of etcd; they will be ignored on subsequent runs. This allows you to easily bootstrap an etcd cluster, if you know the IP addresses that will be used in advance. (By the way, <a href="https://www.youtube.com/watch?v=duUTk8xxGbU">this video on bootstrapping etcd</a> is great&mdash;highly recommended.) Naturally, the IP addresses specified in the override file for all the etcd nodes need to be correct.</p>
+<p>If you choose not to use Upstart and just launch <code>etcd</code> manually, then you&rsquo;ll either need to a) manually define the appropriate environment variables, or b) specify those configuration parameters on the command line you use to launch <code>etcd</code>.</p>
+<p>Assuming that you&rsquo;ve chosen to use Upstart and have correctly configured the override file on each system that will be part of the cluster, you can then start etcd with a simple <code>sudo initctl start etcd</code>. Some error messages will be logged in the log file (<code>/var/log/etcd.log</code>) until all three nodes come online, but once all three nodes (as specified in the <code>ETCD_INITIAL_CLUSTER</code> variable) are up and running etcd will be running as expected.</p>
+<p>You can verify the operation of etcd by running a command like <code>etcdctl member list</code>, which will return a list of the members of the etcd cluster. Congratulations, you&rsquo;ve just turned up an etcd 2.0 cluster!</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>You can find the Upstart script, machine-specific override files, a provisioning script, and a Vagrantfile for replicating a three-node etcd 2.0 cluster on Ubuntu 14.04 in the &ldquo;etcd-2.0&rdquo; directory of <a href="https://github.com/scottslowe/learning-tools">my learning-tools GitHub repository</a>. It was tested with Vagrant 1.7.2, the VMware plugin for Vagrant, and Fusion 6.0.5. It should work on VMware Workstation, but I haven&rsquo;t tested it there. (Feedback is welcome.)</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/etcd">etcd</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/04/06/plain-text-productivity-experiment/">The Plain Text Productivity Experiment</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/04/19/running-etcd-backed-docker-swarm-cluster/">Running an etcd-Backed Docker Swarm Cluster</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f15%2frunning-etcd-20-cluster%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f15%2frunning-etcd-20-cluster%2f&text=Running%20an%20etcd%202.0%20Cluster%20on%20Ubuntu%2014.04" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f04%2f15%2frunning-etcd-20-cluster%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/02/05/vagrant-coreos-etcd-fleet-docker/">Using Vagrant with CoreOS, etcd, fleet, and Docker</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2015/03/06/running-own-docker-swarm-cluster/">Running a Small Docker Swarm Cluster</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2015/02/10/using-docker-with-vagrant/">Using Docker with Vagrant</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

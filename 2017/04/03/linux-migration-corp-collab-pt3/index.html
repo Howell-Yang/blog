@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Corporate Collaboration, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Corporate Collaboration, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Corporate Collaboration, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/04/03/linux-migration-corp-collab-pt3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Corporate Collaboration, Part 3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1275 words (estimated 6 minutes to read)</span>
+  <p>In discussing support for corporate communication and collaboration systems as part of my Linux migration, I&rsquo;ve so far covered e-mail in <a href="/2017/03/21/linux-migration-corp-collab-pt1/">part 1</a> and calendaring in <a href="/2017/03/27/linux-migration-corp-collab-pt2/">part 2</a>. In this post, I&rsquo;m going to discuss the last few remaining aspects of corporate collaboration: instant messaging/chat, meetings and teleconferences, and document sharing.</p>
+<h2 id="teleconferences-and-meetings">Teleconferences and meetings</h2>
+<p>The topic of teleconferences and meetings is closely related to calendaring&mdash;it&rsquo;s often necessary to access your calendar or others&rsquo; calendars when coordinating meetings or teleconferences&mdash;so I encourage you to read <a href="/2017/03/27/linux-migration-corp-collab-pt2/">part 2</a> to get a better feel for the  challenges around calendaring/scheduling. All the same challenges from that post apply here. GNOME Calendar, although it offers basic Exchange Web Services (EWS) support, does not support meeting invitations, looking up attendees, free/busy information, etc. This makes it completely unusable for setting up meetings. Evolution provides the backend support that GNOME Calendar uses but may be better suited as a frontend; I haven&rsquo;t tested this functionality so I don&rsquo;t know. This <a href="https://github.com/Ericsson/exchangecalendar">EWS provider for Lightning</a> <em>does</em> support free/busy information, inviting attendees, etc., so it may be a good option (I&rsquo;m still testing it).</p>
+<p>The second aspect of teleconferences/meetings is the actual conduct of the meeting itself. Hosting calls/meetings isn&rsquo;t a large part of my day, although attending them is (pretty typical in a corporate environment of any size). Here&rsquo;s what I&rsquo;ve encountered so far:</p>
+<ul>
+<li>WebEx&rsquo;s browser-based interface seems to work reasonably well in Firefox (as a meeting attendee). As far as I know, there is no native WebEx client for Linux. I haven&rsquo;t tested computer audio with WebEx; I&rsquo;ve only dialed in (or had it call me).</li>
+<li>GoToMeeting and its variants don&rsquo;t run on Linux at all.</li>
+<li>Skype for Business (S4B)&mdash;formerly Lync&mdash;is especially challenging, given that there is no native Linux client for S4B. There is <a href="https://tel.red/linux.php">a third-party S4B client</a> from a small company called tel.red. My limited experience with the voice side of this product is that voice quality was decent, but entering digits/codes didn&rsquo;t work&mdash;thus joining an S4B meeting was impossible since you couldn&rsquo;t enter the conference code. More on this third-party S4B client in the next section.</li>
+</ul>
+<h2 id="instant-messagingchat">Instant messaging/chat</h2>
+<p>From this particular perspective, how effective you are as a Linux user will greatly depend on your company&rsquo;s IM/chat options. If your employer uses IRC, you&rsquo;re golden&mdash;there&rsquo;s a plethora of IRC clients out there (I finally settled on <a href="https://hexchat.github.io/">HexChat</a>). If your employer uses XMPP for IM/chat, then you&rsquo;re again golden: <a href="https://pidgin.im/">Pidgin</a> has great support for XMPP (and a wide variety of other protocols). If your employer uses <a href="https://slack.com/">Slack</a>, you&rsquo;re still golden; Slack has a Linux client that (in my experience so far) works just fine.</p>
+<p>If, on the other hand, your employer has selected Skype for Business (S4B)&mdash;as mine has&mdash;then the options aren&rsquo;t so plentiful:</p>
+<ul>
+<li>There&rsquo;s no official client for Skype for Business (S4B) for Linux. So, one way or another, you <em>will</em> be using a third-party client.</li>
+<li>I mentioned in the previous section <a href="https://tel.red/linux.php">the Linux client for S4B from tel.red</a>. (The client is called Sky or Sky Linux.) My testing with Sky has been less than stellar, unfortunately. I&rsquo;ve encountered search bugs that make it impossible to look up folks from the corporate directory, which means that if the user isn&rsquo;t already in your contacts list then you can&rsquo;t chat with them. (I&rsquo;ve opened a support case with tel.red, and I&rsquo;ll update this post with more information once it&rsquo;s available.)</li>
+<li>Pidgin has <a href="http://sipe.sourceforge.net/">a SIPE plugin</a> that interoperates with Office 365/S4B. Originally, I thought that there was no way to search for contacts (&ldquo;buddies&rdquo; on Pidgin parlance) with the SIPE plugin, but an astute reader showed me that it is, in fact, possible (go to the Accounts menu, select the SIPE (or &ldquo;Office Communicator&rdquo;) account name, and look for &ldquo;Contact search&hellip;&rdquo;).</li>
+</ul>
+<p>My employer uses both S4B as well as Slack (and some other internal tools that are specific to my employer), so it&rsquo;s a mixed bag. I&rsquo;m using the Sky Linux client as well as the SIPE plugin for Pidgin to try to address the S4B side, and running the Slack client to address the Slack side.</p>
+<h2 id="document-formats">Document formats</h2>
+<p>A vast majority of companies out there use Microsoft Office as their standard productivity suite, and therefore rely heavily on the Office document formats. For most use cases, <a href="https://www.libreoffice.org/">LibreOffice</a> works well enough that exchanging documents with other users is pretty seamless. It will begin to break down as the documents grow more and more complex, so keep that in mind. This appears to be especially prominent with complex PowerPoint presentations. Given that today&rsquo;s corporate world tends to use PowerPoint for everything, keep this in mind.</p>
+<p>Note that there are a few other options out there besides LibreOffice (like its forerunner, OpenOffice), but LibreOffice seems to be where the Linux community has converged.</p>
+<h2 id="document-sharing">Document sharing</h2>
+<p>Clearly, there are plenty of document sharing services out there. From a personal perspective&mdash;because very few corporations of which I know use this service&mdash;<a href="https://www.dropbox.com/">Dropbox</a> works acceptably under Linux. The UI integration is far weaker on <a href="https://getfedora.org/">Fedora</a> with GNOME than under <a href="http://www.ubuntu.com/">Ubuntu</a> with Unity, but the underlying sync service works acceptably either way.</p>
+<p>From a corporate perspective, a lot will depend on what solution your employer uses. Based on what I&rsquo;ve shared with readers so far, it should come as no surprise to learn that my employer selected <a href="https://onedrive.live.com/about/en-us/business/">OneDrive for Business</a> (OD4B) as the preferred corporate document sharing service. It should further come as no surprise to learn that there is <em>no</em> Linux client for OD4B.</p>
+<p>Fortunately, not all is lost. There is a sync service called <a href="https://www.odrive.com/">ODrive</a> that allows you to tap into OD4B from Linux, using their Linux Sync Agent. Using ODrive to access OD4B from Linux does actually work (I&rsquo;m using it), but it&rsquo;s not without its limitations:</p>
+<ul>
+<li>No GUI whatsoever&mdash;everything is CLI-driven.</li>
+<li>Sync isn&rsquo;t as &ldquo;automatic&rdquo; as you might like; you need to refresh directories for new OD4B files to show up, and then you must manually sync them to your local Linux system. (New files created locally will automatically sync to OD4B.)</li>
+<li>ODrive&rsquo;s free tier does have a few other limitations (can&rsquo;t unsync a file once it&rsquo;s synced, no support for encryption, no support for multiple mount points).</li>
+</ul>
+<p>One nice thing about ODrive is that it also allows you to access other document sharing services that corporations may typically use&mdash;like <a href="https://www.google.com/drive/">Google Drive</a> or <a href="https://www.box.com/">Box</a>. Finally, you&rsquo;re able to access <em>all</em> these services at the same time, which is kind of handy.</p>
+<p>ODrive is an interesting solution that I&rsquo;ll be discussing more in the future, so keep an eye out for a more in-depth discussion of ODrive.</p>
+<h2 id="summary">Summary</h2>
+<p>This wraps-up the series on corporate collaboration and communication using Linux. As you can see from reading the posts, some areas are far easier to solve than others, and a lot depends on the corporate solution being used on the backend. I suspect that a great majority of organizations out there are heavily reliant on Microsoft technologies (Exchange, Office, etc.), so using Linux in such environments <em>might</em> be a bit challenging depending on your job role. If your employer has gone &ldquo;all in&rdquo; on Office 365 and related services/offerings <em>and</em> you need to often host meetings and calls, then using Linux as your primary desktop OS is probably going to mean keeping a Windows VM running as well. If your employer is also leveraging some other technologies <em>or</em> meetings/calendaring isn&rsquo;t quite as important, then you may be in better shape to adopt Linux as your primary desktop OS. As always, readers should evaluate their situation based on their specific needs and make the decision that is right for them, whether that means Windows, OS X, or Linux.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/telephony">Telephony</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/29/easily-finding-latest-coreos-ami-id/">Easily Finding the Latest CoreOS AMI ID</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/04/07/technology-short-take-81/">Technology Short Take 81</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f03%2flinux-migration-corp-collab-pt3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f03%2flinux-migration-corp-collab-pt3%2f&text=The%20Linux%20Migration%3a%20Corporate%20Collaboration%2c%20Part%203" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f03%2flinux-migration-corp-collab-pt3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2017/03/27/linux-migration-corp-collab-pt2/">The Linux Migration: Corporate Collaboration, Part 2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2017/03/22/linux-migration-other-users-stories-pt4/">The Linux Migration: Other Users&#39; Stories, Part 4</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

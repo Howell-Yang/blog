@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Cyberduck and Interarchy Revisited - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Cyberduck and Interarchy Revisited - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Cyberduck and Interarchy Revisited - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/03/31/cyberduck-and-interarchy-revisited/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Cyberduck and Interarchy Revisited</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;287 words (estimated 2 minutes to read)</span>
+  <p>At the start of 2007, I wrote a <a href="/2007/01/22/mac-ftpsftp-clients/">pair</a> of <a href="/2007/01/27/quick-follow-up-on-mac-ftpsftp-clients/">articles</a> on Mac FTP/SFTP clients, lamenting the performance of the open source <a href="http://cyberduck.ch/">Cyberduck</a> application and eventually settling on <a href="http://www.nolobe.com/interarchy/">Interarchy</a> as my replacement product.</p>
+<p>Quite a bit has happened since that time, and I now find myself in a bit of a quandary. Cyberduck has replaced the underlying file transfer engine to dramatically improve overall throughput, and Interarchy has &ldquo;refined&rdquo; the user interface to make it look more Mac-like. Unfortunately, in the process, Interarchy has become downright ugly. I don&rsquo;t like the ugly chiclet buttons in Leopard&rsquo;s Finder, I don&rsquo;t like them in Safari, and I don&rsquo;t like them in Interarchy, either. I very much prefer &ldquo;old school&rdquo; color icons in the toolbars.</p>
+<p>Given that the new Interarchy interface was really bugging me&mdash;the Finder, at least, is still usable when you turn off the sidebar and close the toolbar&mdash;I thought I&rsquo;d try Cyberduck again. Simple, one-file performance tests showed that Cyberduck, with the option to transfer files via SCP enabled, was coming much closer to matching Interarchy&rsquo;s performance; Interarchy remained in the lead for raw performance, however. I figured that I could live with the performance degradation for most tasks, and started trying to use Cyberduck whenever possible.</p>
+<p>Until tonight, that was. I needed to transfer a large number of smaller files up to one of my web sites, and Cyberduck simply dragged. I guess it&rsquo;s the method whereby Cyberduck manages connections that slowed down the process, since it appeared that it checked the connection to the server for each file it was transferring. In any case, I&rsquo;ve found that it looks like I&rsquo;ll just have to suffer through Interarchy&rsquo;s new look; the alternative is just too slow.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/03/26/netapp-omnigraffle-stencils/">NetApp OmniGraffle Stencils</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/03/31/only-thin-provisioned-in-the-beginning/">Only Thin Provisioned in the Beginning</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f31%2fcyberduck-and-interarchy-revisited%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f31%2fcyberduck-and-interarchy-revisited%2f&text=Cyberduck%20and%20Interarchy%20Revisited" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f31%2fcyberduck-and-interarchy-revisited%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/12/13/application-specific-vpns/">Application-Specific VPNs</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2008/02/04/clearing-the-dns-cache-in-leopard/">Clearing the DNS Cache in Leopard</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2008/01/02/mac-rdp-client-wishlist/">Mac RDP Client Wishlist</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

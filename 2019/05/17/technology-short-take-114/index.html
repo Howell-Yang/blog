@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 114 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 114 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 114 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/05/17/technology-short-take-114/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 114</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;723 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #114! There will be a longer gap than usual before the next Tech Short Take (more details to come on Monday), but in the meantime here&rsquo;s some articles and links to feed your technical appetite. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Courtesy of Tigera, Alex Pollitt shares <a href="https://www.tigera.io/blog/when-linux-conntrack-is-no-longer-your-friend/">some guidelines on when Linux <code>conntrack</code> is no longer your friend</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Apparently Dell&rsquo;s new docking stations <a href="https://blogs.gnome.org/hughsie/2019/05/02/updating-the-firmware-on-new-dell-docks/">support firmware updates via Linux</a>. Nice!</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Michael Allen published an article on <a href="https://www.blackhillsinfosec.com/how-to-weaponize-the-yubikey/">weaponizing the Yubikey</a>. It&rsquo;s an interesting read, although I&rsquo;m not sure about the usefulness or practicality of the technique he describes.</li>
+<li>This is <a href="https://d4stiny.github.io/Remote-Code-Execution-on-most-Dell-computers/">a pretty detailed write-up of a remote code execution vulnerability prsent on most Dell computers</a> (courtesy of Dell SupportAssist). I&rsquo;m thankful that Bill Demirkapi followed a responsible disclosure policy.</li>
+<li>Here&rsquo;s a summary of <a href="https://blog.packagecloud.io/eng/2018/02/21/attacks-against-secure-apt-repositories/">attacks against GPG-signed APT repositories</a>. The &ldquo;TL;DR&rdquo; on this one is simple: <em>always serve your APT repositories over TLS.</em></li>
+<li>Since we&rsquo;re on a bit of a security kick this time around, then <a href="https://www.hytrust.com/news-item/hytrust-offers-free-container-security-in-expanded-security-solution-for-hybrid-clouds/">the recent announcement by HyTrust of HyTrust CloudControl 6.0</a> seems appropriate to include. There&rsquo;s some interesting new functionality found in this release, including support for/integration with Kubernetes.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li><a href="https://medium.com/@mrbobbytables/kubernetes-day-2-operations-authn-authz-with-oidc-and-a-little-help-from-keycloak-de4ea1bdbbe">This article</a> by Bob Killen provides a good foundation of information on understanding Kubernetes authentication (AuthN) and authorization (AuthZ; implemented via RBAC).</li>
+<li>For folks that might be a bit newer to the Kubernetes community, <a href="https://www.infoq.com/articles/kubernetes-effect">this InfoQ article</a> provides a fairly thorough introduction to Kubernetes concepts and building blocks. More advanced users won&rsquo;t find much useful, so if you&rsquo;ve already mastered some of the basics I wouldn&rsquo;t bother spending time reading it. This isn&rsquo;t a knock against the article, just a frank observation about its usefulness to varying experience levels.</li>
+<li>I included this link on <a href="https://openai.com/blog/scaling-kubernetes-to-2500-nodes/">scaling Kubernetes to 2,500 nodes</a> in <a href="/2018/02/09/technology-short-take-94/">TST 94</a>, but wanted to include it again here. If you are like me, your knowledge of Kubernetes has grown progressively since last February, and some of the recommendations made here may make more sense now in the context of the additional knowledge you&rsquo;ve acquired.</li>
+<li>Andy Chou <a href="https://faastjs.org/blog/2019/05/02/introducting-faastjs">introduces faast.js</a>, a new project to make serverless functions super-easy to use.</li>
+<li>Cody De Arkland spent some time with Pulumi and has an article on <a href="https://www.thehumblelab.com/homelab-vpn-and-aws-with-pulumi/">setting up a VPN between his home lab and AWS using Pulumi</a>.</li>
+<li>Speaking of Pulumi, Kyle Galbraith wrote up <a href="https://blog.kylegalbraith.com/2018/12/21/how-pulumi-compares-to-terraform-for-infrastructure-as-code/">a comparison of Pulumi and Terraform for infrastructure as code</a>.</li>
+<li>Richard Bejarano <a href="https://blog.bejarano.io/container-misconceptions.html">rants a bit about container misconceptions</a>.</li>
+<li>The CNCF blog has a great article written by an Alibaba software engineer (Xingyu Chen) on <a href="https://www.cncf.io/blog/2019/05/09/performance-optimization-of-etcd-in-web-scale-data-scenario/">some performance optimizations</a> for etcd that have been contributed back to the open source community.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>This article has good information on <a href="https://systemd.io/TEMPORARY_DIRECTORIES.html">safely using <code>/tmp</code> and <code>/var/tmp</code></a> on systemd-powered Linux distributions.</li>
+<li>Cindy Sridharan has a good article on <a href="https://medium.com/@copyconstruct/health-checks-in-distributed-systems-aa8a0e8c1672">health checks and graceful degradation in distributed systems</a>. This is a slightly older article (August 2018), but an informative one (to me, at least). The article explains a few orchestration concepts (like liveness probes and readiness probes in Kubernetes), but mostly focuses on the need for fine-grained health checks in applications.</li>
+<li>Microsoft recently <a href="https://code.visualstudio.com/blogs/2019/05/02/remote-development">introduced</a> some new remote development extensions for Visual Studio Code. These look interesting, but be aware that they are not licensed with an open source license. Additionally, the wording of the license for these extensions has caused some consternation (at least, among the folks I follow on Twitter). I&rsquo;ll leave it to readers to come to their own conclusions.</li>
+<li>Sinny Kumari shares some information on <a href="https://sinny.io/2019/05/13/running-fedora-coreos-nightly-iso-and-qcow2-images-in-libvirt/">running Fedora CoreOS on libvirt</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Cormac Hogan walks through <a href="https://cormachogan.com/2019/05/09/portworx-stork-and-container-volume-snapshots/">using Portworx and STORK on vSphere for container volume snapshots</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>I don&rsquo;t normally post a lot of EUC (end-user computing) content, but this time around I have two articles that popped onto my radar. First, there&rsquo;s Johan Van Amersfoort who discusses <a href="https://vhojan.nl/mastering-voodoo-building-linux-vdi-for-deep-learning-workloads-part-1/">building Linux VDI for deep learning workloads</a> (looks like this may be the first in a series, so if this is of interest to you be sure to keep an eye on his site). The second article is by Rob Beekmans examining <a href="https://robbeekmans.net/euc/desktops-platforms-to-deploy-on-the-choice-is-yours/">several virtual desktop platforms</a> available to customers/users.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Sometimes I&rsquo;ll include productivity-related stuff in this section. Here&rsquo;s an article I found recently on <a href="https://zapier.com/blog/flowtime-technique/">a variation of the Pomodoro technique called FlowTime</a>.</li>
+</ul>
+<p>OK, that&rsquo;s all for now. As always, feel free to provide any feedback <a href="https://twitter.com/scott_lowe">via Twitter</a>. Have a great weekend!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/pulumi">Pulumi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/05/11/linux-migration-preparing-for-the-migration/">The Linux Migration: Preparing for the Migration</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/05/21/blogging-break/">Blogging Break</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f05%2f17%2ftechnology-short-take-114%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f05%2f17%2ftechnology-short-take-114%2f&text=Technology%20Short%20Take%20114" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f05%2f17%2ftechnology-short-take-114%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2019/01/11/technology-short-take-109/">Technology Short Take 109</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2018/10/05/technology-short-take-105/">Technology Short Take 105</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

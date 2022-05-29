@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing KVM and Open vSwitch on Ubuntu - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing KVM and Open vSwitch on Ubuntu - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing KVM and Open vSwitch on Ubuntu - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/08/17/installing-kvm-and-open-vswitch-on-ubuntu/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing KVM and Open vSwitch on Ubuntu</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1006 words (estimated 5 minutes to read)</span>
+  <p>This is the first of a number of posts in which I&rsquo;ll be discussing Ubuntu Linux, KVM, and the Open vSwitch (OVS). I hope that you find the posts helpful.</p>
+<p>Let me start this post by providing this disclaimer: I&rsquo;m still very early in the learning curve with KVM and OVS, so I can&rsquo;t promise you that this post will be absolutely perfect. It is, however, a pretty decent starting point. I&rsquo;ve gone through this process several times, and there is only one sticking point that I haven&rsquo;t yet resolved (which I&rsquo;ll describe later on).</p>
+<p>I&rsquo;m going to assume that you are reasonably familiar with Ubuntu, as that&rsquo;s the platform I&rsquo;m using for all my testing (specifically, Ubuntu Server 12.04 LTS with a 64-bit kernel). I&rsquo;m also assuming that you are prefacing all these commands with <code>sudo</code> or that you&rsquo;ve attained root privileges via the method of your choice.</p>
+<p>We&rsquo;ll start this process by ensuring that our Ubuntu installation is up-to-date:</p>
+<pre><code>apt-get update &amp;&amp; apt-get dist-upgrade
+</code></pre>
+<p>In my case, this brought me up to Ubuntu 12.04.1, running the 3.2.0-29 kernel.</p>
+<p>Next, we&rsquo;ll install KVM and a couple associated packages:</p>
+<pre><code>apt-get install kvm libvirt-bin virtinst
+</code></pre>
+<p>This command will install KVM, libvirt, a couple of command-line utilities, and a whole bunch of other required packages.</p>
+<p>Next, to prepare the system for the installation of OVS, we&rsquo;ll remove the default libvirt bridge (named <code>virbr0</code>). This ensures that the bridge compatibility portion of OVS can load without any potential conflicts:</p>
+<pre><code>virsh net-destroy default
+virsh net-autostart --disable default
+</code></pre>
+<p>At this point, because we aren&rsquo;t using the default Linux bridge, we can remove the ebtables package using the following command. <em>(Note: I am not 100% sure that this step is necessary, but almost all of the guides I followed included this step. If anyone has more information, please let me know in the comments.)</em></p>
+<pre><code>aptitude purge ebtables
+</code></pre>
+<p>You&rsquo;re now ready to install OVS (this should be all on one line; I&rsquo;ve added a line breaks&mdash;noted by a backslash&mdash;for readability):</p>
+<pre><code>apt-get install openvswitch-controller openvswitch-brcompat \
+openvswitch-switch openvswitch-datapath-source
+</code></pre>
+<p>This command installs the various OVS components and&mdash;as with KVM&mdash;a large number of required packages. Depending on the speed of your Internet connection, you might want to go get a cup of coffee.</p>
+<p>Once the OVS packages are installed, we&rsquo;ll need to enable bridge compatibility mode for OVS. To enable bridge compatibility mode, edit <code>/etc/default/openvswitch-switch</code> and change this line:</p>
+<pre><code>#BRCOMPAT=no
+</code></pre>
+<p>Change it by removing the hash mark (uncommenting it) and specifying yes, like this:</p>
+<pre><code>BRCOMPAT=yes
+</code></pre>
+<p>At this point, you can try starting OVS with <code>service openvswitch-switch start</code>, but you might get an error about a module being in the wrong format or not built for your kernel. If you removed the default libvirt bridge (<code>virbr0</code>) using the <code>virsh</code> commands earlier, then you <em>should</em> be OK, but if you get an error about the module being in the wrong format go ahead and run this command to build and install the necessary module:</p>
+<pre><code>module-assistant auto-install openvswitch-datapath
+</code></pre>
+<p>Once this process finishes, let&rsquo;s go ahead and reboot. After the system reboots and comes back up, check the status of KVM and OVS with the following commands.</p>
+<p>To check KVM, use this command:</p>
+<pre><code>virsh -c qemu:///system list
+</code></pre>
+<p>This will return a list of running VMs (which is probably empty on your system).</p>
+<p>To check OVS, first use this command to see if the kernel modules loaded properly:</p>
+<pre><code>lsmod | grep brcom
+</code></pre>
+<p>This should return an entry containing <code>brcompat_mod</code> and <code>openvswitch_mod</code>. Follow that with this command:</p>
+<pre><code>service openvswitch-switch status
+</code></pre>
+<p>The output should show several OVS processes in the running state.</p>
+<p>Assuming that everything is working properly, you should now be able to run <code>ovs-vsctl show</code> and get a very simple response that basically indicates that OVS has no configuration.</p>
+<p>We are now nearing the end; only a couple of steps remain. The last thing we need to do is create an OVS bridge that will allow KVM guests to communicate with the outside world. This is a two-step process. The first step is to use <code>ovs-vsctl</code> to create a bridge and add at least one physical interface:</p>
+<pre><code>ovs-vsctl add-br br0
+ovs-vsctl add-port br0 eth0
+</code></pre>
+<p>Obviously, you&rsquo;ll want to substitute the correct physical interface for <code>eth0</code> in the commands above. After running these commands, then running <code>ovs-vsctl show</code> will return something like this:</p>
+<pre><code>bc12c8d2-6900-42dd-9c1c-30e8ecb99a1b
+    Bridge &quot;br0&quot;
+        Port &quot;eth0&quot;
+            Interface &quot;eth0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+    ovs_version: &quot;1.4.0+build0&quot;
+</code></pre>
+<p>The final step is to edit <code>/etc/network/interfaces</code> so that the bridge comes up automatically. This is where I ran into problems. No matter what I tried, I could get the bridge to come up, but the physical interface attached to the bridge would not come up automatically. I could easily manually bring it up (using <code>ifconfig eth0 up</code>), but it wouldn&rsquo;t come up automatically on boot. If anyone has any ideas, I&rsquo;m open to them.</p>
+<p>In any case, here&rsquo;s the <code>/etc/network/interfaces</code> that I used (IP addresses and domain names have been changed to protect the innocent):</p>
+<pre><code># This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto eth0
+iface eth0 inet manual
+
+# The OVS bridge interface
+auto br0
+iface br0 inet static
+address 192.168.1.200
+network 192.168.1.0
+netmask 255.255.255.0
+broadcast 192.168.1.255
+gateway 192.168.1.1
+bridge_ports eth0
+bridge_fd 9
+bridge_hello 2
+bridge_maxage 12
+bridge_stp off
+dns-search mydomain.local
+dns-nameservers 192.168.1.1 192.168.1.2
+</code></pre>
+<p>I tried several different variations for <code>eth0</code>, but none of them would bring the interface up automatically when I boot the system. Everything else seems to work just fine, so I&rsquo;ve settled with manually bringing the interface up after a reboot until I figure out how to fix it. Suggestions are welcome.</p>
+<p>In a future post (very soon), I&rsquo;ll be talking more about OVS and what it looks like when you boot up KVM guests on OVS, so stay tuned for that.</p>
+<p>As always, thoughts, corrections, questions, and clarifications are welcome&mdash;just speak up in the comments below. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/08/07/so-long-status-quo-again/">So Long, Status Quo (Again)</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/08/21/my-vmworld-2012-schedule/">My VMworld 2012 Schedule</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f17%2finstalling-kvm-and-open-vswitch-on-ubuntu%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f17%2finstalling-kvm-and-open-vswitch-on-ubuntu%2f&text=Installing%20KVM%20and%20Open%20vSwitch%20on%20Ubuntu" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f17%2finstalling-kvm-and-open-vswitch-on-ubuntu%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/04/22/setting-up-a-ccna-study-environment-with-gns3-and-vmware/">Setting up a CCNA Study Environment with GNS3 and VMware</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2012/07/06/open-source-tools-and-projects-i-should-learn/">Open Source Tools and Projects I Should Learn</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2012/06/28/installing-xcp-xapi-on-ubuntu-server-12-04-lts/">Installing XCP-XAPI on Ubuntu Server 12.04 LTS</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

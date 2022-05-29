@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/02/13/blades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Three, IBM Traditional Expansion Options</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1045 words (estimated 5 minutes to read)</span>
+  <p><em>By Aaron Delp</em></p>
+<p><em>UPDATE: I have made some corrections to the 10GB and iSCSI sections based on feedback. Thank you!</em></p>
+<p>Welcome to part 3 of my series on blades and virtualization. I will be breaking the expansion articles into four parts: traditional IBM options, traditional HP options, virtualized IBM options, and virtualized HP options. By &ldquo;virtualized options&rdquo; I mean the IBM and HP blade I/O virtualization solutions (like IBM Blade Open Fabric Manager and HP VirtualConnect), not a server configuration that will run virtualization. Today, we will be covering IBM traditional options.</p>
+<p>Let&rsquo;s take a second to revisit a portion of our hardware standard we have been using for the power series and make a few additional notes. Here is the spec again:</p>
+<ul>
+<li>A minimum of 32 GB memory  As many have commented and my own studies have shown; memory is usually the first limiting factor. The more memory you can install in the system, the better.</li>
+<li>2 on-board NICs + some combination of expansion cards (FC, iSCSI, NIC, 10Gb)</li>
+<li>2 x 146GB, 10k SAS drives (except the IBM HS21XM blades which only support one HD)</li>
+</ul>
+<p>I will get into the expansion options in a second, but let me start with the memory since this is the area most people are concerned about. With the recent addition of 8GB DIMMS to the HS21XM product line, the HS21XM now supports 64GB of memory. The IBM 3550 supports a max of 32GB and even the IBM 3650 only supports 48GB. If memory is your concern, the IBM blade is actually the BEST fit for virtualization.</p>
+<p>Another area of concern is the fact that the HS21XM only supports one hard disk. If you would like to boot the OS from a local disk, this can be an issue. IBM also offers the dual solid state drive in a RAID-1 configuration but both platters are mounted in the same enclosure so if you lose one, you need to replace them both. We know because it happened to one of our customers. In the end that doesn&rsquo;t make sense either. I don&rsquo;t see the actual ESX build as critical in a VirtualCenter environment so I usually don&rsquo;t worry about it excessively.</p>
+<p>The expansion cards can get a little tricky depending on the configuration. For virtualization I see four possible options to fill out the blades to meet our needs. They are FC, 10Gb, iSCSI, and NFS. We will fill any remaining expansion with Ethernet 1GB ports to provide as much connectivity as possible.</p>
+<p><img src="/public/img/bladecenterh-rear.jpg" alt="BladeCenter H rear view"></p>
+<p>Above is a picture of an IBM BladeCenter H Chassis from the rear, highlighting the expansion bays. Bays 1 and 2 connect to the onboard Ethernet so the switches must be Ethernet compatible. Bays 3 and 4 connect to the first expansion card on the IBM Blade, often called the CFFv form factor. The v in CFFv stands for vertical meaning this card will talk to the vertical expansion switches.</p>
+<p>Bays 7-10 often cause much confusion. They are positioned horizontally in the chassis and connect to any CFFh (h for horizontal, get it?) card on a blade. A number of different switches can be inserted into these bays. The first one is the easiest one, the 10Gb switch. The first switch would go in bay 7. The second would go in bay 9. Each switch would connect to a port on the dual port 10Gb card.</p>
+<p>UPDATE: You can also do a 4x10GB configuration by adding 2 more 10GB switches in Bays 8 and 10. You will then need the 4 port 10GB card instead of the 2 port 10Gb card. I have updated the charts below to reflect the MAXIMUM number of connections. You can of course go with less.</p>
+<p>The second option for Bays 7-10 involves something called the MSIM (Multi-Switch Interconnect Module). This option will allow the FC, iSCSI, and NFS configurations. The MSIM is an adapter that divides the High Speed Bays into Bays 7 to 10 shown above. To take advantage of all four bays, two MSIMs divide both High Speed Bays and you will need a four port CFFh card to map to all four bays.</p>
+<p>The above information yields the following switch and blade expansion card combinations:</p>
+<p><strong>Blade with 10Gb &amp; 4 NICs (no MSIMs &ndash; 4 NICs and 4 10Gb per blade):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Expansion option</th>
+<th>Connects to/Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dual on-board NICs</td>
+<td>Bays 1 and 2 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port CFFv NIC</td>
+<td>Bays 3 and 4 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port 10Gb card</td>
+<td>Bays 7 thru 10 (10Gb switches)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blade with 10Gb, FC &amp; Eth (no MSIMs &ndash; 2 NICs, 2 FC and 4 10Gb per blade):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Expansion option</th>
+<th>Connects to/Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dual on-board NICs</td>
+<td>Bays 1 and 2 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port CFFv FC card</td>
+<td>Bays 3 and 4 (FC switches)</td>
+</tr>
+<tr>
+<td>Dual-port 10Gb card</td>
+<td>Bays 7 thru 10 (10Gb switches)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blade with FC Option #1 (requires 2 MSIMs &ndash; 2 FC and 6 NICs per blade):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Expansion option</th>
+<th>Connects to/Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dual on-board NICs</td>
+<td>Bays 1 and 2 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port CFFv FC card</td>
+<td>Bays 3 and 4 (FC switches)</td>
+</tr>
+<tr>
+<td>Quad-port CFFh NIC</td>
+<td>Bays 7 thru 10 (Ethernet switches)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blade with FC Option #2 (requires 2 MSIMs &ndash; 2 FC and 6 NICs per blade):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Expansion option</th>
+<th>Connects to/Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dual on-board NICs</td>
+<td>Bays 1 and 2 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port CFFv NIC</td>
+<td>Bays 3 and 4 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual NIC/dual FC CFFh card</td>
+<td>Bays 7,9 (Ethernet) &amp; 8,10 (FC switches)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blade with NFS or software iSCSI (2 MSIMs &ndash; 8 NICs per blade):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Expansion option</th>
+<th>Connects to/Requires</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dual on-board NICs</td>
+<td>Bays 1 and 2 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Dual-port CFFv NIC</td>
+<td>Bays 3 and 4 (Ethernet switches)</td>
+</tr>
+<tr>
+<td>Quad-port CFFh NIC</td>
+<td>Bays 7 thru 10 (Ethernet switches)</td>
+</tr>
+</tbody>
+</table>
+<p>You will notice that only 3 of the 4 options are given. Hardware-based iSCSI is missing. That is because IBM has a hole in their portfolio. The IBM iSCSI card is the older form factor that if used on an HS21XM blade it doesn&rsquo;t allow any other card. So, you end up with 2 NICs and 2 iSCSI. This isn&rsquo;t acceptable and isn&rsquo;t a valid option.</p>
+<p>So what do you think? I believe that any of the above configurations will suit virtualization nicely given a proper design. I look forward to your thoughts as we continue on to the next article, HP traditional expansion.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bladevrack">bladevrack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ibm">IBM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/guestpost">GuestPost</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/02/12/new-virtualization-wiki/">New Virtualization Wiki</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/02/14/hyperspaces-updated/">Hyperspaces Updated</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f13%2fblades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f13%2fblades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options%2f&text=Blades%20and%20Virtualization%20Aren%27t%20Mutually%20Exclusive%3a%20Part%20Three%2c%20IBM%20Traditional%20Expansion%20Options" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f13%2fblades-and-virtualization-arent-mutually-exclusive-part-three-ibm-traditional-expansion-options%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/02/07/blades-and-virtualization-arent-mutually-exclusive-part-two-ibm-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part Two, IBM Power Sizing</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2009/02/04/blades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing/">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2008/11/03/p2v-with-ibm-blades/">P2V With IBM Blades</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

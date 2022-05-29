@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Making Manual Edits to Dynamic DNS Zones - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Making Manual Edits to Dynamic DNS Zones - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Making Manual Edits to Dynamic DNS Zones - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/09/07/making-manual-edits-to-dynamic-dns-zones/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Making Manual Edits to Dynamic DNS Zones</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;258 words (estimated 2 minutes to read)</span>
+  <p>This is one of those posts that is as much for my own benefit as it is for others. For a few weeks now, I&rsquo;ve been working on a dynamic DNS setup for my home/home office network involving BIND and the ISC DHCP daemon running on a pair of OpenBSD virtual machines. I finally got it to work (thanks in no small part to <a href="http://www.bsdguides.org/guides/openbsd/networking/dynamic_dns_dhcp.php">this article</a> and <a href="http://www.ops.ietf.org/dns/dynupd/secure-ddns-howto.html">this how-to post</a>) and then found that I needed to make some manual edits to the DNS zones.</p>
+<p>After a great deal of stumbling and fumbling, I found an obscure reference to a need to use <code>rndc</code> when making manual edits. After some testing, I learned that the &ldquo;correct&rdquo; way to make manual edits is as follows:</p>
+<ol>
+<li>
+<p>Halt changes to the dynamic DNS zone with the command <code>rndc freeze &lt;zone name&gt;</code>.</p>
+</li>
+<li>
+<p>Make the manual edits to the zone file, being sure to increment the zone serial number.</p>
+</li>
+<li>
+<p>Use the command <code>named-checkzone &lt;zone name&gt; &lt;zone file&gt;</code> to verify the syntax in the zone file.</p>
+</li>
+<li>
+<p>Allow changes to the dynamic DNS zone with the command <code>rndc thaw &lt;zone name&gt;</code>.</p>
+</li>
+</ol>
+<p>If you monitor the appropriate log files (on my system I had to monitor <code>/var/log/daemon</code>), you&rsquo;ll see zone transfers take place to any secondary name servers, a strong indicator that the change has successfully been accepted and propagated.</p>
+<p>A very simple task, I know, but hopefully this post will help me next time I need to do this same task again and hopefully it will help someone else out there in the same situation.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/09/02/vmworld-2010-general-session-day-4/">VMworld 2010 General Session, Day 4</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/09/08/vsphere-41-links/">vSphere 4.1 Links</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f07%2fmaking-manual-edits-to-dynamic-dns-zones%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f07%2fmaking-manual-edits-to-dynamic-dns-zones%2f&text=Making%20Manual%20Edits%20to%20Dynamic%20DNS%20Zones" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f07%2fmaking-manual-edits-to-dynamic-dns-zones%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/08/31/vlan-interfaces-with-openbsd-41/">VLAN Interfaces with OpenBSD 4.1</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2007/03/16/remotely-exploitable-flaw-in-openbsd-found/">Remotely Exploitable Flaw in OpenBSD Found</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2006/10/06/openbsd-as-a-simple-nat-router/">OpenBSD as a Simple NAT Router</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

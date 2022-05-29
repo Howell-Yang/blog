@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #5 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/04/04/virtualization-short-take-5/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #5</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;451 words (estimated 3 minutes to read)</span>
+  <p>Here&rsquo;s some thoughts on a variety of links that passed by me over the last couple of weeks. (Yes, I&rsquo;ve been a bit lax in getting another Short Take published. Sorry.)</p>
+<ul>
+<li>
+<p>Colleague Colin McNamara has written a good article about some of the <a href="http://www.colinmcnamara.com/2008/03/15/challenges-integrating-vmware-into-cisco-networks">challenges in integrating</a> VMware into a Cisco network. He highlights something I&rsquo;ve been saying for a while: a VMware implementation is more than just server virtualization; it affects servers, storage, networking, and security, and a good implementation requires addressing all of these areas as well as <a href="http://searchservervirtualization.techtarget.com/tip/0,289483,sid94_gci1303371,00.html">addressing things like staff organization and change management</a>.</p>
+</li>
+<li>
+<p>Christofer Hoff started a good conversation about the <a href="http://rationalsecurity.typepad.com/blog/2008/03/performance-imp.html">performance implications of virtual security initiatives</a>. It&rsquo;s something many people are probably overlooking. After all, have you stopped to consider the additional processing power that running security products either inside the VMs, or at the hypervisor level, or both, will take from your CPU pool? I have a feeling that those high server consolidation ratios may not be so applicable when you factor in the security overhead.</p>
+</li>
+<li>
+<p>Per <a href="http://www.yellow-bricks.com/2008/04/02/support-for-microsoft-cluster-server-mscs-in-35-update/">Duncan</a> and <a href="http://blogs.sun.com/thomasweyell_en/entry/support_for_microsoft_cluster_in">Thomas</a>, ESX Server 3.5 Update 1 will provide support for Microsoft Cluster Server (MSCS). Duncan also <a href="http://www.yellow-bricks.com/2008/03/31/new-isosbuilds-coming-up-for-3i-35-virtualcenter/">broke the news</a> about the incorrect links for the update ESX ISOs.</p>
+</li>
+<li>
+<p>Massimo has initiated a discussion, <a href="http://blogs.vmware.com/vmtn/2008/03/the-philosophy.html">picked up</a> by the VMTN Blog, about the <a href="http://it20.info/blogs/main/archive/2008/03/26/102.aspx">current state of high availability</a>. I&rsquo;m not a clustering expert, although I&rsquo;ve setup my share of Microsoft clusters for SQL Server and Exchange Server. In my simplistic view, MSCS and VMware HA don&rsquo;t really solve the same problem; MSCS is stateful (or mostly so), and VMware HA is stateless. Would you rather have a reasonably stateful failover for your Exchange Server, or would you rather have it rebooted? Stateful failover is not something that can be easily achieved in the virtual world right now, unless you bring MSCS into the virtual world; that, in turn, creates its own set of challenges. Continuous Availability, as <a href="/2007/09/13/vmworld-2007-day-3-keynote-liveblog/">demonstrated at VMworld 2007</a>, will bring stateful failover to the virtual infrastructure.</p>
+</li>
+<li>
+<p>In the comments for the VMTN post about clustering vs. HA, reader &ldquo;Matt&rdquo; questions the use of NFS for VMware. In <a href="http://universitytechnology.blogspot.com/2008/03/vmware-over-nfs-vs-fiberchannel-fc.html">his linked article</a>, he asks for a good white paper on why NFS instead of Fibre Channel. Well, I can&rsquo;t provide a good white paper, but I can provide a couple useful articles, like <a href="/2007/09/21/nfs-for-vmware-storage/">this one</a> or <a href="/2008/01/14/proving-vmware-over-nfs/">this one</a>, to get started.</p>
+</li>
+<li>
+<p>David Marshall at VMblog has published parts <a href="http://vmblog.com/archive/2008/03/28/best-practices-for-securing-virtual-networks-part-one-of-three.aspx">one</a>, <a href="http://vmblog.com/archive/2008/03/27/best-practices-for-securing-virtual-networks-part-two-of-three.aspx">two</a>, and <a href="http://vmblog.com/archive/2008/03/28/best-practices-for-securing-virtual-networks-part-three-of-three.aspx">three</a> of a three-part series on best practices for securing virtual networks. I haven&rsquo;t had the opportunity to finish reading all three articles yet, but it looks like it&rsquo;s avoided becoming an advertisement for Reflex Security.</p>
+</li>
+</ul>
+<p>Well, that wraps it up this time. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/04/03/articles-in-progress/">Articles in Progress</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/04/09/keeping-thin-vmdks-using-netapp-snaprestore/">Keeping Thin VMDKs Using NetApp SnapRestore</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f04%2fvirtualization-short-take-5%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f04%2fvirtualization-short-take-5%2f&text=Virtualization%20Short%20Take%20%235" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f04%2fvirtualization-short-take-5%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/10/06/various-odds-and-ends/">Various Odds and Ends</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2007/10/05/troubleshooting-vmware-ha-isolation-response/">Troubleshooting VMware HA Isolation Response</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2007/03/18/various-vmware-links/">Various VMware Links</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

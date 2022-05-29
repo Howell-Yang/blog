@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #53 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #53 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #53 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/08/25/technology-short-take-53/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #53</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1331 words (estimated 7 minutes to read)</span>
+  <p>Welcome to Technology Short Take #53. In this post, I&rsquo;ve gathered links to posts about networking, virtualization, Docker, containers, Linux, configuration management, and all kinds of other cool stuff. Here&rsquo;s hoping you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Anthony Spiteri, who works at an Australian service provider running NSX, has some in-depth articles discussing vShield Edge and NSX Edge (<a href="http://anthonyspiteri.net/nsx-edge-vs-vshield-edge-part-1-feature-and-performance-matrix/">part 1</a>, <a href="http://anthonyspiteri.net/nsx-edge-vs-vshield-edge-part-2-high-availability/">part 2</a>, <a href="http://anthonyspiteri.net/nsx-edge-vs-vshield-edge-part-3-ipsec-and-l2-vpn/">part 3</a>, and <a href="http://anthonyspiteri.net/nsx-edge-vs-vshield-edge-part-4-generating-self-signed-ssl-certificates/">part 4</a>). Anthony discusses features supported by both, how they handle high availability, how VPN services work, and how to handle certificates. It looks like very useful information for anyone supporting NSX in their environment.</li>
+<li>Here&rsquo;s a nice article on <a href="https://eos.arista.com/my-journey-with-ansible-and-arista/">using Ansible with Arista EOS</a>. This isn&rsquo;t something I&rsquo;ve had the chance to do just yet (currently needing to focus my efforts on Ansible with Linux/Cumulus Linux), but it certainly seems relatively straightforward. Without having done this myself, it seems like I&rsquo;d prefer to run <code>pyeapi</code> on the switches directly, so the Ansible configuration remains clean (instead of having to use a local connection for the switches but SSH for everything else). Of course, I&rsquo;m sure there are trade-offs each way.</li>
+<li>I think I&rsquo;ve mentioned this before (it&rsquo;s really hard to keep track of which articles you&rsquo;ve included in a Technology Short Take already, so apologies if this is a duplicate), but this article provides a good overview of <a href="https://telecomoccasionally.wordpress.com/2015/01/11/nsx-for-vsphere-vxlan-control-plane-modes-explained/">the VXLAN control plane modes in VMware NSX</a>.</li>
+<li>I think Brent Salisbury is going to be the &ldquo;star&rdquo; of this Technology Short Take, since I&rsquo;ve got several articles of his that I want to reference. (Keep up the great work, Brent!) If you haven&rsquo;t read Brent&rsquo;s article on <a href="http://networkstatic.net/building-network-tools-using-docker/">building network tools with Docker</a>, I <em>highly</em> recommend it. The first part of this article does a great job of describing some of the key forces that are shaping the networking industry. Brent is one of the folks who clearly sees that the role of a networking professional is changing, and is working to help others through the transition.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around, but I&rsquo;ll keep my eyes peeled for content to include in future posts.</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>Josh Townsend discusses <a href="http://vmtoday.com/2015/05/vshield-endpoint-vsphere-6-0/">the use of vShield Endpoint with vSphere 6.0</a>, including addressing some questions around how the vCNS End of Availability/End of Support announcements.</li>
+<li>Roie Ben Haim, who works in professional services at VMware, has a <a href="http://www.routetocloud.com/2015/04/nsx-distributed-firewall-deep-dive/">deep dive on the NSX distributed firewall (DFW)</a>. I haven&rsquo;t had a chance to read it all, but it seems pretty comprehensive.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Here&rsquo;s a very practical post from Maish Saidel-Keesing (not that his other posts aren&rsquo;t practical!) on <a href="http://technodrone.blogspot.com/2015/06/downloading-all-sessions-from-openstack.html">downloading the videos from the OpenStack Summit</a>. Very useful if you (like me) couldn&rsquo;t make it to the last Summit in Vancouver.</li>
+<li>Having spent a bit of time using Docker Machine, I find it to be a very interesting tool. I don&rsquo;t see it replacing other tools (just like I don&rsquo;t necessarily see Linux containers replacing virtualization or bare metal), but I <em>do</em> think it&rsquo;s a nice complement to existing tools. If you&rsquo;re interested in learning more about Docker Machine, here&rsquo;s a couple of posts you might find useful. First, Nathan LeClaire has a <a href="http://blog.docker.com/2015/06/docker-machine-0-3-0-deep-dive/">Docker Machine 0.3.0 (latest version) deep dive</a> that is useful. Second, Brent Salisbury has a write-up on <a href="http://networkstatic.net/docker-machine-provisioning-on-aws/">using Docker Machine with AWS</a> that provides a useful real-world example of how it might be used.</li>
+<li>Cody Bunch has <a href="http://blog.codybunch.com/2015/08/03/OpenStack-Heat-Specify-Boot-Order/">a short (but sweet) post</a> on how using <code>depends_on</code> in OpenStack Heat templates allows you to specify the start-up order of instances created by that template. Simple, but effective.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>This is probably more &ldquo;just for fun&rdquo; than for anything else, but it&rsquo;s worth including as well. Jessie Frazelle has done some pretty amazing things with Docker containers (she did a session&mdash;which I unfortunately missed&mdash;on using Docker containers for desktop Linux apps that I heard was fabulous), and in this post she talks about <a href="https://blog.jessfraz.com/post/routing-traffic-through-tor-docker-container/">how to route traffic through a Tor Docker container</a>.</li>
+<li>For an alternative to the &ldquo;Rah rah Docker is the best tool EVAR&rdquo; mentality, I invite you to peruse this article on <a href="http://sirupsen.com/production-docker/">why Docker is not yet succeeding widely in production</a>. Simon&rsquo;s article is, I think, a well-balanced view of the positives <em>and</em> the negatives that coming from using Docker at scale in production.</li>
+<li>Jason Anderson has a nice post on <a href="http://jason.digitalinertia.net/exposing-docker-containers-with-sr-iov/">using SR-IOV (Single Root I/O Virtualization) to expose Docker containers</a>. The gist is that you can use SR-IOV to supply each Docker container with its own &ldquo;dedicated&rdquo; NIC (which is really just a virtual function on the actual physical NIC). This is pretty cool, but does have some limitations; specifically, the number of virtual functions supported on the physical NIC (in Jason&rsquo;s article, the limit was 63). Thus, this approach may only be viable for a limited number of Docker containers on a container host. It&rsquo;s also worth noting that you have to &ldquo;wrap&rdquo; the Docker command using a tool like <code>pipework</code> in order to make this work. (It would be interesting to see/know if the upcoming Docker Network will address this sort of use case.)</li>
+<li>Cloud Foundry is undergoing some changes to evolve along with the rapid rise of containerization; <a href="https://www.cloudfoundry.org/garden-and-runc/">this post</a> on Garden (CF&rsquo;s containerization layer) and runC (the new container runtime from the Open Container Initiative) provides some details on the direction the project is headed.</li>
+<li>CenturyLink Labs has <a href="https://labs.ctl.io/what-to-inspect-when-youre-inspecting/">a good article</a> on effectively using <code>docker inspect</code> to gather information about Docker images and running containers.</li>
+<li>Check out <a href="http://vkohli13.blogspot.in/2015/08/vcloud-air-cli-as-docker-container.html">this packaging of the vCloud Air CLI as a Docker container</a>. Handy.</li>
+<li>This article by Michael Gugino provides some details on <a href="http://funwithlinux.net/2015/08/openvswitch-gre-over-ipv6-on-centos-7/">getting GRE tunnels over IPv6 with Open vSwitch running on CentOS 7</a>. Thanks Mike!</li>
+<li>Neowin has a quick recap of <a href="http://www.neowin.net/news/whats-new-in-windows-server-2016-technical-preview-3">what&rsquo;s new in Windows Server 2016 Technical Preview 3</a>, if you&rsquo;re interested in seeing what&rsquo;s happening on that front.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>John Griffith has a blog post (slightly older, from December 2014) on <a href="https://griffithscorner.wordpress.com/2014/12/08/openstack-live-migration-with-cinder-backed-instances/">using OpenStack live migration with Cinder-backed instances</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>VMware unveiled AppCatalyst at DockerCon 2015, and some AppCatalyst materials have started to pop up here and there. First, here&rsquo;s <a href="https://dantehranian.wordpress.com/2015/06/30/vmware-appcatalyst-first-impressions/">a &ldquo;first impressions&rdquo; post</a> on AppCatalyst that also provides a few additional links to other AppCatalyst posts. Once you&rsquo;re done reading that, have a look at this post on <a href="http://bl.ocks.org/jrrickard/a2724c9ede44de0186cc">running lattice.cf on AppCatalyst</a> for a more in-depth look at using AppCatalyst.</li>
+<li>Ryan Kelly has a great article on <a href="http://www.vmtocloud.com/how-to-use-vagrant-to-deploy-containers-on-vsphere-with-vmware-photon/">using VMware vSphere, Vagrant with the vSphere provider, and VMware Photon together</a> to enable developers to leverage the infrastructure you already have in place. This is, IMHO, a <em>great</em> way to start enabling developers to use tools that may feel comfortable to them while still taking advantage of the investments your organization has already made in a VMware vSphere-based environment. The only thing I&rsquo;d like to see on top of this is using Docker Machine and/or Docker Compose along with this setup&hellip;hmmm&hellip;might be something I need to explore!</li>
+<li>Mark Russinovich, CTO for Microsoft Azure, has <a href="http://azure.microsoft.com/blog/2015/08/17/containers-docker-windows-and-trends/">a long but informative article on the union of Docker containers, Windows Server, and Hyper-V</a>. The article provides a good overview of containers, reminds folks that although Windows Server will support the Docker APIs and the Docker client you won&rsquo;t be able to run Linux containers directly on Windows (or vice versa), and reiterates the importance of a hypervisor with containers in mixed trust zones.</li>
+<li>Seems like William Lam has been rocking-and-rolling on generating content. (Kudos to you, William!) Here&rsquo;s <a href="http://www.virtuallyghetto.com/2015/08/vmware-tools-for-nested-esxi-updated-to-v1-2.html">an update on the nested ESXi VMware Tools Fling</a>, a post on <a href="http://www.virtuallyghetto.com/2015/08/new-html5-embedded-host-client-for-esxi.html">the new HTML5 Embedded Host Client</a>, and <a href="http://www.virtuallyghetto.com/2015/08/instant-clone-powercli-cmdlets-best-practices-troubleshooting.html">a list of some best practices/troubleshooting tips for the new Instant Clone PowerCLI cmdlets</a>. Very useful stuff!</li>
+<li>Ben Armstrong, aka &ldquo;Virtual PC Guy,&rdquo; has decided to start sharing some of his scripts and code samples on GitHub (published with the MIT license). Nice! You can read about the move to GitHub and get more details in <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/07/20/virtual-pc-guy-on-github.aspx">his post here</a>.</li>
+</ul>
+<p>That&rsquo;s it for this time around. As always, I&rsquo;d love to hear from you. Feel free <a href="https://twitter.com/scott_lowe">to hit me up on Twitter</a>. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/08/14/spousetivities-vmworld-2015/">Spousetivities at VMworld 2015</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/08/31/vmworld2015-day1-general-session/">VMworld 2015 Day 1 General Session Liveblog</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f08%2f25%2ftechnology-short-take-53%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f08%2f25%2ftechnology-short-take-53%2f&text=Technology%20Short%20Take%20%2353" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f08%2f25%2ftechnology-short-take-53%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2015/07/14/technology-short-take-52/">Technology Short Take #52</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2015/05/22/technology-short-take-51/">Technology Short Take #51</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

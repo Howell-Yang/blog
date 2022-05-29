@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #65 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #65 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #65 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/04/22/technology-short-take-65/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #65</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1128 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #65! As usual, I gathered an odd collection of links and articles from around the web on key data center technologies and trends. I hope you find something useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Michael Ryom has <a href="https://michaelryom.dk/log-insight-netflow-awesome/#.VvsWNV9OLCQ">a nice (but short) article</a> on using Log Insight along with a NetFlow proxy to help provide more detailed visibility into traffic flows between VMs on NSX logical networks.</li>
+<li>Brent Salisbury has <a href="http://networkstatic.net/gobgp-control-plane-evolving-software-networking/">an article on GoBGP</a>, a Go-based BGP implementation. BGP seems to be emerging as an early front-runner for a standards-based control plane for software networking. Couple something like GoBGP with IPVLAN L3 (see <a href="http://networkstatic.net/configuring-macvlan-ipvlan-linux-networking/">Brent&rsquo;s article</a>) and you&rsquo;ve got a new model for your data center network.</li>
+<li>Andy Hill has an article on <a href="https://virtualandy.wordpress.com/2016/03/31/f5-rolling-deployments-with-ansible/">doing rolling F5 upgrades using Ansible</a>.</li>
+<li>Filip Verloy has an article that discusses <a href="https://filipv.net/2016/04/17/fortinet-integration-with-nuage-networks-sdn/">the integration between Nuage Networks and Fortinet</a>.</li>
+<li>This should probably go in the &ldquo;Cloud Computing/Cloud Management&rdquo; section, but the boundaries between areas are getting more and more blurry every day. (Thankfully, due to LASIK my vision is sharper than ever.) In any case, here&rsquo;s a post by Marcos Hernandex on <a href="http://blogs.vmware.com/openstack/neutron-subnet-pools/">the use of subnet pools in OpenStack</a>. Although Marcos&rsquo; post discusses them in conjunction with NSX, they&rsquo;re really a Neutron feature and should work with just about any Neutron plugin. In any case, I can see some very useful cases for subnet pools, particularly in conjunction with tenant networks that use &ldquo;routable&rdquo; IPs and don&rsquo;t use source NAT on the logical router(s).</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Nothing this time around. Maybe next time!</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>Bruce Schneier <a href="https://www.schneier.com/blog/archives/2016/03/lawful_hacking_.html">asks the question</a> that society has yet to answer (and may be afraid to answer): &ldquo;&hellip;do we prioritize security over surveillance, or do we sacrifice security for surveillance?&rdquo;</li>
+<li>Mike Foley recently published a two-part series on two factor authentication (2FA) for vSphere (<a href="http://www.yelof.com/2016/04/01/two-factor-authentication-for-vsphere-rsa-securid/">part 1 is here</a>; <a href="http://www.yelof.com/2016/04/01/two-factor-authentication-for-vsphere-rsa-securid-part-2/">part 2 is here</a>). Now you have no excuses for not using 2FA with your vSphere environment.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>VMware&rsquo;s Cloud-Native Apps group recently released v0.8 of Photon Controller, and along with that comes <a href="http://blogs.vmware.com/cloudnative/photon-platform-bosh-cpi/">a BOSH CPI for Photon Controller</a>. If you&rsquo;re interested in taking Photon Controller for a spin, William Lam is in the midst of a series on Photon Controller; go have a look at <a href="http://www.virtuallyghetto.com/2016/04/test-driving-vmware-photon-controller-part-1-installation.html">part 1</a>, <a href="http://www.virtuallyghetto.com/2016/04/test-driving-vmware-photon-controller-part-2-deploying-first-vm.html">part 2</a>, and <a href="http://www.virtuallyghetto.com/2016/04/test-driving-vmware-photon-controller-part-3a-deploying-kubernetes.html">part 3</a> (that&rsquo;s all he&rsquo;s written so far; more are planned).</li>
+<li>And while we are still on the topic of Photon Controller&hellip;Kris Thieler has a nice article on <a href="https://blog.inkysea.com/2016/04/20/less-than-16gb-k8-photon-controller-no-problem/">how to reduce the resource requirements</a> needed to run Kubernetes on Photon Platform.</li>
+<li>There&rsquo;s been a fair amount of noise recently about running OpenStack on Kubernetes (<a href="https://tectonic.com/blog/openstack-and-kubernetes-come-together.html">here&rsquo;s one example</a>). If I&rsquo;m understanding it correctly, it&rsquo;s just running the OpenStack management components (API servers, message queues, databases, etc.) on Kubernetes, which does make a fair amount of sense. If it&rsquo;s something more than that&hellip;well, I&rsquo;d need to ponder that a bit to make sure I grok it.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Although it&rsquo;s not feature-complete (by a long shot), VMware recently open-sourced version 0.1 of vSphere Integrated Containers (VIC). Björn Bundert has a brief article on <a href="http://blog.think-v.com/?p=3649">installing VIC 0.1 via VMware Photon OS TP2</a>.</li>
+<li><a href="http://blog.dustinkirkland.com/2016/03/ubuntu-on-windows.html">An Ubuntu userspace and Bash shell running on Windows</a>, eh? My my, how the world has changed.</li>
+<li>And for further evidence that the Windows world is drastically changing, note <a href="https://blogs.technet.microsoft.com/virtualization/2016/04/01/build-2016-container-announcements-hyper-v-containers-and-windows-10-and-powershell-for-docker/">this article</a> by Taylor Brown announcing Hyper-V Containers on Windows 10 and PowerShell for Docker. This <em>almost</em> entices me to try Windows again. Almost&mdash;but not quite.</li>
+<li>Oh, speaking of PowerShell (well, sort of), Luc Dekens has <a href="http://www.lucd.info/2016/04/22/closer-look-get-esxcli-v2/">an update on the <code>Get-EsxCLI</code> cmdlet</a>. If this is one you use in your scripts, you may want to read Luc&rsquo;s article.</li>
+<li>It looks like there may be some &ldquo;gotchas&rdquo; when it comes to using user namespaces with Docker and also needing access to the Docker socket. Phil Estes explores the problem in <a href="https://integratedcode.us/2016/04/08/user-namespaces-sharing-the-docker-unix-socket/">this post</a>.</li>
+<li>I haven&rsquo;t messed with Puppet for a while, but here&rsquo;s a good post by Gareth Rushgrove on <a href="https://puppet.com/blog/using-puppet-coreos-rkt-flannel-and-etcd">using Puppet with CoreOS</a>. It&rsquo;s worth a read if these two technologies fall into your wheelhouse.</li>
+<li>Want to run Docker Swarm with IPv6? Shannon McFarland has you covered in <a href="http://www.debug-all.com/?p=148">this post</a>.</li>
+<li>One of the potential drawbacks of the &ldquo;single process per container&rdquo; model that Docker advocates is that it can have some unintended side effects. <a href="http://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html">This Yelp Engineering blog post</a> talks about one of these unintended side effects (processes running as PID 1 are treated differently by the Linux kernel). The blog post also discusses a potential fix for the issue, in the form of the &ldquo;dumb-init&rdquo; process.</li>
+<li>Ubuntu 16.04 is out (get it <a href="http://releases.ubuntu.com/xenial/">here</a>), marking the first LTS release from Canonical that leverages systemd as its init system. Interestingly, despite a convergence on systemd across the major Linux distributions (RHEL/CentOS and Debian were already on systemd), I&rsquo;m finding some noticeable differences in the systemd implementations. The more things change, the more they stay the same.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Here&rsquo;s an article I found interesting. GitHub recently changed their storage architecture, using a Git-based solution called DGit. More details are available in <a href="http://githubengineering.com/introducing-dgit/">this GitHub Engineering blog post</a>.</li>
+<li>A reader pointed me to this article he wrote on <a href="http://packetpushers.net/multipathing-nfs4-1-kvm/">NFS v4.1 multipathing with KVM</a>. It&rsquo;s still pretty raw (the technology, not the article)&mdash;you have to patch and compile the kernel yourself&mdash;but it&rsquo;s an interesting look into where things are headed. As I told the reader/author (Martin Houry), I&rsquo;m looking forward to seeing this land in the mainstream kernel!</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>This one isn&rsquo;t quite virtualization, but isn&rsquo;t quite hardware either, so we&rsquo;ll throw it in here. A conversation with a very talented engineer at VMware drew me to <a href="https://blogs.vmware.com/virtualblocks/2015/12/15/evo-sddc-workload-domains/">this post on EVO SDDC workload domains</a>, published by Jason Lochhead.</li>
+<li>Frank Denneman has a nice post on <a href="http://frankdenneman.nl/2016/04/21/managing-your-virtual-datacenter-and-home-lab-with-a-mac/">using an OS X system to manage your vSphere environment</a>. There are some good tips in here. Psst, hey Frank: &ldquo;Mac&rdquo; is the hardware from Apple, &ldquo;MAC&rdquo; is an acronym that stands for Media Access Control (in networking circles, as in &ldquo;MAC address&rdquo;) or &ldquo;Mandatory Access Control&rdquo; (in security circles). Just sayin'.</li>
+<li>Jason Boche walks you through <a href="http://www.boche.net/blog/index.php/2016/04/04/vcenter-server-6-appliance-fsck-failed/">the steps needed to recover your VCSA 6 appliance</a> in the event an <code>fsck</code> (file system check) fails.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Somewhat (sort of) related to <a href="/2016/03/17/on-topic-of-lock-in/">my recent rant on lock-in</a>, <a href="http://www.theverge.com/2016/3/16/11242266/walt-mossberg-open-vs-closed-software-apple-os-x-google-android">here&rsquo;s Walt Mossberg weighing in</a> on the (to borrow <a href="http://www.it20.info/2016/03/the-incestuous-relations-among-containers-orchestration-tools/">a phrase from Massimo</a>) the &ldquo;incestuous&rdquo; relationship(s) between open and closed software in today&rsquo;s technology world. TL;DR: It&rsquo;s not as simple as it may seem at times, and there are often more important things on which technologists should be spending their time.</li>
+<li>If you&rsquo;re considering the AWS Certified Solution Architect Associate certification (I&rsquo;m exploring it, trying to decide), <a href="http://tekhead.it/blog/2016/03/aws-certified-solution-architect-associate-exam-prep-experience/">here&rsquo;s a write-up by Alex Galbraith</a> on his recent exam prep and exam experience.</li>
+</ul>
+<p>It&rsquo;s time to wrap up now, or I&rsquo;ll never get this thing published. Happy Friday everyone!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/photon">Photon</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/04/04/technology-short-take-64/">Technology Short Take #64</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/04/25/prayer-time-austin-summit/">Prayer Time at the Austin Summit</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f22%2ftechnology-short-take-65%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f22%2ftechnology-short-take-65%2f&text=Technology%20Short%20Take%20%2365" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f04%2f22%2ftechnology-short-take-65%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/12/11/technology-short-take-57/">Technology Short Take #57</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2015/08/25/technology-short-take-53/">Technology Short Take #53</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

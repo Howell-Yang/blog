@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>How I Build the Technology Short Takes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="How I Build the Technology Short Takes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="How I Build the Technology Short Takes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/01/23/how-i-build-the-technology-short-takes/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">How I Build the Technology Short Takes</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;799 words (estimated 4 minutes to read)</span>
+  <p>Shortly after I published <a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a>, a reader asked me on Twitter how I managed the information that goes into each Technology Short Take (TST) article. Although I&rsquo;ve blogged about my productivity setup before, <a href="/2010/05/02/my-current-getting-things-done-setup/">that post</a> is now over two years old and horribly out of date. Given that I need to post a more current description of my tools and workflow, I thought I&rsquo;d take a brief moment to answer the reader&rsquo;s question. Here&rsquo;s how I go about building the Technology Short Take articles.</p>
+<p>I&rsquo;ve mentioned before that I have three &ldquo;layers&rdquo; of tools: a consumption layer, an organization layer, and a creation layer. I&rsquo;ll break down the process according to these layers.</p>
+<h2 id="the-consumption-layer">The Consumption Layer</h2>
+<p>This is where I go about actually finding the content that gets pulled into a TST post. There&rsquo;s nothing terribly unique here; I have a collection of RSS feeds which I subscribe and I get content from people I follow on Twitter. I will also visit various Usenet newsgroups and certain IRC channels (only on <code>irc.freenode.net</code>) from time to time.</p>
+<p>If you&rsquo;re interested in seeing the RSS feeds to which I subscribe, here&rsquo;s <a href="/public/dl/current-rss-subscriptions.opml">an OPML list of all my subscriptions</a>.</p>
+<p>The majority of the content I consume is web-based, so when I find an article that I want to use in a TST post, I&rsquo;ll save that as a Safari web archive. I wish there was a more platform-independent method, but as yet I haven&rsquo;t found a good solution. Once I&rsquo;ve saved a page for future use, then we move into the organization layer.</p>
+<h2 id="the-organization-layer">The Organization Layer</h2>
+<p>As content is discovered via any of the various consumption layer tools, I then need to get that content &ldquo;sucked&rdquo; into my primary organization layer tool. I use a really, really fancy tool&mdash;it&rsquo;s called the file system.</p>
+<p>When I save a web page that I&rsquo;m planning on including in a TST article, I generally save it, by default, to the Desktop. I have a program named <a href="http://www.noodlesoft.com/hazel">Hazel</a> that watches the Desktop and Downloads folders for web archive files, and automatically moves them to a WebArchives folder. From there, I use a couple of saved Spotlight searches to identify newly-created web archives that don&rsquo;t have a source URL or don&rsquo;t have any OpenMeta tags assigned. For these newly-created web archives, I use the Spotlight comments field to store the source URL, and I use an application named <a href="http://hasseg.org/tagger/">Tagger</a> to assign OpenMeta tags.</p>
+<p>Once a web archive has its source URL and OpenMeta tags assigned, then I have a group of saved Spotlight searches the group files together by topic: virtualization, storage, OpenStack, Open vSwitch, etc. This makes it super easy for me to find web archives&mdash;or other files&mdash;related to a particular topic. All these saved searches are built on queries involving the OpenMeta tags.</p>
+<p>Content will remain here until either a) I use it in a TST article and no longer need it; or b) I use it in a TST article but feel it&rsquo;s worth keeping for future reference. I might keep content for quite a long time before I use it. Case in point: the Q-tools stuff from Dave Gray that eventually found its way into some of my VMUG presentations was something I found in 2009 (it was published in 2008).</p>
+<h2 id="the-creation-layer">The Creation Layer</h2>
+<p>After collecting content for a while, a scheduled, recurring <a href="http://www.omnigroup.com/applications/omnifocus/">OmniFocus</a> action pops up reminding me to write the next TST post. At this point, I go back to my organization layer tools (saved Spotlight searches and content folders) to pull out the various pieces of information that I want to include. I write the post in Markdown using <a href="http://macromates.com/">TextMate</a>, building off a skeleton template that has all the content headers already in place.</p>
+<p>Using the saved searches I described above, I&rsquo;ll search through my content to see what I want to include in the TST post. When an item is included in a TST blog post, I&rsquo;ll write my thoughts about the article or post, then grab the source URL from the Spotlight comments to make a hyperlink to the content. If the content is useful and informative, I might keep it around; otherwise, I&rsquo;ll generally delete the saved web archive or bookmark file. I repeat this process, going through all my saved content, until I feel that the TST post is sufficiently full of content.</p>
+<p>Then, because it&rsquo;s all written in Markdown, I convert the post to HTML and actually publish it to the site using the excellent <a href="http://red-sweater.com/marsedit/">MarsEdit</a> application. TextMate makes this incredibly easy with just a few keystrokes.</p>
+<p>And that&rsquo;s it! That&rsquo;s the &ldquo;mystery&rdquo; behind the Technology Short Take articles. Feel free to post any questions or thoughts you have about my workflow and tools in the comments below. Courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/01/22/using-mock-to-build-libvirt-1-0-1-rpms-for-centos-6-3/">Using Mock to Build Libvirt 1.0.1 RPMs for CentOS 6.3</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/01/25/new-year-new-challenges-new-opportunities/">New Year, New Challenges, New Opportunities</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f23%2fhow-i-build-the-technology-short-takes%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f23%2fhow-i-build-the-technology-short-takes%2f&text=How%20I%20Build%20the%20Technology%20Short%20Takes" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f23%2fhow-i-build-the-technology-short-takes%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/01/07/managing-information-flow/">Managing Information Flow</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/12/11/presentation-from-midwest-regional-vmug/">Presentation from Midwest Regional VMUG</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/12/05/posts-from-the-past-december-2012/">Posts From the Past, December 2012</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

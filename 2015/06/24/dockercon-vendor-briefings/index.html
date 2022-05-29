@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>DockerCon Vendor Briefings - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="DockerCon Vendor Briefings - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="DockerCon Vendor Briefings - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/06/24/dockercon-vendor-briefings/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">DockerCon Vendor Briefings</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;786 words (estimated 4 minutes to read)</span>
+  <p>At DockerCon 2015 in San Francisco, I had the opportunity to meet with a few vendors in the Docker ecosystem. Here are some notes from my vendor briefings.</p>
+<h2 id="stackengine">StackEngine</h2>
+<p><a href="http://stackengine.com">StackEngine</a> describes themselves as enterprise-grade container application management. They tout features like being able to compose Docker applications using a drag-and-drop interface, deploy containers across multiple hosts, and provide automation&mdash;all with the sort of controls that enterprise IT groups are seeking. That&rsquo;s all well and good, but the key problem in my mind is that these are features Docker is seeking for themselves. Docker Compose offers the ability to specify applications. True, there&rsquo;s no GUI (yet). Alas, StackEngine can translate their GUI application design into YAML, but it doesn&rsquo;t comply with Docker Compose. Thus, it ends up being more competitive than complimentary, in my opinion. Docker Swarm and the upcoming Docker Network address some of StackEngine&rsquo;s deployment functionality, and if Project Orca takes off as an official effort&mdash;well, let&rsquo;s just say I hope that StackEngine has more planned. This is not to say that StackEngine isn&rsquo;t a well-engineered solution offering real value; rather, this is to say that StackEngine appears to be, unfortunately, in the crosshairs for functionality Docker is aiming to provide themselves. VMware was criticized in years past for &ldquo;eating the ecosystem&rdquo;; it looks like we&rsquo;ll see some of the same here with Docker.</p>
+<h2 id="sumo-logic">Sumo Logic</h2>
+<p><a href="https://www.sumologic.com">Sumo Logic</a> is one of two SaaS offerings in the Docker ecosystem with whom I spoke this week at the conference. Both companies tout &ldquo;analytics&rdquo; and &ldquo;machine learning&rdquo; as key values of their offering. Sumo Logic strikes me as a SaaS version of Splunk or VMware Log Insight, perhaps with some additional analytics functionality and some extra integration with various SaaS platforms (like Salesforce) and IaaS platforms (like AWS). Their integration with these other SaaS and IaaS offerings gives them a bit of an advantage over other, similar competitors that can&rsquo;t offer this level of visibility into those services and platforms. If a deeper level of integration into these offerings and platforms is important to your business, then Sumo Logic may have an edge for you.</p>
+<h2 id="signalfx">SignalFx</h2>
+<p><a href="https://signalfx.com">SignalFx</a> is the second of the two analytics-focused SaaS offerings I encountered this week. Unlike Sumo Logic, SignalFx&rsquo;s key differentiator is real-time, in-stream data analytics, especially for metrics coming from instrumented, cloud-native applications. Log data is certainly important, but aggregating logs and letting users slice/dice/query that data isn&rsquo;t what SignalFx is really trying to do. Instead, they&rsquo;re focusing on companies building next-gen applications, providing a SaaS offering that will enable developers at these companies to build instrumentation into their next-gen apps and have the metrics from that instrumentation provide greater visibility into behaviors, trends, issues, etc. In other words, the real power of SignalFx comes when an organization wants to gain deeper real-time visibility into their applications <em>and</em> are willing to have their developers add instrumentation to make that happen. Thus, the &ldquo;sweet spot&rdquo; of the market for SignalFx are the companies where that can happen. If you&rsquo;re a shop with lots of COTS software, this isn&rsquo;t for you. However, if you&rsquo;re a shop where developers consume resources from a private cloud and need to support the apps you&rsquo;re writing and deploying, this might be an option to explore.</p>
+<h2 id="clusterhq">ClusterHQ</h2>
+<p><a href="https://clusterhq.com">ClusterHQ</a> is the company behind Flocker, which finally reached 1.0 status last week. ClusterHQ, along with a couple other companies, has been crucial in the formation of Docker Plugins. This makes sense, of course, because it benefits Flocker&mdash;which will be able to take advantage of the storage plugin endpoint to modify/customize/extend the behavior of Docker volumes. <em>(Side note: Docker Plugins are part of the experimental builds for now.)</em> My primary concern about ClusterHQ (and I shared this concern with them) is that the introduction of the storage plugin endpoint now, in some ways, renders Flocker obsolete. Big name storage companies&mdash;EMC, NetApp, HDS, HP, IBM, etc.&mdash;as well as any number of smaller, more nimble companies&mdash;like Pure, SolidFire, Nimble, Tintri, etc.&mdash;can just write their own storage volume plugins for Docker and be done with it. Why bother with ClusterHQ and Flocker? ClusterHQ thinks that offering a &ldquo;more stable API&rdquo; along with the ability to potentially integrate with other platforms later (thus hinting that ClusterHQ has more up their sleeve) is compelling enough to avoid this scenario. Time will tell.</p>
+<h2 id="skyport-systems">Skyport Systems</h2>
+<p>I also had a very brief conversation with Doug Gourlay and Nils Swart from <a href="https://www.skyportsystems.net">Skyport Systems</a>. They are doing something <em>very</em> interesting with regards to&mdash;to use their phrase&mdash;hyper-secured infrastructure. I won&rsquo;t go into great detail here, but I&rsquo;m looking forward to talking with them again to gain more details and a better understanding of what their solution looks like. Stay tuned for more.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2015">DockerCon2015</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/23/scaling-new-services/">Liveblog: Scaling New Services</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/06/25/vlan-trunking-cumulus-linux/">VLAN Trunking with Cumulus Linux</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f24%2fdockercon-vendor-briefings%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f24%2fdockercon-vendor-briefings%2f&text=DockerCon%20Vendor%20Briefings" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f24%2fdockercon-vendor-briefings%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/05/22/technology-short-take-51/">Technology Short Take #51</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2015/04/24/technology-short-take-50/">Technology Short Take #50</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

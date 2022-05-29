@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing VirtualBox 5.1 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing VirtualBox 5.1 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing VirtualBox 5.1 on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/02/07/installing-virtualbox-51-fedora-25/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing VirtualBox 5.1 on Fedora 25</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;494 words (estimated 3 minutes to read)</span>
+  <p>Last fall, I wrote <a href="/2016/09/28/why-now-using-virtualbox-with-vagrant/">a piece about why I had switched</a> to <a href="https://www.virtualbox.org/">VirtualBox</a> (from <a href="http://www.vmware.com/products/fusion.html">VMware Fusion</a>) for my Vagrant needs. As part of my switch to <a href="https://getfedora.org/">Fedora Linux</a> as my primary laptop OS, I revisited my choice of virtualization provider. I&rsquo;ll describe that re-assessment in a separate post; the &ldquo;TL;DR&rdquo; for this post is that I settled on VirtualBox. As it turns out, though, installing VirtualBox 5.1 on Fedora 25 isn&rsquo;t as straightforward as one might expect.</p>
+<p>After a number of attempts (using a test VM to iron out the &ldquo;best&rdquo; procedure), here&rsquo;s the process I found to be the most straightforward:</p>
+<ol>
+<li>
+<p>Run <code>dnf check-update</code> and <code>dnf upgrade</code> to pick up the latest packages. If a new kernel version is installed, reboot. (I know this sounds contrived, but I&rsquo;ve run into issues where some kernel-related packages aren&rsquo;t available for the kernel version you&rsquo;re actually running.)</p>
+</li>
+<li>
+<p>Install the <a href="https://rpmfusion.org/">RPMFusion</a> repos. You only really need the &ldquo;free&rdquo; repository, but you can install the &ldquo;nonfree&rdquo; as well if you like (it won&rsquo;t affect this process). I won&rsquo;t go through the process for how to do this; it&rsquo;s really well-documented on the RPMFusion web site and is pretty straightforward.</p>
+</li>
+<li>
+<p>Next, use <code>dnf</code> to install some prerequisite packages (note: On my installation of Fedora 25, almost all of these packages were <em>already</em> installed):</p>
+<pre><code> dnf install binutils gcc make patch libgomp glibc-headers glibc-devel
+</code></pre>
+</li>
+<li>
+<p>Now you&rsquo;re going to install some kernel-related packages. I&rsquo;m listing these separately because you want to pin the packages that get installed to the current kernel version you&rsquo;re actually running (this sidesteps that issue I mentioned where the available packages don&rsquo;t match the kernel version you&rsquo;re running). I would imagine you could combine these into a single command, if you really wanted to. Here&rsquo;s the additional packages:</p>
+<pre><code> dnf install &quot;kernel-devel-`uname -r`&quot;
+ dnf install &quot;kernel-headers-`uname -r`&quot;
+</code></pre>
+</li>
+<li>
+<p>Now install the &ldquo;akmods&rdquo; package using <code>dnf install akmods</code>. This will also install a number of dependencies.</p>
+</li>
+<li>
+<p>Finally, you&rsquo;re ready to install VirtualBox itself (note the case on these packages, they <em>are</em> case-sensitive):</p>
+<pre><code> dnf install VirtualBox akmod-VirtualBox
+</code></pre>
+<p>When this is complete, reboot your system to allow Linux to build and install the VirtualBox kernel modules it needs in order to run correctly. You may note that your next boot takes a bit longer; this is due to the kernel modules getting compiled and installed.</p>
+</li>
+</ol>
+<p>Note that a number of the articles I read on this topic recommended you install the &ldquo;dkms&rdquo; package (for dynamically rebuilding kernel modules when the kernel changes), but I found that to be counter-productive. For whatever reason, when you install the &ldquo;dkms&rdquo; package, Fedora also installs the debug symbols for the kernel sources. This messes up some paths, and then the kernel modules fail to build. A number of other tutorials recommended using the repository that VirtualBox maintains to distribute VirtualBox, but again I ran into problems with the kernel modules. Using the RPMFusion packages and &ldquo;akmods&rdquo; was the most straightforward method I found.</p>
+<p>I hope this helps!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/02/06/spousetivities-at-dockercon-2017/">Spousetivities at DockerCon 2017</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f07%2finstalling-virtualbox-51-fedora-25%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f07%2finstalling-virtualbox-51-fedora-25%2f&text=Installing%20VirtualBox%205.1%20on%20Fedora%2025" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f02%2f07%2finstalling-virtualbox-51-fedora-25%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/03/technology-short-take-77/">Technology Short Take #77</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2017/02/01/linux-migration-final-distro-selection/">The Linux Migration: Final Linux Distro Selection</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2017/01/18/apple-mbp-wifi-fedora/">Enabling an Apple MBP Wireless Adapter with Fedora 25</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

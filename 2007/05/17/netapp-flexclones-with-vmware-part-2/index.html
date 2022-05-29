@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>NetApp FlexClones with VMware, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="NetApp FlexClones with VMware, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="NetApp FlexClones with VMware, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/05/17/netapp-flexclones-with-vmware-part-2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">NetApp FlexClones with VMware, Part 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;653 words (estimated 4 minutes to read)</span>
+  <p><a href="/2007/05/15/netapp-flexclones-with-vmware-part-1/">Part 1</a> in our series on <a href="http://www.netapp.com/products/enterprise-software/storage-system-software/provisioning-volume-management/flexclone.html">NetApp FlexClones</a> and <a href="http://www.vmware.com/">VMware</a> discussed in greater detail some of the advantages of using FlexClones for VM provisioning. In that article, we saw that using FlexClones can greatly reduce both the storage required for new VMs as well as the time required to provision new VMs, especially when the storage needed by the VMs is large. Both of these advantages can be very compelling.</p>
+<p>However, in order to make an informed decision about whether we should use FlexClones we must also look at the disadvantages of this approach. In this part of the series, we&rsquo;ll take a look at some of those disadvantages.</p>
+<p>Just as there were two key advantages to using FlexClones, there are also two key disadvantages to using FlexClones:</p>
+<ul>
+<li>
+<p>First, the use of FlexClones (unless properly architected) may cause installations to bump up against the maximum number of LUN IDs available (255), or the maximum number of LUNs that may be opened concurrently by all virtual machines (256). (Both of those numbers were taken from the &ldquo;Configuration Maximums for VMware Infrastructure 3&rdquo; white paper, available <a href="http://www.vmware.com/pdf/vi3_301_201_config_max.pdf">here</a>.) Unless properly architected, this means that your installation could be limited to about 250 virtual machines. Note that there are ways around this limitation; see below.</p>
+</li>
+<li>
+<p>Second, there is currently no integration from either <a href="http://www.netapp.com/">Network Appliance</a> or VMware to help automate the process of using FlexClones for VM provisioning. As shown in my technical article on <a href="/2007/05/11/how-to-provision-vms-using-netapp-flexclones/">how to use FlexClones for VM provisioning</a>, there are a number of manual steps currently, and users seeking a greater level of automation must create their own scripts or hope that someone else already has written scripts they can re-use.</p>
+</li>
+</ul>
+<p>While these are the biggest disadvantages (in my opinion) there are also a number of other, smaller disadvantages as well:</p>
+<ul>
+<li>
+<p>Using FlexClones for VM provisioning blurs the operational responsibilities of the SAN administrators and the server administrators; SAN administrators are now responsible for provisioning new VMs via FlexClones.</p>
+</li>
+<li>
+<p>Using FlexClones for VM provisioning adds complexity to the solution, making it harder to troubleshoot and administer over time.</p>
+</li>
+<li>
+<p>Making the most of the FlexClone space-conserving functionality requires more specialized VM configuration, such as dedicated VMDKs for pagefiles/swap partitions on separate LUNs.</p>
+</li>
+</ul>
+<p>These limitations can really derail the use of FlexClones in larger deployments. Ironically, it&rsquo;s the larger deployments where the advantages of FlexClones are the most significant. In larger environments, there are typically dedicated SAN administrators and dedicated VMware/VI3 administrators. Introducing the use of FlexClones in this type of environment now begs the question: who&rsquo;s responsible for provisioning VMs?</p>
+<p>While some of these disadvantages are inherent in the solution, there is a workaround for one of them, and that&rsquo;s the maximum number of LUN IDs/LUNs. Because each FlexClone is a separate LUN with a separate LUN ID, your installation will be limited to about 250 LUNs. If you only place one VM per LUN, then you&rsquo;ll be limited to about 250 VMs. However, if we instead take the practice of placing multiple VMs&mdash;each of them prepared for cloning as described in my how-to article&mdash;then we can easily scale the number of VMs. For example, we could create a master VMFS datastore that had 10 VMs built and prepared for cloning, then deploy FlexClones for each group of 10 VMs that were needed. Using this technique, it would be reasonably easy to scale this solution to support 2,500 VMs (250 VMFS datastores with 10 VMs each). (Of course, 1,500 VMs is the configuration maximum for a single VirtualCenter management server.)</p>
+<p>In summary, the use of FlexClones for VMware environments has some very compelling advantages, and some very significant disadvantages. It will be up to each organization to weigh these pros and cons against the specifics of their company to determine which route to take. At least now you have some information upon which to base your decision.</p>
+<p>As always, I welcome any comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/05/15/resizing-disks-inside-guests/">Resizing Disks Inside Guests</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/05/21/lun-clones-vs-flexclones/">LUN Clones vs. FlexClones</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f17%2fnetapp-flexclones-with-vmware-part-2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f17%2fnetapp-flexclones-with-vmware-part-2%2f&text=NetApp%20FlexClones%20with%20VMware%2c%20Part%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f17%2fnetapp-flexclones-with-vmware-part-2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/05/15/netapp-flexclones-with-vmware-part-1/">NetApp FlexClones with VMware, Part 1</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2007/05/11/how-to-provision-vms-using-netapp-flexclones/">How to Provision VMs Using NetApp FlexClones</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

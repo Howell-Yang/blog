@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #55 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #55 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #55 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/10/22/technology-short-take-55/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #55</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1299 words (estimated 7 minutes to read)</span>
+  <p>Welcome to Technology Short Take #55! Here&rsquo;s hoping I&rsquo;ve managed to find something of value and interest to you in this latest collection of links and articles from around the web on networking, storage, virtualization, security, and other data center-related technologies. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>I recently came across Kuryr, an OpenStack project aimed at connecting Docker&rsquo;s libnetwork efforts to OpenStack Neutron. The end result, as I understand it, would be to allow <em>any</em> Neutron plugin to be able to provide container networking functionality to Docker via libnetwork. This makes sense to me, although I think that network virtualization products are still going to need to integrate directly with libnetwork so that they can be used in environments outside of OpenStack. If you&rsquo;re interested in getting more information on Kuryr, check out Gal Sagie&rsquo;s post <a href="https://galsagie.github.io/sdn/openstack/docker/kuryr/neutron/2015/08/24/kuryr-part1/">here</a> or read this follow-up post on <a href="http://galsagie.github.io/sdn/openstack/docker/kuryr/neutron/2015/10/10/kuryr-ovn/">using Kuryr and OVN</a> (Open Virtual Network) together.</li>
+<li>Drew Conry-Murray has a post up on the Packet Pushers blog talking about <a href="http://packetpushers.net/arista-eos-benefits-challenges/">the benefits and challenges of a single OS</a>; specifically, the benefits and challenges pertaining to Arista and EOS. Lots of companies like to tout the &ldquo;single OS&rdquo; banner, but there can be value in having specialized OSes custom-built for specific purposes.</li>
+<li>Here&rsquo;s an article that combines two of my favorite companies: Cumulus Networks and Ravello Systems. How so? The article shows you <a href="https://www.edge-cloud.net/2015/08/building-a-cumulus-networks-vx-cloud-lab-with-ravello-systems/">how to build a Cumulus VX lab on Ravello Systems</a>. Very nifty stuff.</li>
+<li>CloudBase Solutions recently <a href="http://www.cloudbase.it/open-vswitch-24-on-hyperv-part-1/">announced the beta availability of Open vSwitch (OVS) 2.4 on Hyper-V</a>&mdash;bringing VXLAN and STT support to Hyper-V and enabling interoperable tunneling between Hyper-V hosts and KVM hosts running OVS. A <a href="http://www.cloudbase.it/open-vswitch-24-on-hyperv-part-2/">follow-up blog post</a> talks about how to use OVS on Hyper-V outside of an OpenStack context.</li>
+<li>Lim Wei Chiang has a nice write-up on <a href="http://kacangisnuts.com/2013/12/vsphere-distributed-virtual-switch-packet-analysis-using-erspan/">using ERSPAN with the vSphere Distributed Switch to do packet analysis</a>.</li>
+<li>Anthony Burke has an article on <a href="http://networkinferno.net/ingress-optimisation-with-nsx-for-vsphere">a method for performing ingress optimization with NSX for vSphere</a> that leverages information from the hypervisor to help NSX make smarter routing decisions/updates. This is pretty cool and underscores the power of pooling data from compute, storage, and networking in a software-defined data center environment.</li>
+<li>Matt Oswalt is one of a number of forward-thinking networking pros who&rsquo;s helping to lead the charge in transforming what it means to be a &ldquo;networking professional.&rdquo; In <a href="http://keepingitclassless.net/2015/09/network-automation-be-bold/">this post on network automation</a>, he encourages folks to &ldquo;be bold&rdquo; and really pursue network automation instead of &ldquo;settling&rdquo; for templating configurations.</li>
+<li>If you&rsquo;re running some Juniper equipment and are interested in getting started with network automation on that equipment, this article by Jason Edelman on <a href="http://jedelman.com/home/juniper-vsrx-automation-with-ansible/">Juniper vSRX automation with Ansible</a> is a good resource.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Dell is buying EMC. What&mdash;you hadn&rsquo;t heard? There are <em>tons</em> of articles discussing the acquisition; check out this pair of articles from Chris Evans (<a href="http://blog.architecting.it/2015/10/16/dell-acquiring-emc-the-facts/">part 1</a>, <a href="http://blog.architecting.it/2015/10/22/dell-acquiring-emc-the-federation/">part 2</a>).</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>I&rsquo;m no cryptographer, but I found <a href="http://blog.cryptographyengineering.com/2015/10/a-riddle-wrapped-in-curve.html">this article</a> on the NSA&rsquo;s move away from Suite B an interesting read. The author, Matthew Green, also has an <a href="http://blog.cryptographyengineering.com/2014/08/whats-matter-with-pgp.html">in-depth critique of PGP</a> that took up a fair amount of my time (be sure to read the comments).</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>VMware recently announced some integrations between Ansible and vCloud Air that will allow customers to use Ansible playbooks to create resources in vCloud Air. See <a href="http://blogs.vmware.com/vcloud/2015/09/ansible-and-vcloud-air-better-together.html">this blog post</a> for more details and some example Ansible code.</li>
+<li>Mark Voelker has two posts (so far) on OpenStack DefCore misconceptions that I&rsquo;ve personally found quite helpful. The <a href="http://markvoelker.github.io/blog/defcore-misconceptions-1/">first post</a> explains the 12 criteria that are evaluated to determine whether a capability should be required in its guidelines. As Mark explains, these criteria are mostly trailing indicators, meaning they mostly reflect what is <em>already</em> happening with the adoption of OpenStack features/capabilities. The <a href="http://markvoelker.github.io/blog/defcore-misconceptions-2/">second post</a> explains the &ldquo;advisory&rdquo; status of a capability in a guideline, and how this status is intended to help trigger discussion and feedback around whether that capability should move to required, or dropped from the guideline entirely.</li>
+<li>This post on <a href="http://cloudblog.switch.ch/2015/09/22/hack-neutron-to-add-more-ip-addresses-to-an-existing-subnet/">hacking Neutron to add more IP addresses to a subnet</a> is useful for helping to understand some of the Neutron internals.</li>
+<li>Rancher&mdash;the company behind RancherOS (Linux distro that uses Docker for system services as well as user applications) and Rancher (a management platform for containerized infrastructure)&mdash;recently <a href="http://rancher.com/introducing-rancher-metadata-service-for-docker/">announced a container metadata service</a> they&rsquo;re saying is analogous to Amazon&rsquo;s Instance Metadata service. I like the idea, but I&rsquo;d like it even more if Rancher (the company) pushed this beyond only Rancher&rsquo;s products.</li>
+<li>Speaking of metadata services, have a look at <a href="https://ahmetalpbalkan.com/blog/comparison-of-instance-metadata-services/">this comparison of metadata services</a> (which compares DigitalOcean, Amazon, and Google, but <em>not</em> OpenStack). (Warning: the author&rsquo;s site seemed a bit flakey the last time I visited it to verify the link, so be warned.)</li>
+<li>Juan Manuel Rey has a write-up on <a href="https://jreypo.wordpress.com/2015/10/21/upgrading-vmware-integrated-openstack/">how easy it is to upgrade VIO</a> (VMware Integrated OpenStack).</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Recently I saw mention of <a href="http://www.scylladb.com">ScyllaDB</a>, a drop-in replacement for Cassandra that claims to be 10x faster. It might be worth investigating if your organization uses Cassandra and is having a hard time with performance and scaling.</li>
+<li>Juan Manuel Rey has a write-up on <a href="https://jreypo.wordpress.com/2015/10/02/first-steps-with-pivotal-lattice/">taking your first steps with Pivotal&rsquo;s Lattice</a>. I believe that platforms like <a href="http://lattice.cf/">Lattice</a> are a rich opportunity for infrastructure folks who are seeking to &ldquo;move up the stack&rdquo; a bit, and so I&rsquo;m glad to see resources such as this article emerging.</li>
+<li>I&rsquo;m assuming everyone saw the news that <a href="http://www.redhat.com/en/about/press-releases/red-hat-acquire-it-automation-and-devops-leader-ansible">Red Hat is acquiring Ansible</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>I recently posted <a href="/2015/09/24/quick-reference-new-storage-lvm/">an article</a> about LVM (it was more for me than anything else; I so very rarely run those commands that it&rsquo;s hard to remember them), but for those who want to automate everything, here&rsquo;s an article that describes <a href="http://everythingshouldbevirtual.com/ansible-playbook-lvm">how to work with LVM using Ansible</a>.</li>
+<li>Want to play with VSAN, but don&rsquo;t have the requisite equipment? No worries, <a href="https://www.ravellosystems.com/blog/vsan-installation-on-aws-google-cloud/">Ravello Systems has you covered</a>. This isn&rsquo;t going to cut it for a production environment, but as the title says it&rsquo;s handy for proof-of-concept, testing, and self-development.</li>
+<li>Peter Keilty (a former vSpecialist teammate now at VMware) has <a href="http://livevirtually.net/2015/10/21/virtual-san-and-data-at-rest-encryption/">a write-up on options for using data-at-rest encryption with VMware VSAN</a>. If data-at-rest encryption is something you&rsquo;re exploring, this post might be worth a few minutes of your time.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>William Lam points out a new feature in the vSphere Web Client as of vSphere 6.0 Update 1: the ability to erase existing disk partitions. Read <a href="http://www.virtuallyghetto.com/2015/09/erasing-existing-disk-partitions-now-available-in-the-vsphere-web-client-vsphere-6-0-update-1.html">his post</a> for all the gory details.</li>
+<li><a href="http://mr.gy/blog/build-vm-image-with-docker.html">This</a> is an interesting experiment, although I confess that I don&rsquo;t see the value in this process. Feel free to drop me an e-mail or contact me via Twitter if you can enlighten me.</li>
+<li>If you weren&rsquo;t at VMworld 2015 and/or haven&rsquo;t had the chance to catch up on vSphere Integrated Containers, formerly &ldquo;Project Bonneville,&rdquo; see <a href="https://blogs.vmware.com/vsphere/2015/10/vsphere-integrated-containers-technology-walkthrough.html">this VMware blog post for more information</a>.</li>
+<li>From the Department of No Surprises comes <a href="http://pages.experts-exchange.com/Impact-of-Virtualization.html">this study</a> that shows virtualization offers dramatic cost savings and helps reduce energy consumption. (I applaud Experts Exchange for help to spread the word about the benefits of virtualization, even if they are a few years behind the times.)</li>
+<li>VMware recently released a &ldquo;standalone&rdquo; version of VMware Tools (version 10.0, see <a href="https://blogs.vmware.com/vsphere/2015/09/vmware-tools-10-0-0-released.html">here</a> for the announcement), but as <a href="http://www.v-front.de/2015/10/the-great-vmware-tools-dilemma.html">Andreas Peetz points out</a> there are still some issues that VMware needs to fix around VMware Tools.</li>
+<li>Looks like <a href="http://blogs.technet.com/b/virtualization/archive/2015/10/13/windows-insider-preview-nested-virtualization.aspx">Microsoft is jumping in the nested virtualization ring</a>. Microsoft is also catching up on the ability to create <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/10/20/windows-10-build-10565-creating-vms-with-different-versions.aspx">VMs with different versions</a> (think Virtual HW versions from the vSphere world, if that&rsquo;s your background).</li>
+</ul>
+<h2 id="careersoft-skillsproductivity">Career/Soft Skills/Productivity</h2>
+<ul>
+<li>Chris Wahl posted <a href="http://wahlnetwork.com/2015/10/22/picking-up-new-skills-tips-and-tricks-to-build-your-technical-tool-chest/">a brief discussion</a> on his use of <a href="https://en.wikipedia.org/wiki/Pomodoro_Technique">the Pomodoro technique</a> as a way of enhancing his learning efforts.</li>
+</ul>
+<p>OK, I&rsquo;d better stop before this gets any longer! Whew&hellip;so much good stuff out there, it&rsquo;s really hard to choose what&rsquo;s included and what&rsquo;s omitted. In any case, I hope something here was helpful to you. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/10/21/add-interface-instance-after-creation/">Adding an Interface to an OpenStack Instance After Creation</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/10/27/openstack-summit-day-1-keynote/">OpenStack Summit 2015 Day 1 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f10%2f22%2ftechnology-short-take-55%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f10%2f22%2ftechnology-short-take-55%2f&text=Technology%20Short%20Take%20%2355" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f10%2f22%2ftechnology-short-take-55%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/09/23/technology-short-take-54/">Technology Short Take #54</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2015/08/25/technology-short-take-53/">Technology Short Take #53</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2015/05/22/technology-short-take-51/">Technology Short Take #51</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

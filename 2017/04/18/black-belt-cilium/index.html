@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: Cilium for Network and Application Security with BPF and XDP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: Cilium for Network and Application Security with BPF and XDP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: Cilium for Network and Application Security with BPF and XDP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/04/18/black-belt-cilium/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: Cilium for Network and Application Security with BPF and XDP</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;732 words (estimated 4 minutes to read)</span>
+  <p>This is a liveblog of the DockerCon 2017 Black Belt session led by Thomas Graf on <a href="http://cilium.io/">Cilium</a>, a new startup that focuses on using eBPF and XDP for network and application security.</p>
+<p>Graf starts by talking about how BPF (specifically, extended BPF or eBPF) can be used to rethink how the Linux kernel handles network traffic. Graf points out that there is another session by Brendan Gregg on using BPF to do analysis performance and profiling.</p>
+<p>Why is it necessary to rethink how networking and security is handled? A lot of it has not evolved as application deployments have evolved from low complexity/low deployment frequency to high complexity/high deployment frequency. Further, the age of unique protocol ports (like SMTP on port 25 or SSH on port 22) is coming to a close, as now many different applications or services simply run over HTTP. This leads to &ldquo;overloading&rdquo; the HTTP port and a loss of visibility into <em>which</em> applications are talking over that port. Opening TCP port 80 in a situation like this means potentially exposing more privileges than desired (the example to use other HTTP verbs, like PUT or POST instead of just GET).</p>
+<p>Graf quickly moves into a (scripted) demo that shows off how you can use Cilium&mdash;which leverages eBPF to enforce HTTP-level security policies&mdash;to control the types of access that containers have when communicating with other containers via HTTP.</p>
+<p>Following the demo, Graf explains how Cilium (and BPF) works. Inbound HTTP requests are rerouted, using BPF, into a transparent proxy. Using a BPF map, the shared state (the origin IP and identity) are preserved, so that the proxy can appropriately redirect the traffic into the destination container. The proxy leverages a set of rules, which allows the proxy to reject the request (sending back an HTTP 403 error code) or forward the request to the destination container. While you can write BPF bytecode directly, it may be easier/simpler to write C pseudocode and compile that into BPF using LLVM. The BPF bytecode is then run through a verifier and just-in-time (JIT) compiler to convert the bytecode into native CPU instructions. The verifier ensures that BPF bytecode is safe to run in the kernel (this helps ensure that BPF bytecode doesn&rsquo;t compromise the stability of the kernel). The compiled BPF bytecode then can &ldquo;hook&rdquo; various actions and points in the kernel (to redirect traffic into a transparent proxy, for example).</p>
+<p>The use of BPF allows Cilium to &ldquo;rethink&rdquo; how policy enforcement happens. BPF can reject unauthorized connections <em>before</em> the Linux kernel even starts building TCP packets and moving them among various components within the kernel.</p>
+<p>Shifting focus slightly, Graf moves on to discuss XDP/BPF and the &ldquo;software load balancer of the future.&rdquo; BPF/XDP allows for a 10x improvement in load balancing over IPVS for L3/L4 traffic. What is XDP? To understand XDP, you have to look at how BPF works. Normally, BPF works in the kernel, meaning traffic coming in on a NIC has to be copied into memory so BPF can operate on that traffic. XDP moves BPF <em>onto the NIC itself</em> XDP runs in the NIC driver, allowing it immediate access to data being received so that policy can be enforced immediately on the NIC. (This is pretty powerful, IMHO.)</p>
+<p>At this point Graf starts talking more directly about Cilium, the project with which Graf is affiliated that leverages BPF/XDP. Cilium uses a libnetwork plugin to integrate into Docker. Using a Cilium agent on the host, Cilium generates a BPF program every time a Docker container is launched, and this BPF program is attached to the Docker container. Every Docker container gets its own BPF program. To connect the containers together, Cilium connects the container-specific programs to a BPF program on the NIC. You manage Cilium via a CLI, allowing you to monitor activity and apply/enforce policy.</p>
+<p>Graf provides an update on the Cilium project. It&rsquo;s early yet, but there is a Vagrant environment that allows you to see how Cilium works. Graf indicates that Cilium will offer a YAML file for Moby that will allow users to leverage LinuxKit to test Cilium.</p>
+<p>Graf wraps up the session by reiterating the need for HTTP-aware network and security functions, and reiterating his believe that BPF/XDP are the vehicles that will drive this functionality in the Linux kernel moving forward. At this point, Graf opens up for questions from session attendees.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2017">DockerCon2017</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cilium">Cilium</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/04/18/creating-effective-images/">Liveblog: Creating Effective Images</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/04/19/dockercon-2017-day-2-keynote/">Liveblog: DockerCon 2017 Day 2 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f18%2fblack-belt-cilium%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f18%2fblack-belt-cilium%2f&text=Liveblog%3a%20Cilium%20for%20Network%20and%20Application%20Security%20with%20BPF%20and%20XDP" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f18%2fblack-belt-cilium%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/04/18/dockercon-2017-day-1-keynote/">Liveblog: DockerCon 2017 Day 1 Keynote</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/04/07/technology-short-take-81/">Technology Short Take 81</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

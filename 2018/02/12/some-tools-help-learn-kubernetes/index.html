@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some Tools to Help Learn Kubernetes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some Tools to Help Learn Kubernetes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some Tools to Help Learn Kubernetes - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/02/12/some-tools-help-learn-kubernetes/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some Tools to Help Learn Kubernetes</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1088 words (estimated 6 minutes to read)</span>
+  <p><a href="https://kubernetes.io/">Kubernetes</a> is emerging as the clear leader in the container orchestration space. This makes it an important technology to know and understand. However, like other distributed systems, learning something like Kubernetes can be challenging due to the effort involved in getting Kubernetes up and running. It&rsquo;s not about learning to set up Kubernetes (although that comes in time); at first, it&rsquo;s about understanding what Kubernetes does and how to use Kubernetes. In this post, I&rsquo;ll share some tools to help learn what Kubernetes does and how to use Kubernetes.</p>
+<p>Note that this post is <strong>not</strong> intended to be a comprehensive list of learning resources for Kubernetes. Also, this post is <strong>not</strong> focused on providing resources to help you learn to deploy Kubernetes. Instead, I&rsquo;m focusing here on tools and services that let you get Kubernetes up and running quickly and easily so that you can focus on <em>using</em> Kubernetes (deploying applications and workloads onto Kubernetes). I&rsquo;m sure there are many more tools/options than what I have listed here; these are just some that I have used and feel might be useful for others.</p>
+<p>I&rsquo;ll briefly cover the following tools and services:</p>
+<ul>
+<li>Minikube</li>
+<li>Kops</li>
+<li>Kube-aws</li>
+<li>Azure Container Service (ACS/AKS)</li>
+</ul>
+<p>You&rsquo;ll note I&rsquo;m focused on command-line tools here, since I&rsquo;m a CLI junkie. Let&rsquo;s start with Minikube.</p>
+<h2 id="using-minikube">Using Minikube</h2>
+<p><a href="https://github.com/kubernetes/minikube">Minikube</a> is a tool to run a single-node Kubernetes cluster locally on your system, using one of a number of supported hypervisors (<a href="https://www.virtualbox.org/">VirtualBox</a>, <a href="https://www.vmware.com/products/fusion.html">VMware Fusion</a>, Hyper-V, xhyve, or KVM). Because it deploys a single-node Kubernetes cluster, you&rsquo;re limited in the types of things that you can do with the resulting Kubernetes cluster; however, it does offer the ability to work locally while most of the other tools require connectivity to a cloud provider (not unexpectedly, given the nature of what Kubernetes is and what it&rsquo;s designed to do). Of course, the trade-off for working locally is that your Kubernetes cluster won&rsquo;t be able to take advantage of cloud provider functionality, like services defined as type <code>LoadBalancer</code>.</p>
+<p>(As an aside, since Minikube leverages <code>libmachine</code>&mdash;from Docker Machine&mdash;on the back-end, using both Minikube and Docker Machine with KVM on the same system has some interesting side effects. You&rsquo;ve been warned.)</p>
+<p>Despite the limitations, I think there&rsquo;s probably still some value in using Minikube for certain situations.</p>
+<h2 id="using-kops-kubernetes-operations">Using Kops (Kubernetes Operations)</h2>
+<p>The <a href="https://github.com/kubernetes/kops"><code>kops</code> tool</a> can be used to (relatively) quickly and easily stand up Kubernetes clusters on <a href="https://aws.amazon.com/">AWS</a> (support for other platforms is in the works). Typically, <code>kops</code> requires a DNS domain hosted in AWS Route 53 (although there are workarounds), and it does require an S3 bucket in which to store cluster/configuration state (no workaround for this). <code>kops</code> also allows you to create some pretty advanced configurations, such as HA deployments spread across multiple availability zones (AZs) and using SSH bastion hosts. I also like that you can use <code>kops</code> to generate <a href="https://www.terraform.io/">Terraform</a> configurations for setting up Kubernetes clusters.</p>
+<p>However, you can also use it to set up quick and simple Kubernetes clusters for learning purposes. Here&rsquo;s an example command-line that could be used to turn up a small Kubernetes cluster using <code>kops</code>:</p>
+<pre tabindex="0"><code>kops create cluster \
+--node-count 3 \
+--zones us-west-2a \
+--dns-zone route53domain.com \
+--node-size t2.large \
+--networking flannel \
+--ssh-public-key /path/to/public/key.pub \
+clustername.route53domain.com
+</code></pre><p>I won&rsquo;t go into all the details on using <code>kops</code> (though I might do another post on <code>kops</code> at some point in the future). Instead, I&rsquo;ll refer you to <a href="https://github.com/kubernetes/kops/blob/master/docs/aws.md">the AWS guide in the <code>kops</code> repository</a> for more information and details on using <code>kops</code>. There are also a number of blog posts about there; <a href="https://ryaneschinger.com/blog/kubernetes-aws-vpc-kops-terraform/">here&rsquo;s one example</a>, and <a href="https://aws.amazon.com/blogs/opensource/running-bleeding-edge-kubernetes-on-aws-with-kops/">here&rsquo;s one</a> from AWS themselves.</p>
+<h2 id="using-kube-aws">Using kube-aws</h2>
+<p>As the name implies, <a href="https://github.com/kubernetes-incubator/kube-aws"><code>kube-aws</code></a> is a command-line tool for deploying a Kubernetes cluster on AWS. Like <code>kops</code>, <code>kube-aws</code> needs a Route 53 domain and an S3 bucket for storing state/configuration information. <code>kube-aws</code> also requires a KMS key. On the back-end, <code>kube-aws</code> is leveraging CloudFormation to spin up the Kubernetes cluster.</p>
+<p>As with the other tools, I won&rsquo;t go into great detail on how to use <code>kube-aws</code>; instead, I&rsquo;ll direct you to <a href="https://kubernetes-incubator.github.io/kube-aws/">the documentation</a> (which seems really good).</p>
+<h2 id="using-azure-container-service-acsaks">Using Azure Container Service (ACS/AKS)</h2>
+<p>Using the <a href="https://docs.microsoft.com/en-us/cli/azure/overview?view=azure-cli-latest">Azure CLI</a>, it&rsquo;s pretty easy to spin up a Kubernetes cluster. In fact, there are a couple of different ways to go about it.</p>
+<p>You can use ACS (Azure Container Service) and specify Kubernetes as the orchestrator type (ACS supports other types of orchestrators as well):</p>
+<pre><code>az acs create --orchestrator-type=kubernetes \
+--resource-group=my-grp --name=my-clus \
+--ssh-key-value=/path/to/public/key
+</code></pre>
+<p>After a 5-7 minutes, the command should complete and you&rsquo;ll be ready to roll with a Kubernetes cluster running in Azure. Use the <code>az acs kubernetes get-credentials</code> to configure <code>kubectl</code> to talk to the new cluster.</p>
+<p>You can also use AKS (Azure Container Service, a newer offering that&mdash;as I understand it&mdash;supersedes/replaces ACS) to turn up a Kubernetes cluster (AKS only supports Kubernetes):</p>
+<pre><code>az aks create --resource-group=my-grp --name=my-clus \
+--ssh-key-value /path/to/public/key
+</code></pre>
+<p>As with <code>az acs create</code>, after a few minutes you&rsquo;ll have a shiny new Kubernetes cluster up and running. From there, you can use <code>az aks upgrade</code> to potentially upgrade your cluster, or <code>az aks get-credentials</code> to pull down a configuration that allows <code>kubectl</code> to interact with your new cluster.</p>
+<p>(Note that there was an issue with some versions of the Azure CLI prior to 2.0.25 that caused <code>az aks get-credentials</code> to fail. Upgrading to 2.0.25 or later seems to address the problem. If you need to upgrade the Azure CLI and you installed via <code>pip</code>, I recommend using the <code>--force-reinstall</code> flag to make sure the upgrade completes successfully.)</p>
+<p>Sebastien Goasguen also has <a href="https://medium.com/bitnami-perspectives/az-aci-aks-acs-in-5-minutes-top-chrono-65c9952dfeb8">a brief write-up of ACS/AKS</a> (he also covers Azure Container Instances, ACI).</p>
+<h2 id="why-no-mention-of-google-kubernetes-engine-gke">Why no mention of Google Kubernetes Engine (GKE)?</h2>
+<p>As a hosted/managed solution, GKE would fall into the same category as ACS/AKS. However, I didn&rsquo;t include GKE here for the simple reason that I was focusing on CLI-based tools, and (in my opinion) Google makes it <em>way</em> too difficult to get the <code>gcloud</code> tool installed on your system. (Seriously&mdash;if you&rsquo;re going to write it in Python, why not just use <code>pip</code>?) There is a Docker container available, but at nearly 1GB in size (last time I checked) I don&rsquo;t feel that&rsquo;s a very attractive option either.</p>
+<p>If you don&rsquo;t mind jumping through hoops to get <code>gcloud</code> installed (or if you&rsquo;d prefer to use a GUI), then I&rsquo;m sure GKE is a perfectly acceptable option.</p>
+<p>There you have it&hellip;a few options for quickly and easily getting Kubernetes up and running (and you don&rsquo;t need a massive home lab, either). Enjoy!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/02/09/technology-short-take-94/">Technology Short Take 94</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/02/24/technology-short-take-95/">Technology Short Take 95</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f02%2f12%2fsome-tools-help-learn-kubernetes%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f02%2f12%2fsome-tools-help-learn-kubernetes%2f&text=Some%20Tools%20to%20Help%20Learn%20Kubernetes" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f02%2f12%2fsome-tools-help-learn-kubernetes%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2018/01/05/technology-short-take-92/">Technology Short Take 92</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

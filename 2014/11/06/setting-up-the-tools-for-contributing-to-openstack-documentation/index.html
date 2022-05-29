@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up the Tools for Contributing to OpenStack Documentation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up the Tools for Contributing to OpenStack Documentation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up the Tools for Contributing to OpenStack Documentation - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/11/06/setting-up-the-tools-for-contributing-to-openstack-documentation/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up the Tools for Contributing to OpenStack Documentation</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1273 words (estimated 6 minutes to read)</span>
+  <p>For non-programmers, making a meaningful contribution to an open source project can be difficult; this is as true for OpenStack as for other open source projects. Documentation is a way to contribute, but in the case of OpenStack there is a non-trivial setup required in order to be able to contribute to the OpenStack documentation. In this post, I&rsquo;m going to share how to set up the tools to contribute to OpenStack documentation in the hopes that it will help others get past the &ldquo;barrier to entry&rdquo; that currently exists.</p>
+<p>I&rsquo;ve long wanted to be more involved in supporting the OpenStack community, beyond my unofficial support via advocacy and <a href="/tags/openstack/">blogging about OpenStack</a>. I felt that documentation might be a way to achieve that goal. After all, I&rsquo;ve written books and have been blogging for 9 years, so I should be able to add some value via documentation contributions. However, the toolchain that the OpenStack documentation uses requires a certain level of familiarity with development-focused tools, and the &ldquo;how to&rdquo; guides were less than ideal because of assumptions made regarding the knowledge level of new contributors. For these reasons, I felt that sharing how I (a non-programmer) set up the tools for contributing to OpenStack documentation might encourage other non-programmers to do the same, and thus get more people involved in the project.</p>
+<p>This post is not intended to replace any official guides (like <a href="https://wiki.openstack.org/wiki/Documentation">this one</a> or <a href="https://wiki.openstack.org/wiki/Documentation/HowTo">this one</a>), but rather to supplement such guides.</p>
+<h2 id="using-a-linux-environment">Using a Linux Environment</h2>
+<p>It&rsquo;s no secret that I use OS X, and the toolchain that the OpenStack documentation team uses is&mdash;like the rest of OpenStack&mdash;pretty heavily biased toward Linux. One of the deterring factors for me was the level of difficulty to get these tools running on OS X. While it <em>is</em> possible to use the toolchain on OS X directly, it&rsquo;s not necessarily simple or straightforward. It wasn&rsquo;t until just recently that I realized: why not just use a Linux VM? Using a native Linux environment sidesteps all the messiness of trying to get a Linux-centric toolchain running on OS X (or Windows).</p>
+<p>I initially started with a locally-hosted Linux VM on my MacBook Air, but after some consideration I decided to alter that approach and build my environment in a cloud VM running Ubuntu 12.04 on Amazon EC2 (via Ravello Systems).</p>
+<p>The use of a cloud VM has some advantages and disadvantages:</p>
+<ul>
+<li>
+<p>Because the toolchain is heavily biased toward Linux, using a Linux-based cloud VM does simplify some things.</p>
+</li>
+<li>
+<p>Cloud VMs will typically have much greater bandwidth, making it easier to install packages and pull down Git repositories. This was especially helpful this past week while I was traveling to the OpenStack Summit, where&mdash;due to slow conference wireless access&mdash;it took 2 hours to clone the GitHub repository for the OpenStack documentation (this is while I was trying to use a locally-hosted VM on my laptop).</p>
+</li>
+<li>
+<p>It provides a clean separation between my local workstation and the development environment, meaning I can access my development environment from any system via SSH. This prevents me from having to keep multiple development environments in sync, which is something I would have had to do when working from my home office (where I use my MacBook Air as well as a Mac Pro).</p>
+</li>
+<li>
+<p>The most significant drawback is that I cannot work on documentation patches when I have no network connectivity. For example, I&rsquo;m writing this post as I&rsquo;m traveling back from Paris. If I had a local development environment, I could assigned a few bugs to myself and worked on them while flying home. With a cloud VM-based environment, I cannot. I could have used a VM hosted on my local laptop (via VirtualBox or VMware Fusion), but that would have negated some of the other advantages.</p>
+</li>
+</ul>
+<p>In the end, you&rsquo;ll have to evaluate for yourself what approach works best for you, your working style, and your existing obligations. However, the use of a Linux VM&mdash;local or via a cloud provider&mdash;can simplify the process of setting up the toolchain and getting started contributing, and it&rsquo;s an approach I&rsquo;d recommend for most anyone.</p>
+<p>The information presented here assumes you are using an Ubuntu-based VM, either hosted with a cloud provider or on your local system. I&rsquo;ll leave it to the readers to worry about the details of how to turn up the Ubuntu VM via their preferred mechanism.</p>
+<h2 id="setting-up-the-toolchain">Setting Up the Toolchain</h2>
+<p>Once you&rsquo;ve established an Ubuntu Linux instance using the provider of your choice, use these steps to set up the documentation toolchain (note that, depending on the configuration of your Ubuntu Linux instance, you might need to preface these commands with <code>sudo</code> where appropriate):</p>
+<ol>
+<li>
+<p>Update your system using <code>apt-get update</code> and <code>apt-get -y upgrade</code>. Depending on the updates that are installed, you might need to reboot.</p>
+</li>
+<li>
+<p>Generate an SSH keypair using <code>ssh-keygen</code>. Keep track of this keypair (and make note of the associated password, if you assigned one), as you&rsquo;ll need it later. You can also re-use an existing keypair, if you&rsquo;d like; I preferred to generate a keypair specifically for this purpose. If you are going to re-use an existing keypair, you&rsquo;ll need to transfer them to this Linux instance via <code>scp</code> or your preferred mechanism.</p>
+</li>
+<li>
+<p>Install the necessary prerequisite packages using a standard <code>apt-get</code> command, like this: <code>apt-get install maven git git-review python-pip libxml2-dev     libxslt1-dev python-dev gcc gettext zlib1g-dev</code>.</p>
+</li>
+<li>
+<p>Configure Git using <code>git config</code> to set your name and e-mail address. The e-mail address, in particular, should match what you&rsquo;re using with the OpenStack Foundation. The commands to do this are <code>git config --global user.name</code> and <code>git config --global user.email</code>.</p>
+</li>
+<li>
+<p>Clone the GitHub repository where the documentation is found using <code>git clone https://github.com/openstack/openstack-manuals.git</code>.</p>
+</li>
+<li>
+<p>Install the components required to run tests against the documentation sources (this command assumes that you cloned the repository into a subdirectory named &ldquo;openstack-manuals&rdquo;, which would be the default result of using the command above to clone the repository) using <code>pip install -r openstack-manuals/test-requirements.txt</code>.</p>
+</li>
+<li>
+<p>If you haven&rsquo;t already established a Launchpad account, you&rsquo;ll need one. Go create one (probably best done outside of the Ubuntu Linux environment) and make note of the username. Use your Launchpad account to verify that you can log in to both bugs.launchpad.net as well as review.openstack.org.</p>
+</li>
+<li>
+<p>While logged into review.openstack.org, go to the settings for your account and paste in the contents of the public key (not the private key) you generated earlier (or that you are re-using).</p>
+</li>
+<li>
+<p>Back in the Ubuntu Linux instance, set your Launchpad username using <code>git config --global --add gitreview.username &quot;&lt;Launchpad username&gt;&quot;</code>.</p>
+</li>
+<li>
+<p>Change into the directory where you cloned the &ldquo;openstack-manuals&rdquo; repository and run <code>git review -s</code>. Assuming you already added the &ldquo;gitreview.username&rdquo; configuration parameter and that you&rsquo;ve already uploaded the public key to your account on review.openstack.org, this should work without any issues. If you forgot to set &ldquo;gitreview.username&rdquo;, it should prompt you for your Launchpad username. If you forgot to upload the public SSH key, then it will probably error out.</p>
+</li>
+<li>
+<p>If <code>git review -s</code> completes without any obvious errors, you can double-check that a Gerrit upstream for the repository was added by using the command <code>git remote -v</code>. If you don&rsquo;t see an upstream repo labeled gerrit, then something didn&rsquo;t work. If you do see the upstream repo labeled gerrit, then you should be fine.</p>
+</li>
+</ol>
+<p>Once you&rsquo;ve completed these steps, then you&rsquo;re ready to start contributing to OpenStack documentation. I have a separate post planned that describes the process for actually contributing; stay tuned for that soon.</p>
+<p>In the meantime, if anyone has any questions, corrections, or clarifications about the information in this post, please speak up in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/11/03/learning-nsx-part-18-routing-without-network-address-translation/">Learning NSX, Part 18: Routing Without Network Address Translation</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/11/07/technology-short-take-46/">Technology Short Take #46</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f06%2fsetting-up-the-tools-for-contributing-to-openstack-documentation%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f06%2fsetting-up-the-tools-for-contributing-to-openstack-documentation%2f&text=Setting%20up%20the%20Tools%20for%20Contributing%20to%20OpenStack%20Documentation" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f06%2fsetting-up-the-tools-for-contributing-to-openstack-documentation%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/12/infrastructure-coders-denver-and-openstack-denver-meetups/">Infrastructure Coders Denver and OpenStack Denver Meetups</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2014/08/20/coreos-continued-fleet-and-docker/">CoreOS Continued: Fleet and Docker</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2014/08/18/coreos-continued-etcd/">CoreOS Continued: etcd</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

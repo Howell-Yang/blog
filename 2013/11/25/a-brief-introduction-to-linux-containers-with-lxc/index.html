@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Brief Introduction to Linux Containers with LXC - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Brief Introduction to Linux Containers with LXC - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Brief Introduction to Linux Containers with LXC - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/11/25/a-brief-introduction-to-linux-containers-with-lxc/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Brief Introduction to Linux Containers with LXC</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;902 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to provide a brief introduction to working with Linux containers via <a href="http://linuxcontainers.org/">LXC</a>. Linux containers are getting a fair amount of attention these days (perhaps due to <a href="http://www.docker.io/">Docker</a>, which leverages LXC on the back-end) as a lightweight alternative to full machine virtualization such as that provided by &ldquo;traditional&rdquo; hypervisors like KVM, Xen, or ESXi.</p>
+<p>Both full machine virtualization and containers have their advantages and disadvantages. Full machine virtualization offers greater isolation at the cost of greater overhead, as each virtual machine runs its own full kernel and operating system instance. Containers, on the other hand, generally offer less isolation but lower overhead through sharing certain portions of the host kernel and operating system instance. In my opinion full machine virtualization and containers are complementary; each offers certain advantages that might be useful in specific situations.</p>
+<p>Now that you have a rough idea of what containers are, let&rsquo;s take a closer look at using containers with LXC. I&rsquo;m using Ubuntu 12.04.3 LTS for my testing; if you&rsquo;re using something different, keep in mind that certain commands may differ from what I show you here.</p>
+<p>Installing LXC is pretty straightforward, at least on Ubuntu. To install LXC, simply use <code>apt-get</code>:</p>
+<pre><code>apt-get install lxc
+</code></pre>
+<p>Once you have LXC installed, your next step is creating a container. To create a container, you&rsquo;ll use the <code>lxc-create</code> command and supply the name of the container template as well as the name you want to assign to the new container:</p>
+<pre><code>lxc-create -t &lt;template&gt; -n &lt;container name&gt;
+</code></pre>
+<p>You&rsquo;ll need Internet access to run this command, as it will download (via your configured repositories) the necessary files to build a container according to the template you specified on the command line. For example, to use the &ldquo;ubuntu&rdquo; template and create a new container called &ldquo;cn-01&rdquo;, the command would look like this:</p>
+<pre><code>lxc-create -t ubuntu -n cn-01
+</code></pre>
+<p>Note that the &ldquo;ubuntu&rdquo; template specified in this command has some additional options supported; for example, you can opt to create a container with a different release of Ubuntu (it defaults to the latest LTS) or a different architecture (it defaults to the host&rsquo;s architecture).</p>
+<p>Once you have at least one container created, you can list the containers that exist on your host system:</p>
+<pre><code>lxc-list
+</code></pre>
+<p>This will show you all the containers that have been created, grouped according to whether the container is stopped, frozen (paused), or running.</p>
+<p>To start a container, use the <code>lxc-start</code> command:</p>
+<pre><code>lxc-start -n &lt;container name&gt;
+</code></pre>
+<p>Using the <code>lxc-start</code> command as shown above is fine for initial testing of your container, to ensure that it boots up as you expect. However, you won&rsquo;t want to run your containers long-term like this, as the container &ldquo;takes over&rdquo; your console with this command. Instead, you want the container to run in the background, detached from the console. To do that, you&rsquo;ll add the &ldquo;-d&rdquo; parameter to the command:</p>
+<pre><code>lxc-start -d -n &lt;container name&gt;
+</code></pre>
+<p>This launches your container in the background. To attach to the console of the container, you can use the <code>lxc-console</code> command:</p>
+<pre><code>lxc-console -n &lt;container name&gt;
+</code></pre>
+<p>To escape out of the container&rsquo;s console back to the host&rsquo;s console, use the &ldquo;Ctrl-a q&rdquo; key sequence (press Ctrl-a, release, then press q).</p>
+<p>You can freeze (pause) a container using the <code>lxc-freeze</code> command:</p>
+<pre><code>lxc-freeze -n &lt;container name&gt;
+</code></pre>
+<p>Once frozen, you can unfreeze (resume) a container just as easily with the <code>lxc-unfreeze</code> command:</p>
+<pre><code>lxc-unfreeze -n &lt;container name&gt;
+</code></pre>
+<p>You can also make a clone (a copy) of a container:</p>
+<pre><code>lxc-clone -o &lt;existing container&gt; -n &lt;new container name&gt;
+</code></pre>
+<p>On Ubuntu, LXC is configured by default to start containers in <code>/var/lib/lxc</code>. Each container will have a directory there. In a container&rsquo;s directory, that container&rsquo;s configuration will be stored in a file named <code>config</code>. I&rsquo;m not going to provide a comprehensive breakdown of the settings available in the container&rsquo;s configuration (this is a <em>brief</em> introduction), but I will call out a few that are worth noting in my opinion:</p>
+<ul>
+<li>
+<p>The <code>lxc.network.type</code> option controls what kind of networking the container will use. The default is &ldquo;veth&rdquo;; this uses virtual Ethernet pairs. (If you aren&rsquo;t familiar with veth pairs, see <a href="/2013/09/04/introducing-linux-network-namespaces/">my post on Linux network namespaces</a>.)</p>
+</li>
+<li>
+<p>The <code>lxc.network.veth.pair</code> configuration option controls the name of the veth interface created in the host. By default, a container sees one side of the veth pair as eth0 (as would be expected), and the host sees the other side as either a random name (default) or whatever you specify here. Personally, I find it useful to rename the host interface so that it&rsquo;s easier to tell which veth interface goes to which container, but YMMV.</p>
+</li>
+<li>
+<p><code>lxc.network.link</code> specifies a bridge to which the host side of the veth pair should be attached. If you leave this blank, the host veth interface is unattached.</p>
+</li>
+<li>
+<p>The configuration option <code>lxc.rootfs</code> specifies where the container&rsquo;s root file system is stored. By default it is <code>/var/lib/lxc/&lt;container name&gt;/rootfs</code>.</p>
+</li>
+</ul>
+<p>There are a great deal of other configuration options, naturally; check out <code>man 5 lxc.conf</code> for more information. You may also find <a href="https://help.ubuntu.com/lts/serverguide/lxc.html">this Ubuntu page on LXC</a> to be helpful; I certainly did.</p>
+<p>I&rsquo;ll have more posts on Linux containers in the future, but this should suffice to at least help you get started. If you have any questions, any suggestions for additional resources other readers should consider, or any feedback on the post, please add your comment below. I&rsquo;d love to hear from you (courteous comments are always welcome).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lxc">LXC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/11/22/an-update-on-using-gre-tunnels-with-open-vswitch/">An Update on Using GRE Tunnels with Open vSwitch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/11/26/lxc-open-vswitch-and-gre-tunnels/">LXC, Open vSwitch, and GRE Tunnels</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f25%2fa-brief-introduction-to-linux-containers-with-lxc%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f25%2fa-brief-introduction-to-linux-containers-with-lxc%2f&text=A%20Brief%20Introduction%20to%20Linux%20Containers%20with%20LXC" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f25%2fa-brief-introduction-to-linux-containers-with-lxc%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/09/07/compiling-libvirt-0-10-1-on-ubuntu-12-04/">Compiling libvirt 0.10.1 on Ubuntu 12.04</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/09/10/adjusting-vnc-console-access-via-libvirt-xml/">Adjusting VNC Console Access via Libvirt XML</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

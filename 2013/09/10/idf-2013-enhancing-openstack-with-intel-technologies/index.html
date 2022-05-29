@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2013: Enhancing OpenStack with Intel Technologies - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2013: Enhancing OpenStack with Intel Technologies - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2013: Enhancing OpenStack with Intel Technologies - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/09/10/idf-2013-enhancing-openstack-with-intel-technologies/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2013: Enhancing OpenStack with Intel Technologies</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;978 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of Intel Developer Forum (IDF) 2013 session EDCS003, titled &ldquo;Enhancing OpenStack with Intel Technologies for Public, Private, and Hybrid Cloud.&rdquo; The presenters are Girish Gopal and Malini Bhandaru, both with Intel.</p>
+<p>Gopal starts off by showing the agenda, which will provide an overview of Intel and OpenStack, and then dive into some specific integrations in the various OpenStack projects. The session will wrap up with a discussion of Intel&rsquo;s Open IT Cloud, which is based on OpenStack. Intel is a Gold Member of the OpenStack Foundation, has made contributions to a variety of OpenStack projects (tools, features, fixes and optimizations), has built its own OpenStack-based private cloud, and is providing additional information and support via the Intel Cloud Builders program.</p>
+<p>Ms. Bhandaru takes over to provide an overview of the OpenStack architecture. (Not surprisingly, they use the diagram prepared by Ken Pepple.) She tells attendees that Intel has contributed bits and pieces to many of the various OpenStack projects. Next, she dives a bit deeper into some OpenStack Compute-specific contributions.</p>
+<p>The first contribution she mentions is Trusted Compute Pools (TCP), which was enabled in the Folsom release. TCP relies upon the Trusted Platform Module (TPM), which in turn builds on Intel TXT and Trusted Boot. Together with the Open Attestation (OAT) SDK (available from <a href="https://github.com/OpenAttestation/OpenAttestation)">https://github.com/OpenAttestation/OpenAttestation)</a>, Intel has contributed a &ldquo;Trust Filter&rdquo; for OpenStack Compute as well as a &ldquo;Trust Filter UI&rdquo; for OpenStack Dashboard. These components allow for hypervisor/compute node attestation to ensure that the underlying compute nodes have not been compromised. Users can then request that their instances are scheduled onto trusted nodes.</p>
+<p>Intel has also done work on TCP plus Geo-Tagging. This builds on TCP to enforce policies about where instances are allowed to run. This includes a geo attestation service and Dashboard extensions to support that functionality. This work has not yet been done, but is found in current OpenStack blueprints.</p>
+<p>In addition to trust, Intel has done work on security with OpenStack. Intel&rsquo;s work focuses primarily around key management. Through collaboration with Rackspace, Mirantis, and some others, Intel has proposed a new key management service for OpenStack. This new service would rely upon good random number generation (which Intel strengthened in the Xeon E5 v2 release announced earlier today), secure storage (to encrypt the keys), careful integration with OpenStack Identity (Keystone) for authentication and access policies, extensive logging and auditing, high availability, and a pluggable-backend (similar to Cinder/Neutron). This would allow encryption of Swift objects, Glance images, and Cinder volumes. The key manager project is called Barbican (<a href="https://github.com/cloudkeep/barbican">https://github.com/cloudkeep/barbican</a>) and provides integration with OpenStack Identity. In the future, they are looking at creation and certification of private-public pairs, software support for periodic background tasks, KMIP support, and potential AES-XTS support for enhanced performance. This will also leverage Intel&rsquo;s AES-NI support in newer CPUs/chipsets.</p>
+<p>Intel also helped update the OpenStack Security Guide (<a href="http://docs.openstack.org/sec/)">http://docs.openstack.org/sec/)</a>.</p>
+<p>Next, Intel talks about how they have worked to expose hardware features into OpenStack. This would allow for greater flexibility with the Nova scheduler. This involves work in libvirt as well as OpenStack, so that OpenStack can be aware of CPU functionality (which, in turn, might allow cloud providers to charge extra for &ldquo;premium images&rdquo; that offer encryption support in hardware). The same goes for exposing PCI Express (PCIe) Accelerator support into OpenStack as well.</p>
+<p>Gopal now takes over and moves the discussion into storage in OpenStack. With regard to block storage via Cinder, Intel has incorporated support to filter volumes based on availability zone, capabilities, capacity, and other features so that volumes are allocated more intelligently based on workload and type of service required. By granting greater intelligence to how volumes are allocated, cloud service providers can offer differentiated (read: premium priced) services for block storage. This work is enabled in the Grizzly release.</p>
+<p>In addition to block storage, many OpenStack environments also leverage Swift for object storage. Intel is focused on enabling erasure coding to Swift, which would enable reduced storage requirements in Swift deployments. Initially, erasure coding will be used for &ldquo;cold&rdquo; objects (objects that aren&rsquo;t accessed or updated frequently); this helps preserve the service level for &ldquo;hot&rdquo; objects. Erasure coding would replace triple replication to reduce storage requirements in the Swift capacity tier. (Note that this something I also discussed with SwiftStack a couple weeks ago during VMworld.)</p>
+<p>Intel has also developed something called COSBench, which is an open source tool that can be used to measure cloud object storage performance. COSBench is available at <a href="https://github.com/intel-cloud/cosbench">https://github.com/intel-cloud/cosbench</a>.</p>
+<p>At this point, Gopal transitions to networking in OpenStack. This discussion focuses primarily around Intel Open Network Platform (ONP). There&rsquo;s another session that will go deeper on this topic; I expect to attend that session and liveblog it as well.</p>
+<p>The networking discussion is <em>very</em> brief; perhaps because there is a dedicated session for that topic. Next up is Intel&rsquo;s work with OpenStack Data Collection (Ceilometer), which includes work to facilitate the transformation and collection of data from multiple publishers. In addition, Intel is looking at enhanced usage statistics to affect compute scheduling decisions (essentially this is utilization-based scheduling).</p>
+<p>Finally, Gopal turns to a discussion of Intel IT Open Cloud, which is a private cloud within Intel. Intel is now at 77% virtualized, with 80% of all new servers being deployed in the cloud. It&rsquo;s less than an hour to deploy instances. Intel estimates a savings of approximately $21 million so far. Where is Intel IT Open Cloud headed? Intel IT is looking at using all open source software for Intel IT Open Cloud (this implies that it is not built with open source software today). There is another session on Intel IT Open Cloud tomorrow that I will try to attend.</p>
+<p>At this point, Gopal summarizes all of the various Intel contributions to OpenStack (I took a picture of this I posted via Twitter) and ends the session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2013">IDF2013</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/09/10/idf-2013-keynote-day-1/">IDF 2013 Keynote, Day 1</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/09/11/idf-2013-keynote-day-2/">IDF 2013: Keynote, Day 2</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f10%2fidf-2013-enhancing-openstack-with-intel-technologies%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f10%2fidf-2013-enhancing-openstack-with-intel-technologies%2f&text=IDF%202013%3a%20Enhancing%20OpenStack%20with%20Intel%20Technologies" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f09%2f10%2fidf-2013-enhancing-openstack-with-intel-technologies%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/07/22/technology-short-take-34/">Technology Short Take #34</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2013/05/03/technology-short-take-32/">Technology Short Take #32</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>HashiConf 2017 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="HashiConf 2017 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="HashiConf 2017 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/09/20/hashiconf-2017-day-2-keynote/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">HashiConf 2017 Day 2 Keynote</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;422 words (estimated 2 minutes to read)</span>
+  <p>This is a liveblog of the day 2 keynote (general session) at HashiConf 2017 in Austin, TX. Speakers today will (apparently, based on the schedule) include someone from Amazon Web Services and Kelsey Hightower from Google.</p>
+<p>The keynote starts off with a photo montage of attendees, sessions, and speakers from the previous day, focusing mostly on the evening party (a pretty traditional thing for most conferences). The photo montage is followed by a gentleman (he doesn&rsquo;t identify himself) who kicks off the keynote by bringing out Seth Vargo, Director of Technical Advocacy at HashiCorp.</p>
+<p>Vargo&rsquo;s presentation is titled &ldquo;The Ecological Impact of Compute,&rdquo; and discusses the environmental impact of cloud computing and the pervasive use of computing/compute power around the world. Vargo presents statistics that show on-premises data centers actually consume more electricity than the mega-scale cloud providers, and that getting these people onto a cloud provider would actually <em>reduce</em> overall power consumption (and, by extension, environmental impacts related to power consumption). Toward the end of Vargo&rsquo;s presentation, it starts to feel more like a sales pitch for Nomad couched in environmental awareness.</p>
+<p>At this point, Vargo introduces Kelsey Hightower, Senior Developer Advocate from Google. Hightower&rsquo;s talk is about &ldquo;Hashinetes,&rdquo; a combination of technologies from Kubernetes and HashiCorp. What is Hashinetes? It&rsquo;s Kubernetes (on a cloud provider) with Consul and Vault on top, and a bit of Nomad mixed in. Why adding Consul and Vault? Consul helps supplement Kubernetes&rsquo; built-in service discovery across multiple Kubernetes clusters, and Vault offers additional secrets-related features. Mixing in Nomad allows us to handle workloads that aren&rsquo;t necessarily containerized, which is what Kuberrnetes requires.</p>
+<p>Hightower fairly quickly moves into a live demo (something he&rsquo;s famous for), and in the demo he shows a three-node Consul cluster running on Kubernetes with a persistent volume claim (to provide persistent storage for Consul). He also shows how to delegate some of Kubernetes&rsquo; DNS functionality to Consul.</p>
+<p>From there, Hightower moves into discussing (and showing) how and why one might want to use Vault in conjunction with Kubernetes. His demonstration shows how Vault can dynamically create (and destroy) credentials.</p>
+<p>Next, Hightower shows deploying a Nomad cluster as a StatefulSet on Kubernetes (deploying it via Alexa, I think), and then adds some Nomad worker nodes (running on Google Cloud Platform, Hightower&rsquo;s &ldquo;on-premises&rdquo;, as he puts it). He then deploys a job onto the Nomad cluster, again using voice recognition via his phone.</p>
+<p>At this point, the keynote session wraps up with a quick review of the upcoming talks in the different tracks.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hashiconf2017">HashiConf2017</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/09/19/terraform-abstractions-safety-power/">Liveblog: Terraform Abstractions for Safety and Power</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/09/20/liveblog-cloud-native-infrastructure/">Liveblog: Cloud Native Infrastructure</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f20%2fhashiconf-2017-day-2-keynote%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f20%2fhashiconf-2017-day-2-keynote%2f&text=HashiConf%202017%20Day%202%20Keynote" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f20%2fhashiconf-2017-day-2-keynote%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/09/19/terraform-abstractions-safety-power/">Liveblog: Terraform Abstractions for Safety and Power</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/09/19/journey-to-cloud-packer-terraform/">Liveblog: Journey to the Cloud with Packer and Terraform</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/09/19/hashiconf-2017-day-1-keynote/">HashiConf 2017 Day 1 Keynote</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

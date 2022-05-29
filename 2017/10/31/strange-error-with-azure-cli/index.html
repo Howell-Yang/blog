@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Strange Error with the Azure CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Strange Error with the Azure CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Strange Error with the Azure CLI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/10/31/strange-error-with-azure-cli/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Strange Error with the Azure CLI</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;649 words (estimated 4 minutes to read)</span>
+  <p>Over the last week or so, I&rsquo;ve been trying to spend more time with <a href="https://azure.microsoft.com/en-us/">Microsoft Azure</a>; specifically, around some of the interesting things that Azure is doing with containers and <a href="https://kubernetes.io">Kubernetes</a>. Inspired by articles such as <a href="http://hypernephelist.com/2017/10/17/getting-started-with-traefik-and-k8s-using-acs.html">this one</a>, I thought it would be a pretty straightforward process to use the Azure CLI to spin up a Kubernetes cluster and mess around a bit. Simple, right?</p>
+<p>Alas, it turned out not to be so simple (if it had been simple, this blog post wouldn&rsquo;t exist). The first problem I ran into was the upgrading the Azure CLI from version 2.0.13 to version 2.0.20 (which is, to my understanding, the minimum version needed to do what I was trying to do). I&rsquo;d installed the Azure CLI using <a href="/2017/08/13/manually-installing-azure-cli-fedora-25/">this process</a>, so <code>pip install azure-cli --upgrade</code> should take care of it. Unfortunately, on two out of three systems on which I attempted this, the Azure CLI failed to work after the upgrade. I was only able to fix the problem by completely removing the Azure CLI (which I&rsquo;d installed into a virtualenv), and then re-installing it. First hurdle cleared!</p>
+<p>With the Azure CLI upgraded, I proceeded to ensure that I was appropriately logged in (via <code>az login</code>), created a resource group in &ldquo;west us 2&rdquo; (via <code>az group create</code>), and then tried to launch an ACS cluster:</p>
+<pre><code>az acs create --orchestrator-type=kubernetes --resource-group=my-rg \
+--name=my-k8s-cluster --generate-ssh-keys
+</code></pre>
+<p>The Azure CLI created a service principal for me (as expected), but then errored out with a permissions-related error referencing a <em>different</em> service principal.</p>
+<p>Using <code>az ad sp list</code>, I looked at the service principal in question; it was not the service principal created automatically by the <code>az acs create</code> command, but a built-in service principal named &ldquo;AzureContainerService&rdquo;. Thinking I&rsquo;d done something wrong, I deleted everything I&rsquo;d done so far&mdash;removed the resource group, deleted the automatically-created service principal&mdash;and tried again.</p>
+<p>No joy; same error. Dave Strebel (<a href="https://twitter.com/dave_strebel">@dave_strebel</a> on Twitter) offered some assistance but couldn&rsquo;t reproduce the error. OK, let&rsquo;s try deleting the &ldquo;AzureContainerService&rdquo; principal. Nope, that just made things worse. Thinking that perhaps something had gone wrong with my subscription, I deactivated that subscription and created a new one.</p>
+<p>That didn&rsquo;t work either; same error (I had to correct a few subscription-related issues via <code>az account</code> first). At this point, Dave offered to take a deeper look for me (thanks Dave!), so I sent him some information. While I was waiting to hear back from Dave, I tried installing the Azure CLI on Windows 10, just to see if there was some sort of platform issue at play here. I ran into the same error there.</p>
+<p>After a while, Dave contacted me and suggested I run a few commands. After some trial and error, the correct set of commands that ultimately enabled <code>az acs create</code> to work as expected were these:</p>
+<pre><code>az provider register -n Microsoft.Compute
+az provider register -n Microsoft.Network
+az provider register -n Microsoft.Storage
+</code></pre>
+<p>After running these commands and giving some time for the registrations to fully complete (the <code>az provider show</code> command doesn&rsquo;t really help much, to be honest, despite the suggestion from the Azure CLI otherwise), then creating a Kubernetes-powered ACS cluster using <code>az acs create</code> worked as expected. Hurray!</p>
+<p>So, what are the lessons I learned from this experience?</p>
+<ul>
+<li>If you&rsquo;re trying to use <code>az acs create</code> and getting a strange permissions error related to the &ldquo;AzureContainerService&rdquo; service principal, try the <code>az provider register</code> commands listed above. (I still don&rsquo;t know what these commands actually do, or why they were required.)</li>
+<li>If you installed the Azure CLI using <code>pip</code>, upgrading it via <code>pip</code> may not work as expected. I recommend using a virtualenv to make removing the Azure CLI and re-installing it a simple process. (This doesn&rsquo;t apply to Windows, naturally, where the typical installation method is an MSI package.)</li>
+<li>Dave Strebel is a great example of community advocacy.</li>
+</ul>
+<p>On to more adventures!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/10/27/technology-short-take-89/">Technology Short Take 89</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/02/sublime-text-keymap-bracketeer/">A Sublime Text Keymap for Bracketeer</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f31%2fstrange-error-with-azure-cli%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f31%2fstrange-error-with-azure-cli%2f&text=Strange%20Error%20with%20the%20Azure%20CLI" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f31%2fstrange-error-with-azure-cli%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2017/08/13/manually-installing-azure-cli-fedora-25/">Manually Installing Azure CLI on Fedora 25</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2017/10/27/technology-short-take-89/">Technology Short Take 89</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

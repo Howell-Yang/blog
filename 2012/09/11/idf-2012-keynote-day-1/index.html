@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2012 Keynote, Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2012 Keynote, Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2012 Keynote, Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/09/11/idf-2012-keynote-day-1/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2012 Keynote, Day 1</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;840 words (estimated 4 minutes to read)</span>
+  <p>This is a liveblog of the day 1 keynote at Intel Developer Forum (IDF) 2012 at Moscone West in San Francisco, CA. This is my first time attending IDF, and I appreciate the invitation to attend from Intel. (Disclosure: My travel expenses are being reimbursed and I was given a pass to attend, but I am not receiving any other form of compensation.)</p>
+<p>Prior to the start of the keynote, they show a video talking about &ldquo;What misconception about engineers bothers you most?&rdquo; It&rsquo;s a collection of snippets talking with various people at the show (probably from last year). It&rsquo;s a interesting and amusing video. According to the people on the video, the most common misconception is that engineers don&rsquo;t know how to have fun.</p>
+<p>At 9:01, David (Dadi) Perlmutter takes the stage after a short video about Intel. Admirably, Perlmutter recognizes the grave importance of today&rsquo;s date (9/11), something that I have to give him credit for. I fear that many organizations would not have taken time out of their limited schedule to do so, and I commend Intel.</p>
+<p>This year marks the 15th anniversary of IDF, which launched for the very first time in 1997. Today Perlmutter&rsquo;s discussion will focus on &ldquo;reinventing computing&rdquo; (at least, he admits again and not for the last time). Tomorrow&rsquo;s keynote will focus on security, and Thursday&rsquo;s keynote is about connecting to the future.</p>
+<p>Perlmutter states that &ldquo;reinventing computing&rdquo; isn&rsquo;t just about Intel; it&rsquo;s about working in collaboration with Intel&rsquo;s partners and Intel&rsquo;s developers to &ldquo;shape the future.&rdquo; He shows off two hardware samples: the ultra-small Medfield system-on-a-chip (SoC) and the much larger Xeon Phi high-performance computing (HPC) platform. However, it&rsquo;s not just about hardware&mdash;it&rsquo;s also about the software.</p>
+<p>According to Intel and Perlmutter, &ldquo;data creates opportunities&rdquo;. There are opportunities for creating digital data, storing digital data, and analyzing digital data. All this leads to cloud and big data.</p>
+<p>Perlmutter now shifts his discussion from a broad look at the driving factors in the industry to a more specific look at the data center specifically. And while Intel is involved in the data center&mdash;both directly and through a wide array of partners&mdash;Perlmutter feels the &ldquo;real revolution&rdquo; is in the transformation of personal computing. This, naturally, leads to a discussion of Intel&rsquo;s Ultrabooks, now equipped with Intel&rsquo;s 22nm 3rd generation Intel Core processors. He then shows off several different form factors from various Intel OEMs (all of them are running Windows 8). He demonstrates a tablet/slate form factor, as well as a detachable form, the traditional notebook/clamshell, and the convertible form factor.</p>
+<p>Going back to his earlier statement about the importance of software, Perlmutter now talks about how software features like sensors, facial recognition, instant on, responsive voice, and others will help enable new experiences in the personal computing arena. This also includes new, more &ldquo;natural&rdquo; and &ldquo;intuitive&rdquo; computing that employs voice and touch interfaces.</p>
+<p>Next up is a demonstration of some new voice interface capabilities that are being jointly developed by Intel and Nuance. The technology and software demonstrated is said to be available in beta form on Q4 of this year.</p>
+<p>Following that demonstration, Perlmutter demonstrates some new technologies using gestures. Working with Creative and SoftKinetic, he shows off a few examples of how 3-D cameras and gesture support can enable new ways of interacting with our computers.</p>
+<p>At 9:28 AM, Gary Flood of MasterCard joins Perlmutter on stage to discuss how Intel can make the e-commerce experience better for both users and merchants. According to Flood, e-commerce needs to be secure, non-intrusive, seamless, and fluid for both consumers and merchants. That leads to a discussion of MasterCard&rsquo;s PayPass wallet services. Following that is a demonstration of NFC (Near-Field Communications) sensors on next-generation Ultrabooks. This demo incorporates Intel Identity Protection Technology (IPT) to provide even more security and to associate the user with the endpoint (an ultrabook, in this case).</p>
+<p>The next demonstration shows a couple of different applications running on both Atom and Core CPUs; Perlmutter uses a couple of Windows 8 applications as his example.</p>
+<p>Perlmutter now introduces &ldquo;Haswell,&rdquo; Intel&rsquo;s 22nm 4th generation Intel Core processor, designed with mobility in mind and intended for use in devices such as tables and ultrabooks all the way up to full-size workstations. He demonstrates graphics performance between the current-generation Core CPU and the next-generation Core CPU. The graphics performance of the next-generation CPU is significantly better, as one would expect.</p>
+<p>Perlmutter now reviews the five Intel-based smartphones that are currently available on the market, and he discusses applying the same innovations shown earlier in the mobility context to the all-in-one (AIO) form factor. Perlmutter also shows off a Coca-Cola intelligent vending machine that is powered by an Intel Core i7 CPU.</p>
+<p>The Intel vision is: &ldquo;This decade we will create and extend computing technology to connect and enrich the lives of every person on earth.&rdquo; The keynote ends with a video that talks about how people use Intel technologies to help solve the problems that face humanity.</p>
+<p>And with that, the keynote concludes.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2012">IDF2012</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/09/10/a-vmworld-2012-wrap-up/">A VMworld 2012 Wrap-Up</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/09/11/spcs001-intel-next-generation-haswell-microarchitecture/">SPCS001: Intel Next-Generation Haswell Microarchitecture</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f11%2fidf-2012-keynote-day-1%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f11%2fidf-2012-keynote-day-1%2f&text=IDF%202012%20Keynote%2c%20Day%201" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f09%2f11%2fidf-2012-keynote-day-1%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/05/11/introduction-to-nehalem-memory/">Introduction to Nehalem Memory</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2009/04/07/introduction-to-nehalem-cpus/">Introduction to &#34;Nehalem&#34; CPUs</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/05/03/technology-short-take-22/">Technology Short Take #22</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

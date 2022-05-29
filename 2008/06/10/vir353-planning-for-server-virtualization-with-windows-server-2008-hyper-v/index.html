@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/06/10/vir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VIR353: Planning for Server Virtualization with Windows Server 2008 Hyper-V</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;842 words (estimated 4 minutes to read)</span>
+  <p>My final session of the day is VIR353, Planning for Server Virtualization with Windows Server 2008 Hyper-V Using the New Infrastructure Planning and Design Guides. I got into this session about 15 minutes late as I was finishing up a one-on-one interview with Jeff Woolsey, Senior Program Manager for Hyper-V. I&rsquo;ll have more on my interview with him later today or tonight. I&rsquo;m not attending the next session of the day because it turns out that VIR366/VIR367 are essentially identical.</p>
+<p>As I entered the session, the speaker was discussing the steps or tasks involved in creating the list of applications that will be run virtualized. He underscored the need to understand the applications&rsquo; requirements with regards to CPU, CPU type (32-bit or 64-bit), RAM requirements, and networking and storage requirements. The example given by the speaker is trying to run Exchange Server 2007 on Virtual Server. This won&rsquo;t work, of course, because Exchange requires 64-bit support and Virtual Server only provides 32-bit support. Users also need to quantify support for applications running on a Hyper-V installation. Upon compiling the list of applications and their requirements, users will then need to identity the candidates for virtualization and prioritize them for virtualization.</p>
+<p>The guide (I&rsquo;m assuming this means the Infrastructure Planning and Design guide) makes the assumption that a single application on a physical server is transferred to a single application on a single VM. The guide does not take into account combining applications during the consolidation process.</p>
+<p>After identifying the applications, users should then determine resource requirements. This includes CPU load, memory load, disk I/Os per second (IOPS), disk capacity, and network bandwidth. Users will also need to consider backup requirements and high availability requirements. Using the information on resource requirements, users can then group applications together and ensure that the aggregate requirements don&rsquo;t exceed the capabilities of the physical host. This obviously can&rsquo;t be done without first identifying the host platform, either by using company standards or by custom designing a virtualization hardware platform that suits your needs.</p>
+<p>The speaker stresses the importance of mapping the five key resource requirements&mdash;CPU load, memory load, disk I/O per second, disk capacity, and network bandwidth&mdash;against the host hardware. This can be done manually or using the Microsoft Assessment and Planning (MAP) Toolkit. I&rsquo;m attending a session on MAP tomorrow, so I&rsquo;ll have more information on that later. It&rsquo;s my understanding that MAP is similar to VMware Capacity Planner. The speaker also mentions that we can use System Center Virtual Machine Manager (SCVMM) to help with this process as well.</p>
+<p>There are some considerations to keep in mind if using the tools. MAP currently does not include memory load or disk capacity in its assessments; SCVMM does not include disk capacity. The manual method will also typically not take CPU frequency scaling into consideration (i.e., 15% busy on a 2.2GHz CPU does not mean 15% busy on a 3.0GHz CPU).</p>
+<p>The speaker announced that the IPD Guide for SCVMM is now available in beta.</p>
+<p>SCVMM 2008, the next version of SCVMM that is currently in beta, is considered essential for managing a Hyper-V installation of any size. In this regard, it is very similar to VirtualCenter. Most companies installing any reasonable size implementation of VMware Infrastructure are also going to install VirtualCenter; the same goes for Hyper-V and SCVMM 2008.</p>
+<p>A design consideration for deploying SCVMM is the placement of the VMM library. The VMM library is where ISOs, VM templates, Sysprep files, etc., are stored. Anytime SCVMM instantiates a VM, files must be copied from the VMM library to the host server, so good network connectivity is absolutely critical. In fact, the speaker said, &ldquo;right next to each other&rdquo; if at all possible.</p>
+<p>In today&rsquo;s <a href="/2008/06/10/tech-ed-2008-keynote-liveblog/">keynote liveblog</a>, you&rsquo;ll recall that I mentioned PRO, which is an integration point between SCVMM and SCOM. If this is something that an organization desires, this is a decision to make early in the process. This decision can affect the number of SCVMM instances; this is due to the fact that multiple SCVMMs can connect to a single SCOM management group (MG), but a single SCVMM instance can&rsquo;t connect to multiple SCOM MGs. If there are multiple SCOM MGs, then you&rsquo;ll need to install multiple SCVMM instances (one for each MG), or you&rsquo;ll need to forgo integration of the consoles.</p>
+<p>The session wrapped up with an overview of what&rsquo;s coming next in the Infrastructure Planning and Design guides. In particular, the speaker provided a list of the various IPD guides that are available from Microsoft. Some of them include:</p>
+<ul>
+<li>Selecting the Right Virtualization Technology</li>
+<li>Windows Server Virtualization</li>
+<li>SoftGrid 4.2</li>
+<li>Terminal Services in Windows Server 2008</li>
+<li>Windows Deployment Services</li>
+</ul>
+<p>There are about 10 IPD guides available, with more in the works.</p>
+<p>And that&rsquo;s it for today&rsquo;s sessions! I have a few other posts to prepare; I&rsquo;ll try to get them published tonight but it may be tomorrow. Hopefully readers are finding the coverage of the conference helpful. Feel free to add your thoughts in the comments below, and thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/teched2008">TechEd2008</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/06/10/announcement-double-takes-hyper-v-product-support/">Announcement: Double-Take&#39;s Hyper-V Product Support</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/06/10/a-discussion-with-jeff-woolsey/">A Discussion with Jeff Woolsey</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f10%2fvir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f10%2fvir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v%2f&text=VIR353%3a%20Planning%20for%20Server%20Virtualization%20with%20Windows%20Server%202008%20Hyper-V" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f06%2f10%2fvir353-planning-for-server-virtualization-with-windows-server-2008-hyper-v%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/06/10/vir367-hyper-v-security-and-best-practices/">VIR367: Hyper-V Security and Best Practices</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2008/06/10/tech-ed-2008-keynote-liveblog/">Tech-Ed 2008 Keynote Liveblog</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2008/06/10/announcement-double-takes-hyper-v-product-support/">Announcement: Double-Take&#39;s Hyper-V Product Support</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

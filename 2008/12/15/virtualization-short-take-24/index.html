@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #24 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #24 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #24 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/12/15/virtualization-short-take-24/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #24</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;818 words (estimated 4 minutes to read)</span>
+  <p>There&rsquo;s lots of good information flowing around the Internet, and it&rsquo;s becoming increasingly difficult to sort through all the useless stuff to find the valuable gems. Hopefully, some of the links that I have collected here will prove to be more useful than useless!</p>
+<ul>
+<li>
+<p>I came across <a href="http://kb.vmware.com/selfservice/search.do?cmd=displayKC&amp;docType=kc&amp;externalId=1002722&amp;sliceId=2&amp;docTypeID=DT_KB_1_1&amp;dialogID=9988974&amp;stateId=1%200%209994223">this VMware KB article</a> titled &ldquo;Dedicating specific NICs to portgroups while maintaining NIC teaming and failover for the vSwitch&rdquo;. I was hoping it would shed new light on some NIC teaming functionality. Unfortunately, it was only about overriding the default vSwitch failover policy on a per-portgroup basis. I was already well aware of that functionality and use it quite extensively in my VMware designs, but for others that may prove useful.</p>
+</li>
+<li>
+<p><a href="http://www.youtube.com/watch?v=7CbRS0GGuNc">This video</a> about VMware DPM sparked some debate about spin-up/spin-down affecting drive MTBF and decreasing a VMware ESX server&rsquo;s operational lifecycle. Chad Sakac of EMC shared some findings from EMC regarding spin-up/spin-down in <a href="http://virtualgeek.typepad.com/virtual_geek/2008/12/does-vmware-dpm-shorten-esx-server-lifespan.html">this post</a> and came to the conclusion that using VMware DPM should not materially affect the reliability or lifetime of servers (at least with regards to drive failures). Personally, I tend to agree that this was FUD, most likely from a competitor, but it&rsquo;s best to get this sort of thing out in the open and debunked.</p>
+</li>
+<li>
+<p>Leo posted <a href="http://blog.core-it.com.au/?p=351">a brief snippet of code</a> to upgrade the VMware Tools on VMs without a reboot. It looks like it might come in handy. And Leo&rsquo;s guide to <a href="http://blog.core-it.com.au/?p=100">configuring jumbo frames with an EMC AX4-5i</a> is quite useful, too&mdash;it&rsquo;s a nice counterpoint to my own <a href="/2008/04/22/esx-server-ip-storage-and-jumbo-frames/">guide to configuring jumbo frames</a>.</p>
+</li>
+<li>
+<p>Tomas ten Dam has <a href="http://tendam.wordpress.com/2008/11/18/srm-in-a-box-final-release-the-complete-setup/">completed his guide</a> to building a complete &ldquo;SRM in a Box&rdquo; setup using the NetApp Data ONTAP Simulator. Of course, Chad wants him to use the Celerra VM&hellip;</p>
+</li>
+<li>
+<p>Oh, and while we&rsquo;re talking VMware SRM, be sure to check out <a href="http://www.rtfm-ed.co.uk/">Mike Laverick&rsquo;s</a> book on VMware SRM, &ldquo;Administering VMware Site Recovery Manager 1.0&rdquo;. I haven&rsquo;t read the book yet, but knowing Mike I&rsquo;m sure it&rsquo;s good quality stuff. Maybe Santa will give me a copy for Christmas.</p>
+</li>
+<li>
+<p>Sven H. over at VirtualFuture.info posted <a href="http://virtualfuture.info/2008/12/vmware-esx-35-and-thinprovisioning/">a good guide on using thin provisioned VMDKs</a> with VMware ESX 3.5 via the vmkfstools command. (I was going to include a trackback to Sven&rsquo;s post, but his blog theme doesn&rsquo;t show the trackback URL.) Seems like I saw somewhere that thin provisioned VMDKs in ESX 3.5 are still unsupported, so deploy accordingly.</p>
+</li>
+<li>
+<p><a href="http://blogs.technet.com/tonyso/archive/2008/11/26/hyper-v-how-to-patch-vms-offline.aspx">Via Tony Soper</a>, I found that version 2 of Microsoft&rsquo;s Offline Virtual Machine Servicing Tool is available. I first discussed the Offline Virtual Machine Servicing Tool <a href="/2008/06/11/mgt374-offline-virtual-machine-servicing-tool/">back in June</a> during Tech-Ed 2008. You can download the tool <a href="http://www.microsoft.com/downloads/details.aspx?FamilyId=8408ECF5-7AFE-47EC-A697-EB433027DF73&amp;displaylang=en">here</a>.</p>
+</li>
+<li>
+<p>Also from Tony, here&rsquo;s a great article on <a href="http://blogs.technet.com/tonyso/archive/2008/12/04/hyper-v-how-to-balance-vm-i-o.aspx">how to balance VM I/O with Hyper-V</a>. An interesting tidbit from this: by default, I/O balancing is enabled for storage, but not for networking. I can see it needing to be enabled for storage, but why disabled by default for networking?</p>
+</li>
+<li>
+<p>More information on <a href="http://www.virtualizationadmin.com/articles-tutorials/microsoft-hyper-v-articles/general/controlling-processor-resources-hyper-v-guests.html">controlling resource utilization within Hyper-V</a> is provided in this article by Robert Larson. It&rsquo;s worth having a quick look if you are unsure how to configure it or how it works.</p>
+</li>
+<li>
+<p>Ben Armstrong <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2008/12/10/why-does-it-take-so-long-to-create-a-fixed-size-virtual-hard-disk.aspx">answers</a> the question, &ldquo;Why does it take so long to create a fixed size virtual hard disk?&rdquo; The answer: the disk space is zeroed out in advance. My question is this: is this need to zero out the disk space a result of how NTFS deletes files or is this scenario applicable to VMFS as well?</p>
+</li>
+<li>
+<p>This has probably been mentioned before, but users considering virtualizing their Active Directory domain controllers should keep <a href="http://support.microsoft.com/kb/888794">these considerations</a> in mind.</p>
+</li>
+<li>
+<p>I recently ran into a situation where we need to change the IP address of an NFS datastore. (It&rsquo;s a long story as to how this came about.) In any case, I told the customer that I couldn&rsquo;t be sure that changing the IP address wouldn&rsquo;t cause problems. Fortunately, before the customer tried it, I found <a href="http://vmwaretips.com/wp/2008/09/13/changing-the-ip-of-your-nfs-datastore/">this post</a> by Rick Scherer. The short story: it doesn&rsquo;t work, and you shouldn&rsquo;t do it. Create a new datastore with the correct IP address and use Storage VMotion instead.</p>
+</li>
+<li>
+<p>For even more information on Storage VMotion, also check out <a href="http://virtualgeek.typepad.com/virtual_geek/2008/12/real-world-experiences-using-storage-vmotion.html">Chad&rsquo;s post here</a>.</p>
+</li>
+<li>
+<p>VMwarewolf continues his Resolution Path series with <a href="http://www.vmwarewolf.com/common-fault-issues-in-vmware-infrastructure/">common fault issues in VMware Infrastructure</a>. Good stuff.</p>
+</li>
+</ul>
+<p>It&rsquo;s clearly been too long since I published one of these, as I still have other links collecting dust in my &ldquo;link bin&rdquo;:</p>
+<p><a href="http://www.virtualization.info/2008/12/third-brigade-offers-free-security-for.html">Third Brigade offers free security for up to 100 virtual machines</a></p>
+<p><a href="http://virtualgeek.typepad.com/virtual_geek/2008/11/version-9-of-the-powervdi-tool.html">Version 4 of the PowerVDI tool</a></p>
+<p><a href="http://www.jasemccarty.com/blog/2008/01/godaddy-wildcard-certificate-with-vi3.html">Go Daddy Wildcard Certificate with VI3</a></p>
+<p><a href="http://www.boche.net/blog/?p=655">New VMware VI network port diagram request for comments</a></p>
+<p><a href="http://blog.core-it.com.au/?p=367">Auditing ESX root logins with email&hellip;</a></p>
+<p>Like I said, there&rsquo;s just so much information! And now that I&rsquo;m trying to delve deeper into the storage realm, that&rsquo;s only doubled up on the information I&rsquo;m trying to manage. Hopefully I&rsquo;ve picked out a few gems for you this week. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssl">SSL</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwaresrm">VMwareSRM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/12/12/vmware-ha-problem-with-update-3/">VMware HA Problem with Update 3</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/12/15/youve-got-to-be-kidding-me/">You&#39;ve Got to be Kidding Me</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fvirtualization-short-take-24%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fvirtualization-short-take-24%2f&text=Virtualization%20Short%20Take%20%2324" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f15%2fvirtualization-short-take-24%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/11/19/virtualization-short-take-23/">Virtualization Short Take #23</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2008/10/23/virtualization-short-take-20/">Virtualization Short Take #20</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2008/08/20/thinking-on-microsofts-licensing-changes/">Thinking on Microsoft&#39;s Licensing Changes</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

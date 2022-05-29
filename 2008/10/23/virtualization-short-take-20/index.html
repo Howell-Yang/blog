@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #20 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #20 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #20 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/10/23/virtualization-short-take-20/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #20</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;543 words (estimated 3 minutes to read)</span>
+  <p>This week&rsquo;s Short Take is a collection of links and articles that I&rsquo;ve seen over the last few weeks (or longer ago, in some cases!) that I thought others might find interesting or useful. Enjoy!</p>
+<ul>
+<li>
+<p>Alessandro broke the news to the general public about some <a href="http://www.virtualization.info/2008/10/windows-server-2008-r2-to-introduce.html">anticipated new virtualization features</a> that are expected to make their debut in Windows Server 2008 R2, expected sometime in 2010. Microsoft announced <a href="/2008/09/08/live-migration-with-hyper-v/">live migration for Hyper-V</a> back at the beginning of September, so that part was already known. Now coming from Alessandro&rsquo;s article is the announcement that Microsoft is developing a cluster file system, similar to VMFS, called Cluster Shared Volumes (CSV). Personally, this wasn&rsquo;t a big surprise to me as a contact of mine leaked this to me a while ago. Hopefully this won&rsquo;t hit Sanbolic too hard, whose Melio FS and Kayo FS solutions were intended to fill this gap (as discussed <a href="/2008/06/16/melio-fs-hyper-v-and-vmware-esx/">here</a> and <a href="/2008/07/08/sanbolic-looking-to-capitalize-on-hyper-v-opportunity/">here</a>).</p>
+</li>
+<li>
+<p>As fully expected, VMware and Microsoft trade lots of barbs back and forth about VMware ESX vs. Hyper-V and vice versa. Out of the various exchanges, I found the &ldquo;Too Dry and Crunchy&rdquo; exchange&mdash;now quite old, having been published back at the end of September&mdash;the most entertaining. It started <a href="http://blogs.vmware.com/virtualreality/2008/09/esxi-vs-hyper-v.html">here with a barb from VMware</a> about how Hyper-V with Server Core, the recommended configuration from Microsoft for virtualization hosts, is &ldquo;not the Windows you know.&rdquo; They compared Hyper-V on Server Core to ESXi and, not surprisingly, found ESXi to be easier and faster to install. What was really surprising though, was the response from James O&rsquo;Neill in which he essentially agreed: Server Core <em>isn&rsquo;t</em> &ldquo;the Windows you know.&rdquo; While he does love Server Core, James also recognizes that Server Core is not the right fit for every workload, and that management processes and procedures may need to change when using Server Core. Personally, I&rsquo;m glad to see James recognizing and being honest about the limitations (or caveats) of Server Core. If only all vendors were so honest about their own products&hellip;one day, perhaps.</p>
+</li>
+<li>
+<p>Duncan <a href="http://www.yellow-bricks.com/2008/10/14/virtualcenter-memory-statistic-definitions/">points out</a> a great PDF on the definitions of various memory statistics. Readers may find that useful in understanding the various counters within VirtualCenter.</p>
+</li>
+<li>
+<p>This <a href="http://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&amp;docType=kc&amp;externalId=1005476&amp;sliceId=1&amp;docTypeID=DT_KB_1_1&amp;dialogID=36340738&amp;stateId=0%200%202961456">VMware KB article</a> outlines a potential VMware HA problem with multiple Service Console interfaces.</p>
+</li>
+<li>
+<p>Andy Leonard <a href="http://andyleonard.com/2008/10/17/esx-swap-on-nfs-or-not/">picked up</a> this <a href="http://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&amp;docType=kc&amp;externalId=1004082&amp;sliceId=1&amp;docTypeID=DT_KB_1_1&amp;dialogID=2709533&amp;stateId=0%200%202711273">VMware KB article</a> that I bookmarked via Delicious.com and discussed how VMware&rsquo;s recommendations and NetApp&rsquo;s recommendations seem to run counter to each other. Personally, I&rsquo;m inclined to follow VMware&rsquo;s recommendations after the little snafu with <a href="/2008/10/18/important-note-regarding-vmware-over-nfs/">NetApp&rsquo;s NFS file locking suggestion</a>.</p>
+</li>
+<li>
+<p>This is a cool article on <a href="http://blogs.sun.com/rarneson/entry/zfs_clones_iscsi_and_vmware">the use of ZFS and iSCSI</a> to create clones in storage instead of at the virtualization layer. This is interesting because it&rsquo;s being done with Solaris and ZFS, but it&rsquo;s functionally equivalent to FlexClones with NetApp, which I&rsquo;ve discussed before (see <a href="/2007/05/11/how-to-provision-vms-using-netapp-flexclones/">here</a>, <a href="/2007/05/15/netapp-flexclones-with-vmware-part-1/">here</a>, and <a href="/2007/05/17/netapp-flexclones-with-vmware-part-2/">here</a>). Accordingly, ZFS clones will suffer from all the same limitations as NetApp FlexClones.</p>
+</li>
+<li>
+<p>And while we&rsquo;re on the topic of Sun and NetApp, what&rsquo;s the deal with the recent patent rulings in the ZFS vs. WAFL lawsuit? If I&rsquo;m reading <a href="http://blogs.sun.com/dillon/entry/one_more_thing">this update</a> correctly, it looks like some of the core WAFL patents from NetApp are being invalidated. Is Sun going to win this thing?</p>
+</li>
+</ul>
+<p>That does it for now. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/wafl">WAFL</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/zfs">ZFS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/10/23/this-is-what-snow-leopard-needs/">This is What Snow Leopard Needs</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/10/24/hyper9-beta-invitations/">Hyper9 Beta Invitations</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f23%2fvirtualization-short-take-20%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f23%2fvirtualization-short-take-20%2f&text=Virtualization%20Short%20Take%20%2320" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f10%2f23%2fvirtualization-short-take-20%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/08/20/thinking-on-microsofts-licensing-changes/">Thinking on Microsoft&#39;s Licensing Changes</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2008/08/14/storage-protocol-performance-whitepaper-from-netapp/">Storage Protocol Performance Whitepaper from NetApp</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2008/07/05/virtualization-short-take-12/">Virtualization Short Take #12</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

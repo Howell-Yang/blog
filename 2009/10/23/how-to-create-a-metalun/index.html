@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>How To Create a MetaLUN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="How To Create a MetaLUN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="How To Create a MetaLUN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/10/23/how-to-create-a-metalun/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">How To Create a MetaLUN</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;443 words (estimated 3 minutes to read)</span>
+  <p>MetaLUNs are a way of expanding a LUN for either additional I/O capacity (using a striped MetaLUN) or additional space (using a concatenated MetaLUN). A <em>striped MetaLUN</em>, as the name implies, stripes data across multiple component LUNs. Each of these component LUNs resides on a different RAID group, so creating a striped MetaLUN allows the MetaLUN to utilize all the spindles in all the RAID groups. A <em>concatenated MetaLUN</em>, on the other hand, fills up one component LUN before moving on to the next component LUN. I/O capacity is essentially unchanged, but storage capacity is expanded.</p>
+<p><a href="http://www.emcstorageinfo.com/2008/03/type-and-benefits-of-meta-lun.html">This article</a> has some good information on MetaLUNs.</p>
+<p>While trying to learn more about MetaLUNs, I searched high and low for a &ldquo;how to&rdquo; guide on creating MetaLUNs. Surprisingly enough, I didn&rsquo;t find anything. So, here&rsquo;s my take on how to create a MetaLUN. EMC experts, feel free to refine my process, correct my errors, and provide general guidance.</p>
+<p>The equipment used in my experimentation is a CLARiiON CX4-960 running FLARE 28 (as best I can tell). I performed this task using Navisphere 6 running under Internet Explorer 6 on Windows Server 2003.</p>
+<p>OK, ready? Here we go:</p>
+<ol>
+<li>
+<p>Create the necessary RAID groups to house multiple LUNs. Based on my limited experience thus far, it seems like RAID 5 (4+1) is the most common configuration for a RAID group unless you know you need something else.</p>
+</li>
+<li>
+<p>Create LUNs <em>with the exact same size and settings</em> in each of the RAID groups you created. For maximum performance, ensure that the LUNs are created on separate buses. I used LUNs on three separate RAID groups: one on Bus 0, one on Bus 1, and one on Bus 2.</p>
+</li>
+<li>
+<p>Right-click on the first LUN you created and select Expand.</p>
+</li>
+<li>
+<p>Click Next to start the wizard.</p>
+</li>
+<li>
+<p>Select Striping and click Next.</p>
+</li>
+<li>
+<p>Select each of the LUNs. Hold down the Control key to select more than one LUN. Click Next when you have selected all your component LUNs.</p>
+</li>
+<li>
+<p>Make sure Maximum Capacity is selected and click Next.</p>
+</li>
+<li>
+<p>Click Finish.</p>
+</li>
+</ol>
+<p>When the wizard is done processing, the LUNs you created in the RAID groups will be moved into the Private LUNs container, and a new MetaLUN object will appear in Navisphere (under LUN Folders &gt; MetaLUNs). You can then present this MetaLUN out to one or more servers in the same way you would present any other LUN object.</p>
+<p>If I&rsquo;ve misrepresented something or have provided incorrect information, please let me know by speaking up in the comments. I&rsquo;d also love to hear any recommendations from EMC experts on the use of MetaLUNs, advantages and disadvantages of using them, etc. Share your knowledge!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/10/23/cutting-yourself-on-the-double-edged-sword/">Cutting Yourself on the Double-Edged Sword</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/10/25/setting-up-fcoe-on-a-nexus-5000/">Setting Up FCoE on a Nexus 5000</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f23%2fhow-to-create-a-metalun%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f23%2fhow-to-create-a-metalun%2f&text=How%20To%20Create%20a%20MetaLUN" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f23%2fhow-to-create-a-metalun%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/09/24/im-a-bad-student/">I&#39;m a Bad Student</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2009/09/15/learning-about-emc-storage/">Learning About EMC Storage</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

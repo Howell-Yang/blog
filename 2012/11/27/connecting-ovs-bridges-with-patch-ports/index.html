@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Connecting OVS Bridges with Patch Ports - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Connecting OVS Bridges with Patch Ports - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Connecting OVS Bridges with Patch Ports - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/11/27/connecting-ovs-bridges-with-patch-ports/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Connecting OVS Bridges with Patch Ports</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;822 words (estimated 4 minutes to read)</span>
+  <p>Spurred to action by a brief mention at the bottom of <a href="http://blog.aaronorosen.com/open-vswitch-and-libvirt/">a blog post</a>, I began digging into the use of <em>patch ports</em> to connect multiple <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> bridges. In this post, I&rsquo;ll show you how to connect two separate OVS bridges using a patch port, and then we&rsquo;ll explore some possible use cases for this functionality.</p>
+<p>You&rsquo;ve seen me use the <code>ovs-vsctl set interface &lt;interface name&gt; type=...</code> syntax several times; I provided some insight on what it&rsquo;s doing in <a href="/2012/10/04/some-insight-into-open-vswitch-configuration/">this post</a>. Basically, what we&rsquo;re doing with this command is manipulating the OVS configuration database. This is how we configure internal interfaces that can be plumbed with an IP address (for use in [Layer 3 routing with OVS][2]. In this article, we&rsquo;re going to use this command again, but this time we&rsquo;re going to set <code>type=patch</code>.</p>
+<p>I&rsquo;d not seen any references to patch ports before before running into <a href="http://blog.aaronorosen.com/open-vswitch-and-libvirt/">this blog post</a>, where patch ports receive a brief mention at the end of the article. So, I did a little digging, and finally found the manpage for the OVS configuration database (visible by running <code>man 5 ovs-vswitchd.conf.db</code> from a system with OVS installed). In that manpage, it describes patch ports as &ldquo;a pair of virtual devices that act as a patch cable.&rdquo; A patch port only has a single option, and that single option is the name of the patch port at the opposite end.</p>
+<p>Graphically, you can think of patch ports like this:</p>
+<p><img src="/public/img/ovs-bridges-patch-ports.png" alt="OVS patch ports"></p>
+<p>To create a patch port, it&rsquo;s quite easy. This group of commands will create a patch port:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ovs-vsctl add-port &lt;bridge name&gt; &lt;port name&gt;
+</span></span><span style="display:flex;"><span>ovs-vsctl set interface &lt;port name&gt; type<span style="color:#f92672">=</span>patch
+</span></span><span style="display:flex;"><span>ovs-vsctl set interface &lt;port name&gt; options:peer<span style="color:#f92672">=</span>&lt;peer name&gt;
+</span></span></code></pre></div><p>You would repeat these commands for each bridge you want connected to another bridge. To connect two bridges, you would repeat them twice&mdash;once for the first bridge (specifying the patch port on the 2nd bridge as the peer), and again for the second bridge (specifying the patch port on the 1st bridge as the peer). Or, as the manpage puts it:</p>
+<blockquote>
+<p>That is, the two patch interfaces must have reversed name and peer values.</p>
+</blockquote>
+<p>Once you&rsquo;ve run through the commands, running <code>ovs-vsctl show</code> will reveal a configuration that would look something like this (obviously your bridge names, port names, and interface names will vary):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>    Bridge &#34;ovsbr2&#34;
+</span></span><span style="display:flex;"><span>        Port &#34;ovsbr2&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;ovsbr2&#34;
+</span></span><span style="display:flex;"><span>                type: internal
+</span></span><span style="display:flex;"><span>        Port &#34;patch2-0&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;patch2-0&#34;
+</span></span><span style="display:flex;"><span>                type: patch
+</span></span><span style="display:flex;"><span>                options: {peer=&#34;patch0-2&#34;}
+</span></span><span style="display:flex;"><span>    Bridge &#34;ovsbr0&#34;
+</span></span><span style="display:flex;"><span>        Port &#34;bond0&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;eth0&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;eth2&#34;
+</span></span><span style="display:flex;"><span>        Port &#34;patch0-2&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;patch0-2&#34;
+</span></span><span style="display:flex;"><span>                type: patch
+</span></span><span style="display:flex;"><span>                options: {peer=&#34;patch2-0&#34;}
+</span></span><span style="display:flex;"><span>        Port &#34;ovsbr0&#34;
+</span></span><span style="display:flex;"><span>            Interface &#34;ovsbr0&#34;
+</span></span><span style="display:flex;"><span>                type: internal
+</span></span></code></pre></div><p>Let&rsquo;s review this a bit:</p>
+<ul>
+<li>
+<p>The bridge <code>ovsbr2</code> contains a port and interface named <code>patch2-0</code>, with a peer set to <code>patch0-2</code>. Note that <code>ovsbr2</code> has <strong>no physical uplinks.</strong></p>
+</li>
+<li>
+<p>Likewise, the bridge <code>ovsbr0</code> has a port and interface named <code>patch0-2</code>, whose type is patch and whose peer is set to <code>patch2-0</code>. Note that, just as the manpage stated, the two patch ports have reversed name and peer values&mdash;this creates the connection between the two bridges. This bridge has a bond with two interfaces that take it to the outside world.</p>
+</li>
+</ul>
+<p>With this configuration, I can start up a guest domain attached to <code>ovsbr2</code>&mdash;which has no physical uplinks&mdash;and gain connectivity to the outside world via the patch ports that connect it to <code>ovsbr0</code> and its uplinks.</p>
+<p>The next natural question (at least, it was the next natural question for me): how many levels of connected OVS bridges can you build? It turns out the answer is 5 (as described <a href="http://openvswitch.org/pipermail/ovs-discuss/2012-July/007689.html">here</a>).</p>
+<p>OK, this is interesting (sort of), but what sort of uses does this have? Well, I&rsquo;m still exploring that myself, and I&rsquo;d love to hear from readers as to how they might see this functionality utilized. Here are two examples of which I know:</p>
+<ul>
+<li>
+<p>In <a href="http://blog.aaronorosen.com/open-vswitch-and-libvirt/">the original post</a> that sparked this work, the author used a separate OVS bridge (or datapath) for OpenFlow testing. So, one bridge that had no uplinks was connected to an OpenFlow controller and had a patch port to an externally-connected bridge. Thus, he could perform OpenFlow testing with some guests, while leaving other guests (on the other bridge) unaffected.</p>
+</li>
+<li>
+<p>One other use case I saw was around XenServer integration. (I apologize but I can&rsquo;t find the link where I saw it now&mdash;if any readers have it, please share it in the comments.) Basically, patch ports were used to connect an integration bridge that is manipulated/managed by XenServer to an external bridge that managed all the connectivity to the outside world. This is similar to the first example, but in this case it&rsquo;s not OpenFlow that&rsquo;s involved but XenServer instead.</p>
+</li>
+</ul>
+<p>I&rsquo;ve racked my brain for other potential use cases, but they seem to be escaping me at the moment. If you have other use cases, feel free to share them in the comments. Likewise, if there are technical errors or corrections, please share those in the comments as well. Courteous comments are always welcome and encouraged.</p>
+<p>[2]: /2012/10/31/layer-3-routing-with-open-vswitch/)</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/11/25/presentation-from-uk-vmug/">Presentation from UK VMUG</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/11/29/presentation-from-portland-vmug/">Presentation from Portland VMUG</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f27%2fconnecting-ovs-bridges-with-patch-ports%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f27%2fconnecting-ovs-bridges-with-patch-ports%2f&text=Connecting%20OVS%20Bridges%20with%20Patch%20Ports" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f11%2f27%2fconnecting-ovs-bridges-with-patch-ports%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/12/libvirt-ovs-integration-revisited/">Libvirt-OVS Integration Revisited</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/11/07/using-vlans-with-ovs-and-libvirt/">Using VLANs with OVS and libvirt</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2012/10/31/layer-3-routing-with-open-vswitch/">Layer 3 Routing with Open vSwitch</a> <span class="post-date-list">319 May 313131</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

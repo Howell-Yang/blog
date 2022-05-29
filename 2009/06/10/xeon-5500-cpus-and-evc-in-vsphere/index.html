@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Xeon 5500 CPUs and EVC in vSphere - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Xeon 5500 CPUs and EVC in vSphere - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Xeon 5500 CPUs and EVC in vSphere - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/06/10/xeon-5500-cpus-and-evc-in-vsphere/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Xeon 5500 CPUs and EVC in vSphere</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;456 words (estimated 3 minutes to read)</span>
+  <p>In early April when I traveled to Houston to meet with HP about the ProLiant G6 servers&mdash;a trip which resulted in <a href="/2009/04/07/hps-proliant-g6-servers/">this blog post</a>&mdash;I got into a discussion with representatives from HP and Intel regarding the Xeon 5500 CPUs and Enhanced VMotion Compatibility (EVC).</p>
+<p>As you probably already know, EVC builds upon hardware extensions provided by AMD and Intel (AMD in the AMD-V extensions, Intel in FlexMigration) that allows a CPU to &ldquo;alter&rdquo; its personality or identification so as to allow live migration (i.e., VMotion) between CPUs that would otherwise be incompatible. Without these hardware extensions, you would have had to resort to unsupported CPU masking, which I&rsquo;ve also discussed (here&rsquo;s a <a href="/2009/06/10/articles-on-cpu-masking-in-vmware-environments/">summary of articles</a> I&rsquo;ve written on the topic). With the hardware extensions and EVC, the hypervisor can now take over the process of creating custom CPU masks that take all CPUs in the cluster down to the &ldquo;lowest common denominator&rdquo; (i.e., EVC masks off all features except those that are common to all CPUs in the cluster).</p>
+<p>Ed Haletky provides a good <a href="http://www.itworld.com/virtualization/56292/understanding-vmware-evc">overview of VMware EVC</a>, in case you need more information.</p>
+<p>Anyway, that&rsquo;s enough background information. When I was in Houston, HP and Intel were discussing all the great new features that were available in the Xeon 5500. Knowing that introducing new CPU features generally meant introducing VMotion boundaries (like I <a href="/2007/03/27/new-vmotion-boundary/">describe here</a>), I asked this question: &ldquo;What happens to all these new features when you put a Xeon 5500-based server into a cluster with older servers and use EVC to guarantee VMotion compatibility?&rdquo; My thought was that EVC would <em>downgrade</em> the Xeon 5500 by masking new features, thus negating many of the performance benefits offered by the Xeon 5500.</p>
+<p>Obviously, the architectural changes introduced by the Xeon 5500 (specifically, Quick Path Interconnect) wouldn&rsquo;t be affected, but what about Extended Page Tables (EPT)? Or VMDq? Or FlexPriority?</p>
+<p>There were folks there from HP and Intel, and they were all stumped. They had to call in a few experts, but finally we got an answer from an Intel engineer on the VMware Alliance Team who was able to provide more information:</p>
+<blockquote>
+<p>&hellip; The only features that would be disabled are some new instructions that are accessible to end-user applications living in Ring 3. For NHM-EP those would be the SSE4.2 and SSE4.1 instructions&hellip; No other features would be compromised. All the features of NHM-EP that provide performance and are under the direct control of the OS or hypervisor in Ring 0 will be fully usable: EPT, HT, NuMA, FlexPriority, VMDq, VT-x, VT-d, etc.</p>
+</blockquote>
+<p>So there you have it: you can mix Xeon 5500-based servers in with older servers running previous generations of Xeon CPUs without sacrificing the performance benefits gained from the Xeon 5500.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/06/10/articles-on-cpu-masking-in-vmware-environments/">Articles on CPU Masking in VMware Environments</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/06/12/ta2259-ask-the-experts-at-vmworld-2009/">TA2259 Ask the Experts at VMworld 2009</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f10%2fxeon-5500-cpus-and-evc-in-vsphere%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f10%2fxeon-5500-cpus-and-evc-in-vsphere%2f&text=Xeon%205500%20CPUs%20and%20EVC%20in%20vSphere" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f10%2fxeon-5500-cpus-and-evc-in-vsphere%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/06/10/articles-on-cpu-masking-in-vmware-environments/">Articles on CPU Masking in VMware Environments</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2009/06/05/the-return-of-virtualization-short-takes/">The Return of Virtualization Short Takes</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2009/06/05/adaptec-support-in-vsphere-revoked/">Adaptec Support in vSphere Revoked?</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

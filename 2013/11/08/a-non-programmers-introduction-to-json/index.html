@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Non-Programmer&#39;s Introduction to JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Non-Programmer&#39;s Introduction to JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Non-Programmer&#39;s Introduction to JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/11/08/a-non-programmers-introduction-to-json/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Non-Programmer&#39;s Introduction to JSON</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;668 words (estimated 4 minutes to read)</span>
+  <p>As part of some work I&rsquo;ve been doing to stretch myself and my boundaries, I&rsquo;ve recently started diving a bit deeper into working with REST APIs. As I started this exploration, one thing that kept coming up again and again was JSON. In this post, I&rsquo;m going to <em>try</em> to provide an introduction to JSON for non-programmers (like me).</p>
+<p>Let&rsquo;s start with the acronym: &ldquo;JSON&rdquo; stands for &ldquo;JavaScript Object Notation&rdquo;. It&rsquo;s a lightweight, text-based format, and is frequently used in conjunction with REST APIs and web-based services. You can find more details on the specifics of the JSON format at <a href="http://json.org/">the JSON web site</a>.</p>
+<p>The basic structures of JSON are:</p>
+<ul>
+<li>
+<p>A set of name/value pairs</p>
+</li>
+<li>
+<p>An ordered list of values</p>
+</li>
+</ul>
+<p>Now, that sounds simple enough, but let&rsquo;s look at some examples to really bring this home. The examples that I&rsquo;ll use are taken from API responses in my virtualized NVP/NSX lab using the NVP/NSX API.</p>
+<p>First, here&rsquo;s an example of a set of name/value pairs (I&rsquo;ve taken the liberty of making the raw output from the API calls more readable for clarity&rsquo;s sake; raw JSON data typically wouldn&rsquo;t have line returns or whitespace):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;result_count&#34;</span>: <span style="color:#ae81ff">3</span>, 
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;results&#34;</span>: [
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_href&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/lswitch/3ca2d5ef-6a0f-4392-9ec1-a6645234bc55&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_schema&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/schema/LogicalSwitchConfig&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;LogicalSwitchConfig&#34;</span>
+</span></span><span style="display:flex;"><span>        }, 
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_href&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/lswitch/81f51868-2142-48a8-93ff-ef612249e025&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_schema&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/schema/LogicalSwitchConfig&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;LogicalSwitchConfig&#34;</span>
+</span></span><span style="display:flex;"><span>        }, 
+</span></span><span style="display:flex;"><span>        {
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_href&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/lswitch/9fed3467-dd74-421b-ab30-7bc9bfae6248&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;_schema&#34;</span>: <span style="color:#e6db74">&#34;/ws.v1/schema/LogicalSwitchConfig&#34;</span>, 
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&#34;type&#34;</span>: <span style="color:#e6db74">&#34;LogicalSwitchConfig&#34;</span>
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/7370142">here</a> for an option to download the code snippet above.)</p>
+<p>Let&rsquo;s break that down a bit:</p>
+<ul>
+<li>
+<p>Each object is surrounded by curly braces (referred to just as braces by some). The entire JSON response is itself an object&mdash;at least this is how I view it&mdash;so it is surrounded by braces. It contains three objects, which are part of the &ldquo;results&rdquo; array (more on that in just a second).</p>
+</li>
+<li>
+<p>Each object may have multiple name/value pairs separated by a comma. Name/value pairs may represent a single value (as with &ldquo;result_count&rdquo;) or multiple values in an array (as with &ldquo;results&rdquo;). So, in this example, there are two name/value pairs: one named &ldquo;result_count&rdquo; and one named &ldquo;results&rdquo;. Note the use of the colon separating the name from the associated value(s).</p>
+</li>
+<li>
+<p>The second item (object, if you will) in the API response is named &ldquo;results&rdquo;, but note that its value isn&rsquo;t a single value; rather, it&rsquo;s an array of values. Arrays are surrounded by brackets, and each element/item in the array is separated by a comma. In this particular case&mdash;and this will vary from API to API, as far as I know&mdash;note that the &ldquo;result_count&rdquo; value tells you exactly how many items are in the &ldquo;results&rdquo; array, making it incredibly easy to iterate through the items in the array.</p>
+</li>
+<li>
+<p>In the &ldquo;results&rdquo; array, there are three items (or objects). Each of these items&mdash;each surrounded by braces&mdash;has three name/value pairs, separated by commas, with a colon separating the name from the value.</p>
+</li>
+</ul>
+<p>As you can see, JSON has a very simple structure and format, once you&rsquo;re able to break it down.</p>
+<p>There are numerous other examples and breakdowns of JSON around the web; here are a few that I found helpful in my education (which is still ongoing):</p>
+<p><a href="http://www.elated.com/articles/json-basics/">JSON Basics: What You Need to Know</a></p>
+<p><a href="http://www.copterlabs.com/blog/json-what-it-is-how-it-works-how-to-use-it/">JSON: What It Is, How It Works, &amp; How to Use It</a> <em>(This one gets a bit deep for non-programmers, but you might find it helpful nevertheless.)</em></p>
+<p><a href="http://www.w3resource.com/JSON/introduction.php">JSON Tutorial</a></p>
+<p>You may also see the term &ldquo;JSON-serialized&rdquo;; this generally refers to data that has been formatted as JSON. To JSON-serialize data means to put it into JSON format; to deserialize JSON data means to parse (or deconstruct) the JSON output into some other format.</p>
+<p>I&rsquo;m sure there&rsquo;s a great deal more that could (and perhaps should) be said about JSON, but I did say this would be a non-programmer&rsquo;s introduction to JSON. If you have any questions, thoughts, suggestions, or clarifications, please feel free to speak up in the comments below.</p>
+<p><strong>UPDATE:</strong> I&rsquo;ve edited the text above based on some feedback in the comments. Thanks for your feedback; the post is better for it!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/web">Web</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/11/01/learning-nvp-part-7-handling-the-nvp-to-nsx-transition/">Learning NVP, Part 7: Handling the NVP to NSX Transition</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/11/11/making-json-output-more-readable-with-bbedit/">Making JSON Output More Readable with BBEdit</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f08%2fa-non-programmers-introduction-to-json%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f08%2fa-non-programmers-introduction-to-json%2f&text=A%20Non-Programmer%27s%20Introduction%20to%20JSON" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f11%2f08%2fa-non-programmers-introduction-to-json%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/04/03/killing-ads-in-rss-feeds-in-vienna/">Killing Ads in RSS Feeds in Vienna</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2010/10/22/shortening-urls-via-bitly-the-apple-way/">Shortening URLs via bit.ly the Apple Way</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2010/10/20/shortening-urls-via-bitly-from-the-cli/">Shortening URLs via bit.ly from the CLI</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

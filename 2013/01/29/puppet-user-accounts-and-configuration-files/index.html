@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Puppet, User Accounts, and Configuration Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Puppet, User Accounts, and Configuration Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Puppet, User Accounts, and Configuration Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/01/29/puppet-user-accounts-and-configuration-files/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Puppet, User Accounts, and Configuration Files</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;883 words (estimated 5 minutes to read)</span>
+  <p>A short while ago I posted an article that described <a href="/2012/11/25/using-puppet-for-account-management/">how to use Puppet for account management</a>. In that article, I showed you how to use virtual user resources to manage user accounts on Puppet-managed systems. In this post, I&rsquo;m going to expand on that configuration so that we can also manage the initial account configuration files, and do so in the proper order.</p>
+<p>One of the things the configuration in <a href="/2012/11/25/using-puppet-for-account-management/">my first post</a> didn&rsquo;t handle was the Puppet configuration of the files in <code>/etc/skel</code> and making sure those files were in place <em>before</em> the user accounts were created. As a result, it was possible that the user account could be created on a system before the <code>/etc/skel</code> files were updated, and then that user account would have &ldquo;unmanaged&rdquo; copies of the initial configuration files. Further Puppet agent runs wouldn&rsquo;t correct the problem, because the files in <code>/etc/skel</code> are only copied over <em>when the account is created.</em> If the account has already been created, then it&rsquo;s too late&mdash;the files in <code>/etc/skel</code> <em>must</em> be managed before the accounts are. To fix the issue, you have to ensure that the resources are processed in a specific manner. In this post, I&rsquo;ll show you how to manage that.</p>
+<p>There are two parts to extending the Puppet accounts module to also manage some configuration files:</p>
+<ol>
+<li>
+<p>Add a subclass to manage the files.</p>
+</li>
+<li>
+<p>Create a dependency between the virtual user resources and this new subclass.</p>
+</li>
+</ol>
+<p>Let&rsquo;s look at each of these.</p>
+<h2 id="adding-a-subclass">Adding a Subclass</h2>
+<p>To add a subclass to manage the configuration files, I created <code>config.pp</code> and placed it in the <code>manifests</code> folder for the accounts module. Here&rsquo;s a simplified look at the contents of that file (click <a href="https://gist.github.com/scottslowe/4274021">here</a> if you&rsquo;d like to download this code snippet):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">accounts</span>::<span style="color:#a6e22e">config</span> {<span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">  # Place a file in /etc/profile.d to manage the prompt</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">file</span> { <span style="color:#e6db74">&#39;/etc/profile.d/prompt.sh&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;present&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">source</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;puppet:///modules/config/profiled-prompt.sh&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">mode</span>        <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;0644&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">owner</span>       <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;0&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">group</span>       <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;0&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>This is pretty straightforward Puppet code; it creates a managed file resource and specifies that the file be sourced from the Puppet master server. The full and actual <code>accounts::config</code> subclass that I&rsquo;m using has a number of managed file resources, including files in <code>/etc/skel</code>, but I&rsquo;ve omitted that here for the sake of brevity. (The other file resources that are defined look very much like the example shown, so I didn&rsquo;t see any point in including them.) The <code>config.pp</code> also uses some values from an <code>accounts::params</code> subclass and some conditionals to manage different files on different operating systems.</p>
+<p>To really put the subclass to work, though, we have to include it elsewhere. So, in the accounts module&rsquo;s <code>init.pp</code>, we add a line that simply states <code>include accounts::config</code>. However, the problem that occurs if you stop there is the problem I described earlier: Puppet might create the user account before it places the file resources under management, and then the user account won&rsquo;t get the updated/managed files.</p>
+<p>To fix that, we create a dependency.</p>
+<h2 id="creating-a-dependency">Creating a Dependency</h2>
+<p>Before running into this situation, I was pretty familiar with creating dependencies. For example, if you were defining a class for a particular daemon to run on Linux, you might use the Puppet package-file-service &ldquo;trifecta&rdquo;, and you might include a dependency, like this (entirely fictional) example. Note in this example that the file resource is dependent on the package resource, and the service resource is dependent on the file resource (as denoted by the capitalized Package and File instances):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">foo</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">package</span> { <span style="color:#e6db74">&#39;foo&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;present&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">file</span> { <span style="color:#e6db74">&#39;/etc/foo.conf&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;present&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">source</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;puppet:///modules/foo/foo_conf&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">mode</span>        <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;0600&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">require</span>     <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">Package</span>[<span style="color:#e6db74">&#39;foo&#39;</span>],<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">service</span> { <span style="color:#e6db74">&#39;foo&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">ensure</span>      <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;running&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">require</span>     <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">File</span>[<span style="color:#e6db74">&#39;/etc/foo.conf&#39;</span>],<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>(My apologies if my syntax for this fictional example isn&rsquo;t perfect&mdash;I didn&rsquo;t run it through <code>puppet-lint</code>.)</p>
+<p>The problem in this particular case, though, is that I didn&rsquo;t need a dependency on a single file; I needed a dependency on a whole group of files. To further complicate matters, the files on which the dependency existed might change between operating systems. For example, I might (and do) have different files on RHEL/CentOS than on Ubuntu/Debian. So how to accomplish this? The answer is actually quite simple: <strong>create a dependency on the subclass, not the individual resources.</strong></p>
+<p>With the dependency on the subclass, the code to define the virtual users looks like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#75715e"># Used to define virtual users on Puppet-managed systems
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"># Includes subclass dependency on accounts::config
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">accounts</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span> <span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#960050;background-color:#1e0010">@</span><span style="color:#a6e22e">accounts</span>::<span style="color:#a6e22e">virtual</span> { <span style="color:#e6db74">&#39;johndoe&#39;</span>:<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">uid</span>             <span style="color:#f92672">=&gt;</span>  <span style="color:#ae81ff">1001</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">realname</span>        <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;John Doe&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">pass</span>            <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;&lt;password hash goes here&gt;&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>    <span style="color:#a6e22e">require</span>         <span style="color:#f92672">=&gt;</span>  <span style="color:#66d9ef">Class</span>[<span style="color:#e6db74">&#39;accounts::config&#39;</span>],<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  }<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>The use of the <code>require</code> statement creates a dependency not on a single resource but instead to an entire subclass&mdash;the <code>accounts::config</code> subclass, which in turn has a variety of file resources that are managed according to operating system.</p>
+<p>It&rsquo;s such a simple solution I can&rsquo;t believe I didn&rsquo;t see it at first, and when it was pointed out to me (via the #puppet IRC channel, thanks), I had a &ldquo;Duh!&rdquo; moment. Even though it is a simple and straightforward solution, if I overlooked it then others might overlook it as well&mdash;a problem that hopefully this blog post will help fix.</p>
+<p>As always, I welcome feedback from readers, so feel free to weigh in with questions, clarifications, or corrections. Courteous comments are always welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/01/25/new-year-new-challenges-new-opportunities/">New Year, New Challenges, New Opportunities</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/02/04/technology-short-take-29/">Technology Short Take #29</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f29%2fpuppet-user-accounts-and-configuration-files%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f29%2fpuppet-user-accounts-and-configuration-files%2f&text=Puppet%2c%20User%20Accounts%2c%20and%20Configuration%20Files" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f29%2fpuppet-user-accounts-and-configuration-files%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/11/25/using-puppet-for-account-management/">Using Puppet for Account Management</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2012/07/09/updated-multi-os-puppet-configuration/">Updated Multi-OS Puppet Configuration</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2012/12/06/technology-short-take-27/">Technology Short Take #27</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

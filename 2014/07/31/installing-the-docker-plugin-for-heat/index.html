@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing the Docker Plugin for Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing the Docker Plugin for Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing the Docker Plugin for Heat - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/07/31/installing-the-docker-plugin-for-heat/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing the Docker Plugin for Heat</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;469 words (estimated 3 minutes to read)</span>
+  <p>In this post, I&rsquo;ll share with you how I installed the Docker plugin for OpenStack Heat, so that Heat is able to orchestrate the creation of Docker containers in an OpenStack environment. I&rsquo;m publishing this because I found <a href="https://github.com/openstack/heat/tree/stable/icehouse/contrib/docker/docker">the default instructions</a> to be a bit too vague to be helpful. By sharing my experience, I hope that others interested in using Docker in their OpenStack environment will benefit.</p>
+<p>Here are the steps I used to make the Docker plugin work with Heat. These steps assume you are using Ubuntu and already have OpenStack Heat installed and working correctly:</p>
+<ol>
+<li>
+<p>If you are using the packaged version of Heat (in other words, you are installing Heat via a method like <code>apt-get install</code> on Ubuntu), then you&rsquo;ll want to use the &ldquo;stable/icehouse&rdquo; branch that contains the Docker container. In this case, you <em>don&rsquo;t</em> want to use master&mdash;it won&rsquo;t work (either the plugin won&rsquo;t load or the Heat engine service won&rsquo;t start). Download a ZIP copy of the correct branch of Heat from GitHub (for &ldquo;stable/icehouse&rdquo;, see <a href="https://github.com/openstack/heat/tree/stable/icehouse">here</a>).</p>
+</li>
+<li>
+<p>Extract the <code>contrib/docker</code> folder from the downloaded ZIP copy of Heat.</p>
+</li>
+<li>
+<p>Delete the <code>contrib/docker/docker/tests</code> directory; in my testing, the plugin failed to load if you leave this directory present in the plugin.</p>
+</li>
+<li>
+<p>Copy the <code>contrib/docker</code> folder to your OpenStack controller somewhere. On my controller, I chose to put it into an existing <code>/var/lib/heat</code> directory. When you&rsquo;re done, you should have a <code>docker</code> directory in your chosen destination, and that directory should container another subdirectory named <code>docker</code>. For example, on my system, the full path to the plugin was <code>/var/lib/heat/docker/docker</code>. Make note of the full path.</p>
+</li>
+<li>
+<p>In the top-level <code>docker</code> folder, run <code>pip install -r requirements.txt</code>. Note that you might need to do an <code>apt-get install python-pip</code> first. This will install the docker-py Python module, which is required by the Docker plugin.</p>
+</li>
+<li>
+<p>Modify your Heat configuration file (typically found at <code>/etc/heat/heat.conf</code>) and add the full path of the Docker plugin to the <code>plugin_dirs</code> setting. If you used <code>/var/lib/heat</code> as the base directory for the plugin, then the full path should be <code>/var/lib/heat/docker/docker</code>.</p>
+</li>
+<li>
+<p>Restart the Heat engine (via something like <code>sudo service heat-engine restart</code> or similar).</p>
+</li>
+<li>
+<p>Run <code>heat resource-type-list</code> and verify that DockerInc::Docker::Container is listed in the results. If not, verify that you have the correct path to the plugin specified in the Heat configuration file, and verify that you used the correct branch of the Docker plugin (&ldquo;stable/icehouse&rdquo; if you are using packaged versions of OpenStack). Review the Heat log files for any errors if the resource type still isn&rsquo;t listed.</p>
+</li>
+</ol>
+<p>Assuming you were successful, then you are ready to start deploying Docker containers via Heat. Stay tuned for an example Heat template that shows how to deploy a Docker container. Until then, feel free to share any corrections, clarifications, or questions in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/07/28/giving-back-to-the-community/">Giving Back to the Community</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/08/01/a-quick-introduction-to-coreos/">A Quick Introduction to CoreOS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f31%2finstalling-the-docker-plugin-for-heat%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f31%2finstalling-the-docker-plugin-for-heat%2f&text=Installing%20the%20Docker%20Plugin%20for%20Heat" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f07%2f31%2finstalling-the-docker-plugin-for-heat%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/06/11/technology-short-take-42/">Technology Short Take #42</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/05/02/another-look-at-an-openstack-heat-template/">Another Look at an OpenStack Heat Template</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2014/05/01/an-introduction-to-openstack-heat/">An Introduction to OpenStack Heat</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

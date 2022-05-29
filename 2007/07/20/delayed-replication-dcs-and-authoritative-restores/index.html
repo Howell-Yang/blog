@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Delayed Replication DCs and Authoritative Restores - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Delayed Replication DCs and Authoritative Restores - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Delayed Replication DCs and Authoritative Restores - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/07/20/delayed-replication-dcs-and-authoritative-restores/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Delayed Replication DCs and Authoritative Restores</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1233 words (estimated 6 minutes to read)</span>
+  <p>The idea behind an Active Directory &ldquo;delayed replication DC&rdquo; (also referred to as a &ldquo;slow DC&rdquo; or a &ldquo;lag DC&rdquo;) is that organizations can more quickly recover portions of their Active Directory structure by performing an authoritative restore from this delayed replication DC instead of having to go back to tape. Keep in mind that many organizations use off-site storage of backup tapes, and recalling backup tapes from the off-site storage facility can take some time, as can the tape operations themselves. Let&rsquo;s face it: when it comes to speed, tape isn&rsquo;t exactly king of the hill.</p>
+<p>With a delayed replication DC (this would be a DC that only replicates on specific days of the week or after an extended period of time, like 72 hours), however, that process can be shortened drastically because recovering an OU, a user object, a group, or even AD-integrated DNS data can be done directly from the delayed replication DC.</p>
+<p>First, let&rsquo;s look at setting up a delayed replication DC, then have a look at the process of performing an authoritative restore from that DC.</p>
+<h2 id="setting-up-a-delayed-replication-dc">Setting Up a Delayed Replication DC</h2>
+<p>Setting up a delayed replication DC (hereafter referred to as a delayed-rep DC) is not terribly complicated:</p>
+<ol>
+<li>
+<p>Create a subnet object with a 32-bit mask representing the IP address of the new DC that will become the delayed-rep DC. For example, if the new DC will have the IP address 192.168.213.150, create a subnet object (in Active Directory Sites and Services) for 192.168.213.150/32. Doing it this way means that we don&rsquo;t have to create a new subnet or VLAN and potentially waste IP addresses, and simplifies the networking configuration (no need to worry about routing tables or anything like that).</p>
+</li>
+<li>
+<p>Create a new Active Directory site and link the new subnet you just created to that site.</p>
+</li>
+<li>
+<p>Create a new site link between the new AD site and an existing AD site with production domain controllers. Don&rsquo;t worry about setting the replication interval just yet; we&rsquo;ll do that after the initial replication takes place.</p>
+</li>
+<li>
+<p>Create a new GPO, linked to this new site, that will prevent registration of specific DNS SRV records for the delayed-rep DC. This is the only (relatively) complicated part. <a href="http://searchwinit.techtarget.com/tip/0,289483,sid1_gci1172883,00.html">This article by Gary Olsen</a> (a well-respected AD expert) provides more information on the specific settings that should be included in this GPO. (More information available <a href="http://searchwinit.techtarget.com/tip/0,289483,sid1_gci1086805,00.html">here</a> and in Microsoft <a href="http://support.microsoft.com/kb/306602/en-us">KB306602</a> as well&mdash;refer to the &ldquo;To Configure Domain Controllers or global catalogs to Not Register Generic Records&rdquo; section for <a href="http://www.microsoft.com/windowsserver/default.mspx">Windows Server 2003</a>.) When specifying the mnemonics to prevent the registration of DNS SRV records, be sure to allow the A record (for the hostname-to-address lookup of the server) and the GUID CNAME record (used for establishing replication connections).</p>
+</li>
+<li>
+<p>Promote the new DC (making sure its IP address matches the address specified during the creation of the subnet above!) and it will automatically place itself into the delayed-rep site.</p>
+</li>
+<li>
+<p>Once you are satisfied that initial replication is complete, adjust the replication schedule on the site link to the delayed replication DC.</p>
+</li>
+</ol>
+<p>See, that wasn&rsquo;t so bad! The cool thing is that you can use a virtual machine as your delayed-rep DC to further save some costs/rack space/equipment.</p>
+<p>Once the delayed-rep DC is up and running, then you are ready to use it to perform authoritative restores of AD objects.</p>
+<h2 id="performing-authoritative-restores-from-the-delayed-rep-dc">Performing Authoritative Restores from the Delayed-Rep DC</h2>
+<p>The process for performing an authoritative restore using this delayed-rep DC is also pretty straightforward. Again, there is one minor complication:</p>
+<ol>
+<li>
+<p>Reboot the delayed-rep DC into Directory Services Restore Mode (DSRM). You&rsquo;ll need the DSRM password to log in; you <em>do</em> know it, right? (If not, you can reboot the DC normally, then use Ntdsutil to set the DSRM password; see <a href="http://support.microsoft.com/kb/322672">here</a>.)</p>
+</li>
+<li>
+<p>Once you log on, use <code>ntdsutil</code> to mark the desired objects as authoritatively restored (more on that in a moment).</p>
+</li>
+<li>
+<p>Reboot the server into normal operation.</p>
+</li>
+<li>
+<p>Force outbound replication from the delayed-rep DC to the rest of the organization.</p>
+</li>
+</ol>
+<p>It&rsquo;s item #2 that&rsquo;s the complicated part this time. First, because it&rsquo;s <code>ntdsutil</code>, and not many people know/use <code>ntdsutil</code>. Second, because you <strong><em>must</em></strong> know the full DN of the object or objects you want to mark as authoritatively restored.</p>
+<p>Fortunately, you can use ADSI Edit to help you find the full DN. (Those of you that did not install the Support Tools on your delayed-rep DCs may take a moment to go and install them. Done now? Good, let&rsquo;s continue.) There are a couple of gotchas, though, even with using ADSI Edit:</p>
+<ul>
+<li>
+<p>You&rsquo;ll need to put double quotes around the DN if there are any spaces anywhere along the way.  ADSI Edit doesn&rsquo;t do this, so be sure to add them yourself.</p>
+</li>
+<li>
+<p>Any commas in the individual components of the DN must be escaped with a backslash () character. For example, in situations where the user object is named &ldquo;Smith, Bob&rdquo; you&rsquo;ll need to reference that as &ldquo;Smith, Bob&rdquo; in the DN.</p>
+</li>
+<li>
+<p>Don&rsquo;t forget to use the right components in the DN&mdash;CN=, OU=, or DC=. More on that in a moment.</p>
+</li>
+</ul>
+<p>Let&rsquo;s look at some examples. First, let&rsquo;s say we need to restore a user object named &ldquo;John Doe&rdquo; in the Raleigh OU under the Locations OU in the domain example.com. The DN would look like this:</p>
+<pre><code>&quot;cn=John Doe,ou=Raleigh,ou=Locations,dc=example,dc=com&quot;
+</code></pre>
+<p>What if the user accounts are listed with lastname then firstname, separated by a comma?</p>
+<pre><code>&quot;cn=Doe\, John,ou=Raleigh,ou=Locations,dc=example,dc=com&quot;
+</code></pre>
+<p>What about a group?</p>
+<pre><code>cn=DnsAdmins,cn=Users,dc=example,dc=com
+</code></pre>
+<p>Note that we omit the double quotes here because there are no spaces in the DN.</p>
+<p>What if what we want to restore isn&rsquo;t a user object at all, but instead is an Active Directory-integrated DNS zone? Good question!</p>
+<p>In this case, the answer is &ldquo;It depends&rdquo;. Upon what does it depend? The zone&rsquo;s replication scope:</p>
+<ul>
+<li>
+<p>For zones with a replication scope of &ldquo;All domain controllers in the Active Directory domain&rdquo; (or if you are still running Windows 2000), then the correct location for these zones is &ldquo;cn=MicrosoftDNS,cn=System,dc=example,dc=com&rdquo;.</p>
+</li>
+<li>
+<p>For zones with a replication scope of &ldquo;All DNS servers in the Active Directory domain&rdquo;, then the correct location for these zones is &ldquo;cn=MicrosoftDNS,dc=DomainDnsZones,dc=example,dc=com&rdquo;.</p>
+</li>
+<li>
+<p>For zones with a replication scope of &ldquo;All DNS servers in the Active Directory forest&rdquo;, then the correct location for these zones is &ldquo;cn=MicrosoftDNS,dc=ForestDnsZones,dc=example,dc=com&rdquo;.</p>
+</li>
+</ul>
+<p>The tricky part about restoring AD-integrated DNS zones is the naming in the DN. Here&rsquo;s an example:</p>
+<pre><code>&quot;dc=testlab.example.com,cn=MicrosoftDNS,dc=DomainDnsZones,dc=example,dc=com&quot;
+</code></pre>
+<p>This would be for the zone testlab.example.com, configured as a AD-integrated zone with a replication scope of all DNS servers in the domain, in the AD domain example.com. Key thing to note here: pay attention to the use of &ldquo;dc=&rdquo; at the beginning of the DN. Zones use &ldquo;dc=&rdquo; and <em>not</em> &ldquo;cn=&rdquo;! (Fortunately this is correctly represented with ADSI Edit.)</p>
+<p>OK, enough about DNs. Once you have the DN and understand how it should be represented when using <code>ntdsutil</code>, you can proceed with the actual authoritative restore itself. Refer to <a href="http://technet2.microsoft.com/windowsserver/en/library/1b707085-98cb-4282-a67d-6406b9aacf191033.mspx?mfr=true">this Microsoft web page</a> for more details on the specific Ntdsutil commands to perform an authoritative restore. Once the authoritative restore process is complete, reboot the delayed-rep DC normally and force replication with the rest of the organization. Your objects should magically re-appear in Active Directory!</p>
+<p>There&rsquo;s more to this process than I&rsquo;ve described here, but there are a ton of resources available to provide more in-depth information and explanations of the various scenarios. This information should at least get you started.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/07/20/killing-ads-in-rss-feeds-in-netnewswire/">Killing Ads in RSS Feeds in NetNewsWire</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/07/23/live-migration-vs-quick-migration/">Live Migration vs. Quick Migration</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f20%2fdelayed-replication-dcs-and-authoritative-restores%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f20%2fdelayed-replication-dcs-and-authoritative-restores%2f&text=Delayed%20Replication%20DCs%20and%20Authoritative%20Restores" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f20%2fdelayed-replication-dcs-and-authoritative-restores%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2006/08/21/more-on-kerberos-authentication-against-active-directory/">More on Kerberos Authentication Against Active Directory</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/07/06/mass-renaming-computers/">Mass Renaming Computers</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

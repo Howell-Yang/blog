@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BC1500 - Site Recovery Manager Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BC1500 - Site Recovery Manager Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BC1500 - Site Recovery Manager Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/09/01/bc1500-site-recovery-manager-best-practices/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BC1500 - Site Recovery Manager Best Practices</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1016 words (estimated 5 minutes to read)</span>
+  <p>I arrived at this session a few minutes late because the VMworld 2009 Day 1 keynote was running late. The early part of the session was pretty straightforward with information on the various SRM components: multiple vCenter Server instances, SRM servers, storage replication, SRAs, etc., so I won&rsquo;t bother recreating this here. Most people are already familiar with the basics of SRM.</p>
+<p>The technology preview of SRM (the beta of the next version) does support vCenter Server linked mode, which means that your two vCenter Server instances can run in a linked mode group. Very nice!</p>
+<p>The next version of SRM will allow you to change the authentication option via a Repair installation. This is a big improvement from the current release, where this has to be selected at installation and can&rsquo;t be changed afterward.</p>
+<p>VMware KB article 1008390 provides more information on how to setup the self-signed certificates and which subject names should be used for correct operation.</p>
+<p>It&rsquo;s important to remember that SRM doesn&rsquo;t perform replication; the storage performs the replication. The SRA allows SRM to control the movement of that storage and how it is presented to the various hosts involved in the solution.</p>
+<p>The SRA is written by the storage vendor and must be installed on both SRM servers. Multiple SRAs can be installed on the same SRM server to support multiple storage platforms. New adapters do not require SRM updates. The SRA then supports tasks such as setup, testing, and failover. So what goes wrong with SRAs?</p>
+<ul>
+<li>
+<p>Not all SRAs are created equal. They support the same functionality but the implementation might be different.</p>
+</li>
+<li>
+<p>Some SRAs have external requirements, such as the Java JRE, or storage-specific components from the storage vendor. The key takeaway is to be sure to read the documentation from the storage vendor about the SRA. The SRM community forum can also be a good source of information.</p>
+</li>
+<li>
+<p>SRAs expect a certain level of replicated storage configuration. This might include little quirks like ensuring that certain flags or attributes are set as expected by the SRA.</p>
+</li>
+</ul>
+<p>Some SRAs talk directly to the storage array, but some SRAs require connectivity to a control station or management station. Again, be sure to refer to the SRA documentation to be sure of the configuration requirements.</p>
+<p>Recommendation: whatever you do at one site, duplicate that effort at the other site. This will help simplify things.</p>
+<p>Some storage arrays require access to &ldquo;gatekeeper LUNs&rdquo;; when running SRM as a VM, you can present these LUNs to the SRM VMs as RDMs. Other storage implementations, like HP EVA or IBM SVC, need access to the management server itself and not to the array directly. HP recently released a guide to using SRM with HP storage that might be a good idea to read.</p>
+<p>Other pitfalls during SRA setup:</p>
+<ul>
+<li>
+<p>Attempts to configure SRA at protected site will fail if SRA components are not installed at recovery site.</p>
+</li>
+<li>
+<p>For active/passive setup, just perform configuration at the protected site, not the recovery site. Configuration at the recovery site is only required for failback or active/active setups.</p>
+</li>
+<li>
+<p>Double-check path definitions; older SRAs used Perl or similar and caused problems with failing to update the path definitions. Get updated SRAs; this has all been fixed in newer versions of the SRAs.</p>
+</li>
+<li>
+<p>Be sure the array configuration matches the pre-requisites.</p>
+</li>
+<li>
+<p>SRM might need additional licensed features in order to perform a Test failover. (Key example: FlexClone required on a NetApp array in order to perform test failovers.)</p>
+</li>
+<li>
+<p>Empty datastores won&rsquo;t be detected by SRM even if it is replicated. This has been fixed in the next release.</p>
+</li>
+</ul>
+<p>Next the presenter shifts to a discussion of virtual machine networking.</p>
+<p>SRM will work with stretched VLANs. To architect SRM to work with stretched VLANs and failover tests, you can use the bubble network, but that isn&rsquo;t really practical. Instead, the presenter recommends the creation of test VLANs on the physical network to support failover testing.</p>
+<p>Instead of stretched VLANs, you can also use disparate networks. In this case, of course, the VLANs change from the protected site to the recovery site. This impacts IP addressing, DNS, Active Directory, default gateways, DHCP, etc. You can use existing tools to fix these problems; you <strong>don&rsquo;t</strong> have to use the SRM-supplied tools. SRM supplied tools include VM customization or the dr-ip-customizer.exe batch utility. Dynamic DNS updates are another option as well.</p>
+<p>So what about virtual machine disks? What are the storage factors that come into play here?</p>
+<ul>
+<li>
+<p>Current version of SRM supports iSCSI and Fibre Channel, and supports both physical and virtual RDMs</p>
+</li>
+<li>
+<p>VMs can span multiple datastores (but need to consider replication consistency)</p>
+</li>
+<li>
+<p>SRM does not support VM snapshots</p>
+</li>
+<li>
+<p>VMs cannot span arrays, even arrays of the same type</p>
+</li>
+</ul>
+<p>The presenter next moves into a section he called &ldquo;Running,&rdquo; but it was really more about how to walk through the site pairing, storage array configuration, and inventory mapping (more setup and configuration than operation, in my opinion).</p>
+<p>A few notes about protection groups, placeholder VMs, and recovery plans:</p>
+<ul>
+<li>
+<p>SRM supports up to 150 protection groups. Each protection group may have multiple LUNs.</p>
+</li>
+<li>
+<p>SRM supports up to 500 VMs. This should increase to 1000 VMs per site in the next release.</p>
+</li>
+<li>
+<p>Need a datastore at the recovery site to hold VM placeholders. This datastore does not need to be replicated. Each placeholder is typically &lt;1KB each, so there is not a lot of storage required.</p>
+</li>
+<li>
+<p>Don&rsquo;t delete the placeholders; this breaks the SRM configuration.</p>
+</li>
+<li>
+<p>SRM supports multiple recovery plans, so you can use mutliple plans to support multiple recovery targets.</p>
+</li>
+<li>
+<p>Recovery plans support permissions, so not everyone needs access to all plans.</p>
+</li>
+</ul>
+<p>In general, also be sure to keep in mind the &ldquo;upstream&rdquo; and &ldquo;downstream&rdquo; dependencies. SRM isn&rsquo;t going to fix dependencies for Microsoft Exchange, for example.</p>
+<p>I&rsquo;m ending coverage here, because I have to leave to go to a special, super-secret press announcement with Paul Maritz. I&rsquo;m not allowed to blog, tweet, or any such thing during the press announcement, so you&rsquo;ll have to wait until after the event to hear anything from me.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2009">VMworld2009</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/09/01/vmworld-day-0-wrap-up-and-links/">VMworld Day 0 Wrap-Up and Links</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/09/01/vmware-vcloud-event-with-paul-maritz/">VMware vCloud Event with Paul Maritz</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f09%2f01%2fbc1500-site-recovery-manager-best-practices%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f09%2f01%2fbc1500-site-recovery-manager-best-practices%2f&text=BC1500%20-%20Site%20Recovery%20Manager%20Best%20Practices" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f09%2f01%2fbc1500-site-recovery-manager-best-practices%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/09/01/vmworld-day-0-wrap-up-and-links/">VMworld Day 0 Wrap-Up and Links</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2009/09/01/vmworld-2009-day-1-keynote/">VMworld 2009 Day 1 Keynote</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

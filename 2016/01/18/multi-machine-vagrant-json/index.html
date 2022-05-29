@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Multi-Machine Vagrant Environments with JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Multi-Machine Vagrant Environments with JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Multi-Machine Vagrant Environments with JSON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/01/18/multi-machine-vagrant-json/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Multi-Machine Vagrant Environments with JSON</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;544 words (estimated 3 minutes to read)</span>
+  <p>In this post I&rsquo;d like to show you how to use a JSON-formatted data file to create and configure multi-machine Vagrant environments. This isn&rsquo;t a new idea, and certainly <em>not</em> anything that I came up with or created. I&rsquo;m simply presenting it here as an alternative option to the approach of using YAML with Vagrant for multi-machine environments (some people may prefer JSON over YAML).</p>
+<p>If you&rsquo;re unfamiliar with Vagrant, I&rsquo;d start with <a href="/2014/09/12/a-quick-introduction-to-vagrant/">my introduction to Vagrant</a>. Then I&rsquo;d recommend reviewing <a href="/2014/10/22/multi-machine-vagrant-with-yaml/">my original article on using YAML with Vagrant</a>, followed by <a href="/2016/01/14/improved-way-yaml-vagrant/">the updated/improved method</a> that addresses a shortcoming with the original approach. These earlier posts will provide some basics that I&rsquo;ll build on in this post.</p>
+<p>To use a JSON-formatted data file as an external data source for Vagrant, the code in the <code>Vagrantfile</code> looks really similar to the code you&rsquo;d use for YAML:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#75715e"># -*- mode: ruby -*-</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># # vi: set ft=ruby :</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Specify minimum Vagrant version and Vagrant API version</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>require_version <span style="color:#e6db74">&#39;&gt;= 1.6.0&#39;</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;2&#39;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Require JSON module</span>
+</span></span><span style="display:flex;"><span>require <span style="color:#e6db74">&#39;json&#39;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Read YAML file with box details</span>
+</span></span><span style="display:flex;"><span>servers <span style="color:#f92672">=</span> <span style="color:#66d9ef">JSON</span><span style="color:#f92672">.</span>parse(<span style="color:#66d9ef">File</span><span style="color:#f92672">.</span>read(<span style="color:#66d9ef">File</span><span style="color:#f92672">.</span>join(<span style="color:#66d9ef">File</span><span style="color:#f92672">.</span>dirname(__FILE__), <span style="color:#e6db74">&#39;servers.json&#39;</span>)))
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Create boxes</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>configure(<span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span>) <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>config<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Iterate through entries in JSON file</span>
+</span></span><span style="display:flex;"><span>  servers<span style="color:#f92672">.</span>each <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>server<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>    config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>define server<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;name&#39;</span><span style="color:#f92672">]</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>srv<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>      srv<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box <span style="color:#f92672">=</span> server<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;box&#39;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>      srv<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>network <span style="color:#e6db74">&#39;private_network&#39;</span>, <span style="color:#e6db74">ip</span>: server<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;ip_addr&#39;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>      srv<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>provider <span style="color:#e6db74">:vmware_fusion</span> <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>vmw<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span>        vmw<span style="color:#f92672">.</span>vmx<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;memsize&#39;</span><span style="color:#f92672">]</span> <span style="color:#f92672">=</span> server<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;ram&#39;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>        vmw<span style="color:#f92672">.</span>vmx<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;numvcpus&#39;</span><span style="color:#f92672">]</span> <span style="color:#f92672">=</span> server<span style="color:#f92672">[</span><span style="color:#e6db74">&#39;vcpu&#39;</span><span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">end</span> <span style="color:#75715e"># srv.vm.provider</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">end</span> <span style="color:#75715e"># config.vm.define</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">end</span> <span style="color:#75715e"># servers.each</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span> <span style="color:#75715e"># Vagrant.configure</span>
+</span></span></code></pre></div><p>For the most part, this <code>Vagrantfile</code> is very similar to what I&rsquo;ve already shown you when using an external YAML data file. The line starting with <code>servers = ...</code> is what pulls in the data from the external JSON file; the <code>JSON.parse</code> command (method? function?) is required to parse the JSON-formatted data into a hash that we reference later in the <code>servers.each</code> loop. The loop itself is otherwise exactly what I&rsquo;ve already used in other examples of using an external data file.</p>
+<p>And what does the external data file look like? Here&rsquo;s a JSON-formatted data file that would work with this <code>Vagrantfile</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;jessie&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;box&#34;</span>: <span style="color:#e6db74">&#34;slowe/debian-81-x64&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;ram&#34;</span>: <span style="color:#ae81ff">512</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;vcpu&#34;</span>: <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;ip_addr&#34;</span>: <span style="color:#e6db74">&#34;192.168.100.101&#34;</span>
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    {
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;trusty&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;box&#34;</span>: <span style="color:#e6db74">&#34;slowe/ubuntu-trusty-x64&#34;</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;ram&#34;</span>: <span style="color:#ae81ff">512</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;vcpu&#34;</span>: <span style="color:#ae81ff">1</span>,
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&#34;ip_addr&#34;</span>: <span style="color:#e6db74">&#34;192.168.100.102&#34;</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>Naturally, you could extend this external JSON-formatted data file to do other things. Here&rsquo;s a few examples:</p>
+<ul>
+<li>You could optionally enable (or disable) shared folders based on a value in the external data file.</li>
+<li>You could insert additional values, like enabled nested virtualization support (if using a VMware desktop hypervisor that supports such functionality) if a certain value is included in the external data file.</li>
+</ul>
+<p>I&rsquo;ve used both these approaches in many of my own personal Vagrant environments without any major issues (using a YAML file, but the concept applies equally here).</p>
+<h2 id="inspirationother-resources">Inspiration/Other Resources</h2>
+<p>This post was inspired primarily by James Thorne&rsquo;s post on <a href="http://thornelabs.net/2014/11/13/multi-machine-vagrantfile-with-shorter-cleaner-syntax-using-json-and-loops.html">using JSON and loops to create multi-machine Vagrant environments</a>. The idea of using JSON instead of YAML is not mine, but his; I just wanted to present similar information (but with the JSON separated into a different file instead of embedded into the <code>Vagrantfile</code>).</p>
+<p>If you&rsquo;re interested in experimenting with JSON and Vagrant yourself, have a look at the <code>vagrant-json</code> directory in <a href="https://github.com/scottslowe/learning-tools">my GitHub &ldquo;learning-tools&rdquo; repository</a>. It has a <code>Vagrantfile</code> and an associated JSON data file.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/01/15/technology-short-take-59/">Technology Short Take #59</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/01/21/looking-ahead-2016-projects/">Looking Ahead: My 2016 Projects</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f18%2fmulti-machine-vagrant-json%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f18%2fmulti-machine-vagrant-json%2f&text=Multi-Machine%20Vagrant%20Environments%20with%20JSON" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f18%2fmulti-machine-vagrant-json%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/11/11/handy-cli-tool-json/">A Handy CLI Tool for Working with JSON</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/08/18/coreos-continued-etcd/">CoreOS Continued: etcd</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2016/01/14/improved-way-yaml-vagrant/">An Improved Way to use YAML with Vagrant</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

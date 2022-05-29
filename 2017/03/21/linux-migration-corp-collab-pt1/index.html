@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Corporate Collaboration, Part 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Corporate Collaboration, Part 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Corporate Collaboration, Part 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/21/linux-migration-corp-collab-pt1/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Corporate Collaboration, Part 1</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;761 words (estimated 4 minutes to read)</span>
+  <p>One major aspect of <a href="/2016/12/16/linux-migration-initial-progress-report/">my migration to Linux as my primary desktop OS</a> is how well it integrates with corporate communication and collaboration systems. Based on the feedback I&rsquo;ve gotten from others on Twitter, this is a major concern for a lot of folks out there. In fact, a number of folks have indicated that this is the <em>only</em> thing keeping them from migrating to Linux. There are a number of different aspects to &ldquo;corporate communication and collaboration,&rdquo; so I&rsquo;m breaking this down into multiple posts (each post will discuss one particular aspect). In this post, I&rsquo;ll discuss integration with corporate e-mail.</p>
+<p>Because corporate e-mail is such an important part of how people communicate these days, it&rsquo;s a fairly significant concern when thinking of migrating to Linux. Fortunately, it&rsquo;s actually pretty easy to solve.</p>
+<p>My employer, like many companies out there, uses <a href="https://products.office.com/en-us/business/office">Office 365</a> for corporate e-mail. Many people think that this locks them into Outlook on the desktop side, but that&rsquo;s not accurate. (Now, you may be locked into Outlook for other reasons, like calendaring&mdash;a topic I&rsquo;ll touch on in part 2 of this series.) For Office 365 users, there are three paths open for accessing corporate e-mail:</p>
+<ol>
+<li>IMAP/SMTP (yes, O365 <em>does</em> support IMAP/SMTP!)</li>
+<li>Exchange Web Services (EWS)</li>
+<li>Browser-based access</li>
+</ol>
+<p>Each option has its advantages and disadvantages, naturally:</p>
+<ul>
+<li>If you choose to go down the IMAP/SMTP route, you&rsquo;ll have lots of flexibility in choosing an e-mail client (<a href="https://www.mozilla.org/en-US/thunderbird/">Thunderbird</a>, <a href="https://wiki.gnome.org/Apps/Evolution/">Evolution</a>, <a href="https://wiki.gnome.org/Apps/Geary">Geary</a>, and <a href="https://www.kde.org/applications/internet/kmail/">KMail</a>, just to name a few).</li>
+<li><em>However</em>, IMAP/SMTP doesn&rsquo;t provide address book lookup (you&rsquo;d need LDAP support for that), which may make using these protocols in a larger corporate environment a bit more challenging.</li>
+<li>If you choose Exchange Web Services, you have a couple different options from which to choose. If you want to use a client with EWS support, you can use either Thunderbird with <a href="https://addons.mozilla.org/en-us/thunderbird/addon/exquilla-exchange-web-services/">the paid Exquilla add-on</a>, or Evolution. There&rsquo;s also a package called <a href="http://davmail.sourceforge.net/">DavMail</a> that essentially acts like an EWS proxy and will let you use any IMAP client.</li>
+<li>Choosing EWS generally also gives you address book lookups and <em>maybe</em> some calendaring support (again, more on that in part 2).</li>
+<li>Browser-based access is pretty self-explanatory, and the pros and cons are also pretty self-explanatory.</li>
+</ul>
+<p>Which route should you choose? Well, that&rsquo;s dependent upon a great many factors, including but not limited to your tolerance for various levels of integration and stability, support within your selected Linux distribution, and personal preference.</p>
+<p>I tested Evolution and Thunderbird (both with and without the Exquilla add-on). I did not spend any significant time with any other Linux e-mail clients. Given Evolution&rsquo;s close ties to <a href="https://www.gnome.org/">GNOME</a> and the fact that I&rsquo;d settled onto <a href="https://getfedora.org/">Fedora</a> 25 as my Linux distribution of choice, I expected that I would end up using Evolution. Unfortunately, I found Evolution&rsquo;s workflow just didn&rsquo;t sit well with me. Evolution does feel a lot like Microsoft Outlook, which may be beneficial for folks migrating from Windows but didn&rsquo;t help me at all. It also didn&rsquo;t help that Evolution was crash-prone during my testing, or that it occasionally got &ldquo;bogged down&rdquo; in background mail tasks and became unresponsive.</p>
+<p>Perhaps because of my years spent with Apple Mail, Thunderbird felt far more natural to me, and had the benefit of being cross-platform (meaning I could run Thunderbird on my Mac Pro workstation as well as on my Linux laptop for ease of switching back and forth). Thunderbird&rsquo;s support for &ldquo;unified folders&rdquo; (one Inbox across multiple accounts, for example) is still a bit spotty, and so although this was a feature to which I&rsquo;d grown accustomed on OS X I had to give it up with Thunderbird. The paid Exquilla add-on (which offers a 60-day free trial) works reasonably well, and the cost is only $10/year.</p>
+<p>In the end, I selected Thunderbird with the paid Exquilla add-on for Exchange Web Services support, finding that the lack of address book support with an IMAP/SMTP setup was hindering my productivity. To enhance my experience, I also installed a few extra add-ons:</p>
+<ul>
+<li>I added the <a href="https://addons.mozilla.org/en-us/thunderbird/addon/enigmail/">Enigmail add-on</a> to support digital signing and encryption, tying that together with Keybase and GPG (GNU Privacy Guard).</li>
+<li>I&rsquo;m using the <a href="https://addons.mozilla.org/en-us/thunderbird/addon/quicktext/">Quicktext add-on</a> for quickly inserting boilerplate phrases and e-mail signatures.</li>
+<li>The <a href="https://addons.mozilla.org/en-us/thunderbird/addon/gnotifier/">GNotifier add-on</a> ties Thunderbird notifications into the native Fedora/GNOME notifications.</li>
+</ul>
+<p>This setup seems to work well, is stable, and doesn&rsquo;t introduce unnecessary friction into my day. (There is some friction there, mostly due to a need to &ldquo;unlearn&rdquo; 14 years of Apple Mail habits and keyboard shortcuts.)</p>
+<p>In the next post on corporate collaboration, I&rsquo;ll discuss calendaring.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/exchange">Exchange</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/10/linux-migration-other-users-stories-pt3/">The Linux Migration: Other Users&#39; Stories, Part 3</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/22/linux-migration-other-users-stories-pt4/">The Linux Migration: Other Users&#39; Stories, Part 4</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f21%2flinux-migration-corp-collab-pt1%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f21%2flinux-migration-corp-collab-pt1%2f&text=The%20Linux%20Migration%3a%20Corporate%20Collaboration%2c%20Part%201" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f21%2flinux-migration-corp-collab-pt1%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/11/06/current-tech-projects/">Current Tech Projects</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2017/03/07/linux-migration-creating-presentations/">The Linux Migration: Creating Presentations</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2016/04/04/technology-short-take-64/">Technology Short Take #64</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

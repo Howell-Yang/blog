@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>TA2659: Managing ESX in a COS-less World - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="TA2659: Managing ESX in a COS-less World - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="TA2659: Managing ESX in a COS-less World - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/09/17/ta2659-managing-esx-in-a-cos-less-world/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">TA2659: Managing ESX in a COS-less World</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;909 words (estimated 5 minutes to read)</span>
+  <p>This is TA2659, Managing ESX in a COS-less World. The focus here is on tools that allow you to manage ESX without using the Service Console.</p>
+<p>When I arrived at the session, the presenter was discussing VMware&rsquo;s goal to drive parity between the &ldquo;actual&rdquo; CLI present in the Service Console and the Remote CLI. There is a desire to ensure that any command that can be run on ESX or ESXi can also be run on the other.</p>
+<p>Another tool to use in managing ESX without the Service Console is the VI Toolkit for PowerShell. I&rsquo;m sure that most readers are already familiar with the VI Toolkit, so I won&rsquo;t go into any great detail there. There are about 120 cmdlets or so in the Toolkit today; another 50 or so are slated for release in the next version of the VI Toolkit. In addition, VI Toolkit management/compatibility is a core design facet&mdash;everything needs to be manageable via the VI Toolkit.</p>
+<p>The VI Perl Toolkit is another scripting toolkit that can be used to manage ESX without relying upon the Service Console. This works on both Linux and Windows, where as the VI Toolkit only works on Windows. The <code>vicfg-*</code> tools are built on Perl.</p>
+<p>Future directions include enhancements to the VI Perl Toolkit to expose functionality as Perl functions. A VI Java Toolkit will be available soon (within a month?). Other toolkits may become available depending upon market demand and direction.</p>
+<p>From the perspective of server health monitoring, CIM SMASH is the direction in which VMware is moving. CIM (Common Information Model) is both a protocol and a data model representing functionality. SMASH (Systems Management Architecture for Server Hardware) is the data model for hardware health monitoring and management. An example of a tool that works with CIM SMASH is WinRM, which ships on Windows Vista and presumably Windows Server 2008. CIM SMASH profiles simply define the sensors and the values that should be retrieved for various hardware elements.</p>
+<p>A fair amount of CIM SMASH functionality was exposed in ESX 3.5 Update 2. This is done per-host; in the future, VirtualCenter will aggregate that for multiple hosts.</p>
+<p>An attendee asked a question about varying degrees of hardware monitoring being exposed in the initial release of ESXi and CIM support within both ESXi and the underlying hardware. The response is that this functionality is driven by both SIM providers, which are written by either VMware or the hardware vendor; in most cases, it&rsquo;s VMware ESXi that needs to beef up the SIM providers.</p>
+<p>In the future, the vision of VMware is to abstract the configuration into a configuration file. This configuration template could then be applied to multiple hosts, and the configuration can be assessed regularly to verify configuration, compliance, etc. The information required to do all this is already being handled by the web services API in VirtualCenter, and the tools necessary to perform the configuration are already present in the API (the <code>esxcfg-*</code> and <code>vicfg-*</code> commands already leverage the API to do these very tasks). Combining these two things would allow us to create a configuration template that can be applied to a host while still allowing for customization (like VM customization during cloning).</p>
+<p>The subject of deployment is a key issue when we think about losing the Service Console. One approach to handling these issues is deploying physical machines; another would be to deploy virtual machines to handle these tasks. Partners could wrap up the agents that would typically be deployed in the Service Console as a virtual appliance, but then users could end up with numerous virtual appliances. What if VMware were to provide a virtual infrastructure management appliance? That&rsquo;s what VIMA (Virtual Infrastructure Management Assistant) is.</p>
+<p>VIMA is a virtual appliance packaged as OVF and is distributed, maintained, and supported by VMware. This is downloaded and installed by the customer according to their management procedures. This will be a well-known deployment environment that partners can rely upon being present. This will be a 64-bit Linux distribution with VMware Tools, VI Perl Toolkit, the Remote CLI (now known as the VI CLI), and a JRE already present. VIMA can be patched for updates, and it allows you to manage one or more VMware ESX hosts directly or through VirtualCenter. VIMA can enable agents to authenticate themselves, and VIMA will rotate its passwords on the hosts. Additionally, sample code and documentation will be available for programming applications to work in VIMA.</p>
+<p>In &ldquo;classic&rdquo; ESX, management agents and hardware agents ran in the Service Console; with VIMA, updated management agents will talk through the VI API and hardware agents will talk through CIM SMASH. An example of this is the APC PowerChute Network Shutdown (PCNS), which is being rewritten to use the VI API and will run in VIMA.</p>
+<p>Anyone interested in VIMA can e-mail <a href="mailto:vima_request@vmware.com">vima_request@vmware.com</a> and request access to pre-GA versions of VIMA. VIMA is expected for general release in the fourth quarter of this year. All VIMA releases will work with both ESX and ESXi (again, pointing to the desire to keep parity between these two products).</p>
+<p>Future versions of VIMA may add Active Directory support; authentication through vCenter Servers; improved automation, configuration, and updates; UI integration in the VI Client; additional VMware components pre-installed. Finally, VMware Studio will be used to build future versions of VIMA.</p>
+<p>At this point, the presentation ended and the floor was opened up for a question and answer session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2008">VMworld2008</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/09/17/vd2422-offline-vdi/">VD2422: Offline VDI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/09/17/ovf-format-released-vman-initiative-launched/">OVF Format Released, VMAN Initiative Launched</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f17%2fta2659-managing-esx-in-a-cos-less-world%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f17%2fta2659-managing-esx-in-a-cos-less-world%2f&text=TA2659%3a%20Managing%20ESX%20in%20a%20COS-less%20World" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f09%2f17%2fta2659-managing-esx-in-a-cos-less-world%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/08/28/virtualization-short-take-17/">Virtualization Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2008/09/16/ta2668-vmware-esx-architectural-directions/">TA2668: VMware ESX Architectural Directions</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2008/09/15/follow-up-on-the-vdc-os-announcement/">Follow Up on the VDC-OS Announcement</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

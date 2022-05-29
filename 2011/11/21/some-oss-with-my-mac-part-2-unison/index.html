@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some OSS with my Mac, Part 2: Unison - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some OSS with my Mac, Part 2: Unison - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some OSS with my Mac, Part 2: Unison - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/11/21/some-oss-with-my-mac-part-2-unison/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some OSS with my Mac, Part 2: Unison</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1318 words (estimated 7 minutes to read)</span>
+  <p>(This is Part 2 of a two-part series on some open source software I&rsquo;ve incorporated into my primarily Mac-based home office setup. Read <a href="/2011/11/18/some-oss-with-my-mac-part-1-synergy/">Part 1</a>.)</p>
+<p>In Part 1 of this series, I talked about how I&rsquo;d leveraged Synergy to provide  a shared mouse and keyboard across the three computers (two Macs and one Linux laptop) in my home office. In this part, I will discuss the solution I employ for keeping files synchronized between the two Macs in my home office. I&rsquo;ll give you a hint: It&rsquo;s not <a href="http://www.dropbox.com/">Dropbox</a>.</p>
+<p>No, it&rsquo;s another open source application. It&rsquo;s called <a href="http://www.cis.upenn.edu/~bcpierce/unison/">Unison</a> (not to be confused with the <a href="http://www.panic.com/unison/">Mac Usenet reader of the same name</a>), and it provides intelligent two-way synchronization of files between multiple computers across multiple platforms. In my case, I use it only to keep files synchronized between my two Mac laptops, but this is not due to a limitation in Unison; this is only because my Linux laptop is used for other purposes and I don&rsquo;t really benefit from having all these documents available on it.</p>
+<p>Specifically, I used a pre-compiled version of Unison available <a href="http://alan.petitepomme.net/unison/index.html">here</a> for Mac OS X. While this provides a pretty GUI for Unison, there are some oddities to getting it to work as expected that I wanted to document here.</p>
+<p>First, let&rsquo;s take a quick look at &ldquo;the big picture&rdquo; for getting this running:</p>
+<ol>
+<li>
+<p>Configure public key SSH authentication between the computers involved. (More on this in a moment.)</p>
+</li>
+<li>
+<p>Install Unison. (This is as simple as mounting the .DMG and copying Unison into the destination of your choice. I put it in <code>/Applications/Utilities</code>.)</p>
+</li>
+<li>
+<p>Create the Unison profiles. The Unison GUI only gets you part of the way there&mdash;this is one of the oddities.</p>
+</li>
+</ol>
+<h2 id="configuring-ssh-public-key-authentication">Configuring SSH Public Key Authentication</h2>
+<p>I&rsquo;m not going to go into a lot of detail here; there are tons of sites that provide excellent instructions on how to create a public/private key pair and use that key pair for SSH authentication (here&rsquo;s <a href="http://www.petefreitag.com/item/532.cfm">one</a>). The primary goal for which we are striving is passwordless logins for Unison, so that it can leverage SSH to encrypt the connections between the computers during file synchronization operations. (You <em>do</em> want secure file synchronization, right?)</p>
+<p>In my case, I&rsquo;m leveraging what&rsquo;s known as a &ldquo;star&rdquo; topology. That is, my two Mac laptops (a 2011 13&quot; MacBook Pro and a 2009 15&quot; MacBook Pro) don&rsquo;t synchronize directly with each other; they synchronize through a third computer, which acts as the &ldquo;server&rdquo; in the center of my three-node &ldquo;star.&rdquo; Why this topology? I didn&rsquo;t/don&rsquo;t want to have to enable SSH connections into either of my Mac laptops, but I already have SSH connections established to the server. (In this case, the server is a Mac Mini running Snow Leopard Server.)</p>
+<p>For my setup, then, I needed to configure public key authentication between the laptops and the Mac Mini. For your setup, it will depend upon your topology, and that will drive the specific steps you must take.</p>
+<h2 id="installing-unison">Installing Unison</h2>
+<p>As I mentioned above in the overview, installing Unison is like installing any other Mac app: mount the .DMG, copy the application to the desired location. The prebuilt Mac binaries of Unison that I used are no different, so I&rsquo;ll skip any more details on that step and move instead to creating the Unison profiles.</p>
+<h2 id="creating-the-unison-profiles">Creating the Unison Profiles</h2>
+<p>While the Unison GUI provides a very sparse UI for creating profiles, you will <em>most assuredly</em> need to supplement the GUI with editing the profile yourself by hand. Profiles created by Unison are stored in <code>~/Library/Application Support/Unison</code> as *.prf files that can be edited by any text editor (I use <a href="http://macromates.com/">TextMate</a>).</p>
+<p>Follow this general procedure to get a Unison profile set up properly:</p>
+<ol>
+<li>
+<p>Launch Unison and create the profile. Supply the necessary information (the local root, remote username, remote host, and remote root).</p>
+</li>
+<li>
+<p>Quit Unison.</p>
+</li>
+<li>
+<p>Navigate to <code>~/Library/Application Support/Unison</code> and open the .PRF file that corresponds to the profile you just created.</p>
+</li>
+<li>
+<p><strong>At the very least</strong>, you must add a <code>servercmd</code> statement to the profile, or Unison won&rsquo;t work at all (you&rsquo;ll get &ldquo;fatal error&rdquo;-type message about not being able to connect to the server). This is where I was stuck for quite some time&mdash;see below for more information.</p>
+</li>
+<li>
+<p>Launch Unison, select the profile you just edited, and open it. It should now work.</p>
+</li>
+</ol>
+<p>Now, let&rsquo;s talk about the <code>servercmd</code> statement. This statement tells Unison where to find the Unison executable on the remote host. With the prebuilt binaries of Unison that I use (and these are the binaries to which most Google searches will point you, found <a href="http://alan.petitepomme.net/unison/index.html">here</a>), it will prompt you to install a command-line tool. If you opt to install this command-line tool, it places an executable at <code>/usr/bin/unison</code>. Naturally, you would think that this would be the value you&rsquo;d specify for <code>servercmd</code>, right? You&rsquo;d be wrong.</p>
+<p>The executable at <code>/usr/bin/unison</code> simply launches the Unison GUI. If you try to run that via SSH (as Unison will attempt to do when you try to open the profile), it will report an error&mdash;you can&rsquo;t launch a GUI app on a remote system via SSH. This is the root cause of the &ldquo;unable to connect&rdquo; or &ldquo;fatal error&rdquo; or &ldquo;server not responding&rdquo; error messages with Unison: it doesn&rsquo;t know how/where to find the server-side executable.</p>
+<p>The fix is to specify the full path the Unison executable that is buried inside the Mac application package. Let&rsquo;s say you install Unison (which is an application bundle; bundles look like folders at the command line) to <code>/Applications/Utilities</code>, like I did. In that case, the right binary to point to is this one:</p>
+<pre><code>/Applications/Utilities/Unison.app/Contents/MacOS/Unison
+</code></pre>
+<p>When you specify that value for the <code>servercmd</code> statement in the Unison profile, everything works (assuming that your public key authentication via SSH is working as expected).</p>
+<p>Therefore, you have two options to make Unison work. Both options involve editing the .PRF file and adding a <code>servercmd</code> statement:</p>
+<ol>
+<li>
+<p>In Option 1, you specify the full path to the Unison executable inside the application bundle (like specified above) in the <code>servercmd</code> statement.</p>
+</li>
+<li>
+<p>In Option 2, you create a symlink between <code>/usr/bin/unison</code> and the full path to the Unison executable, and specify <code>/usr/bin/unison</code> for the <code>servercmd</code> statement. This is the route I chose.</p>
+</li>
+</ol>
+<p>I highly recommend you read <a href="https://alliance.seas.upenn.edu/~bcpierce/wiki/index.php?n=Main.WikiSandbox#osx">this page</a> on the Unison Wiki, as it provides a wealth of other information on what should or should not be included in your Unison profile. It also reminds you that you <strong>must</strong> edit your .PRF file in order to make Unison work.</p>
+<p>Here&rsquo;s a sanitized version of the Unison profile that I&rsquo;m using to keep files synchronized:</p>
+<pre tabindex="0"><code>root = /Local/Path/To/Files
+root = ssh://username@remote.host.com//Remote/Path/To/Files
+servercmd = /usr/bin/unison
+fastcheck = true
+sortnewfirst = true
+confirmbigdeletes = true
+ignore = Name .FBCIndex
+ignore = Name .FBCLockFolder
+ignore = Name .Apple*
+ignore = Name *.tmp
+</code></pre><p>There are a few more ignore statements in there, but you get the idea. Refer to the Wiki page for a more detailed listing of suggested ignore statements. Oh, and the double forward slash in the second <code>root</code> statement is intentional, not a typo (this is the right syntax).</p>
+<p>Keep in mind that this profile assumes that you&rsquo;ve created a symlink (using <code>ln -s</code>) to the Unison executable inside the application bundle, as I described earlier. If you didn&rsquo;t create the symbolic link, the <code>servercmd</code> statement must have the full path all the way inside the application bundle.</p>
+<p>Once you have your profile configured correctly, you can run the Unison GUI app, open the profile, and you should be off to the races. (In other words, it should work just fine.) In my case, I did an initial synchronization of around 6GB of data in a matter of minutes, and subsequent synchronization operations have been astonishingly fast.</p>
+<p>If there are any questions, tips, clarifications, or corrections, please speak up in the comments. Thanks, and I hope you find this useful!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/11/18/exporting-outlines-as-markdown/">Exporting Outlines as Markdown</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/11/23/giving-thanks-on-thanksgiving/">Giving Thanks on Thanksgiving</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f21%2fsome-oss-with-my-mac-part-2-unison%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f21%2fsome-oss-with-my-mac-part-2-unison%2f&text=Some%20OSS%20with%20my%20Mac%2c%20Part%202%3a%20Unison" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f11%2f21%2fsome-oss-with-my-mac-part-2-unison%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/18/some-oss-with-my-mac-part-1-synergy/">Some OSS with my Mac, Part 1: Synergy</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2011/04/09/revisiting-snow-leopard-and-time-machine-on-an-iomega-ix4-200d/">Revisiting Snow Leopard and Time Machine on an Iomega ix4-200d</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2010/07/17/enabling-raid-1-on-a-mac-mini-server/">Enabling RAID 1 on a Mac Mini Server</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

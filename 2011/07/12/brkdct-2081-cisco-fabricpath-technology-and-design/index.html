@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BRKDCT-2081: Cisco FabricPath Technology and Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BRKDCT-2081: Cisco FabricPath Technology and Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BRKDCT-2081: Cisco FabricPath Technology and Design - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/12/brkdct-2081-cisco-fabricpath-technology-and-design/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BRKDCT-2081: Cisco FabricPath Technology and Design</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1657 words (estimated 8 minutes to read)</span>
+  <p>This is BRKDCT-2081, Cisco FabricPath Technology and Design. FabricPath is (to my understanding) Cisco&rsquo;s implementation of TRILL, and as a key data center technology this is something I&rsquo;m very interested in learning. Tim Stevenson is the presenter.</p>
+<p>FabricPath is a technology to drive Layer 2 in the data center. Why Layer 2 in the data center? Because customers are asking for it! The presenter casually mentions &ldquo;applications that require Layer 2 adjacency,&rdquo; and of course my first thought is the VLAN spanning requirements for vMotion. This is not to spark a Layer 2 vs. Layer 3 design, but rather to focus on those specific parts of the network where Layer 2 adjacencies are required. In the typical multilayer network (see my post on <a href="/2011/07/11/brkcrs-2031-multilayer-campus-architectures-and-design-principles/">the campus multilayer design session</a>), this would typically be an access layer &ldquo;pod.&rdquo;</p>
+<p>To extend L2 to greater areas, you <em>could</em> extend the L2 boundary further up the layers of the network and use Spanning Tree Protocol to prevent loops. Obviously, this creates underutilized links and larger failure domains, so this wouldn&rsquo;t exactly be the ideal solution. Other potential problems might include:</p>
+<ul>
+<li>
+<p>STP doesn&rsquo;t offer any load balancing</p>
+</li>
+<li>
+<p>STP convergence is disruptive</p>
+</li>
+<li>
+<p>Tree topologies introduce sub-optimal paths</p>
+</li>
+<li>
+<p>MAC address tables don&rsquo;t scale</p>
+</li>
+<li>
+<p>Flooding impacts the whole network</p>
+</li>
+</ul>
+<p>The goal of FabricPath is to combine the best aspects of L2 with the best aspects of L3. That means easy configuration, &ldquo;plug and play,&rdquo; multipathing (ECMP), fast convergence, and easy scalability.</p>
+<p>So what is FabricPath? FabricPath turns a network into a &ldquo;fabric.&rdquo; It makes a group of switches act like a single switch. There&rsquo;s no STP inside the fabric. (In this regard, it sounds a lot like making a group of FabricPath-capable switches act like a group of fabric extenders. I need to think a bit more about this.)</p>
+<p>Key goals of FabricPath:</p>
+<ul>
+<li>
+<p>Optimal, low-latency switching using shortest path any-to-any (the ingress switch identifies the output port across the fabric; no STP inside)</p>
+</li>
+<li>
+<p>High bandwidth, high resiliency with Equal Cost Multi-Pathing (up to 256 links between any 2 devices in the fabric; traffic is redistributed across remaining links in case of failure, thus providing fast convergence; sounds like this uses port channels?)</p>
+</li>
+<li>
+<p>Scalable using &ldquo;conversational learning&rdquo; (per-port MAC address table only needs to learn peers that are reached across the fabric; provides much greater MAC address scalability)</p>
+</li>
+<li>
+<p>Layer 2 integration using vPC+ (allows you to connect non-fabric devices to the fabric using IEEE standard port channels to prevent loops and avoid the use of STP; vPC+ is just vPC extended for FabricPath)</p>
+</li>
+<li>
+<p>Edge device integration to allow hosts to leverage multiple L3 default gateways (hosts see a single default gateway, but the fabric provides multiple simultaneously active default gateways; maximum is currently two devices as default gateways)</p>
+</li>
+<li>
+<p>Layer 3 integration (an arbitrary number of routed interfaces can be created and attached L3 devices can peer with them; the hardware is capable of handling millions of routes;  SVIs are fully supported)</p>
+</li>
+</ul>
+<p>Now we move on to a more technical overview of FabricPath. FabricPath uses a new control plane using L2 IS-IS. IS-IS assigns addresses to all FabricPath switches automatically and computes the shortest pair-wise path. There is full support for equal-cost paths between any FabricPath switch pairs. Cisco uses an &ldquo;extended&rdquo; version of IS-IS.</p>
+<p>From a data plane perspective, MAC address/switch ID associations are maintained at the edge of the FabricPath network. FabricPath uses switch IDs to compute paths via IS-IS; &ldquo;traditional&rdquo; Layer 2 uses MAC addresses to forward frames.</p>
+<p>Here&rsquo;s some terminology:</p>
+<ul>
+<li>
+<p>CE edge ports: Edge ports connected to classical Ethernet devices. This is the &ldquo;outer boundary&rdquo; of the fabric. CE edge ports participate in STP, maintains MAC address tables, and send/receives traffic in standard Ethernet format.</p>
+</li>
+<li>
+<p>FP core ports: This an interface connected to another FabricPath device. These ports form IS-IS adjacencies, no STP, no BPDUs, and send/receive only FabricPath frames.</p>
+</li>
+</ul>
+<p>In the event of an unknown unicast, FabricPath will perform an unknown unicast flood (like classical Ethernet/transparent bridging). The flood will still be encapsulated in a FabricPath header, but it will be sent to all switches participating in the fabric. However, other switches will not learn the MAC address unless the end device is attached to that switch (this goes back to the conversational learning approach).</p>
+<p>An important note regarding hardware: FabricPath does require F1 series I/O modules on the Nexus 7000 series switch and NX-OS 5.1. M series I/O modules cannot switch FabricPath traffic. Both FP core and CE edge ports must be on an F1 series I/O module. FabricPath uses a new VLAN mode (mode fabricpath in the VLAN configuration context), and FabricPath VLANs can only be enabled on F1 series modules.</p>
+<p>Now the presenter provides some additional detail on vPC+. vPC+ allows dual-homed connections from edge ports into a FabricPath domain with active/active forwarding. The only requirement from the device being connected is the ability to form port-channel interfaces. (Does this mean we could use a vSwitch with &ldquo;Route based on IP hash&rdquo;?) Configuration is almost identical to vPC. Key requirement: peer-link and all vPC+ connections must be made to ports on an F1 series I/O module.</p>
+<p>There was a brief mention of trying to do L3 peering across the vPC/vPC+ peer link. To my understanding, vPC+ behaves like vPC in that regard.</p>
+<p>Now for a comparison of FabricPath to TRILL. TRILL is an IETF standard for L2 multipathing. TRILL has moved from Draft to Proposed Standard. Cisco FabricPath hardware is also TRILL capable. The F1 I/O modules are capable of providing either FabricPath or TRILL encapsulation, but there is no software support yet. The mention of FP encapsulation vs. TRILL encapsulation leads me to believe that FabricPath and TRILL are fundamentally incompatible. This is further underscored by mention of a future software upgrade that will add a &ldquo;TRILL mode&rdquo; to FabricPath.</p>
+<p>With regard to FabricPath vs. TRILL, there are a number of features that FabricPath supports that TRILL currently does not: vPC+ or its equivalent; FHRP active/active; multiple topologies; conversational learning; and the types of inter-switch links supported (TRILL might have a slight advantage here in the support of shared inter-switch links).</p>
+<p>FabricPath supports the idea of multiple topologies, which is a way of constraining a VLAN to a subset of the links within a FabricPath fabric. This is not currently in the TRILL standard. This provides some VLAN pruning, traffic engineering, security, etc., benefits.</p>
+<p>Edge ports can be PVLAN ports. (But FP core ports cannot?)</p>
+<p>Concerning STP participation, FabricPath looks like a single bridge. It currently expects to be the root bridge (CE edge ports will block if they receive better information) and it sends the same STP information on all edge ports. No BPDUs are forwarded across the fabric.</p>
+<p>FabricPath IS-IS runs on the switch supervisor as a separate component in the control plane. The presenter gave a great overview of the FabricPath system architecture, but I was unable to capture the information quickly enough here.</p>
+<p>FabricPath maintains a shortest (best) path to each Switch ID (recall Switch IDs are assigned by IS-IS) based on link metrics. ECMP is supported between FabricPath switches. You can use the <code>show fabricpath isis route</code> command to see the IS-IS view of the FabricPath topology. The <code>show fabricpath route</code> command shows the U2RIB&rsquo;s view of the routing topology.</p>
+<p>FabricPath builds two multidestination trees to handle unknown unicast, multicast, and broadcast traffic. The multidestination trees are designed to provide loop-free access to all the switches in the fabric. They are not used for known unicast frames. The trees are build by IS-IS and the roots of each tree are elected by IS-IS. The IS-IS election is handled by &ldquo;priority value&rdquo; (highest System ID, highest Switch ID used in the event of a tie). Cisco does recommend explicitly setting the root via priority value so that IS-IS elects a known root for the multidestination trees.</p>
+<p>FabricPath uses a 16 byte MAC-in-MAC encapsulation. Although the encapsulation uses a 48 bit address that looks like a MAC address, it&rsquo;s not. Contained in the header are the Switch ID, Sub-Switch ID, Local ID (LID), Ftag (Forwarding tag), and TTL (uses to prevent frames from circling the fabric endlessly). The Switch ID is a 12 bit value provisioned automatically by the DRAP (runs on the supervisor as part of the FabricPath control plane). The Sub-Switch ID is an 8 bit value used in vPC+ and must be unique within each vPC+ virtual switch domain. The Local ID (LID) identifies the exact port which sourced the frame or to which the frame is destined. The Ftag is a 10 bit number that identifies the FP topology (for known unicast frames) or the multidestination tree (for multidestination frames).</p>
+<p>The presenter next spent some time reviewing the behavior of traffic moving through FabricPath. One key note I got from the discussion was that any unique conversation will always follow the same path through the fabric&mdash;there is no load balancing.</p>
+<p>For multicast traffic, IGMP snooping is used on the edge ports. IS-IS learns multicast group membership based on the IGMP snooping data and creates &ldquo;pruned trees&rdquo; for each group on both multidestination trees. Data is then forwarded along the appropriate pruned tree on the multidestination tree. Pruned trees are built using GM-LSPs (I don&rsquo;t know what GM-LSPs are.)</p>
+<p>The presenter moves on to some discussion of various FabricPath designs. The first example provide was simply attaching a FabricPath &ldquo;access pod&rdquo; to an existing multilayer network, which requires very little (if any) change to the rest of the network. He also showed an example of using FabricPath at the core to extend VLANs between cores without having to extend STP between the access layer pods. The third example is using FabricPath as a site interconnect mechanism. This does require dark fiber but supports any number of sites, isolates STP, and allows you to selectively extend VLANs between sites. (How does this play with/interact with/compete with OTV?)</p>
+<p>At this point the session wrapped up.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ciscolive2011">CiscoLive2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/07/12/vmwares-launch-event/">VMware&#39;s Launch Event</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/13/announcing-mastering-vmware-vsphere-5/">Announcing Mastering VMware vSphere 5</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fbrkdct-2081-cisco-fabricpath-technology-and-design%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fbrkdct-2081-cisco-fabricpath-technology-and-design%2f&text=BRKDCT-2081%3a%20Cisco%20FabricPath%20Technology%20and%20Design" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f12%2fbrkdct-2081-cisco-fabricpath-technology-and-design%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/12/brkcom-3002-network-redundancy-and-load-balancing-designs-for-ucs-blade-servers/">BRKCOM-3002: Network Redundancy and Load Balancing Designs for UCS Blade Servers</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2011/07/11/brkmpl-1101-introduction-to-mpls/">BRKMPL-1101: Introduction to MPLS</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2011/07/11/brkcrs-2031-multilayer-campus-architectures-and-design-principles/">BRKCRS-2031: Multilayer Campus Architectures and Design Principles</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

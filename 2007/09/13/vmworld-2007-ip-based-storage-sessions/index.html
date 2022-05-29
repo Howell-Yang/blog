@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMworld 2007 IP-Based Storage Sessions - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMworld 2007 IP-Based Storage Sessions - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMworld 2007 IP-Based Storage Sessions - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/09/13/vmworld-2007-ip-based-storage-sessions/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMworld 2007 IP-Based Storage Sessions</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;960 words (estimated 5 minutes to read)</span>
+  <p>I just wrapped up two different sessions on IP-based storage, one on iSCSI configuration and one on performance characteristics and comparisons between iSCSI and NFS.</p>
+<p>I couldn&rsquo;t liveblog the first session because it was too crowded (no room to type on my laptop) and I couldn&rsquo;t get a wireless signal from the VMworld 2007 network. There are, however, a couple key points from the session that stick out in my mind:</p>
+<ul>
+<li>
+<p>ESX Server does not currently support MCS (multiple connections per session) or jumbo frames, two key optimizations that can really help with iSCSI performance. There is no word yet on when those shortcomings will be addressed; personally, I&rsquo;m hoping that VMware fixes them in ESX 3.5.</p>
+</li>
+<li>
+<p>There is, apparently, some way of performing manual load balancing of iSCSI LUNs to help improve performance. The speakers did not go into any great details, and I was unable to speak with one of the presenters, Jon Hall, after the session. He did, however, invite me to contact him via e-mail, so I&rsquo;ll post more information on that once I&rsquo;ve had some communication with him.</p>
+</li>
+</ul>
+<p>Most of the rest of the information presented in that session was pretty straightforward and was information I&rsquo;d already seen. All in all, it was a decent session, but I didn&rsquo;t as much information from the session as I had hoped I would.</p>
+<p>After lunch, I returned to the Moscone Center for a session titled &ldquo;NFS and iSCSI - Performance Characterization and Best Practices.&rdquo; I was really hoping to get some additional best practices on using NFS and iSCSI and on maximizing performance with these IP-based storage solutions.</p>
+<p>The session started with some performance characteristics with ESX Server today vs. ESX Server 3.0.1; basically, it was an update of some performance data presented last year at VMworld 2006.</p>
+<p>These updated performance statistics are intended to show the results of optimizations that have been incorporated into ESX Server. This includes optimizations like improved and more accurate CPU accounting (this improves load balancing across VMs), improved PAE support, minimized NUMA overhead, improved CPU cost per I/O, increased maximum transfer sizes, and the ability in handle more concurrent I/Os.</p>
+<p>As a result, software iSCSI sees a range of improvements since ESX Server 3.0.1, as high as 15% for 8K block writes, with reductions in latency across the board and reducions in CPU utilization as well. Read operations will show the greatest improvements.</p>
+<p>Hardware iSCSI sees dramatic improvements in smaller block sizes, but the larger block sizes are essentially unchanged. The same goes for latency, and the reductions in CPU utilization for hardware iSCSI shares the same characteristics as for software iSCSI (but keep in mind that the absolute change&mdash;as opposed to percentage change&mdash;will be greater for software iSCSI). With hardware iSCSI, mixed read-write operations will benefit more than just read options.</p>
+<p>Differences between VMFS and RDM (raw device mapping) are inconsequential (less than 2.5%); the only significant difference is CPU utilization, where VMFS requires more CPU time than RDM.</p>
+<p>Comparisons of hardware iSCSI, software iSCSI, and NFS with regards to throughput show figures that are not entirely unexpected. NFS is slightly slower than both flavors of iSCSI, and has greater latency than the iSCSI flavors. However, all of the measured figures were in milliseconds, so it&rsquo;s not terribly significant.</p>
+<p>Moving into performance best practices, the presenter started with the storage array itself, and provided the typical list of items to consider: total spindle count, number of spindles allocated for use, RAID level and stripe size, storage processor specifications, read/write cache sizes, and caching policies. This is all pretty standard information that is applicable in sizing a correct storage solution, independent of a virtualization implementation. (I would use those same counters to size a Microsoft Exchange storage solution or an Oracle storage solution, for example.)</p>
+<p>Since we are talking IP-based storage, networking configuration comes to play here, including such things as the network topology, switches, NICs, flavor of iSCSI (hardware/software). Similarly, things about the ESX Server host like CPU speed and number of CPU cores, overall system architecture, bus speed, I/O subsystems, and memory configuration all play a part in determining performance of IP-based storage solutions.</p>
+<p>Finally, it&rsquo;s important to understand the characteristics of the workload(s), such as I/O sizes, read/write patterns, and dependence upon aggregate throughput or latency.</p>
+<p>&lt;aside&gt;OK, can we move past this stuff now? This is all basic stuff that isn&rsquo;t necessarily specific in any way to virtualization. I want to see best practices for using IP-based storage with VMware!&lt;/aside&gt;</p>
+<p>To increase the overall throughput, using multiple NFS mount points may improve aggregate throughput as the cost of slightly higher CPU cost. NFS export options can affect performance as well. (OK, which options? Telling us that without telling us which options is kind of like leaving us hanging.)</p>
+<p>iSCSI digests may or may not have an impact on performance; iSCSI header digests have little or no impact; turning off iSCSI data digests can improve performance.</p>
+<p>The presenter went over some additional troubleshooting tips, and the slide briefly mentioned the <code>vsish</code> command. I hadn&rsquo;t heard of that command; anyone know of where I can find some additional information on <code>vsish</code>?</p>
+<p>Wrapping up the session, the presenter went through a few scenarios involving performance troubleshooting with both iSCSI and NFS. Overall, I did not find this session to be nearly as helpful as I had hoped it would be, the presenter was not engaging, and the presentation did not provide the kind of detailed information that I felt should have been included. (Examples: mentioning that some NFS export options affect performance, but failing to mention which options, or stating that there is a VMware knowledge base article about a topic but failing to provide the KB article number or URL).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nas">NAS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2007">VMworld2007</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-vcb-solutions-session/">VMworld 2007 VCB Solutions Session</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-top-support-issues-session/">VMworld 2007 Top Support Issues Session</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-ip-based-storage-sessions%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-ip-based-storage-sessions%2f&text=VMworld%202007%20IP-Based%20Storage%20Sessions" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-ip-based-storage-sessions%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/07/10/iscsi-and-esx-server-3/">iSCSI and ESX Server 3</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2007/09/10/interesting-new-vmware-storage-product/">Interesting New VMware Storage Product</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2007/06/29/esx-iscsi-basic-configuration-from-the-cli/">ESX iSCSI Basic Configuration from the CLI</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

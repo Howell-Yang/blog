@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VCDX Design Exam Post-Mortem - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VCDX Design Exam Post-Mortem - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VCDX Design Exam Post-Mortem - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/11/05/vcdx-design-exam-post-mortem/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VCDX Design Exam Post-Mortem</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;448 words (estimated 3 minutes to read)</span>
+  <p>It&rsquo;s a bit later than I would have liked (sorry <a href="http://www.boche.net/blog/">Jason</a>!), but I wanted to write up a brief post-mortem on the VCDX Design Exam, which I took&mdash;and passed with a score of 408&ndash;this past Tuesday.</p>
+<p>The exam wasn&rsquo;t particularly difficult in the sense of needing to know specific details. For example, I saw very few questions asking about a specific command-line parameter, the output of a specific command, or how many <em>X</em> that feature <em>Y</em> supports. There were a few, but not many. That doesn&rsquo;t mean you don&rsquo;t need to know that sort of stuff, because you do&mdash;but in a very different way.</p>
+<p>The exam is moderately difficult in the sense that you are required to take the product knowledge you have and put it together to solve a scenario. The real kicker, in my mind, is the &ldquo;Select the <em>best</em> answer&rdquo; prompt&mdash;implying that there was more than one technically correct answer. But which answer was best? Yes, you could do it via method A, but is method B better? Which method best satisfies the requirements described in the question? In this aspect, I did find the test challenging. Not incredibly difficult, but challenging.</p>
+<p>Unfortunately, the test suffered from a few issues. There were several questions that had missing components necessary for a correct answer. I commented on those, but what else can you do? The design portion of the exam&mdash;by now you probably know there is a multiple choice section and a graphical design section&mdash;had a terrible interface. I struggled more with the interface than I did the question. Looking at it from VMware&rsquo;s perspective, I&rsquo;m sure that it was incredibly difficult to come up with something like that, and I give them credit for actually trying (and not totally failing).</p>
+<p>All in all, I think that VMware did a reasonably good job with the exam. It was very different from the Enterprise Admin exam but equally challenging in a very different way.</p>
+<p>Now comes the real question: what did I use to study? Here&rsquo;s the resources that I used:</p>
+<ul>
+<li>
+<p>The VI3 connections and ports diagram, downloaded <a href="http://www.vreference.com/2009/09/22/firewall-diagram-updated-to-version-3/">here from Forbes&rsquo; site</a></p>
+</li>
+<li>
+<p><em>iSCSI Design Considerations and Deployment Guide</em> from VMware</p>
+</li>
+<li>
+<p><em>Configuring and Troubleshooting N_Port ID Virtualization</em> document from VMware</p>
+</li>
+<li>
+<p><em>Setup for Microsoft Cluster Service</em> document from VMware</p>
+</li>
+<li>
+<p><em>Fibre Channel SAN Configuration Guide</em> from VMware</p>
+</li>
+<li>
+<p><em>Virtual Machine Backup Guide</em> from VMware</p>
+</li>
+<li>
+<p><em>Resource Management Guide</em> from VMware</p>
+</li>
+<li>
+<p>Duncan&rsquo;s <a href="http://www.yellow-bricks.com/vmware-high-availability-deepdiv/">VMware HA deepdive</a></p>
+</li>
+<li>
+<p>VI3 security hardening white paper from VMware</p>
+</li>
+</ul>
+<p>I used all this in conjunction with the Design Exam blueprint, of course.</p>
+<p>So, there you go: there&rsquo;s my brief analysis of my VCDX Design Exam experience. Your mileage may vary, of course, since there are numerous versions of the exam.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/11/05/gestaltit-tech-field-day/">GestaltIT Tech Field Day</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f11%2f05%2fvcdx-design-exam-post-mortem%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f11%2f05%2fvcdx-design-exam-post-mortem%2f&text=VCDX%20Design%20Exam%20Post-Mortem" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f11%2f05%2fvcdx-design-exam-post-mortem%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/10/31/vm-hardware-version-7-and-windows-server-2008/">VM Hardware Version 7 and Windows Server 2008</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2009/10/30/vmware-ha-vmware-ft-and-os-clustering/">VMware HA, VMware FT, and OS Clustering</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

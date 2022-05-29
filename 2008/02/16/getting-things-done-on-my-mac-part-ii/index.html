@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Getting Things Done on my Mac, Part II - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Getting Things Done on my Mac, Part II - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Getting Things Done on my Mac, Part II - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/02/16/getting-things-done-on-my-mac-part-ii/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Getting Things Done on my Mac, Part II</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;626 words (estimated 3 minutes to read)</span>
+  <p>A short while ago I wrote about how I was trying a new way of <a href="/2008/02/06/getting-things-done-on-my-mac/">getting things done on my Mac</a>. Since I published that blog entry, I&rsquo;ve made some progress on wrapping myself around some of the tools and addressing some of the shortcomings I&rsquo;d found. Since there may be others out there facing the same situation, I thought it would be useful to share my experience here.</p>
+<p>First, I moved back to <a href="http://www.omnigroup.com/applications/omnifocus/">OmniFocus</a>. While I really liked the idea of &ldquo;Areas&rdquo; within <a href="http://www.culturedcode.com/things/">Things</a>, it just didn&rsquo;t seem as robust as OF. Since my work life is no longer driven solely by finite projects that start and end at defined times (usually!), I&rsquo;m using the projects within OF as areas of responsibility. For example, I&rsquo;m responsible for creating reference architectures for the deployment of virtualization solutions, so &ldquo;Reference Architectures&rdquo; is one of my projects. Within that project, I&rsquo;ll have any actions related to developing or designing reference architectures. This seemed to make the most sense to me and so far has worked well.</p>
+<p>Oh, and kudos to the great folks at Omnigroup, who were nice enough to provide an extended trial license for OmniFocus. With something like this, where you are adjusting your own personal workflow and creating new habits, a 15 day trial just isn&rsquo;t going to cut it. It was nice to see them recognize that.</p>
+<p>The second major issue that I had was getting information into OmniFocus. Using <a href="http://www.sandro.org/omnifocus/index.php">these AppleScripts</a> and <a href="http://www.rose-hulman.edu/~clifton/software.html">these AppleScripts</a>, I was able to cobble together a handy solution:</p>
+<ul>
+<li>
+<p>I modified an AppleScript to use with <a href="http://www.indev.ca/MailActOn.html">Mail Act-On</a>, so that I can quickly create OF actions from Mail.app. Since a lot of my actions are generated by e-mail, this allows me to quickly and easily add items to OF. This has helped me, for the first time in a very long time, to get my inbox to zero.</p>
+</li>
+<li>
+<p>I modified another AppleScript for use with <a href="http://www.newsgator.com/Individuals/NetNewsWire/">NetNewsWire</a> so that I can quickly create OF actions from NNW. If anyone has any insight on how to bind that script to a keystroke within NNW, that would be awesome. (I need something like Mail Act-On for the whole system.)</p>
+</li>
+<li>
+<p>I occasionally use the &ldquo;Send to OmniFocus&rdquo; script within Quicksilver as well. At some point I plan to update this script to include <a href="http://growl.info/">Growl</a> support. Both of the scripts mentioned above&mdash;for both Mail and NetNewsWire&mdash;were hacked to include Growl support.</p>
+</li>
+</ul>
+<p>I don&rsquo;t use the Clippings Service that much, although I may start using that more. It&rsquo;s possible to assign a keystroke to that, right? I haven&rsquo;t tried that yet; perhaps a combination of a keystroke for the Clippings Service along with my Mail Act-On rule and script will work even better.</p>
+<p>The only area that I feel like I&rsquo;m still not doing quite so well with is the idea of <em>contexts.</em> I feel like I&rsquo;m still having problems defining useful contexts. So much of my time is spent at the computer, so I can&rsquo;t really use a context like &ldquo;Computer&rdquo;. Some contexts make perfect sense; for example, I can&rsquo;t work on the virtualization lab unless I&rsquo;m <em>in</em> the virtualization lab. The other contexts, though, don&rsquo;t seem quite so clear-cut. Any feedback from any &ldquo;GTD&rsquo;ers&rdquo; out there is certainly welcome.</p>
+<p>Moving forward, I&rsquo;ll continue to tweak the AppleScripts that I&rsquo;m using for getting information into OmniFocus, and I&rsquo;ll be searching for an application like <a href="http://c-command.com/eaglefiler/">EagleFiler</a>, <a href="http://reinventedsoftware.com/together/">Together</a>, <a href="http://www.barebones.com/products/yojimbo/">Yojimbo</a>, or the like to help with storing and organizing information. I&rsquo;ve pretty much come to the conclusion that to really be effective, I need an application like OmniFocus to help me track and work through my tasks, and an application to help me store, organize, and retrieve information. Again, I&rsquo;m certainly open to any recommendations from readers.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/02/16/vipluginscom/">VIPlugins.com</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/02/18/virtualization-short-take-2/">Virtualization Short Take #2</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f16%2fgetting-things-done-on-my-mac-part-ii%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f16%2fgetting-things-done-on-my-mac-part-ii%2f&text=Getting%20Things%20Done%20on%20my%20Mac%2c%20Part%20II" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f02%2f16%2fgetting-things-done-on-my-mac-part-ii%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/02/06/getting-things-done-on-my-mac/">Getting Things Done on my Mac</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2005/06/30/the-practicality-perspective/">The Practicality Perspective</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2008/02/08/vmware-fusion-team-blog/">VMware Fusion Team Blog</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

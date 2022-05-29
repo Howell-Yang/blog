@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Running Host Management on Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Running Host Management on Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Running Host Management on Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/10/30/running-host-management-on-open-vswitch/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Running Host Management on Open vSwitch</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;456 words (estimated 3 minutes to read)</span>
+  <p><a href="http://openvswitch.org">Open vSwitch (OVS)</a> brings lots of functionality to Linux virtualization hosts, including the ability to use Link Aggregation Control Protocol (LACP) for enhanced network interface card (NIC) failover and redundancy. In this post, I&rsquo;m going to show you how to run a host management interface on a LACP bundle through OVS. This prevents you from having to give up a physical interface for host management, and allows you to run all traffic through OVS.</p>
+<p>First, configure the LACP bundle as I describe in my post on <a href="/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">link aggregation and LACP with OVS</a>. You&rsquo;ll want to ensure that the LACP configuration is working properly before you continue. Remember that you can use <code>ovs-appctl bond/show &lt;bond name&gt;</code> and <code>ovs-appctl lacp/show &lt;bond name&gt;</code> to help troubleshoot the LACP configuration and operation.</p>
+<p>Next, create an &ldquo;internal&rdquo; interface that Linux will use as a Layer 3 interface. We&rsquo;ll do this using <code>ovs-vsctl</code>, like this:</p>
+<pre><code>ovs-vsctl add-port ovsbr1 mgmt0 -- set interface mgmt0 type=internal
+</code></pre>
+<p>This command adds a port called <code>mgmt0</code> to the specified bridge (<code>ovsbr1</code> in this example), and then sets the interface associated with <code>mgmt0</code> to the type &ldquo;internal.&rdquo; I don&rsquo;t yet know why setting the type to internal is required, only that it&rsquo;s necessary if you want the interface to be usable by Linux as a Layer 3 interface.</p>
+<p>If you need the management traffic on a specific VLAN, then modify the command to specify a particular OVS fake bridge (more here on using <a href="/2012/10/19/vlans-with-open-vswitch-fake-bridges/">fake bridges with VLANs</a>):</p>
+<pre><code>ovs-vsctl add-port vlan100br mgmt0 -- set interface mgmt0 type=internal
+</code></pre>
+<p>You can also just assign the VLAN tag directly, although that configuration goes against the OVS port, not the OVS interface:</p>
+<pre><code>ovs-vsctl set port mgmt0 tag=100
+</code></pre>
+<p>Once the interface is created, then configure Linux to use that interface as a Layer 3 interface with an IP address assigned. On Ubuntu 12.04 LTS, that means adding a stanza to the <code>/etc/network/interfaces</code> configuration file, like this:</p>
+<pre><code>auto mgmt0
+iface mgmt0 inet static
+address 192.168.254.100
+netmask 255.255.255.0
+gateway 192.168.254.254
+dns-nameservers 192.168.254.101
+</code></pre>
+<p>And that&rsquo;s it! You can now use the IP address assigned to the <code>mgmt0</code> interface (or whatever you named it) to manage the Linux virtualization host, all while knowing that you have a bonded LACP configuration protecting you against a network link failure. I&rsquo;m using this configuration on all my Ubuntu-KVM hosts in my home lab; the physical interfaces are members of LACP bonds.</p>
+<p>(Oh, one side note: on Ubuntu, this configuration causes a delay during the boot process. I don&rsquo;t yet know why this delay occurs, or how to fix it. I&rsquo;ll post something if I figure it out.)</p>
+<p>If you have any questions or thoughts about this configuration, please feel free to speak up in the comments below&mdash;all courteous comments are welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/10/29/technology-short-take-26/">Technology Short Take #26</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/10/31/layer-3-routing-with-open-vswitch/">Layer 3 Routing with Open vSwitch</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f30%2frunning-host-management-on-open-vswitch%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f30%2frunning-host-management-on-open-vswitch%2f&text=Running%20Host%20Management%20on%20Open%20vSwitch" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f10%2f30%2frunning-host-management-on-open-vswitch%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/10/22/wrapping-libvirt-virtual-networks-around-open-vswitch-fake-bridges/">Wrapping libvirt Virtual Networks Around Open vSwitch Fake Bridges</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2012/10/18/thinking-out-loud-ovs-and-the-enterprise/">Thinking Out Loud: OVS and the Enterprise</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2012/10/05/technology-short-take-25/">Technology Short Take #25</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

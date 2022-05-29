@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Storage vMotion with RDMs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Storage vMotion with RDMs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Storage vMotion with RDMs - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/08/18/storage-vmotion-with-rdms/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Storage vMotion with RDMs</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;653 words (estimated 4 minutes to read)</span>
+  <p>I recently had a colleague contact me with a question about raw device mappings (RDMs) and Storage vMotion. This colleague was trying to perform a Storage vMotion operation on a VM that also had a RDM attached and was running into a problem where the operation was failing because the destination datastore did not have sufficient space. In this case, the free space was less than the size of the mapped raw LUN, and this colleague couldn&rsquo;t perform a Storage vMotion as a result. The colleague was surprised; he didn&rsquo;t expect that behavior.</p>
+<p>This behavior struck me as odd and unexpected, so I started digging in and doing some testing. I did all my testing on vSphere 4.0 GA code (no updates), thinking that this was probably &ldquo;worst case&rdquo;; if anything, the updates would likely resolve any potential issues with RDMs and Storage vMotion. I used a VM with a 20GB VMDK and a 50GB mapped raw LUN, using a virtual mode RDM.</p>
+<p>I performed a few Storage vMotion operations and everything seemed fine; I couldn&rsquo;t recreate the same behavior. Sure, the Datastore Browser shows the VMDK pointer file for the RDM to be the same size as the backing LUN (50GB, in my case), but I couldn&rsquo;t seem to make vCenter Server balk when migrating the VMDK. I tried several times with datastores of various sizes, including a datastore that had less free space than the size of the mapped raw LUN. Then I noticed something: my 20GB VMDK was thin provisioned. Ah, perhaps that was causing part of the problem. So I performed a Storage vMotion to a larger datastore, selecting &ldquo;Thick Format&rdquo; during the process to inflate the VMDK to full size.</p>
+<p>Now, had I gone back and carefully re-read the table on page 197 of the <em>vSphere Basic Administration Guide</em> (available in PDF <a href="http://www.vmware.com/pdf/vsphere4/r40/vsp_40_admin_guide.pdf">here</a>), I would have remembered that selecting &ldquo;Thick Format&rdquo; with a virtual mode RDM automatically converts the RDM to a virtual disk. But I didn&rsquo;t, and so the RDM was converted into a virtual disk. Subsequent Storage vMotion attempts with the newly-converted virtual disk now produced warnings and errors about available disk space, just as my colleague had seen. Fortunately, this was just a lab environment, so no harm was done. But what if this had been production data?</p>
+<p>So here&rsquo;s the key message I want to convey with this blog post: when you are performing Storage vMotion operations on a VM with at least one RDM and you want/need to convert your virtual disks from thick to thin (or vice versa) during the migration, you need to perform two (2) separate Storage vMotion operations:</p>
+<ol>
+<li>
+<p>First, you&rsquo;ll migrate <em>only</em> the virtual disks attached to the VM. You&rsquo;ll use the Advanced button when selecting the datastore so that you can leave the RDM alone for this migration. You&rsquo;ll then select the appropriate format (&ldquo;Thin Provisioned Format&rdquo; or &ldquo;Thick Format&rdquo;) for the virtual disks on the target datastore and proceed with the Storage vMotion operation.</p>
+</li>
+<li>
+<p>When the first Storage vMotion concludes, you&rsquo;ll then perform a second Storage vMotion operation to migrate <em>only</em> the RDMs. Again, you&rsquo;ll use the Advanced button when selecting the datastore and choose to move only the RDM. For format, select &ldquo;Same Format as Source&rdquo;, as this is the only option that preserves the RDM as an RDM. If you are migrating a virtual mode RDM and choose <em>either</em> of the other two options, your RDM is converted to a virtual disk and cannot be converted back.</p>
+</li>
+</ol>
+<p>At this point, your RDM-equipped VM has been migrated to a new datastore, the virtual disks have been converted from thick to thin (or vice versa), and your RDMs have been preserved as RDMs.</p>
+<p>Anyone have any other little gotchas like this about RDMs or Storage vMotion they want to share? The comments are open and I&rsquo;d love to hear any other suggestions or tips from the readers.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/18/some-ucs-links/">Some UCS Links</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/08/19/vmotion-layer-2-adjacency-requirement/">vMotion Layer 2 Adjacency Requirement</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2fstorage-vmotion-with-rdms%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2fstorage-vmotion-with-rdms%2f&text=Storage%20vMotion%20with%20RDMs" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2fstorage-vmotion-with-rdms%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/18/technology-short-take-1/">Technology Short Take #1</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2010/05/18/virtualization-short-take-40/">Virtualization Short Take #40</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2010/04/17/virtualization-short-take-38/">Virtualization Short Take #38</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

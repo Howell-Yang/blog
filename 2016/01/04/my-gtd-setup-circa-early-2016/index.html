@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>My Getting Things Done Setup, Circa Early 2016 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="My Getting Things Done Setup, Circa Early 2016 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="My Getting Things Done Setup, Circa Early 2016 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/01/04/my-gtd-setup-circa-early-2016/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">My Getting Things Done Setup, Circa Early 2016</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1047 words (estimated 5 minutes to read)</span>
+  <p>Almost six years ago I shared <a href="/2010/05/02/my-current-getting-things-done-setup/">my (then) current Getting Things Done (GTD) setup</a>, in which I described how I used various tools, techniques, and applications to try to maximize my productivity. I&rsquo;d been toying with updating that post, but I wasn&rsquo;t sure that anyone would find it useful. However, a recent e-mail from a reader indicated that there probably <em>is</em> some interest; with that in mind, then, here&rsquo;s an update on my GTD-like setup, circa early 2016.</p>
+<p>Before I dive into the details, a couple quick notes:</p>
+<ul>
+<li>First, I call this a &ldquo;GTD-like&rdquo; setup because it doens&rsquo;t necessarily strongly adhere to <em>all</em> the tenets of Getting Things Done. I&rsquo;ve adapted the system to fit my particular role and responsibilities, which is something I strongly encourage every reader to also do.</li>
+<li>Although I&rsquo;ve previously discussed <a href="/2012/11/30/why-i-might-leave-os-x/">moving away from OS X</a> (and this is something that I continue to evaluate and explore), this is&mdash;for now&mdash;a decidedly Mac-specific system. It&rsquo;s probably possible to emulate a similar system on other platforms, but I leave that as an exercise for interested readers.</li>
+</ul>
+<p>If you read the 2010 post, you may recall that I think of my workflow as having three &ldquo;layers&rdquo; of applications:</p>
+<ul>
+<li>The &ldquo;consumption&rdquo; layer: This is where information to be processed enters the system (i.e., is consumed). Applications in this layer are things like Apple Mail (for e-mail, obviously, but with <a href="http://indev.ca/MailTags.html">the invaluable MailTags plug-in</a>), <a href="http://netnewswireapp.com/mac/">NetNewsWire</a> (for RSS feeds; I run an older version that still supports AppleScript), <a href="https://www.codeux.com/textual/">Textual</a> (for IRC), <a href="http://tapbots.com/tweetbot/mac/">Tweetbot</a> (for Twitter), <a href="https://adium.im/">Adium</a> (for instant messaging), and Safari (for web content).</li>
+<li>The &ldquo;organization&rdquo; layer: This is where things get organized. I say &ldquo;things&rdquo; here because there are two distinct types of items: commitments and information. I believe this distinction is necessary&mdash;an incoming e-mail from your boss may result in a commitment (something you need to do) or may just be information (that you need to save and make available). These things need to be handled differently. I&rsquo;ll discuss this in a bit more detail shortly.</li>
+<li>The &ldquo;creation&rdquo; layer: This is where I create output based on input arriving via the consumption layer, directed/assisted/guided by commitments and information in the organization layer. Applications I use here include <a href="https://products.office.com/en-us/mac/microsoft-office-for-mac">Microsoft Office 2011</a> (when I have to exchange documents with other people; I haven&rsquo;t upgraded to the latest version), <a href="https://www.omnigroup.com/omnigraffle/">OmniGraffle</a>, or <a href="http://www.sublimetext.com/">Sublime Text 3</a> (for writing Markdown, ASCIIDOC, reStructured Text, etc.).</li>
+</ul>
+<p>There is also a class of applications and tools that don&rsquo;t fall into these broad categories, but rather serve as &ldquo;helpers.&rdquo; This would include things like <a href="https://smilesoftware.com/TextExpander">TextExpander</a>, <a href="https://www.omnigroup.com/omnioutliner/">OmniOutliner</a>, <a href="https://www.mindjet.com/mindmanager/">MindManager</a>, <a href="https://red-sweater.com/fastscripts/">FastScripts</a>, etc.</p>
+<p>The consumption and creation layers are pretty straightforward, so I won&rsquo;t talk too much directly about them, with one exception: e-mail. It&rsquo;s critical that you take control of your e-mail, and&mdash;as I&rsquo;ve said before&mdash;<a href="/2013/06/21/reducing-the-friction-processing-e-mail/">stop <em>managing</em> e-mail and start <em>processing</em> e-mail</a>. In other words, an e-mail message generally isn&rsquo;t anything important in and of itself. Rather, it&rsquo;s what the e-mail message generates: an action (commitment) or some information. <em>That&rsquo;s</em> what really matters, not the e-mail message itself. OK, enough about that&hellip;</p>
+<p>Instead, let&rsquo;s focus on the organization layer. As I did in 2010, I still use <a href="https://www.omnigroup.com/omnifocus/">OmniFocus</a> to manage my commitments. (I did <a href="/2015/04/06/plain-text-productivity-experiment/">try a plain-text based system</a> as well as re-visit Things, but moved back to OmniFocus.) To make getting commitments into OmniFocus (hereafter just OF) easier, I still use a set of AppleScripts bound to a hotkey (using FastScripts) that will take information from the current application&mdash;an e-mail message in Apple Mail, or the current web page in Safari, for example&mdash;and create an action in OF. Obviously, some of the scripts I mentioned in <a href="/2010/05/02/my-current-getting-things-done-setup/">the 2010 article</a> are no longer applicable: Camino died a long time ago, I ditched Yojimbo (more on that in a moment), Twitterrific killed its AppleScript support (and I, in turn, moved to a different client), etc. However, the basic idea is still the same: use OF to keep track of all the various projects and actions (commitments), and make it as easy (frictionless) as possible to get stuff into OF.</p>
+<p>Managing information is a bit more challenging in that there are many different <em>types</em> of information. For e-mail messages, I tag them (using MailTags) and file them away (using AppleScripts and hotkeys to streamline the process). For files, I use the file system. (Amazing concept, eh?) In 2010, I used a tool called <a href="http://www.barebones.com/products/Yojimbo/">Yojimbo</a>. Yojimbo had a few quirks that I couldn&rsquo;t work around, so I <a href="/2011/09/07/switching-to-eaglefiler/">switched to EagleFiler</a>. EagleFiler was nice in that it leveraged the underlying file system, which then caused me to ask: why couldn&rsquo;t I just leverage the file system? That led me to a file system-based approach using a defined naming convention (based on the ISO 8601 date format) and <a href="https://code.google.com/p/openmeta/">OpenMeta</a> tags, which I described a bit <a href="/2012/07/25/advanced-spotlight-queries-in-the-mac-gui/">here</a>. When OS X Mavericks came out and I finally upgraded, I moved away from OpenMeta tags to native Finder tags, but the underlying approach remained the same: use the defined structure and naming convention, along with tags, to store information, then use Spotlight and/or <a href="https://www.obdev.at/products/launchbar/index.html">LaunchBar</a> (a recent addition to my portfolio) to find the information I need later. This is a process I&rsquo;m still optimizing through the use of tools like <a href="http://www.noodlesoft.com/hazel.php">Hazel</a> (to automatically apply tags based on predefined conditions or triggers).</p>
+<p>For note-based information, I tried (multiple times) to use a tool like Evernote, but it just didn&rsquo;t/doesn&rsquo;t fit into my workflow. Instead, I use a series of text files stored in a <a href="https://www.dropbox.com/">Dropbox</a> folder (using my naming convention and tags, of course). For URLs, I capture the URL as a <code>.webloc</code> file (using an AppleScript bound to a hotkey, of course!), which can be opened on OS X or iOS (and, as it turns out, is an XML file so it&rsquo;s not that hard to extract the URL on other OSes as well). Since it&rsquo;s then a file, then it falls back under the guidelines for organizing files (I store these on Dropbox as well).</p>
+<p>There you have it&mdash;an update on my organizational/productivity setup as of early 2016. If you have any questions or feedback, I&rsquo;d love to hear them; feel free to e-mail me (my address is on this site) or <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>. Thanks for reading, and I hope you find something useful here!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/personal">Personal</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/organization">Organization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/12/31/looking-back-2015-project-report-card/">Looking Back: 2015 Project Report Card</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/01/07/launching-new-podcast/">Launching a New Podcast</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f04%2fmy-gtd-setup-circa-early-2016%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f04%2fmy-gtd-setup-circa-early-2016%2f&text=My%20Getting%20Things%20Done%20Setup%2c%20Circa%20Early%202016" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f01%2f04%2fmy-gtd-setup-circa-early-2016%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/12/20/reducing-the-friction-training-a-spam-filter/">Reducing the Friction: Training a Spam Filter</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2013/07/19/reducing-the-friction-processing-e-mail-part-2/">Reducing the Friction: Processing E-Mail, Part 2</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2013/06/21/reducing-the-friction-processing-e-mail/">Reducing the Friction: Processing E-Mail</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

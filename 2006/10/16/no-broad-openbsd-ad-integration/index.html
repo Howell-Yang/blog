@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>No Broad OpenBSD-AD Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="No Broad OpenBSD-AD Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="No Broad OpenBSD-AD Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/10/16/no-broad-openbsd-ad-integration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">No Broad OpenBSD-AD Integration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;391 words (estimated 2 minutes to read)</span>
+  <p>After doing some additional research on the authentication architecture for <a href="http://www.openbsd.org/">OpenBSD</a>, I learned that OpenBSD does not support PAM (Pluggable Authentication Mechanism), nor does OpenBSD support NSS (Name Switch Service). I found this particularly interesting, but not terribly surprising as the OpenBSD leaders have made it very clear that they won&rsquo;t include software that doesn&rsquo;t meet their stringent security and licensing requirements. I suppose that&rsquo;s a good thing, even if it does make certain tasks impossible.</p>
+<p>In any case, I did find some veiled references to login_ldap, which uses the underlying bsd_auth mechanism employed by OpenBSD. Unfortunately (again), not all the software installed with OpenBSD supports bsd_auth and therefore also doesn&rsquo;t support login_ldap.</p>
+<p>There is a bright spot here, though, and that&rsquo;s <a href="http://www.openssh.org/">OpenSSH</a>. OpenSSH supports native Kerberos authentication, i.e., passwordless authentication from a Kerberized SSH client to the OpenSSH daemon, which is itself Kerberized. I wrote about <a href="/2006/08/21/native-kerberos-authentication-with-ssh/">passwordless Kerberos authentication for Linux and Solaris</a> a while ago; it turns out the process is almost identical for OpenBSD.</p>
+<p>To enable native Kerberos authentication in OpenSSH, make sure the following commands are present in the <code>sshd_config</code> file (typically found at <code>/etc/ssh</code>):</p>
+<pre><code>KerberosAuthentication yes
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials yes
+</code></pre>
+<p>Be sure to restart the SSH daemon after making these changes.</p>
+<p>Also, configure the <code>krb5.conf</code> file (found in OpenBSD at <code>/etc/kerberosV</code>&ndash;note the capitalization!) appropriately; refer to any of the Kerberos-related articles here for more information on the appropriate configuration. For this test, I also created a keytab (using <code>ktpass.exe</code>) and placed it in the <code>/etc/kerberosV</code> directory as well. I don&rsquo;t know for sure if that&rsquo;s required. As I have time, I&rsquo;ll do some additional testing and try to find out.</p>
+<p>Because there is no NSS support in OpenBSD, you&rsquo;ll need to maintain accounts (but not passwords) in the local files. So, to test this, first be sure to create an account (using <code>useradd</code>), create the home directory, and assign appropriate permissions to the home directory. Otherwise, it won&rsquo;t work.</p>
+<p>Once the configuration changes have been made, SSHd has been restarted, and a local account created, SSH connections from a Kerberos-enabled client (with a valid Kerberos ticket) should just work without any prompt for password.</p>
+<p>Although this doesn&rsquo;t provide the broad integration with Active Directory that some may be seeking, it can at least help with SSH access to the OpenBSD systems, and that&rsquo;s better than nothing.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/10/16/refined-solaris-10-ad-integration-instructions/">Refined Solaris 10-AD Integration Instructions</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f10%2f16%2fno-broad-openbsd-ad-integration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f10%2f16%2fno-broad-openbsd-ad-integration%2f&text=No%20Broad%20OpenBSD-AD%20Integration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f10%2f16%2fno-broad-openbsd-ad-integration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/08/29/follow-ups-on-solaris-native-kerberos-authentication/">Follow Ups on Solaris, Native Kerberos Authentication</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2006/08/21/native-kerberos-authentication-with-ssh/">Native Kerberos Authentication with SSH</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/10/16/refined-solaris-10-ad-integration-instructions/">Refined Solaris 10-AD Integration Instructions</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

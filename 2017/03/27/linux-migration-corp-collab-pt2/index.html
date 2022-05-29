@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Corporate Collaboration, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Corporate Collaboration, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Corporate Collaboration, Part 2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/27/linux-migration-corp-collab-pt2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Corporate Collaboration, Part 2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;731 words (estimated 4 minutes to read)</span>
+  <p>This post is part 2 in a series of posts describing how I&rsquo;ve integrated my <a href="https://getfedora.org/">Fedora Linux</a> laptop into my employer&rsquo;s corporate communication and collaboration systems. <a href="/2017/03/21/linux-migration-corp-collab-pt1/">Part 1</a> tackled e-mail; this post tackles the topic of calendaring and scheduling. Unlike e-mail, which was solved relatively easily, this issue is one that I don&rsquo;t consider fully solved.</p>
+<p>As I mentioned in part 1, my employer uses <a href="https://products.office.com/en-us/business/office">Office 365</a> (O365). While O365 supports standard protocols like IMAP and STMP for mail, it does <em>not</em> support standard protocols like CalDAV for calendaring. This means that Linux users like me are left with only a few options:</p>
+<ol>
+<li>You can use <a href="https://www.mozilla.org/en-US/thunderbird/">Mozilla Thunderbird</a> with the <a href="https://addons.mozilla.org/en-us/thunderbird/addon/lightning/">Lightning add-on</a>, but you&rsquo;ll also need an Exchange provider. (The paid Exquilla add-on only handles mail and contacts, not calendaring. There&rsquo;s a Lightning provider available <a href="https://github.com/Ericsson/exchangecalendar/releases">here</a>, but I haven&rsquo;t tested it.)</li>
+<li>You can use <a href="https://wiki.gnome.org/Apps/Evolution/">Evolution</a>.</li>
+<li>You can use <a href="https://wiki.gnome.org/Apps/Calendar">GNOME Calendar</a> (which leverages the Evolution back-end along with Evolution&rsquo;s support for Exchange Web Services [EWS]).</li>
+<li>You can use <a href="https://products.office.com/en-US/outlook/">Microsoft Outlook</a>, either via a VM (or possibly via WINE, though I haven&rsquo;t tested the latter approach).</li>
+</ol>
+<p>I&rsquo;d already ruled out Evolution for e-mail, so it didn&rsquo;t make a lot of sense (to me, at least) to use Evolution for calendaring. Further, I ideally wanted a solution that would let me leverage CalDAV for my personal calendars as well as handling my corporate calendar (this was a luxury to which I&rsquo;d grown accustomed on OS X).</p>
+<p>GNOME Calendar provides the standalone calendar experience I was seeking, and can handle my corporate calendar via the Evolution EWS support. However, there are a number of shortcomings:</p>
+<ul>
+<li>GNOME Calendar doesn&rsquo;t have CalDAV support, so I can&rsquo;t use it to manage my personal calendars.</li>
+<li>There&rsquo;s no timezone support. This can make it difficult when collaborating globally with co-workers in multiple time zones.</li>
+<li>GNOME Calendar has only annual and monthly views. A weekly view would be preferable (it&rsquo;s my understanding that the next release of GNOME adds a weekly view to GNOME Calendar).</li>
+<li>No way to handle meeting requests directly in the application; you have to go to your mail client for that. This meant that even though I wanted to manage my calendar with GNOME Calendar, I still needed the Lightning add-on in Thunderbird (otherwise Thunderbird doesn&rsquo;t understand/can&rsquo;t display meeting requests).</li>
+<li>The application (and possibly the back-end, it&rsquo;s hard to tell) is very unstable. Crashes are a nearly-daily occurrence, and it&rsquo;s not uncommon to try to add something to the calendar only to have it not show up. (Sometimes it never shows up, sometimes it randomly appears later).</li>
+</ul>
+<p>I also tried <a href="https://wiki.gnome.org/Apps/California">California</a>, but this application is very young (version 0.4.0), is as equally unstable as GNOME Calendar, and its future development is in question (it&rsquo;s unclear whether development has ceased or not).</p>
+<p>So what am I using currently?</p>
+<ul>
+<li>I try to use GNOME Calendar as much as possible, mostly in a &ldquo;read-only&rdquo; fashion to coordinate multiple calendars.</li>
+<li>I use Outlook (either in a local VM or via a hosted desktop) to manage my corporate calendar. It shows up in GNOME Calendar, but GNOME Calendar just isn&rsquo;t ready to use to manage the calendar (lack of timezone support, etc.&mdash;all the things listed above).</li>
+<li>I manage my personal CalDAV-based calendars via my mobile devices (either iPhone or Android) or via a web browser. I&rsquo;m evaluating moving my personal calendars back to Google Calendar, since that is supported by GNOME Calendar.</li>
+</ul>
+<p>Note that a number of folks have suggested alternative calendar applications. I&rsquo;ve rejected these so far because I don&rsquo;t think they&rsquo;ll fit into my workflow or my environment, but they may work for others. Some of the applications I&rsquo;ve seen suggested include <a href="http://www.rainlendar.net/cms/index.php">Rainlendar</a>, <a href="http://calcurse.org/">Calcurse</a>, or <a href="https://userbase.kde.org/KOrganizer">KOrganizer</a>. Some of these applications address some of the shortcomings of GNOME Calendar, but none of them address all the major issues I&rsquo;ve outlined here (based on my testing thus far).</p>
+<p>As you can see, this is most definitely <em>not</em> a solved problem. In fact, if I had to pick one area that is most problematic for me right now, this would be it. Most of the other areas have reasonable solutions&mdash;not necessarily ideal solutions, but reasonable solutions. Calendaring and scheduling does not have any reasonable solutions (in my opinion).</p>
+<p>In part 3 of the series on corporate collaboration, I tackle the &ldquo;grab bag&rdquo; of remaining issues, such as document sharing, meetings/teleconferences, and chat/instant messaging.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/exchange">Exchange</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/24/technology-short-take-80/">Technology Short Take 80</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/28/canceling-ovs-cookbook-project/">Canceling the OVS Cookbook Project</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f27%2flinux-migration-corp-collab-pt2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f27%2flinux-migration-corp-collab-pt2%2f&text=The%20Linux%20Migration%3a%20Corporate%20Collaboration%2c%20Part%202" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f27%2flinux-migration-corp-collab-pt2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2017/03/22/linux-migration-other-users-stories-pt4/">The Linux Migration: Other Users&#39; Stories, Part 4</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2017/03/07/linux-migration-creating-presentations/">The Linux Migration: Creating Presentations</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

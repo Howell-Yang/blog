@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Quick Introduction to Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Quick Introduction to Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Quick Introduction to Vagrant - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/09/12/a-quick-introduction-to-vagrant/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Quick Introduction to Vagrant</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1015 words (estimated 5 minutes to read)</span>
+  <p>This post will provide a quick introduction to a tool called <a href="http://www.vagrantup.com">Vagrant</a>. Unless you&rsquo;ve been hiding under a rock&mdash;or, more likely, been too busy doing real work in your data center to pay attention&mdash;you&rsquo;ve probably heard of Vagrant. Maybe, like me, you had some ideas about what Vagrant is (or isn&rsquo;t) and what it does (or doesn&rsquo;t) do. Hopefully I can clear up some of the confusion in this post.</p>
+<p>In its simplest form, Vagrant is an <em>automation tool with a domain-specific language (DSL) that is used to automate the creation of VMs and VM environments.</em> The idea is that a user can create a set of instructions, using Vagrant&rsquo;s DSL, that will set up one or more VMs and possibly configure those VMs. Every time the user uses the precreated set of instructions, the end result will look exactly the same. This can be beneficial for a number of use cases, including developers who want a consistent development environment or folks wanting to share a demo environment with other users.</p>
+<p>Vagrant makes this work by using a number of different components:</p>
+<ul>
+<li>
+<p>Providers: These are the &ldquo;back end&rdquo; of Vagrant. Vagrant itself doesn&rsquo;t provide any virtualization functionality; it relies on other products to do the heavy lifting. <em>Providers</em> are how Vagrant interacts with the products that will do the actual virtualization work. A provider could be VirtualBox (included by default with Vagrant), VMware Fusion, Hyper-V, vCloud Air, or AWS, just to name a few.</p>
+</li>
+<li>
+<p>Boxes: At the heart of Vagrant are <em>boxes</em>. Boxes are the predefined images that are used by Vagrant to build the environment according to the instructions provided by the user. A box may be a plain OS installation, or it may be an OS installation plus one or more applications installed. Boxes may support only a single provider or may support multiple providers (for example, a box might only work with VirtualBox, or it might support VirtualBox and VMware Fusion). It&rsquo;s important to note that multi-provider support by a box is really handled by multiple versions of a box (i.e, a version supporting VirtualBox, a version supporting AWS, or a version supporting VMware Fusion). A single box supports a single provider.</p>
+</li>
+<li>
+<p>Vagrantfile: The <em>Vagrantfile</em> contains the instructions from the user, expressed in Vagrant&rsquo;s DSL, on what the environment should look like&mdash;how many VMs, what type of VM, the provider, how they are connected, etc. Vagrantfiles are so named because the actual filename is <code>Vagrantfile</code>. The Vagrant DSL (and therefore Vagrantfiles) are based on Ruby.</p>
+</li>
+</ul>
+<p>Once of the first things I thought about as I started digging into Vagrant was that Vagrant would be a tool that would help streamline moving applications/code from development to production. After all, if you had providers for Vagrant that supported both VirtualBox and VMware vCenter, <em>and</em> you had boxes that supported both providers, then you could write a single <code>Vagrantfile</code> that would instantiate the same environment in development and in production. Cool, right? In theory this is possible, but in talking with some others who are much more familiar with Vagrant than I am it seems that in practice this is not necessarily the case. Because support for multiple providers is handled by different versions of a box (as outlined above), the boxes <em>may</em> be slightly different and therefore may not produce the exact same results from a single <code>Vagrantfile</code>. It is possible to write the <code>Vagrantfile</code> in such a way as to recognize different providers and react differently, but this obviously adds complexity.</p>
+<p>With that in mind, it seems to me that the most beneficial uses of Vagrant are therefore to speed up the creation of development environments, to enable version control of development environments (via version control of the <code>Vagrantfile</code>), to provide some reasonable level of consistency across multiple developers, and to make it easier to share development environments. (If my conclusions are incorrect, please speak up in the comments and explain why.)</p>
+<p>OK, enough of the high-level theory. Let&rsquo;s take a look at a <em>very</em> simple example of a <code>Vagrantfile</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-ruby" data-lang="ruby"><span style="display:flex;"><span><span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;2&#34;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">Vagrant</span><span style="color:#f92672">.</span>configure(<span style="color:#66d9ef">VAGRANTFILE_API_VERSION</span>) <span style="color:#66d9ef">do</span> <span style="color:#f92672">|</span>config<span style="color:#f92672">|</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Box</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ubuntu/precise64&#34;</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>box_url <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box&#34;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># Shared folders</span>
+</span></span><span style="display:flex;"><span>  config<span style="color:#f92672">.</span>vm<span style="color:#f92672">.</span>synced_folder <span style="color:#e6db74">&#34;.&#34;</span>, <span style="color:#e6db74">&#34;/vagrant&#34;</span>
+</span></span><span style="display:flex;"><span> 
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">end</span>
+</span></span></code></pre></div><p>(Click <a href="https://gist.github.com/scottslowe/0f82601987bf1f39c941">here</a> for a downloadable GitHub Gist with this code.)</p>
+<p>This <code>Vagrantfile</code> sets the box (&ldquo;ubuntu/precise64&rdquo;), the box URL (retrieves from Canonical&rsquo;s repository of cloud images), and then sets the &ldquo;/vagrant&rdquo; directory in the VM to be shared/synced with the current (&quot;.&quot;) directory on the host&mdash;in this case, the current directory is the directory where the <code>Vagrantfile</code> itself is stored.</p>
+<p>To have Vagrant then use this set of instructions, run this command from the directory where the <code>Vagrantfile</code> is sitting:</p>
+<pre><code>vagrant up
+</code></pre>
+<p>You&rsquo;ll see a series of things happen; along the way you&rsquo;ll see a note that the machine is booted and ready, and that shared folders are getting mounted. (If you are using VirtualBox and the box I&rsquo;m using, you&rsquo;ll also see a warning about the VirtualBox Guest Additions version not matching the version of VirtualBox.) When it&rsquo;s all finished, you&rsquo;ll be deposited back at your prompt. From there, you can easily log in to the newly-created VM using nothing more than <code>vagrant ssh</code>. That&rsquo;s pretty handy.</p>
+<p>Other Vagrant commands include:</p>
+<ul>
+<li>
+<p><code>vagrant halt</code> to shut down the VM(s)</p>
+</li>
+<li>
+<p><code>vagrant suspend</code> to suspend the VM(s), use <code>vagrant resume</code> to resume</p>
+</li>
+<li>
+<p><code>vagrant status</code> to display the status of the VM(s)</p>
+</li>
+<li>
+<p><code>vagrant destroy</code> to destroy (delete) the VM(s)</p>
+</li>
+</ul>
+<p>Clearly, the example I showed you here is extremely simple. For an example of a more complicated <code>Vagrantfile</code>, check out <a href="https://github.com/bunchc/Couch_to_OpenStack/blob/master/Vagrantfile">this example</a> from Cody Bunch, which sets up a set of VMs for running OpenStack. Cody and his co-author Kevin Jackson also use Vagrant extensively in their <em>OpenStack Cloud Computing Cookbook, 2nd Edition</em>, which makes it easy for readers to follow along.</p>
+<p>I said this would be a quick introduction to Vagrant, so I&rsquo;ll stop here for now. Feel free to post any questions in the comments, and I&rsquo;ll do my best to answer them. Likewise, if there are any errors in the post, please let me know in the comments. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/09/11/idf-2014-architecting-for-sdi-a-microserver-perspective/">IDF 2014: Architecting for SDI, a Microserver Perspective</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/09/22/thinking-about-intel-rack-scale-architecture/">Thinking About Intel Rack-Scale Architecture</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f12%2fa-quick-introduction-to-vagrant%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f12%2fa-quick-introduction-to-vagrant%2f&text=A%20Quick%20Introduction%20to%20Vagrant" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f12%2fa-quick-introduction-to-vagrant%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/08/13/deploying-coreos-on-openstack-using-heat/">Deploying CoreOS on OpenStack Using Heat</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2014/03/17/modifying-qcow-images-with-guestfish/">Modifying QCOW Images with Guestfish</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2014/02/06/technology-short-take-38/">Technology Short Take #38</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

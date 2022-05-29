@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Future is Containerized - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Future is Containerized - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Future is Containerized - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/04/02/the-future-is-containerized/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Future is Containerized</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/personal">Personal</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;595 words (estimated 3 minutes to read)</span>
+  <p>Last week I <a href="/2018/03/26/time-to-evolve/">announced my departure from VMware</a>, and my intention to step away from VMware&rsquo;s products and platforms to focus on a new technology area moving forward. Today marks the &ldquo;official&rdquo; start of a journey that&rsquo;s been building for a couple years, a journey that will take me into a future that&rsquo;s containerized. That journey starts in Seattle, Washington.</p>
+<p>Why Seattle, Washington? Because that&rsquo;s where <a href="https://www.heptio.com/">Heptio</a> is based, and because today I am joining Heptio as a senior member of the field engineering team to help drive the adoption of <a href="https://kubernetes.io/">Kubernetes</a> across the industry. Only a couple of folks guessed that I was headed to Heptio. If you were one of those folks, you guessed correctly!</p>
+<p>Two questions are probably rolling around in your head right now:</p>
+<ol>
+<li>Why Kubernetes?</li>
+<li>Why Heptio?</li>
+</ol>
+<p>Good questions!</p>
+<p>It&rsquo;s clear to me that containers will have a significant impact on how we as IT professionals will develop, deploy, upgrade, and manage applications. It&rsquo;s also clear to me that when it comes to orchestrating containers, Kubernetes is the clear leader. So, if I accept that containers are going to be a significant part of IT moving forward, then it logically follows that Kubernetes is the technology area where I should focus. There&rsquo;s the answer to your first question.</p>
+<p>As to the second question: if I&rsquo;m going to focus on Kubernetes, then I want (need?) to work on a team that is passionate about Kubernetes, and that team should have deep expertise in Kubernetes. Because Kubernetes is an open source project, it should be a team that embraces open source, is deeply involved in Kubernetes development, and is committed to the future of Kubernetes. Which team meets all those criteria? In my opinion, Heptio. Founded by two ex-Google employees who helped launch Kubernetes while they were at Google (Craig McLuckie and Joe Beda), the company is actively involved in open source, actively involved in Kubernetes development, actively committed to the future of Kubernetes, and is building a world-class team. I&rsquo;m honored and thrilled to be part of this team! I&rsquo;m excited to be able to dive deep into &ldquo;all things Kubernetes,&rdquo; and equally excited to get to help design and deploy solutions to customer problems using Kubernetes.</p>
+<p>With my destination and new technology focus revealed, <a href="/2018/03/05/looking-ahead-2018-projects/">my list of 2018 projects/goals</a> probably makes a lot more sense. You can probably also guess that the content here on the site will shift (even more) toward Kubernetes, infrastructure as code, public cloud providers, DevOps, and even some programming/development (I&rsquo;m looking forward to leveraging some of the development expertise of my peers to &ldquo;level up&rdquo; my own programming skills, particularly in Go [Golang]). If you&rsquo;re active on Slack, then you&rsquo;ll probably start seeing me around <a href="http://slack.kubernetes.io">the Kubernetes Slack team</a> more frequently. Of course, you&rsquo;re <strong>always</strong> welcome <a href="https://twitter.com/scott_lowe">to hit me up on Twitter</a>.</p>
+<p>I mentioned last week that I&rsquo;d miss the VMware community, but I am encouraged by the opportunity to build relationships in the Kubernetes community. There are <em>many</em> great folks within the Kubernetes community (more than a few of them work at Heptio!), and I&rsquo;m really looking forward to making new friends, building new relationships, and giving back to the community in whatever form I am able.</p>
+<p>Lots of hard work lies ahead of me&mdash;reshaping oneself and one&rsquo;s skill set is never an easy thing to do&mdash;but I&rsquo;m genuinely looking forward to this adventure. I&rsquo;m going to learn a lot, I&rsquo;m going to grow a lot, and I&rsquo;m going to do my best to help others along their paths as well. Let&rsquo;s do this!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/personal">Personal</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/career">Career</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/03/30/technology-short-take-97/">Technology Short Take 97</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/04/13/review-lenovo-thinkpad-x1-carbon/">Review: Lenovo ThinkPad X1 Carbon</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f04%2f02%2fthe-future-is-containerized%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f04%2f02%2fthe-future-is-containerized%2f&text=The%20Future%20is%20Containerized" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f04%2f02%2fthe-future-is-containerized%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/03/26/time-to-evolve/">Time to Evolve</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2018/03/05/looking-ahead-2018-projects/">Looking Ahead: My 2018 Projects</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

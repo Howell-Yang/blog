@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Choosing the Right Tool - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Choosing the Right Tool - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Choosing the Right Tool - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/06/20/choosing-the-right-tool/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Choosing the Right Tool</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;726 words (estimated 4 minutes to read)</span>
+  <p>Kyle Mestery of Cisco recently shared a link on Twitter about Marco Arment&rsquo;s <a href="http://www.marco.org/2012/06/15/back-to-the-mac">choice to move back to a dual Mac setup</a>. The article started me thinking along two parallel lines:</p>
+<ol>
+<li>
+<p>First, it got me to thinking about my own Mac setup.</p>
+</li>
+<li>
+<p>Second, I wondered if there was a similar parallel about the choice of tools in data centers today.</p>
+</li>
+</ol>
+<p>Allow me to explain. In his article, Marco talks about how he abandoned his dual Mac setup&mdash;in which he was using a 13&quot; MacBook Air and a Mac Pro&mdash;for a single Mac setup using a really beefed up 15&quot; MacBook Pro. He had hoped to reduce the overhead of managing multiple Macs by consolidating to a single Mac that would bring together the best attributes of both. What he found a year later was that his attempt to use one tool (the 15&quot; MacBook Pro) really ended up being <em>less beneficial</em> instead of more beneficial. Instead of getting the best of both worlds, he instead inherited the drawbacks of both. To that end, he&rsquo;s now moving back to a dual Mac setup.</p>
+<p>&lt;aside&gt;Just as a point of clarification for those who might be unfamiliar with Apple&rsquo;s product lines: the MacBook Air is a highly portable ultraslim notebook with limited expandability; the MacBook Pro is Apple&rsquo;s more expandable and more powerful notebook; and the Mac Pro is a workstation-class desktop computer with oodles of CPU cores and gobs of RAM.&lt;/aside&gt;</p>
+<p>The first thought process that occurred to me regarded my own Mac setup. I recently purchased a Mac Pro because I needed a computer that could provide more raw compute capacity than my laptop possessed. Reading Marco&rsquo;s article validated (in a way) my thinking. However, it also challenged me to consider the type and configuration of laptop that I use. I migrated from a 15&quot; MacBook Pro to a smaller 13&quot; MacBook Pro last year, but I still insisted on a MacBook Pro with 8GB of RAM instead of a lightweight MacBook Air with only 4GB of RAM. Don&rsquo;t get me wrong; I&rsquo;m extremely happy with my MBP. It does lead me to believe, though, that my next laptop choice needs to be a choice that optimizes its role. What do I mean by that? I chose a Mac Pro because I needed CPU power and lots of RAM. The Mac Pro was the right tool for that job. Similarly, when I select my next laptop, I need to prioritize what I need out of a laptop (weight, size, mobility) and choose the right tool for the job. Instead of choosing a laptop based on how expandable it is, perhaps I should be looking at how suited it is for a highly mobile worker.</p>
+<p>There&rsquo;s a second train of thought here as well, and this train of thought pertains to the tools that we, as IT professionals, choose for our data centers. We also need to make sure that we are selecting the right tool for the job. Marco&rsquo;s experience shows that using a single tool to perform multiple functions doesn&rsquo;t always work as well as one might think. He made his initial decision in an effort to reduce complexity&mdash;an admirable goal, I&rsquo;d say. I believe that many IT professionals also strive to reduce complexity in their data centers, and many IT professionals probably do that by reducing the number of technologies, products, or vendors in their data center. But are we sacrificing the functionality of our data centers as a result? When we are choosing on the basis of reducing complexity instead of choosing the right tool for the job, what are we losing? What are we giving up? Instead of trying to shoehorn a solution we already have into a role for which it really isn&rsquo;t suited simply to &ldquo;reduce complexity,&rdquo; shouldn&rsquo;t we focus instead on choosing the right tool for the job? Shouldn&rsquo;t we select tools that are optimized to perform the function we need them to perform? Yes, we do need standards and guidelines, and I&rsquo;m not saying that we shouldn&rsquo;t strive to keep complexity from overwhelming the data center. But what should be our <strong>primary</strong> driver for tool selection&mdash;the reduction of complexity via the re-use of a less-than-optimal tool, or the selection of a tool optimized for the function it needs to perform?</p>
+<p>I&rsquo;d love to hear your thoughts in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/06/12/technology-short-take-23/">Technology Short Take #23</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/06/25/mid-year-project-update/">Mid-Year Project Update</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f20%2fchoosing-the-right-tool%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f20%2fchoosing-the-right-tool%2f&text=Choosing%20the%20Right%20Tool" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f20%2fchoosing-the-right-tool%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/24/essential-apps-for-new-mac-owners/">Essential Apps for New Mac Owners</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2011/11/18/exporting-outlines-as-markdown/">Exporting Outlines as Markdown</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2011/10/25/my-experiences-with-lion/">My Experiences with Lion</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

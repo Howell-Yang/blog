@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>LinuxKit Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="LinuxKit Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="LinuxKit Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/10/17/linuxkit-deep-dive/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">LinuxKit Deep Dive</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;478 words (estimated 3 minutes to read)</span>
+  <p>This is a liveblog of the DockerCon EU session titled &ldquo;LinuxKit Deep Dive&rdquo;. The speakers are Justin Cormack and Rolf Neugebauer, both with Docker, and this session is part of the &ldquo;Black Belt&rdquo; track here at DockerCon.</p>
+<p>So what is LinuxKit? It&rsquo;s a toolkit, part of the Moby Project, that is used for building secure, portable, and lean operating systems for containers. It uses the <code>moby</code> tooling to build system images. LinuxKit uses YAML files to describe the complete system, and these files are consumed by <code>moby</code> to assemble the boot image and verify the signature. On top of that is containerD, which runs on-boot containers, service containers, and shutdown containers. Think of on-boot and shutdown containers as one-time containers that perform some task, either when the system is booting or shutting down (respectively).</p>
+<p>LinuxKit was first announced and open sourced in April 2017 at DockerCon in Austin. Major additions since it was announced include:</p>
+<ul>
+<li>arm64 support</li>
+<li>Improved Kubernetes support</li>
+<li>Linux containers on Windows (LCOW) preview support</li>
+<li>Improved platform support (Azure, packet.net, IBM Bluemix, AWS, GCP, VMware, Hyper-V, etc.)</li>
+<li>Multi-arch build system</li>
+<li>Fully immutable system images</li>
+<li>Namespace sharing</li>
+<li>Support for the latest Linux kernels</li>
+</ul>
+<p>After reviewing the changes and growth of LinuxKit since its announcement, Neugebauer launches into a demo of LinuxKit. The demo shows using LinuxKit to build an identical image across three different architectures (x86, ARM64, and Raspberry Pi).</p>
+<p>LinuxKit images start with an Alpine image that mirrors all the Alpine <code>apk</code> packages needed to build LinuxKit packages. Because all the packages are in the image, it can be built without network access and enable repeatable builds. Then, leveraging multi-stage builds, only the specific needed packages are copied over to the scratch-based secondary image build. This results in very small packages (less than 2 MB in size).</p>
+<p>Neugebauer continues to show how multi-architecture LinuxKit builds are handled using <code>docker build</code>, <code>manifest-tool</code> (with a shout-out to Phil Estes), and <code>notary</code>.</p>
+<p>Cormack now takes over to talk about some networking functionality in LinuxKit. Wireguard was something that was integrated in LinuxKit recently (it&rsquo;s still be upstreamed in the Linux kernel). As an example, Cormack shows how he would use Wireguard and LinuxKit to build an encrypted tunnel from a Redis container to another container. It looks useful, but the demo feels rushed and doesn&rsquo;t do a very good job of showing how someone might use this functionality yourself.</p>
+<p>Shifting topics, Cormack talks about how Docker uses LinuxKit to build Kubernetes (primarily used today in Docker for Mac/Windows, where Docker is adding Kubernetes support in the next release). There is a (too) brief demo of this as well, but there is a fair amount of hand-waving over some of the details and explanations of the various pieces involved.</p>
+<p>At this point, Cormack reviews some additional resources on LinuxKit and then opens the session up to questions from the audience.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2017">DockerCon2017</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/10/17/rock-stars-builders-janitors/">Rock Stars, Builders, and Janitors: You&#39;re Doing it Wrong</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/10/17/container-relevant-kernel-developments/">Container-Relevant Kernel Developments</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2flinuxkit-deep-dive%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2flinuxkit-deep-dive%2f&text=LinuxKit%20Deep%20Dive" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2flinuxkit-deep-dive%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/04/18/black-belt-cilium/">Liveblog: Cilium for Network and Application Security with BPF and XDP</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/04/18/dockercon-2017-day-1-keynote/">Liveblog: DockerCon 2017 Day 1 Keynote</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

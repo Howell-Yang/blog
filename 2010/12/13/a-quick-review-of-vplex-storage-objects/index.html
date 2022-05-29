@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Quick Review of VPLEX Storage Objects - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Quick Review of VPLEX Storage Objects - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Quick Review of VPLEX Storage Objects - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/12/13/a-quick-review-of-vplex-storage-objects/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Quick Review of VPLEX Storage Objects</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;351 words (estimated 2 minutes to read)</span>
+  <p>Now that I&rsquo;ve managed to get my VPLEX clusters up and running, I&rsquo;m ready to start providing some posts on VPLEX and how it&rsquo;s configured and used. To get things started, I want to first provide an overview of VPLEX storage objects and how they relate to each other.</p>
+<p><strong>Storage volumes:</strong> Storage volumes are the LUNs that are presented to the VPLEX back-end ports from the storage array. The screenshot below, taken from the VPLEX management GUI, shows a series of storage volumes taken from two separate back-end arrays.</p>
+<p><img src="/public/img/vplex-storage-volumes.png" alt="VPLEX storage volumes"></p>
+<p><strong>Extents:</strong> Extents are created on storage volumes. You have the option of creating multiple extents on a single storage volume, but EMC generally recommends creating one extent per storage volume. (Future posts will discuss why this is beneficial.)</p>
+<p><img src="/public/img/vplex-extents.png" alt="VPLEX extents"></p>
+<p><strong>Devices:</strong> Devices are created from extents. You can combine multiple extents together to form a single device, or you can present a single extent up as a single device. As you can see in the screenshot, devices also have a <em>geometry</em> associated with them, like RAID-0 (no mirroring of devices together), RAID-1 (mirroring of devices), or RAID-C (concatenating devices).</p>
+<p><img src="/public/img/vplex-devices.png" alt="VPLEX devices"></p>
+<p><strong>Distributed devices:</strong> Distributed devices are mirrored devices that are spread across two VPLEX clusters connected together into a metro-plex. Distributed devices require extents from both VPLEX clusters in the metro-plex. Like &ldquo;regular&rdquo; devices, distributed devices also have a geometry. As far as I know, all distributed devices will automatically have a RAID-1 geometry. Note that because distributed devices aren&rsquo;t confined to a single cluster, they reside in a different place in the hierarchy.</p>
+<p><img src="/public/img/vplex-dist-devices.png" alt="VPLEX distributed devices"></p>
+<p><strong>Virtual volume:</strong> Virtual volumes are built from devices. When a virtual volume is built from a device, it&rsquo;s referred to just as a virtual volume. When the virtual volume is built from a distributed device, it&rsquo;s referred to as a distributed virtual volume. Virtual volumes are what are exposed (<em>exported</em> in VPLEX parlance) to hosts via the VPLEX front-end ports.</p>
+<p><img src="/public/img/vplex-virt-volumes.png" alt="VPLEX virtual volumes"></p>
+<p>In future VPLEX posts, I&rsquo;ll provide information on managing these various storage objects (creating, renaming, and deleting objects) as well as information on integrating VPLEX with other data protection solutions. Stay tuned!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vplex">VPLEX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/12/09/presentations-from-midwest-regional-vmug/">Presentations from Midwest Regional VMUG</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/12/14/allegations-regarding-fbi-involvement-with-openbsd/">Allegations Regarding FBI Involvement with OpenBSD</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f13%2fa-quick-review-of-vplex-storage-objects%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f13%2fa-quick-review-of-vplex-storage-objects%2f&text=A%20Quick%20Review%20of%20VPLEX%20Storage%20Objects" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f13%2fa-quick-review-of-vplex-storage-objects%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/03/vplex-webcast/">VPLEX Webcast</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2010/06/07/a-deeper-look-at-vplex/">A Deeper Look at VPLEX</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2010/05/17/a-quick-look-at-vplex-and-vmware-srm/">A Quick Look at VPLEX and VMware SRM</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

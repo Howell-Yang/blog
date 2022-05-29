@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Thoughts on VPNs for Road Warriors - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Thoughts on VPNs for Road Warriors - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Thoughts on VPNs for Road Warriors - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/02/28/thoughts-on-vpns-for-road-warriors/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Thoughts on VPNs for Road Warriors</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;421 words (estimated 2 minutes to read)</span>
+  <p>A few days ago I was talking with a few folks on <a href="https://twitter.com/">Twitter</a> and the topic of using VPNs while traveling came up. For those that travel regularly, using a VPN to bypass traffic restrictions is not uncommon. Prompted by my former manager <a href="https://twitter.com/martin_casado/">Martin Casado</a>, I thought I might share a few thoughts on VPN options for road warriors. This is by no means a comprehensive list, but hopefully something I share here will be helpful.</p>
+<p>There were a few things I wanted to share with readers:</p>
+<ul>
+<li>I found commercial VPN services too unreliable (it&rsquo;s not uncommon for commercial VPN services to get blocked and thus defeat the purpose of using a VPN).</li>
+<li>Instead, I&rsquo;ve found more success using something like <a href="https://github.com/ttlequals0/autovpn">AutoVPN</a>. AutoVPN helps you stand up an on-demand OpenVPN endpoint on AWS. I used this successfully in Beijing, setting up endpoints in Seoul, Singapore, Tokyo, and sometimes Sydney. Because these IP addresses are &ldquo;ephemeral,&rdquo; they&rsquo;re far less likely to be blocked. (Here&rsquo;s <a href="https://zugdud.io/index.php/2017/10/08/using-aws-as-a-personal-vpn/">another example</a> of using AWS as a personal VPN service.)</li>
+<li>I also had success using AutoVPN not to get around traffic restrictions, but to change my source IP. My wife needed to access some real estate-related sites while she was traveling in Europe, but because her IP address was outside the US the login process was failing. I had her use AutoVPN with an instance in us-east-1 from her Mac. It worked very well!</li>
+<li>If you have a static IP address, you can host your own VPN endpoint (Martin Casado shared that this was something he did for years when he had a static IP address).</li>
+<li>If you don&rsquo;t have a static IP address but still want to host your own VPN endpoints, one potential workaround is to use a dynamic DNS service like DynDNS. I did this for several years, and it ran flawlessly.</li>
+<li><em>Be sure to appropriately secure your VPN server!</em> Use two-factor authentication, use a secure OS (I built mine on <a href="https://www.openbsd.org/">OpenBSD</a>), keep it patched/updated, etc. The last thing you want is folks routing traffic through your VPN endpoint without your knowledge/approval.</li>
+<li>OpenVPN seems to be the VPN of choice, probably due to flexibility of encapsulation (UDP or TCP). It&rsquo;s also well-supported on the client side, with your choice of clients on macOS (<a href="https://tunnelblick.net/">Tunnelblick</a> and <a href="https://www.sparklabs.com/viscosity/">Viscosity</a> spring to mind) and Linux (both command-line and GUI options are available).</li>
+</ul>
+<p>Hopefully something I&rsquo;ve shared here will prove useful to readers. If anyone has any other suggestions they&rsquo;d like to mention, <a href="https://twitter.com/scott_lowe/">hit me on Twitter</a>. Thanks for reading!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/travel">Travel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/">Kubernetes, Kubeadm, and the AWS Cloud Provider</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/03/01/technology-short-take-111/">Technology Short Take 111</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f28%2fthoughts-on-vpns-for-road-warriors%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f28%2fthoughts-on-vpns-for-road-warriors%2f&text=Thoughts%20on%20VPNs%20for%20Road%20Warriors" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f02%2f28%2fthoughts-on-vpns-for-road-warriors%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/09/22/technology-short-take-87/">Technology Short Take 87</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2014/04/08/technology-short-take-40/">Technology Short Take #40</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2005/11/22/cisco-pix-vpn-and-active-directory-integration/">Cisco PIX VPN and Active Directory Integration</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

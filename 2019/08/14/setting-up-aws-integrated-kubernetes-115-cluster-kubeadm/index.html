@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 149 May 141414 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1570 words (estimated 8 minutes to read)</span>
+  <p>In this post, I&rsquo;d like to walk through setting up an AWS-integrated <a href="https://kubernetes.io/">Kubernetes</a> 1.15 cluster using <code>kubeadm</code>. Over the last year or so, the power and utility of <code>kubeadm</code> has vastly improved (thank you to all the contributors who have spent countless hours!), and it is now&mdash;in my opinion, at least&mdash;at a point where setting up a well-configured, highly available Kubernetes cluster is pretty straightforward.</p>
+<p>This post builds on <a href="https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/">the official documentation</a> for setting up a highly available Kubernetes 1.15 cluster. This post also builds upon previous posts I&rsquo;ve written about setting up Kubernetes clusters with the AWS cloud provider:</p>
+<ul>
+<li><a href="/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/">Setting up the AWS Cloud Provider</a></li>
+<li><a href="/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/">Kubernetes, Kubeadm, and the AWS Cloud Provider</a></li>
+<li><a href="/2019/04/16/using-kubeadm-add-new-control-plane-nodes-aws-integration/">Using Kubeadm to Add New Control Plane Nodes with AWS Integration</a></li>
+</ul>
+<p>All of these posts are focused on Kubernetes releases prior to 1.15, and given the changes in <code>kubeadm</code> in the 1.14 and 1.15 releases, I felt it would be helpful to revisit the process again for 1.15. For now, I&rsquo;m focusing on the in-tree AWS cloud provider; however, in the very near future I&rsquo;ll look at using the new external AWS cloud provider.</p>
+<p>As pointed out in <a href="/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/">the &ldquo;original&rdquo; September 2018 article</a>, there are a number of high-level requirements needed in order to properly bootstrap an AWS-integrated Kubernetes cluster:</p>
+<ol>
+<li>The hostname of each node must match the EC2 Private DNS entry for the instance. By default this is something like <code>ip-10-11-12-13.us-west-2.compute.internal</code>, but the use of custom DNS domains is possible (a teammate has verified this and hopefully will be blogging about it soon).</li>
+<li>Each node must have an IAM instance profile that grants it access to an IAM role and policy with permissions to the AWS API.</li>
+<li>Resources used by the cluster must have specific AWS tags assigned to them.</li>
+<li>Specific entries are needed in the <code>kubeadm</code> configuration file used to bootstrap the cluster, join control plane nodes, and join worker nodes.</li>
+</ol>
+<p>Let&rsquo;s dig into each of these areas in a bit more detail. (Most, if not all, of this information is also included in <a href="/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/">the September 2018 post</a>. Feel free to check that post for more information or details.)</p>
+<h2 id="setting-node-hostnames">Setting Node Hostnames</h2>
+<p>The hostname for the OS <em>must</em> match the EC2 Private DNS entry for that particular instance. By default, this is typically something like <code>ip-10-11-12-13.us-west-2.compute.internal</code> (change the numbers and the region to appropriately reflect the private IP address and region of the instance). The fastest/easiest way I&rsquo;ve verified to make sure this is the case is with this command:</p>
+<pre><code>sudo hostnamectl set-hostname \
+$(curl -s http://169.254.169.254/latest/meta-data/local-hostname)
+</code></pre>
+<p>Be sure to set the hostname before starting the bootstrapping process. Anecdotally, I&rsquo;ve heard of some success putting this command in the user data for the instance, so that it runs automatically.</p>
+<h2 id="creating-and-assigning-the-iam-instance-profile">Creating and Assigning the IAM Instance Profile</h2>
+<p>The nodes in the cluster need to have specific permissions to AWS API objects in order for the AWS cloud provider to work. <a href="https://github.com/kubernetes/cloud-provider-aws">The <code>cloud-provider-aws</code> GitHub repository</a> has full details on the specific permissions needed for control plane nodes and worker nodes. You&rsquo;ll want to create the appropriate IAM roles, IAM policies, and IAM instance profiles so that the nodes have the necessary access. When creating the instances (either via the console, CLI, or some infrastructure-as-code tool), be sure to specify the IAM instance profile they should have assigned.</p>
+<h2 id="assigning-tags-to-resources">Assigning Tags to Resources</h2>
+<p>The AWS cloud provider needs resources to be tagged with a tag named <code>kubernetes.io/cluster/&lt;cluster-name&gt;</code> (the value is immaterial). Based on all the documentation I&rsquo;ve been able to find, this tag is needed on all nodes, on exactly one security group (the nodes should be a member of this security group), and on all subnets and route tables. Failing to have things properly tagged will result in odd failure modes, like ELBs being automatically created in response to the creation of a Service object of type <code>LoadBalancer</code>, but instances never being populated for the ELB (for example).</p>
+<h2 id="using-kubeadm-configuration-files">Using Kubeadm Configuration Files</h2>
+<p>To use <code>kubeadm</code> to bootstrap a Kubernetes 1.15 cluster with the AWS cloud provider, you&rsquo;ll want to use a <code>kubeadm</code> configuration file (Kubernetes 1.15 uses the &ldquo;v1beta2&rdquo; version of the <code>kubeadm</code> API; documentation for the API is <a href="https://godoc.org/k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta2">here</a>).</p>
+<p>Three different configuration files are needed:</p>
+<ol>
+<li>A configuration file to be used to bootstrap the first/initial control plane node</li>
+<li>A configuration file used to join the additional control plane nodes</li>
+<li>A Configuration file used to join worker nodes</li>
+</ol>
+<p>The sections below provide details on each of these configuration files, along with examples you can use to create your own.</p>
+<h3 id="bootstrapping-the-first-control-plane-node">Bootstrapping the First Control Plane Node</h3>
+<p>Here&rsquo;s an example of a <code>kubeadm</code> configuration file you could use to bootstrap the first control plane node (some explanation is found below the example):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kubeadm.k8s.io/v1beta2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">ClusterConfiguration</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiServer</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">extraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">clusterName</span>: <span style="color:#ae81ff">blogsample</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">controlPlaneEndpoint</span>: <span style="color:#ae81ff">cp-lb.us-west-2.elb.amazonaws.com</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">controllerManager</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">extraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">configure-cloud-routes</span>: <span style="color:#e6db74">&#34;false&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kubernetesVersion</span>: <span style="color:#ae81ff">stable</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">networking</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">dnsDomain</span>: <span style="color:#ae81ff">cluster.local</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">podSubnet</span>: <span style="color:#ae81ff">192.168.0.0</span><span style="color:#ae81ff">/16</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">serviceSubnet</span>: <span style="color:#ae81ff">10.96.0.0</span><span style="color:#ae81ff">/12</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kubeadm.k8s.io/v1beta2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">InitConfiguration</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>Let&rsquo;s break this down just a bit:</p>
+<ul>
+<li>The <code>apiServer.extraArgs.cloud-provider</code> and <code>controllerManager.extraArgs.cloud-provider</code> settings are what generate the <code>--cloud-provider=aws</code> flags for the API server and the controller manager (you can verify this by looking at their manifests in <code>/etc/kubernetes/manifests</code> after bootstrapping the control plane node). You need these settings here because the AWS cloud provider needs to be specified when you first bootstrap the node, not added afterward.</li>
+<li>The <code>nodeRegistration.kubeletExtraArgs.cloud-provider</code> setting serves the same purpose, but for the Kubelet. Again, this has to be here when you first bootstrap the node; adding it afterward won&rsquo;t work.</li>
+<li>Because this is an HA cluster, <code>controlPlaneEndpoint</code> needs to point to the load balancer for your control plane nodes.</li>
+<li>The <code>clustername</code> value isn&rsquo;t technically necessary, but this allows you to specify individual clusters within a given set of AWS resources (make sure you use this name in the AWS tags on your resources).</li>
+<li>Technically, the <code>networking.dnsDomain</code> and <code>networking.serviceSubnet</code> aren&rsquo;t necessary either, but I&rsquo;m including them here for completeness. <code>networking.podSubnet</code> is often required to be included for some CNI plugins (Calico, for example, requires this value to be set).</li>
+<li>You&rsquo;ll note there&rsquo;s no <code>etcd</code> section&mdash;this tells <code>kubeadm</code> to create an etcd node local to the control plane node, in what we call a &ldquo;stacked control plane&rdquo; configuration. If you&rsquo;re using an external etcd cluster, you&rsquo;ll need to add the appropriate configuration to this file.</li>
+</ul>
+<p>Set the values you need in this file, then bootstrap your first control plane node with <code>kubeadm init --config=kubeadm.yaml --upload-certs</code> (substituting the correct filename, of course).</p>
+<p>Once you&rsquo;ve verified that the first control plane node is up, go ahead and install your CNI plugin.</p>
+<h3 id="adding-more-control-plane-nodes">Adding More Control Plane Nodes</h3>
+<p>The 1.14 and 1.15 releases of Kubernetes added some significant functionality to <code>kubeadm</code> around the addition of control plane nodes. Thus, the addition of control plane nodes is <em>dramatically</em> simpler now.</p>
+<p>Here&rsquo;s a <code>kubeadm</code> configuration file you can use to join the second and third control plane nodes to the first node:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kubeadm.k8s.io/v1beta2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">JoinConfiguration</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">discovery</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">bootstrapToken</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">token</span>: <span style="color:#ae81ff">123456.</span><span style="color:#ae81ff">a4v4ii39rupz51j3</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiServerEndpoint</span>: <span style="color:#e6db74">&#34;cp-lb.us-west-2.elb.amazonaws.com:6443&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">caCertHashes</span>: [<span style="color:#e6db74">&#34;sha256:082feed98fb5fd2b497472fb7d9553414e27ff7eeb7b919c82ff3a08fdf5782f&#34;</span>]
+</span></span><span style="display:flex;"><span><span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">ip-10-10-180-167.us-west-2.compute.internal</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">controlPlane</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">localAPIEndpoint</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">advertiseAddress</span>: <span style="color:#ae81ff">10.10.180.167</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">certificateKey</span>: <span style="color:#e6db74">&#34;f6fcb672782d6f0581a1060cf136820acde6736ef12562ddbdc4515d1315b518&#34;</span>
+</span></span></code></pre></div><p>Some additional information on some of these values may be helpful:</p>
+<ul>
+<li>You&rsquo;ll be using <code>kubeadm join</code>, <em>not</em> <code>kubeadm init</code>, so this needs to be a JoinConfiguration.</li>
+<li>If you don&rsquo;t know the value of a valid bootstrap token, you can create a new one with <code>kubeadm token create</code> and specify it for <code>discovery.bootstrapToken.token</code>.</li>
+<li>The <code>apiServerEndpoint</code> should be the load balancer for the control plane.</li>
+<li>If you don&rsquo;t know the SHA256 hash of the CA certificate, see <a href="/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/">this post</a>.</li>
+<li>The value for <code>certificateKey</code> is only good for two hours, so you may need to use <code>kubeadm init phase upload-certs --upload-certs</code> on the initial control plane node if it has been more than two hours since the value was generated. This will generate a new certificate key value.</li>
+<li>As outlined in <a href="/2019/04/16/using-kubeadm-add-new-control-plane-nodes-aws-integration/">this post</a>, the <code>controlPlane.localAPIEndpoint</code> value is what tells <code>kubeadm</code> this is a control plane node you&rsquo;re joining to the cluster.</li>
+</ul>
+<p>Once you&rsquo;ve set the values you need in this file, then just run <code>kubeadm join --config=kubeadm.yaml</code> (substituting the correct filename, of course). The node should join the cluster as a control plane node.</p>
+<h3 id="adding-worker-nodes">Adding Worker Nodes</h3>
+<p>Because adding worker nodes uses <code>kubeadm join</code>, you&rsquo;ll find that the necessary <code>kubeadm</code> configuration here is similar to, but simpler, than the configuration for joining control plane nodes.</p>
+<p>Here&rsquo;s a sample configuration file that would work (additional notes about this file are found below the example):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kubeadm.k8s.io/v1beta2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">JoinConfiguration</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">discovery</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">bootstrapToken</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">token</span>: <span style="color:#ae81ff">123456.</span><span style="color:#ae81ff">a4v4ii39rupz51j3</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiServerEndpoint</span>: <span style="color:#e6db74">&#34;cp-lb.us-west-2.elb.amazonaws.com:6443&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">caCertHashes</span>: [<span style="color:#e6db74">&#34;sha256:082feed98fb5fd2b497472fb7d9553414e27ff7eeb7b919c82ff3a08fdf5782f&#34;</span>]
+</span></span><span style="display:flex;"><span><span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">ip-11-12-13-14.us-west-2.compute.internal</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>As noted earlier, you&rsquo;ll need a valid bootstrap token and the SHA256 hash of the CA certificate.</p>
+<p>Once you have the correct values in this file, then run <code>kubeadm join --config=kubeadm.yaml</code> to join new worker nodes to the cluster (substitute the correct filename, of course).</p>
+<h2 id="wrapping-up">Wrapping Up</h2>
+<p>At this point, you should have a fully functional Kubernetes cluster running on AWS, with a functioning AWS cloud provider.</p>
+<p>If you run into issues getting this to work correctly for you, I encourage you to pop over to the Kubernetes Slack instance (in the &ldquo;#kubeadm&rdquo; channel) and ask any questions. I tend to be there, as are a lot of the <code>kubeadm</code> contributors. You&rsquo;re also welcome to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a> if you have any questions, comments, or corrections. (If you are contacting me for technical assistance, I do ask that you at least try some basic troubleshooting first. Thanks!)</p>
+<p>Enjoy!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubeadm">Kubeadm</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/08/12/converting-kubernetes-to-ha-control-plane/">Converting Kubernetes to an HA Control Plane</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/08/15/reconstructing-the-join-command-for-kubeadm/">Reconstructing the Join Command for Kubeadm</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f14%2fsetting-up-aws-integrated-kubernetes-115-cluster-kubeadm%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f14%2fsetting-up-aws-integrated-kubernetes-115-cluster-kubeadm%2f&text=Setting%20up%20an%20AWS-Integrated%20Kubernetes%201.15%20Cluster%20with%20Kubeadm" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f08%2f14%2fsetting-up-aws-integrated-kubernetes-115-cluster-kubeadm%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/">Calculating the CA Certificate Hash for Kubeadm</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2019/04/16/using-kubeadm-add-new-control-plane-nodes-aws-integration/">Using Kubeadm to Add New Control Plane Nodes with AWS Integration</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/">Kubernetes, Kubeadm, and the AWS Cloud Provider</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

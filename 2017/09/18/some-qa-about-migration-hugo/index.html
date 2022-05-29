@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some Q&amp;A About the Migration to Hugo - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some Q&amp;A About the Migration to Hugo - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some Q&amp;A About the Migration to Hugo - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/09/18/some-qa-about-migration-hugo/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some Q&amp;A About the Migration to Hugo</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;905 words (estimated 5 minutes to read)</span>
+  <p>As you may already know, I recently completed the migration of this site from <a href="https://pages.github.com/">GitHub Pages</a> (generated using <a href="https://jekyllrb.com/">Jekyll</a>) to S3/CloudFront and <a href="https://gohugo.io/">Hugo</a> for static site generation. Since then, I&rsquo;ve talked with a few readers who had additional questions about the site migration. I thought others might have the same questions, so I decided to gather the most common questions here and share the answers with everyone.</p>
+<p>(For those who need a quick primer on how the site is set up/served, refer to <a href="/2017/08/10/information-recent-site-migration/">this post</a>.)</p>
+<p>I&rsquo;ll structure the rest of this post in a &ldquo;question-and-answer&rdquo; format.</p>
+<p><em><strong>Q:</strong> Why migrate away from Jekyll?</em></p>
+<p><strong>A:</strong> Some of this is tied up with GitHub Pages (see the next question), but the key things that drove me away were very slow build times (in excess of five minutes), limited troubleshooting, dealing with Ruby dependencies in order to run local Jekyll builds (needed to help with troubleshooting), and limited functionality (due in part to GitHub Pages&rsquo; restrictive support for plugins).</p>
+<p><em><strong>Q:</strong> Why migrate away from GitHub Pages?</em></p>
+<p><strong>A:</strong> If you&rsquo;re happy with Jekyll (and it&rsquo;s a fine static site generator for lots of folks), having it integrated on the backend with GitHub Pages is a super-sweet setup. A simple <code>git push</code> and the site automatically rebuilds&mdash;what more could you want? However, the GitHub Pages version of Jekyll is limited in the plugins you can use, and that in turn limits the functionality of the site. Now, I could&rsquo;ve stuck with GitHub Pages as a hosting solution and not used the Jekyll functionality, as it is true that GitHub Pages offers the ability to host static sites without using Jekyll. The workflow for such a setup just didn&rsquo;t feel as straightforward as I would&rsquo;ve liked (it involved multiple branches, including the required &ldquo;gh-pages&rdquo; branch, and Git submodules), so it didn&rsquo;t seem like there was really any point. From my perspective, GitHub Pages and Jekyll had a shared fate&mdash;there wasn&rsquo;t much point in using one without the other.</p>
+<p><em><strong>Q:</strong> Why choose Hugo?</em></p>
+<p><strong>A:</strong> A lot of this is covered <a href="/2017/08/10/information-recent-site-migration/">in my previous post</a>, but I&rsquo;ll quickly re-iterate the reasons. First, Hugo is <em>vastly</em> faster at site generation (think 5 minutes for Jekyll down to single-digit seconds for Hugo). Second, Hugo is a single binary that&rsquo;s easily installed on macOS or Linux. Third, and finally, I wanted to stretch my skills, and this seemed like a reasonable way to do it.</p>
+<p><em><strong>Q:</strong> Why choose Amazon S3 for hosting your site?</em></p>
+<p><strong>A:</strong> As I mentioned above, I wanted to stretch my skills a bit. Hosting the site on <a href="https://aws.amazon.com/s3/">Amazon S3</a> gave me the ability to gain additional experience with using and managing services on Amazon Web Services. Amazon S3 is perfectly capable of hosting static sites, so why not?</p>
+<p><em><strong>Q:</strong> Why use CloudFront in addition to S3?</em></p>
+<p><strong>A:</strong> Using S3 alone is perfectly fine for some lower-traffic sites, but I don&rsquo;t really consider this site to be a lower-traffic site (not trying to make myself sound more important/influential than I am, just being realistic). I felt it would be better to leverage <a href="https://aws.amazon.com/cloudfront/">CloudFront</a> as a content distribution network (CDN) and be able to offer (hopefully) lower-latency service to more readers around the world. Plus, this is another way to stretch my skills and my experience.</p>
+<p><em><strong>Q:</strong> Is there a reason you&rsquo;re not using a continuous integration (CI) service (like <a href="https://travis-ci.com/">TravisCI</a>, <a href="https://circleci.com/">CircleCI</a>, or <a href="https://aws.amazon.com/codepipeline/">AWS CodePipeline</a>) in your setup?</em></p>
+<p><strong>A:</strong> This is something that I really wanted to do, and I may yet work this into my workflow. The general way this works is that you connect the CI service to <a href="https://www.github.com/">GitHub</a> via a webhook so that a commit to the repository automatically triggers the site generation and subsequently uploads to S3. I avoided adding this step in the first iteration in order to keep the workflow simple and easy to understand. There are a couple of things I need to tackle in order to add a CI service. First, because many of these services are <a href="https://www.docker.com/">Docker</a>-based, I need to build an appropriate Docker image that contains the tools I need (Hugo, the <a href="https://aws.amazon.com/cli/">AWS CLI</a>, and <a href="https://github.com/bep/s3deploy"><code>s3deploy</code></a>). Second, I need to test the Docker image to ensure that I&rsquo;m not unecessarily uploading files that I don&rsquo;t need to upload (<code>s3deploy</code> is supposed to help with this, but I haven&rsquo;t tested it in an ephemeral container yet). Third, I need to understand the configuration of the overall workflow and pipeline itself. Fourth, I need to do some thinking on what &ldquo;continuous integration&rdquo; means for a static site; is this just verifying that the site builds without any errors?</p>
+<p>These are all achievable things; it&rsquo;s just a matter of finding the time to work on them. The good news is that all these things are also really good blog post topics.</p>
+<p><em><strong>Q:</strong> Are you adding comments back to the site?</em></p>
+<p><strong>A:</strong> Hugo doesn&rsquo;t have a built-in commenting system, since it&rsquo;s made for static sites. There are, though, a few ways of adding comments to a static site. I won&rsquo;t do Disqus (for a variety of reasons), but there is a solution that leverages GitHub pull requests for comments. There&rsquo;s also a solution based on <a href="https://aws.amazon.com/lambda/">AWS Lambda</a> as well. This topic is something I&rsquo;ll need to explore in greater detail, especially if I&rsquo;m going to use it in conjunction with a CI service.</p>
+<p>There you have it&mdash;feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> if you have additional questions.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/09/06/using-keybase-gpg-macos/">Using Keybase with GPG on macOS</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/09/19/new-website-features/">New Website Features</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f18%2fsome-qa-about-migration-hugo%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f18%2fsome-qa-about-migration-hugo%2f&text=Some%20Q%26A%20About%20the%20Migration%20to%20Hugo" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f09%2f18%2fsome-qa-about-migration-hugo%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/08/10/information-recent-site-migration/">Information on the Recent Site Migration</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2017/08/15/quick-reference-common-aws-cli-commands/">Quick Reference to Common AWS CLI Commands</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

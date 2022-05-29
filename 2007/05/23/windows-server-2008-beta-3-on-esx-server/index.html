@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Windows Server 2008 Beta 3 on ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Windows Server 2008 Beta 3 on ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Windows Server 2008 Beta 3 on ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/05/23/windows-server-2008-beta-3-on-esx-server/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Windows Server 2008 Beta 3 on ESX Server</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;316 words (estimated 2 minutes to read)</span>
+  <p>I just finished installing <a href="http://www.microsoft.com/windowsserver2008/default.mspx">Windows Server 2008</a> Beta 3 on <a href="http://www.vmware.com/products/vi/esx/">ESX Server</a> 3.0.1. Despite the fact that the amount of time I spend designing, implementing, and supporting Microsoft products continues to decrease, this is an important product release and one with which I need to be <em>very</em> familiar. In addition, I&rsquo;m particularly interested in how developments in the Windows Server product line will affect Active Directory (AD) and AD integration scenarios. Once I have had the opportunity to create an AD structure based on Windows Server 2008, I plan to write a new set of articles on Linux and Solaris integration.</p>
+<p>When creating the VM, I used the following configuration options:</p>
+<ul>
+<li>
+<p>Selected &ldquo;Windows Vista&rdquo; as the guest OS</p>
+</li>
+<li>
+<p>Provisioned the VM with 512MB of RAM and a 6GB hard drive (I suspect we will be very tight on disk space, but I have to be frugal with my shared SAN storage in the lab)</p>
+</li>
+<li>
+<p>Specified the LSI Logic SCSI driver</p>
+</li>
+</ul>
+<p>The VM booted up without any problems, but quickly dropped me to a screen where it indicated that it did not have the necessary driver for the CD/DVD-ROM drive. A quick web search turned up <a href="http://www.vmware.com/community/thread.jspa?threadID=70651">this VMTN Forums thread</a>, where this link was offered to a <a href="http://sti.epfl.ch/intranet/informatique/virtualisation/drivers-vista-rtm-esx.flp.zip">floppy image with the necessary drivers</a>. The drivers worked perfectly, and the rest of the installation proceeded without any further issues.</p>
+<p>Now that I have this thing up and running, the next set of tasks will be to create a new Active Directory structure and begin testing various integration scenarios with the new version of Active Directory. I&rsquo;ll also begin exploring interoperability between Active Directory on earlier versions of Windows and migration scenarios to Windows Server 2008. While I can&rsquo;t promise anything, let me know if there is something specific you&rsquo;d like me to explore or test and I&rsquo;ll see what I can do (and document it here, of course).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/05/23/openbsd-41-on-esx-server-301/">OpenBSD 4.1 on ESX Server 3.0.1</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/05/24/trying-two-new-apps/">Trying Two New Apps</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f23%2fwindows-server-2008-beta-3-on-esx-server%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f23%2fwindows-server-2008-beta-3-on-esx-server%2f&text=Windows%20Server%202008%20Beta%203%20on%20ESX%20Server" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f05%2f23%2fwindows-server-2008-beta-3-on-esx-server%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/02/27/return-of-the-old-microsoft/">Return of the Old Microsoft</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/12/05/the-future-of-the-os/">The Future of the OS</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2006/07/10/iscsi-and-esx-server-3/">iSCSI and ESX Server 3</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

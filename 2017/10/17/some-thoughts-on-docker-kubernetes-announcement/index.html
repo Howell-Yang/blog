@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Some Thoughts on the Docker-Kubernetes Announcement - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Some Thoughts on the Docker-Kubernetes Announcement - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Some Thoughts on the Docker-Kubernetes Announcement - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/10/17/some-thoughts-on-docker-kubernetes-announcement/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Some Thoughts on the Docker-Kubernetes Announcement</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;502 words (estimated 3 minutes to read)</span>
+  <p>Today at DockerCon EU, Docker announced that the next version of Docker (and its upstream open source project, the Moby Project) will feature integration with Kubernetes (see <a href="/2017/10/17/dockercon-eu-day-1-keynote/">my liveblog of the day 1 general session</a>). Customers will be able to choose whether they leverage Swarm or Kubernetes for container orchestration. In this post, I&rsquo;ll share a few thoughts on this move by Docker.</p>
+<p>First off, you may find it useful to review some details of the announcement <a href="https://blog.docker.com/2017/10/kubernetes-docker-platform-and-moby-project/">via Docker&rsquo;s blog post</a>.</p>
+<p>Done reviewing the announcement? Here are some thoughts; some of them are mine, some of them are from others around the Internet.</p>
+<ul>
+<li>It probably goes without saying that this announcement was largely anticipated (see <a href="https://techcrunch.com/2017/10/17/docker-gives-into-invevitable-and-offers-native-kubernetes-support/">this TechCrunch article</a>, for example). So while the details of how Docker would go about adding Kubernetes support was not clear, many people expected some form of announcement around Kubernetes at the conference. I&rsquo;m not sure that folks expected this level of integration, or that the integration would take this particular shape/form.</li>
+<li>In looking back on the announcement and the demos from today&rsquo;s general session and in thinking about the forces that drove Docker to provide Kubernetes integration, it occurs to me that this almost <em>necessitated</em> the direction/manner of integration. Think about it: had Docker chosen to &ldquo;separate&rdquo; Docker and Kubernetes under different software stacks, they would have perpetuated the (perceived) battle between Docker and Kubernetes. However, by positioning Docker &ldquo;above&rdquo; Kubernetes, Docker instead emphasizes that the true value of Docker isn&rsquo;t the runtime (<code>runC</code> or <code>containerD</code>) and it isn&rsquo;t the orchestration (Swarm and Kubernetes). It is, instead, the developer-friendly workflow, ease of use, and management functionality. It also reinforces Docker as a platform, a message that was definitely hammered home in the general session.</li>
+<li>Integrating Kubernetes is, in my opinion, just a continuation of the effort that originated in the spin-out of <code>runC</code> to the OCI (and later the donation of <code>containerD</code> to the CNCF)&mdash;all these steps are necessary to allow Docker to divorce itself from the perception that &ldquo;Docker == containers&rdquo;. (VMware faces a similar challenge, in that folks think &ldquo;VMware == VMs/hypervisor&rdquo;.)</li>
+<li>Naturally, there are questions now regarding what will happen to Swarm. The general consensus (see <a href="http://blog.nigelpoulton.com/kubernetes-vs-swarm-and-the-winner-is/">this post</a> by Nigel Poulton and <a href="https://blog.codeship.com/docker-and-kubernetes/">this post</a> by Laura Frank) is that Swarm&mdash;as an orchestration mechanism&mdash;isn&rsquo;t going anywhere anytime soon, and I&rsquo;d agree with this assessment. At the same time, given the industry momentum around Kubernetes&mdash;Rancher&rsquo;s <a href="http://rancher.com/rancher2-0/">rebuild on top of Kubernetes</a> is one example, <a href="https://www.vmware.com/radius/pivotal-container-services/">VMware&rsquo;s joint announcement</a> (with Google and Pivotal) of Pivotal Container Service is another&mdash;it&rsquo;s also fairly apparent that leveraging Kubernetes instead of Swarm is probably a better long-term choice. (It would be interesting to think about how Swarm/SwarmKit might be used to enhance Kubernetes.)</li>
+</ul>
+<p>As others have said, this is definitely an interesting time in which to work in the technology field. Look for more liveblogging from DockerCon EU 2017 tomorrow, where I&rsquo;ll be covering the general session in the morning and as many breakout sessions as I can cram into my schedule.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2017">DockerCon2017</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/10/17/container-relevant-kernel-developments/">Container-Relevant Kernel Developments</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/10/18/dockercon-eu-2017-day-2-keynote/">DockerCon EU 2017 Day 2 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2fsome-thoughts-on-docker-kubernetes-announcement%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2fsome-thoughts-on-docker-kubernetes-announcement%2f&text=Some%20Thoughts%20on%20the%20Docker-Kubernetes%20Announcement" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f17%2fsome-thoughts-on-docker-kubernetes-announcement%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/10/17/dockercon-eu-day-1-keynote/">DockerCon EU 2017 Day 1 Keynote</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2017/10/17/container-relevant-kernel-developments/">Container-Relevant Kernel Developments</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2017/10/17/linuxkit-deep-dive/">LinuxKit Deep Dive</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

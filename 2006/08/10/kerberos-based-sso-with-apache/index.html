@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Kerberos-Based SSO with Apache - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Kerberos-Based SSO with Apache - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Kerberos-Based SSO with Apache - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/08/10/kerberos-based-sso-with-apache/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Kerberos-Based SSO with Apache</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;877 words (estimated 5 minutes to read)</span>
+  <p>The key to the magic here is the <a href="http://modauthkerb.sourceforge.net/">mod_auth_kerb module</a>, which adds Kerberos authentication to <a href="http://httpd.apache.org/">Apache</a>. This module not only allows Apache to use Kerberos on the &ldquo;back-end,&rdquo; so to speak, but also supports the SPNEGO and GSS-API stuff on the &ldquo;front-end&rdquo; that allow it to transparently authenticate users connecting with supported browsers, without ever prompting for a password.</p>
+<h3 id="preparing-active-directory-each-apache-server">Preparing Active Directory (Each Apache Server)</h3>
+<p>These steps need to be repeated for each Apache server that will authenticating via Kerberos to Active Directory.</p>
+<ol>
+<li>
+<p>First, create a user account (not a computer account) for each Apache server. I highly suggest using a naming convention that supports a) the service principal(s) involved; and b) the name of the server. Since Apache will use the HTTP service principal, a name like <code>HTTP-lnxservername</code> would be good. The password doesn&rsquo;t matter, but do be sure to check the &ldquo;Password never expires&rdquo; check box, and after the account is created specify a good description so that you&rsquo;ll remember what this account is for in 6 months.</p>
+</li>
+<li>
+<p>For each account that was created, run the <code>ktpass.exe</code> command to generate a unique keytab for each account. The command will look something like this (substitute the appropriate values where necessary):</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>ktpass -princ HTTP/fqdn@REALM -mapuser DOMAIN\account  
+</span></span><span style="display:flex;"><span>-crypto DES-CBC-MD5 +DesOnly -pass password -ptype KRB5_NT_PRINCIPAL  
+</span></span><span style="display:flex;"><span>-out filename
+</span></span></code></pre></div><p>Be sure to specify a unique output filename (so that you don&rsquo;t overwrite files; each server/account will needs its own unique file). I suggest using the server&rsquo;s name as the filename, i.e., something like <code>lnxservername.keytab</code>.</p>
+<p>It would be ideal if we could leverage the existing computer account that may exist for that Linux server for host authentication (I&rsquo;m assuming you followed my instructions for integrating host authentication into Active Directory, yes?), but for some reason it doesn&rsquo;t work. We can use the SetSPN utility to add the appropriate SPN to the computer account, but authentication still doesn&rsquo;t work. If any Kerberos/Active Directory gurus out there have some insight on this, please let me know. (By the way, this may be one reason for using user accounts for all the various SPNs&mdash;HOST/fqdn@REALM, HTTP/fqdn@REALM, etc.&mdash;as some of the online guides for integrating Linux and Active Directory have suggested.)</p>
+<p>Now we&rsquo;re ready to move on to configuring the Apache servers.</p>
+<h3 id="configuring-apache-each-server">Configuring Apache (Each Server)</h3>
+<p>Repeat these steps for each Apache server. In case I haven&rsquo;t already mentioned this, I&rsquo;m assuming you&rsquo;re running Apache 2.0 on Linux, and not on some flavor of Windows.</p>
+<ol>
+<li>
+<p>Download and install the mod_auth_kerb Apache module.</p>
+</li>
+<li>
+<p>Add the following directives to the Apache configuration, either in <code>httpd.conf</code> or in the <code>conf.d</code> directory in its own file (my installation of mod_auth_kerb created an <code>auth_kerb.conf</code> in <code>conf.d</code>). You&rsquo;ll need to substitute the correct values for the KrbAuthRealms directive (which should be your Active Directory domain name in UPPERCASE) and the location and name of your keytab (which you&rsquo;ll copy over in the next step):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-apache" data-lang="apache"><span style="display:flex;"><span>LoadModule auth_kerb_module modules/mod_auth_kerb.so  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;Location</span> <span style="color:#e6db74">/secured</span><span style="color:#f92672">&gt;</span>  
+</span></span><span style="display:flex;"><span>  AuthType Kerberos  
+</span></span><span style="display:flex;"><span>  AuthName <span style="color:#e6db74">&#34;Kerberos Login&#34;</span>  
+</span></span><span style="display:flex;"><span>  KrbMethodNegotiate <span style="color:#66d9ef">On</span>  
+</span></span><span style="display:flex;"><span>  KrbMethodK5Passwd <span style="color:#66d9ef">On</span>  
+</span></span><span style="display:flex;"><span>  KrbAuthRealms EXAMPLE.COM  
+</span></span><span style="display:flex;"><span>  Krb5KeyTab <span style="color:#e6db74">/etc/httpd/conf/httpd.keytab</span>  
+</span></span><span style="display:flex;"><span>  require valid-user  
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/Location&gt;</span>
+</span></span></code></pre></div></li>
+<li>
+<p>Securely copy over the keytab for this server from the Windows server where it was generated using <code>ktpass.exe</code> earlier. SFTP or SCP are good candidates. Once the file has been copied over, rename it and place it in the right location, as specified in the configuration entered above.</p>
+</li>
+<li>
+<p>Change the owner of the keytab to the Apache user (typically &ldquo;apache&rdquo; or &ldquo;web&rdquo;), and set the permissions to 400 (readable only by the Apache user).</p>
+</li>
+<li>
+<p>Restart the Apache HTTP daemon for the configuration changes to be read and applied.</p>
+</li>
+</ol>
+<p>Assuming that your Apache server is accessible as <code>web.example.com</code>, you should now be able to fire up a recent version of Internet Explorer (one that supports Integrated Windows Authentication) and navigate to the &ldquo;<a href="http://web.example.com/secured%22">http://web.example.com/secured&quot;</a> URL and gain access, <em>without getting prompted for authentication.</em> A quick review of the access logs (typically <code>/var/log/httpd/access_log</code>) shows that you are being authenticated as the user that is currently logged on to Windows. (If the browser you are using doesn&rsquo;t support the transparent authentication, you&rsquo;ll get prompted for a username and password, in which case you can enter your Active Directory username and password and gain access to the site.)</p>
+<p>If this doesn&rsquo;t work, go back and double-check your <code>ktpass.exe</code> command (noting that the case of the Kerberos principal specified by the &ldquo;-princ&rdquo; option is important, as it is case-sensitive). Also check the permissions on the keytab after it has been copied over to the Linux server; it must be readable by the Apache user (and should not be readable by any other users or groups). Finally, try unchecking the &ldquo;Enable Integrated Windows Authentication&rdquo; option in Internet Explorer, restarting IE, re-checking that box, and then restarting IE again. (Don&rsquo;t ask why, but it does seem to help in some instances.)</p>
+<p>Finally, note that a few other browsers also support the transparent authentication. I personally tested <a href="http://www.apple.com/macosx/features/safari/">Safari</a> and <a href="http://hmdt-web.net/shiira/en">Shiira</a> on Mac OS X, and both worked fine (after I had obtained a Kerberos ticket, either using the Kerberos application or <code>kinit</code> from a shell prompt). <a href="http://www.caminobrowser.org/">Camino</a> didn&rsquo;t work, which is a bummer. I haven&rsquo;t tested <a href="http://www.mozilla.com/firefox/">Firefox</a> yet, but I&rsquo;m told that Firefox also works, although an extension may be required.</p>
+<p>Extensive credit goes to Achim Grolms for his <a href="http://www.grolmsnet.de/kerbtut/">walk-through of using mod_auth_kerb with a Windows KDC</a>.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apache">Apache</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/web">Web</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux, Active Directory, and Windows Server 2003 R2 Revisited</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/08/10/delicious-api-change/">del.icio.us API Change</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f10%2fkerberos-based-sso-with-apache%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f10%2fkerberos-based-sso-with-apache%2f&text=Kerberos-Based%20SSO%20with%20Apache" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f08%2f10%2fkerberos-based-sso-with-apache%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux, Active Directory, and Windows Server 2003 R2 Revisited</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/05/16/follow-up-on-esx-server-integration/">Follow Up on ESX Server Integration</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

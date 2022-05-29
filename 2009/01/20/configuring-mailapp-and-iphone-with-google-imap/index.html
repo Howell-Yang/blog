@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Configuring Mail.app and iPhone with Google IMAP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Configuring Mail.app and iPhone with Google IMAP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Configuring Mail.app and iPhone with Google IMAP - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/01/20/configuring-mailapp-and-iphone-with-google-imap/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Configuring Mail.app and iPhone with Google IMAP</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;682 words (estimated 4 minutes to read)</span>
+  <p>So I recently moved almost all of my personal e-mail domains over to Google Apps. A couple of people have asked, &ldquo;Why?&rdquo; My answer is simple: it&rsquo;s easier. The e-mail functionality of my current hosting provider is lacking in a couple of key areas:</p>
+<ul>
+<li>
+<p>Rather than using the emerging standard of having e-mail clients connect to TCP port 587 (Submission) to send e-mail, they used a very non-standard practice of using TCP port 26. (Now if we could just get older versions of Outlook to not have a severely broken SMTP client implementation, we&rsquo;d be in good shape. But that&rsquo;s another story&hellip;)</p>
+</li>
+<li>
+<p>Despite paying for a dedicated IP address, I can&rsquo;t use my own SSL certificates for e-mail (only web traffic). The SSL certificates the hosting provider supplies for e-mail are self-signed certificates and cause fits to clients such as Outlook and Mac&rsquo;s Mail.app.</p>
+</li>
+</ul>
+<p>By using Gmail and/or Google Apps, on the other hand, these issues go away. However, Google&rsquo;s particular implementation of IMAP&mdash;and its use of labels vs. folders&mdash;presents a few challenges of its own. During the process of migrating over to Google Apps and using IMAP for all my e-mail accounts, I have finally settled into a configuration that works well for managing e-mail from my MacBook Pro as well as my iPhone.</p>
+<p>The secret lies in a Google Labs feature called &ldquo;Advanced IMAP Controls.&rdquo; By enabling Advanced IMAP Controls, Google Apps and Gmail users can control which labels will appear in Mail.app (and other IMAP clients, like the iPhone). Here&rsquo;s the configuration I&rsquo;ve been using that seems to work really well:</p>
+<ol>
+<li>
+<p>In the Mail section of Google Apps or Gmail, go to Settings, then Labs, and enable &ldquo;Advanced IMAP Controls&rdquo;. Google Apps users may need their administrator (if they don&rsquo;t have administrative permissions) to allow Labs features to appear. I&rsquo;m not sure about Gmail users; I think Labs features are available by default for Gmail users.</p>
+</li>
+<li>
+<p>Once Advanced IMAP Controls are enabled, go to the &ldquo;Labels&rdquo; section of Settings and <strong>uncheck</strong> all labels except Drafts, Spam, and Trash.</p>
+</li>
+<li>
+<p>When setting up Mail.app, configure the IMAP account as normal, but set the Inbox Path Prefix to &ldquo;[Gmail]&rdquo;. When you take the account online, a heading for that account should appear in the Mail.app sidebar with three folders under it: Drafts, Trash, and Spam.</p>
+</li>
+<li>
+<p>Select the Drafts folder/label under the account&rsquo;s heading, then go to Mailbox &gt; Use This Mailbox For &gt; Drafts. This should cause the Drafts folder under the account&rsquo;s heading to disappear. Instead, it will be listed under the unified Drafts folder under the Mailboxes heading.</p>
+</li>
+<li>
+<p>Repeat the process for the Trash folder/label (use for Trash) and Spam folder/label (use for Junk). After performing this process on all three folders/labels, the account heading should disappear from Mail.app&rsquo;s sidebar.</p>
+</li>
+<li>
+<p>In the Mailbox Behaviors section of the account settings (Under Mail &gt; Preferences) check the box for &ldquo;Store draft messages on the server.&rdquo;</p>
+</li>
+<li>
+<p>In the same area, also check &ldquo;Store junk messages on the server&rdquo; and specify a time period for how long to keep junk messages.</p>
+</li>
+<li>
+<p>Finally, check the box for &ldquo;Move deleted messages to the Trash mailbox&rdquo; and &ldquo;Store deleted messages on the server&rdquo; and specify how long to keep deleted messages.</p>
+</li>
+</ol>
+<p>To keep mail synchronized between the IMAP server, Mail.app on my laptop, and Mail on my iPhone, I replicated these settings on my iPhone, selecting the Drafts folder/label as the &ldquo;Drafts Mailbox&rdquo; and the Trash folder/label as the &ldquo;Deleted Mailbox&rdquo; in the Advanced area of Mail settings.</p>
+<p>With this configuration, reading a message on my laptop will mark it as read on my iPhone, and deleting a message on my iPhone will make it appear in the Trash mailbox on my laptop. In addition, I can continue to leverage Gmail/Google App&rsquo;s web interface when necessary as well, and see draft messages and deleted messages in the appropriate areas there, too. All in all, it works very well for me.</p>
+<p>If you have other tips for enhancing the use of Gmail/Google Apps with Mail.app and your iPhone, I&rsquo;d love to hear them in the comments below. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iphone">iPhone</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ios">iOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/01/15/svmotion-syntax/">SVMotion Syntax</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/01/22/vmm-beta-15-is-here/">VMM Beta 1.5 is Here</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f20%2fconfiguring-mailapp-and-iphone-with-google-imap%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f20%2fconfiguring-mailapp-and-iphone-with-google-imap%2f&text=Configuring%20Mail.app%20and%20iPhone%20with%20Google%20IMAP" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f01%2f20%2fconfiguring-mailapp-and-iphone-with-google-imap%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/11/20/omnigraffle-and-omnifocus-updates/">OmniGraffle and OmniFocus Updates</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2008/12/23/a-closer-look-at-ical-caldav-google-calendar-and-the-iphone/">A Closer Look at iCal, CalDAV, Google Calendar, and the iPhone</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2008/12/12/google-apps-doesnt-play-nice-with-mailtags/">Google Apps Doesn&#39;t Play Nice with MailTags</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

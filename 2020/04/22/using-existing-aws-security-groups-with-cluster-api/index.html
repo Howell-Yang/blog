@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Existing AWS Security Groups with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Existing AWS Security Groups with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Existing AWS Security Groups with Cluster API - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/04/22/using-existing-aws-security-groups-with-cluster-api/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Existing AWS Security Groups with Cluster API</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;631 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;ve written before about <a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">how to use existing AWS infrastructure with Cluster API (CAPI)</a>, and I was recently able to help update <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/master/docs/existing-aws-infrastructure.md">the upstream documentation</a> on this topic (the upstream documentation should now be considered the authoritative source). These instructions are perfect for placing a Kubernetes cluster into an existing VPC and associated subnets, but there&rsquo;s one scenario that they don&rsquo;t yet address: what if you need your CAPI workload cluster to be able to communicate with other EC2 instances or other AWS services in the same VPC? In this post, I&rsquo;ll show you the CAPI functionality that makes this possible.</p>
+<p>One of the primary mechanisms used in AWS to control communications among instances and services is the <em>security group.</em> I won&rsquo;t go into any detail on security groups, but <a href="https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html">this page from AWS</a> provides an explanation and overview of how security groups work.</p>
+<p>In order to make a CAPI workload cluster able to communicate with other EC2 instances or other AWS services, you&rsquo;ll need to somehow use security groups to make that happen. There are at least two&mdash;possibly more&mdash;ways to accomplish this:</p>
+<ol>
+<li><em>You could add other instances or services to the CAPI-created security groups.</em> The Cluster API Provider for AWS (CAPA) automatically creates a set of security groups for use by the EC2 instances and ELBs created when it bootstraps a workload cluster. You could manually add other instances or services into these groups to enable connectivity, but this approach is fraught with problems (not the least of which is coupling two things with different lifecycles).</li>
+<li><em>You could add CAPI-created instances to pre-existing security groups.</em> This solves the problem of splitting the lifecycle of the workload cluster from the connectivity needs of workloads outside the cluster, but how do you have this happen automatically when new workload clusters are provisioned? Any sort of manual operations just won&rsquo;t scale, and will become a potential source of failures and outages down the road.</li>
+</ol>
+<p>Fortunately for us and for this blog post, CAPI provides an answer to how to take approach #2 above and automate it. In reviewing <a href="https://godoc.org/github.com/kubernetes-sigs/cluster-api-provider-aws/api/v1alpha3">the API specification for CAPA v1alpha3</a>, I noted that the AWSMachine spec includes a way to reference additional AWS security groups.</p>
+<p>For example, in an AWSMachine spec, you could do the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">additionalSecurityGroups</span>:
+</span></span><span style="display:flex;"><span>    - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">&lt;existing_security_group_id&gt;</span>
+</span></span></code></pre></div><p>This will result in an EC2 instance that <em>joins the specified existing security group</em> in addition to the CAPI-managed security groups. This provides exactly the behavior you&rsquo;re seeking&mdash;the ability to have CAPI-managed resources automatically join an existing security group to enable access to other EC2 instances or AWS services.</p>
+<p>Since the AWSMachine spec is also used by an AWSMachineTemplate, and since AWSMachineTemplates are used by both MachineDeployments (to manage groups of worker nodes) and <a href="https://godoc.org/sigs.k8s.io/cluster-api/controlplane/kubeadm/api/v1alpha3">the new v1alpha3 KubeadmControlPlane</a> (to manage multiple control plane nodes as a single entity), this means we can leverage the same functionality for AWSMachineTemplates:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">additionalSecurityGroups</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">&lt;existing_security_group_id&gt;</span>
+</span></span></code></pre></div><p>Adding the snippet of YAML above to an AWSMachineTemplate definition would end up with multiple EC2 instances&mdash;managed by either a MachineDeployment or the KubeadmControlPlane&mdash;that automatically join the specified, pre-existing security group. To specify multiple security groups, you just add more entries under <code>additionalSecurityGroups</code>.</p>
+<p>Therefore, if you have an existing VPC (and all associated subnets, gateways, routes, etc.) that you want to use with CAPI, <em>and</em> there are existing EC2 instances and other workloads in that VPC that need to communicate with the CAPI workload cluster, using this <code>additionalSecurityGroups</code> field in your AWSMachine and AWSMachineTemplate definitions can accomplish exactly what you need.</p>
+<p>I hope this information is useful. If you have questions, I would love to try to help. Find <a href="https://twitter.com/scott_lowe">me on Twitter</a>, or hit me up on <a href="https://kubernetes.slack.com">the Kubernetes Slack instance</a>. I&rsquo;m also open to hear any feedback or suggestions for improvement. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/04/12/using-paw-to-launch-ec2-instance-via-api-calls/">Using Paw to Launch an EC2 Instance via API Calls</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/04/23/using-external-etcd-with-cluster-api-on-aws/">Using External Etcd with Cluster API on AWS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f22%2fusing-existing-aws-security-groups-with-cluster-api%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f22%2fusing-existing-aws-security-groups-with-cluster-api%2f&text=Using%20Existing%20AWS%20Security%20Groups%20with%20Cluster%20API" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f22%2fusing-existing-aws-security-groups-with-cluster-api%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2020/03/26/ha-kubernetes-clusters-on-aws-with-cluster-api-v1alpha3/">HA Kubernetes Clusters on AWS with Cluster API v1alpha3</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2020/03/20/technology-short-take-125/">Technology Short Take 125</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

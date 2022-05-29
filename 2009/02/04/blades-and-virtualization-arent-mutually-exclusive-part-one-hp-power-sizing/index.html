@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/02/04/blades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Blades and Virtualization Aren&#39;t Mutually Exclusive: Part One, HP Power Sizing</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;742 words (estimated 4 minutes to read)</span>
+  <p><em>By Aaron Delp</em></p>
+<p>I have seen a lot of misconceptions recently when it comes to blade servers and virtualization. Many seem to think that if you are using blades you can&rsquo;t use virtualization. Most recently, someone shared <a href="http://get-admin.com/blog/?p=392">this article</a> with me. I couldn&rsquo;t disagree with this viewpoint more. I will explore the reasons why in the next few articles. For today&rsquo;s article, I will present a foundation for comparison and I will use this basis going forward.</p>
+<p>Bar none, the most common misconception surrounding blades is power consumption. Many think that blade servers consume more power than their rack mount counterparts. If you have ever seen a fully loaded blade chassis, I can see why many come to this conclusion. They are loud, move a ton of air, and require larger power circuits that many people don&rsquo;t normally see in a data center (&ldquo;Look at the size of that plug! This thing must be a power monster!&rdquo;).</p>
+<p>But, if you are installing more than a few servers, this isn&rsquo;t true. First, let me present my basis for comparison and the tools I will be using. I have chosen a middle of the road VMware ESX configuration that is supported by both IBM and HP. Here is the configuration:</p>
+<ul>
+<li>2 x E5450 3.0 Ghz quad-core processors</li>
+<li>32 GB memory in an 8 x 4GB configuration</li>
+<li>2 on-board NICs</li>
+<li>Additional quad NIC card for a total of 6 NICs</li>
+<li>Dual FC card (assuming FC SAN storage for VMs but it could easily be NFS or iSCSI as well)</li>
+<li>2 x 146GB, 10k SAS drives (except the IBM HS21XM blades which only support one HD)</li>
+</ul>
+<p>Here are the links to both the IBM and HP Power Tools:</p>
+<ul>
+<li>
+<p><a href="http://www-03.ibm.com/systems/bladecenter/resources/powerconfig/index.html">IBM System x and Blade Power Tool</a></p>
+</li>
+<li>
+<p><a href="http://h71019.www7.hp.com/ActiveAnswers/cache/347628-0-0-0-121.html">HP BladeSystem Power Tool</a></p>
+</li>
+<li>
+<p><a href="http://h30099.www3.hp.com/configurator/powercalcs.asp">HP Proliant Server Power Tool</a></p>
+</li>
+</ul>
+<p>Using the above configuration and tools yielded an IBM System x 3550 and HP DL360 in the rack mount category and the IBM HS21XM and HP BL460c in the blade category. I will cover HP today and IBM in a subsequent article.</p>
+<p>If you plug the above specs into the DL360 tool and multiply by sixteen to equal the number of servers in a chassis you will get the results below. I then ran the HP Blade System Sizer tool and filled the chassis with an equivalent spec. In order to properly populate the blades with the expansion cards, I was required to also add all of the switches. I added six VirtualConnect Ethernet and two VirtualConnect FC switches. I also assumed the max number of power supplies and fans in all calculations. Both tools assume 100% utilization of all resources.</p>
+<table>
+<thead>
+<tr>
+<th>16 Servers (Full Chassis)</th>
+<th>HP DL360</th>
+<th>HP BL460c</th>
+<th>Savings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total system power input (W)</td>
+<td>7904</td>
+<td>6021</td>
+<td>23.82%</td>
+</tr>
+<tr>
+<td>Total system input current (A)</td>
+<td>40</td>
+<td>29.54</td>
+<td>26.15%</td>
+</tr>
+<tr>
+<td>Total system BTU/hr</td>
+<td>26976</td>
+<td>20530</td>
+<td>23.89%</td>
+</tr>
+<tr>
+<td>Total system VA rating</td>
+<td>8432</td>
+<td>6143</td>
+<td>27.14%</td>
+</tr>
+</tbody>
+</table>
+<p>As you can see, even with the addition of eight switches in the blade chassis, you still save in excess of 20% in all areas. Pretty impressive no matter what you are running on the blades!</p>
+<p>What if the chassis isn&rsquo;t entirely full? How about 8 blades?</p>
+<table>
+<thead>
+<tr>
+<th>8 Servers (Half Chassis)</th>
+<th>HP DL360</th>
+<th>HP BL460c</th>
+<th>Savings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total system power input (W)</td>
+<td>3952</td>
+<td>3396</td>
+<td>14.06%</td>
+</tr>
+<tr>
+<td>Total system input current (A)</td>
+<td>20</td>
+<td>16.66</td>
+<td>16.70%</td>
+</tr>
+<tr>
+<td>Total system BTU/hr</td>
+<td>13488</td>
+<td>11579</td>
+<td>14.15%</td>
+</tr>
+<tr>
+<td>Total system VA rating</td>
+<td>4216</td>
+<td>3465</td>
+<td>17.81%</td>
+</tr>
+</tbody>
+</table>
+<p>Still very nice results! Again, even with the switches in the blade chassis, you are saving in excess of 14% in all areas. The main story to tell here is this: the more populated the chassis, the more savings you will see.</p>
+<p>What is the breakeven point from a power perspective with HP blades? The answer currently is five. Any less and the overhead of the chassis becomes a factor. Here are the numbers with five blades.</p>
+<table>
+<thead>
+<tr>
+<th>5 Servers (Half Chassis)</th>
+<th>HP DL360</th>
+<th>HP BL460c</th>
+<th>Savings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Total system power input (W)</td>
+<td>2470</td>
+<td>2361</td>
+<td>4.41%</td>
+</tr>
+<tr>
+<td>Total system input current (A)</td>
+<td>12.5</td>
+<td>11.58</td>
+<td>7.36%</td>
+</tr>
+<tr>
+<td>Total system BTU/hr</td>
+<td>8430</td>
+<td>8052</td>
+<td>4.48%</td>
+</tr>
+<tr>
+<td>Total system VA rating</td>
+<td>2635</td>
+<td>2409</td>
+<td>8.57%</td>
+</tr>
+</tbody>
+</table>
+<p>In conclusion, as with any consolidation project, there is a breakeven point with blade servers where the initial investment begins to pay off. Also, like virtualization, the more blades (or virtual machines) you add to the environment, the more savings you will see.</p>
+<p>Thank you for your time! I will be covering the IBM comparison in the near future, so check back regularly.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bladevrack">bladevrack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ibm">IBM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/guestpost">GuestPost</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/02/04/welcome-aaron/">Welcome, Aaron!</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/02/07/virtualization-short-take-26-hyper-v-edition/">Virtualization Short Take #26, Hyper-V Edition</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f04%2fblades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f04%2fblades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing%2f&text=Blades%20and%20Virtualization%20Aren%27t%20Mutually%20Exclusive%3a%20Part%20One%2c%20HP%20Power%20Sizing" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f02%2f04%2fblades-and-virtualization-arent-mutually-exclusive-part-one-hp-power-sizing%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/11/03/p2v-with-ibm-blades/">P2V With IBM Blades</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2008/09/05/vmware-esx-nic-teaming-and-vlan-trunking-with-hp-procurve/">VMware ESX, NIC Teaming, and VLAN Trunking with HP ProCurve</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2008/08/28/virtualization-short-take-17/">Virtualization Short Take #17</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

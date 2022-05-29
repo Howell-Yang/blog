@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: Other Users&#39; Stories, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: Other Users&#39; Stories, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: Other Users&#39; Stories, Part 3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/03/10/linux-migration-other-users-stories-pt3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: Other Users&#39; Stories, Part 3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;719 words (estimated 4 minutes to read)</span>
+  <p>Over the last few weeks, I&rsquo;ve been sharing various users&rsquo; stories about their own personal migration to Linux. If you&rsquo;ve not read them already, I encourage you to check out <a href="/2017/03/01/linux-migration-other-users-stories-pt1/">part 1</a> and <a href="/2017/03/06/linux-migration-other-users-stories-pt2/">part 2</a> of this multi-part series to get a feel for why folks are deciding to switch to Linux, the challenges they faced, and the benefits they&rsquo;ve seen (so far). Obviously, Linux isn&rsquo;t the right fit for everyone, but at least by sharing these stories you&rsquo;ll get a better feel whether it&rsquo;s a right fit for you.</p>
+<p>This is Brian Hall&rsquo;s story of switching to Linux.</p>
+<p><strong>Q: Why did you switch to Linux?</strong></p>
+<p>I&rsquo;ve been an OS X user since 2010. It was a huge change coming from Windows, especially since the laptop I bought had the first SSD that I&rsquo;ve had in my primary machine. I didn&rsquo;t think it could get any better. Over the years that feeling started to wear off.</p>
+<p>OS X started to feel bloated. It seemed like OS X started to get in my way more and more often. I ended up formatting and reinstalling OSX like I used to do with Windows (maybe not quite as often). Setting up Mail to work the way I wanted it to was a pain. I had apps for everything. That started out fun, but when it came to getting my data out of each of them it was a tough job.</p>
+<p>I wanted this to change. It seemed like getting my personal machine set up the way I was using it was entirely too complex. If my machine were to die, it would take me weeks to get it back to the way it was. I wanted to simplify as much as possible.</p>
+<p><strong>Q: Which Linux distribution are you using?</strong></p>
+<p>I switched from OS X to Ubuntu GNOME.</p>
+<p><strong>Q: What sort of challenges did you face, and how did you work around these challenges?</strong></p>
+<p>For me, there was one challenge. When I first started &ldquo;evaluating&rdquo; (evaluating is probably too formal a word) different distributions I was trying to make them work exactly like my Mac, which always failed. I realized that I changed just about everything about the way I was working when I switched from Windows to OS X. I had to be willing to change the way I was doing some things for me to complete the move. I don&rsquo;t think this is a requirement for everyone who wants to switch to Linux. The point is this: you will likely need to be willing to change a few things.</p>
+<p>My first step in my migration was to simplify the way I was working on my Mac first, then try to move again. This made everything a lot easier. I did away with a lot of the dedicated apps I was using (writing apps, GTD apps, note taking, etc). I started using open data formats for everything I was doing (basically, plain text for everything). I started using web-based email and the web interfaces for Twitter, cross-platform apps, etc.</p>
+<p><strong>Q: What benefits have you seen after the switch?</strong></p>
+<p>Since I made the switch I can say for certain that my setup has gotten a lot simpler. It would take me less than a day to rebuild my machine to the point where it is now. Another benefit has been performance (I reduced how much my machine swaps by reducing the &ldquo;vm.swappiness&rdquo; value to 10 in <code>/etc/sysctl.conf</code>). I still own a MacBook, which is the only laptop I have, and I never thought I would say that it felt slow. I spend a <strong>lot</strong> less time tweaking my machine to behave the way I want.</p>
+<p><strong>Q: Is there anything else you&rsquo;d like readers to know?</strong></p>
+<p>I still own and use an iPhone and an Apple TV, so I haven&rsquo;t completely removed Apple from my computing landscape. I mention this because a lot of people think that it has to be &ldquo;all or none,&rdquo; and I haven&rsquo;t found that to be the case.</p>
+<p>I also wanted to mention a couple of very useful applications I&rsquo;ve found along the way:</p>
+<ul>
+<li><a href="https://enpass.io">Enpass</a> is a great password manager (a reasonable replacement for 1Password on OS X, if you use that)</li>
+<li><a href="https://www.odrive.com">odrive</a> is a good cloud storage client that supports Linux</li>
+<li><a href="https://github.com/firehol/netdata">Netdata</a> is awesome for local performance monitoring</li>
+</ul>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/03/07/linux-migration-creating-presentations/">The Linux Migration: Creating Presentations</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f10%2flinux-migration-other-users-stories-pt3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f10%2flinux-migration-other-users-stories-pt3%2f&text=The%20Linux%20Migration%3a%20Other%20Users%27%20Stories%2c%20Part%203" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f03%2f10%2flinux-migration-other-users-stories-pt3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/01/19/plain-text-productivity-redux/">Plain Text Productivity Redux</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/01/19/technology-short-take-76/">Technology Short Take #76</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2016/12/21/opening-webloc-files-ubuntu/">Opening Web Internet Location Files on Ubuntu</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

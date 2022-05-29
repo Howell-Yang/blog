@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 120 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 120 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 120 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/11/22/technology-short-take-120/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 120</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1029 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #120! Wow&hellip;hard to believe it&rsquo;s been almost two months since the last Tech Short Take. Sorry about that! Hopefully something I share here in this Tech Short Take is useful or helpful to readers. On to the content!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>In the event you are seeking more information on NAT hole punching, <a href="https://bford.info/pub/net/p2pnat/">here you go</a>. You&rsquo;re welcome. (I found this link in the serverless mullet architectures post, see the &ldquo;Operating Systems/Applications&rdquo; section below.)</li>
+<li>Mohamad Alhussein shares <a href="http://www.vexpertconsultancy.com/2019/10/nsx-t-filter-route-re-destribution-of-transit-subnets-to-upstream-router/">how to filter the transit subnets from being redistributed from NSX-T to upstream physical routers</a> (by transit subnets Alhussein is referring to the NSX-managed subnets used to connect logical routers together).</li>
+<li>Ahmet Alp Balkan shows <a href="https://ahmet.im/blog/kubectl-man-in-the-middle/">how to use <code>mitmproxy</code> to inspect <code>kubectl</code> traffic</a>. I&rsquo;m now inspired to go do this myself and see what knowledge I can gain.</li>
+<li>Corey Quinn proclaims &ldquo;BGP is a hot mess&rdquo;; Ivan Pepelnjak <a href="https://blog.ipspace.net/2019/11/facts-and-fiction-bgp-is-hot-mess.html">lays out some facts</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>I don&rsquo;t have anything to share this time around, but I&rsquo;ll stay alert for content to include future Tech Short Takes.</p>
+<h2 id="security">Security</h2>
+<ul>
+<li><a href="https://www.cyberciti.biz/faq/how-to-set-up-a-firewall-using-firewalld-on-centos-8/">This basic introduction</a> of <code>firewalld</code> as found in CentOS 8 may prove useful to some readers. I&rsquo;ve been messing around with <code>firewalld</code> ever since I switched to Fedora on the desktop, and found this article to be one of the better articles I&rsquo;ve seen on the topic.</li>
+<li>Omer Levi Hevroni discusses <a href="https://learnk8s.io/kubernetes-secrets-in-git/">how to keep your Kubernetes secrets secure in Git</a>.</li>
+<li>Roman Sachenko discusses <a href="https://hackernoon.com/severe-truth-about-serverless-security-and-ways-to-mitigate-major-risks-cd3i3x6f">some serverless security risks and how to mitigate them</a>.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Marc Boorshtein has <a href="https://www.linuxjournal.com/content/kubernetes-identity-management-authentication">a write-up on authentication in Kubernetes identity management</a>. I&rsquo;m glad the author explicitly called out that Kubernetes doesn&rsquo;t directly connect to any kind of user store; this seems to be a point of confusion for new Kubernetes users with whom I&rsquo;ve spoken.</li>
+<li>Yan Cui with Lumigo <a href="https://lumigo.io/blog/you-are-wrong-about-serverless-vendor-lock-in/">tackles the concept of serverless vendor lock-in</a>. I have to say, I agree with a lot of the statements Cui makes regarding lock-in, coupling, risk, and the role of data in lock-in. Much of what&rsquo;s said in this article applies to <em>all</em> forms of &ldquo;lock-in,&rdquo; to be honest.</li>
+<li>I&rsquo;m glad I read <a href="https://www.mgasch.com/post/k8sevents/">this article</a> from Michael Gasch. I understand why it&rsquo;s titled the way it is, but the title does not do the <em>excellent</em> content justice. If you&rsquo;re seeking to deepen your understanding of the Kubernetes architecture, I can heartily recommend this article. (Not to mention there&rsquo;s a great set of links at the end with even more information.)</li>
+<li>Jack Lindamood writes about how he <a href="https://medium.com/@cep21/after-using-both-i-regretted-switching-from-terraform-to-cloudformation-8a6b043ad97a">regrets switching from CloudFormation to Terraform</a>, and shares lessons learned&mdash;both good and bad&mdash;about each of these two options for infrastructure as code.</li>
+<li>I love <a href="https://www.honeycomb.io/blog/treading-in-haunted-graveyards/">this article</a> by Liz Fong-Jones. The sentence from which the title is taken captures it all: &ldquo;Even the experts on the team were afraid to touch our Terraform configs, treating them like a haunted graveyard in which to seldom tread.&rdquo; The idea of using CI for infrastructure as code is something that&rsquo;s really been on my mind for the last few weeks, and so I&rsquo;m glad I came across this article with lessons learned from the Honeycomb team.</li>
+<li>Ryan Matteson provides some very useful information on <a href="https://prefetch.net/blog/2019/10/16/the-beginners-guide-to-creating-kubernetes-manifests/">creating Kubernetes manifests</a>. The &ldquo;TL;DR&rdquo; is that <code>kubectl explain</code> is one of your best friends.</li>
+<li><a href="https://www.alibabacloud.com/blog/how-does-alibaba-ensure-the-performance-of-system-components-in-a-10000-node-kubernetes-cluster_595469">This article by Alibaba Cloud</a> on how they scaled Kubernetes to 10,000 nodes has some useful information in it. It&rsquo;s extremely unlikely that any of the steps this team took would be needed by other organizations, but the information shared does help illuminate some of the inner workings of Kubernetes&mdash;and knowing more about Kubernetes can be helpful to anyone supporting or implementing it.</li>
+<li>I enjoyed this article on <a href="https://lethain.com//fault-domains/">describing fault domains</a> by Will Larson. In fact, I spent several hours a couple months ago playing around with <code>dot</code> to visually describe fault domains.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Tim Wagner <a href="https://read.acloud.guru/https-medium-com-timawagner-serverless-mullet-architectures-212487bc75c">discusses</a> <em>serverless mullet architectures.</em> Yes, you read that correctly&mdash;mullet as in &ldquo;business in the front, party in the back&rdquo;, but applied to serverless application use cases. It&rsquo;s an interesting read. (And I also learned that mullet applies to house architectures, too!)</li>
+<li>The <a href="https://kubernetes.io/blog/2019/08/30/announcing-etcd-3-4/">3.4 release of etcd was announced</a> back at the end of August. This release improves stability and has some important fixes, including an important one related to <code>kube-apiserver</code> (see the last section of the post).</li>
+<li>Stefan Prodan&rsquo;s DZone article on <a href="https://dzone.com/articles/developing-applications-on-multitenant-clusters-wi">developing applications on multi-tenant clusters with Flux and Kustomize</a> is a pretty comprehensive article, but I almost feel like it tries to tackle too much in one article. I think I&rsquo;d prefer to see multiple, smaller (and more focused) articles. If I can find some articles like this, I&rsquo;ll be sure to include them in future Tech Short Takes.</li>
+<li>William Lam shares how he stays sane with Slack by <a href="https://www.virtuallyghetto.com/2019/10/automate-disabling-channel-here-notifications-using-private-slack-api.html">automating the disabling of notifications using a private Slack API</a>. That&rsquo;s useful.</li>
+<li>Steve Sloka shares <a href="https://projectcontour.io/kindly-running-contour/">how to run Contour on <code>kind</code></a> (Kubernetes in Docker).</li>
+<li>Graham Barker shares <a href="https://virtualg.uk/setting-up-a-dns-server-with-photonos/">how to set up a simple <code>unbound</code> DNS server on PhotonOS</a> (as he points out, a good replacement for an expensive Windows Server instance).</li>
+<li>I love <a href="https://www.inkandswitch.com/local-first.html">this treatise on local-first software</a>. This resonates with me on so many levels.</li>
+<li>This is <a href="https://rosettacode.org/wiki/Rosetta_Code">a cool site</a>.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time! If you happen to find something you think other readers would find useful, send it my way and I&rsquo;ll see about including it in a future Tech Short Take.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Anthony Spiteri explains how to <a href="https://anthonyspiteri.net/using-variable-maps-to-dynamically-deploy-vsphere-vms-with-terraform/">use variable maps to deploy vSphere VMs with Terraform</a>.</li>
+<li>Ben Armstrong shares a PowerShell script that <a href="https://american-boffin.com/2019/05/30/powershell-hack-finding-vms-with-missing-vhds/">finds Hyper-V VMs with missing virtual disks</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>I&rsquo;ll put this here, since it&rsquo;s most closely aligned to career: Gustavo Franco and Matt Brown, both Customer Reliability Engineers with Google, <a href="https://cloudblog.withgoogle.com/products/devops-sre/how-sre-teams-are-organized-and-how-to-get-started/">discuss potential SRE team organization</a>. I could see this article being helpful for organizations&mdash;or individuals&mdash;who are starting down the SRE path.</li>
+<li>So long, Datanauts! It turns out <a href="https://packetpushers.net/podcast/datanauts-173-goodnight-datanauts/">the show is ending</a>, and Nick Korte takes some time to write <a href="http://blog.thenetworknerd.com/2019/10/25/a-tribute-to-datanauts/">a tribute to Datanauts</a>.</li>
+</ul>
+<p>That&rsquo;s all for now; I&rsquo;ll have more links and articles in the next Tech Short Take. Feel free to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a> to share any feedback you may have on this or other content here on the site. Thanks for reading!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/terraform">Terraform</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/11/21/kubecon-2019-day-3-event-summary/">KubeCon 2019 Day 3 and Event Summary</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/12/06/technology-short-take-121/">Technology Short Take 121</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f22%2ftechnology-short-take-120%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f22%2ftechnology-short-take-120%2f&text=Technology%20Short%20Take%20120" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f22%2ftechnology-short-take-120%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/03/01/technology-short-take-111/">Technology Short Take 111</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2017/12/08/technology-short-take-91/">Technology Short Take 91</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

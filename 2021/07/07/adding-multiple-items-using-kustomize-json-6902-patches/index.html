@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Adding Multiple Items Using Kustomize JSON 6902 Patches - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Adding Multiple Items Using Kustomize JSON 6902 Patches - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Adding Multiple Items Using Kustomize JSON 6902 Patches - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/07/07/adding-multiple-items-using-kustomize-json-6902-patches/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Adding Multiple Items Using Kustomize JSON 6902 Patches</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;686 words (estimated 4 minutes to read)</span>
+  <p>Recently, I needed to deploy a <a href="https://kubernetes.io">Kubernetes</a> cluster via <a href="https://cluster-api.sigs.k8s.io">Cluster API (CAPI)</a> into a pre-existing AWS VPC. As I outlined in <a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">this post</a> from September 2019, this entails modifying the CAPI manifest to include the VPC ID and any associated subnet IDs, as well as <a href="/2020/04/22/using-existing-aws-security-groups-with-cluster-api/">referencing existing security groups</a> where needed. I knew that I could use <a href="https://kustomize.sigs.k8s.io/">the <code>kustomize</code> tool</a> to make these changes in a declarative way, as I&rsquo;d explored <a href="/2019/11/12/using-kustomize-with-cluster-api-manifests/">using <code>kustomize</code> with Cluster API manifests</a> some time ago. This time, though, I needed to add a list of items, not just modify an existing value. In this post, I&rsquo;ll show you how I used a JSON 6902 patch with <code>kustomize</code> to add a list of items to a CAPI manifest.</p>
+<p>By the way, if you&rsquo;re not familiar with <code>kustomize</code>, you may find <a href="/2019/09/13/an-introduction-to-kustomize/">my introduction to <code>kustomize</code> post</a> to be helpful. Also, for those readers who are unfamiliar with JSON 6902 patches, <a href="https://datatracker.ietf.org/doc/html/rfc6902/">the associated RFC</a> is useful, as is <a href="http://jsonpatch.com/">this site</a>.</p>
+<p>In this particular case, the addition of the VPC ID and the subnet IDs were easily handled with a strategic merge patch that referenced the AWSCluster object. More challenging, though, was the reference to the existing security groups that I needed to add (necessary in order to use my existing SSH bastion infrastructure to reach CAPI-instantiated instances). In hindsight, I suppose I <em>could</em> have written a single strategic merge patch to do the same thing, but I went down the JSON 6902 patch route (and learned something along the way).</p>
+<p>Here&rsquo;s a snippet of what the final (rendered) YAML needed to look like (taken from an AWSMachineTemplate object in the CAPI manifest, the security group IDs are obviously fake):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">additionalSecurityGroups</span>:
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">sg-01234567890123456</span>
+</span></span><span style="display:flex;"><span>        - <span style="color:#f92672">id</span>: <span style="color:#ae81ff">sg-abcdef0123456789a</span>
+</span></span></code></pre></div><p>The knowledge I was missing to make this work was how to correctly format the JSON 6902 patch such that it would add a list of items when rendered using <code>kustomize</code>. The <a href="http://jsonpatch.com/">jsonpatch.com</a> site gave me the hint I needed&mdash;it just needed to be formatted like a JSON list. (It&rsquo;s so obvious to me now, but I guess lots of things seem obvious after we learn them, right?)</p>
+<p>Here&rsquo;s a JSON 6902 patch that would create the YAML I was seeking:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span>[
+</span></span><span style="display:flex;"><span>  { <span style="color:#f92672">&#34;op&#34;</span>: <span style="color:#e6db74">&#34;add&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;/spec/template/spec/additionalSecurityGroups&#34;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&#34;value&#34;</span>: [
+</span></span><span style="display:flex;"><span>        { <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#e6db74">&#34;sg-01234567890123456&#34;</span> },
+</span></span><span style="display:flex;"><span>        { <span style="color:#f92672">&#34;id&#34;</span>: <span style="color:#e6db74">&#34;sg-abcdef0123456789a&#34;</span> }
+</span></span><span style="display:flex;"><span>    ]
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>]
+</span></span></code></pre></div><p>The second useful piece to glean from this is something that I also mentioned in <a href="/2019/11/12/using-kustomize-with-cluster-api-manifests/">the post on using <code>kustomize</code> with CAPI</a>, and that&rsquo;s the use of a regular expression (regex) in the <code>kustomization.yaml</code> file to control where this JSON 6902 patch is applied. As outlined in <a href="/2020/04/22/using-existing-aws-security-groups-with-cluster-api/">the previous post on using existing AWS security groups with CAPI</a>, the <code>additionalSecurityGroups</code> field can be added to an AWSMachineTemplate&mdash;this is exactly what I wanted so that both my MachineDeployments <em>and</em> my KubeadmControlPlane would pick up the change. So how do I get one patch to apply to multiple objects? With a regex, of course!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">patchesJson6902</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">path</span>: <span style="color:#ae81ff">securitygroups.json</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">target</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">group</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSMachineTemplate</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#34;.*&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">version</span>: <span style="color:#ae81ff">v1alpha3</span>
+</span></span></code></pre></div><p>The use of the <code>.*</code> regex for the <code>name</code> field means that <code>kustomize</code> will apply the referenced JSON 6902 patch to all objects that match the specified API group, kind, and API version. This is an extremely useful way to apply patches, and it&rsquo;s not limited to JSON 6902 patches (which is why I said earlier I could have written a strategic merge patch instead).</p>
+<p>Once I had the JSON 6902 patch file in place and the necessary changes to the <code>kustomization.yaml</code> file made, running <code>kustomize build .</code> created <em>exactly</em> the YAML I needed. Once I&rsquo;d verified the correctness of the <code>kustomize build</code> ouptut, a quick <code>kustomize build . | kubectl apply -f -</code> set the creation of my workload cluster in action.</p>
+<p>I hope this information proves useful to someone. If you have questions, or if you spot a mistake I&rsquo;ve made in this post, feel free to reach out. I&rsquo;m always open to constructive feedback. You can contact <a href="https://twitter.com/scott_lowe">me on Twitter</a> (DMs are open) or hit me up on <a href="https://kubernetes.slack.com">the Kubernetes Slack</a>. I&rsquo;d love to hear from you.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kustomize">Kustomize</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/06/28/using-wireguard-on-mac-via-cli/">Using WireGuard on macOS via the CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/07/16/technology-short-take-142/">Technology Short Take 142</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f07%2f07%2fadding-multiple-items-using-kustomize-json-6902-patches%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f07%2f07%2fadding-multiple-items-using-kustomize-json-6902-patches%2f&text=Adding%20Multiple%20Items%20Using%20Kustomize%20JSON%206902%20Patches" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f07%2f07%2fadding-multiple-items-using-kustomize-json-6902-patches%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/03/19/adding-a-machinehealthcheck-with-kustomize/">Adding a MachineHealthCheck using Kustomize</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2020/03/17/kustomize-transformer-configuration-cluster-api-v1alpha3/">Kustomize Transformer Configurations for Cluster API v1alpha3</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2020/03/13/configuring-kustomize-transformers-for-cluster-api/">Configuring Kustomize Transformers for Cluster API</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

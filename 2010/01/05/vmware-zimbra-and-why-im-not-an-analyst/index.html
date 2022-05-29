@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware, Zimbra, and Why I&#39;m Not an Analyst - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware, Zimbra, and Why I&#39;m Not an Analyst - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware, Zimbra, and Why I&#39;m Not an Analyst - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/01/05/vmware-zimbra-and-why-im-not-an-analyst/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware, Zimbra, and Why I&#39;m Not an Analyst</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;491 words (estimated 3 minutes to read)</span>
+  <p>The rumors are swirling that VMware is going to buy Zimbra, an open source e-mail platform currently owned by Yahoo. You&rsquo;ve probably all read the various news articles about the rumors and the events leading up to the rumored acquisition, so I won&rsquo;t bother you with them again.</p>
+<p>Yesterday on Twitter, I mentioned that the Zimbra acquisition didn&rsquo;t quite make sense to me. I wasn&rsquo;t the only one; several others mentioned it, too. That sparked a great discussion with Chris Wolf of the Burton Group (really sharp guy, by the way). His comments caused me to look at the purported acquisition in a different light where it starts to make a bit more sense. The discussion reminded me why I&rsquo;m not an analyst: sometimes I don&rsquo;t take a broad enough view. (It&rsquo;s something I&rsquo;ll work on improving.)</p>
+<p>Most people look at the Zimbra acquisition (assuming that the rumor is accurate and it really does happen) and immediately recognize the intent to compete against Microsoft Exchange. However, if you look at the Zimbra acquisition strictly from the perspective of competing against Microsoft Exchange in the market <em>as it currently exists</em>, you&rsquo;ll quickly come to the same conclusion that I did: it doesn&rsquo;t make sense. Get real: lots of companies have tried before and failed. I believe that If VMware were to use Zimbra to compete against Exchange in the traditional corporate messaging market, where Exchange mopped up very worthy competitors like Lotus Notes, VMware would end up a failure like so many others before them. As Chris Wolf <a href="http://twitter.com/cswolf/status/7378279370">pointed out</a> on Twitter, the integration between Exchange and the Microsoft applications is just too great to take them head-on.</p>
+<p>However, what if you consider that the market is shifting? There is a greater move toward private clouds running scalable, web-based applications. There is an inclination toward workloads that can run outside of an organization&rsquo;s data center. There is a shift toward virtual desktops. There is desire and interest in embracing the idea of cloud computing&mdash;however you choose to define that&mdash;across organizations of many different shapes and sizes. In the light of these market factors, now the Zimbra acquisition starts to make more sense. Yes, VMware will compete against Microsoft with Zimbra, but not using today&rsquo;s architectures and today&rsquo;s paradigms. As Chris put it in a <a href="http://twitter.com/cswolf/status/7379207232">Twitter post</a> yesterday (emphasis mine):</p>
+<blockquote>
+<p>@TonyWilburn @scott_lowe - IMO vmware has to <strong>redefine the traditional app stack</strong> for long term survival; email has to be part of it</p>
+</blockquote>
+<p>In the light of this line of thinking, the acquisition begins to make a bit more sense (again, assuming that it&rsquo;s actually going to happen). Although VMware has different leadership, and it&rsquo;s a different market, I do feel that VMware would not be successful taking on Microsoft Exchange without redefining how e-mail platforms&mdash;as a key part of the overall application stack&mdash;can be provisioned, deployed, and managed in conjunction with VMware&rsquo;s broader private cloud/public cloud strategy.</p>
+<p>So what do you think?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/exchange">Exchange</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/01/04/vote-early-but-dont-vote-often/">Vote Early (But Don&#39;t Vote Often)</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/01/07/virtualization-short-take-33/">Virtualization Short Take #33</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f05%2fvmware-zimbra-and-why-im-not-an-analyst%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f05%2fvmware-zimbra-and-why-im-not-an-analyst%2f&text=VMware%2c%20Zimbra%2c%20and%20Why%20I%27m%20Not%20an%20Analyst" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f05%2fvmware-zimbra-and-why-im-not-an-analyst%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/03/03/virtualization-short-take-3/">Virtualization Short Take #3</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/12/09/vmware-vsphere-4-administration-instant-reference-now-available/">VMware vSphere 4 Administration Instant Reference Now Available</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2009/11/18/virtualization-short-take-31/">Virtualization Short Take #31</a> <span class="post-date-list">189 May 181818</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

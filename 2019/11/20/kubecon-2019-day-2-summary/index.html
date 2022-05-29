@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>KubeCon 2019 Day 2 Summary - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="KubeCon 2019 Day 2 Summary - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="KubeCon 2019 Day 2 Summary - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/11/20/kubecon-2019-day-2-summary/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">KubeCon 2019 Day 2 Summary</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;416 words (estimated 2 minutes to read)</span>
+  <h2 id="keynotes">Keynotes</h2>
+<p>This morning&rsquo;s keynotes were, in my opinion, better than yesterday&rsquo;s morning keynotes. (I missed the closing keynotes yesterday due to customer meetings and calls.) Only a couple of keynotes really stuck out. Vicki Cheung provided some useful suggestions for tools that are helping to &ldquo;close the gap&rdquo; on user experience, and there was an interesting (but a bit overly long) session with a live demo on running a 5G mobile core on Kubernetes.</p>
+<h2 id="running-large-scale-stateful-workloads">Running Large-Scale Stateful Workloads</h2>
+<p>Due to some power outages at the conference venue resulting from rain in San Diego, the <a href="https://prometheus.io/">Prometheus</a> session I had planned to attend got moved to a different time. As a result, I sat in this session by Lyft instead. The topic was about running large-scale stateful workloads, but the content was really about a custom solution Lyft built (called <a href="https://github.com/lyft/flyte">Flyte</a>) that leveraged CRDs and custom controllers to help manage stateful workloads. While it&rsquo;s awesome that companies like Lyft can extend Kubernetes to address their specific needs, this session isn&rsquo;t helpful to more &ldquo;ordinary&rdquo; companies that are trying to figure out how to run their stateful workloads on Kubernetes. I&rsquo;d really like the CNCF and the conference committee to try to promote talks that are more applicable to the general audience instead of these &ldquo;Look what we built!&rdquo; sessions.</p>
+<h2 id="leveling-up-your-cd-unlocking-progressive-delivery-on-kubernetes">Leveling Up your CD: Unlocking Progressive Delivery on Kubernetes</h2>
+<p>This was a useful session covering <a href="https://argoproj.github.io/">Argo</a> and some functionality being added to Argo to support what&rsquo;s being called <em>progressive delivery</em>. Progressive delivery is defined by them as continuous delivery with some fine-grained controls over the blast radius, and the presenters demonstrated new features in Argo that provide fine-grained control over rollouts and the use of canary deployments (they showed a feature whereby Prometheus metrics can be used to determine the validity of a canary deployment and roll it back if unsuccessful). Argo was already on my &ldquo;list of things to dig into,&rdquo; but now I think it&rsquo;s moved up a few spots on that list.</p>
+<p>I had on my schedule to attend a talk on <a href="https://github.com/Shopify/krane">Krane</a>, but the room moved from what was on my schedule (I don&rsquo;t know if this is related to the power outages in other areas of the conference venue or what). After realizing this and wandering around trying to find the room, I realized I&rsquo;d missed too much of the session so gave up.</p>
+<p>That&rsquo;s it for day 2. Tune in tomorrow for a recap on day 3, the final day of the event.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubecon2019">KubeCon2019</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/11/19/kubecon-2019-day-1-summary/">KubeCon 2019 Day 1 Summary</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/11/21/kubecon-2019-day-3-event-summary/">KubeCon 2019 Day 3 and Event Summary</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f20%2fkubecon-2019-day-2-summary%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f20%2fkubecon-2019-day-2-summary%2f&text=KubeCon%202019%20Day%202%20Summary" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f11%2f20%2fkubecon-2019-day-2-summary%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/11/19/kubecon-2019-day-1-summary/">KubeCon 2019 Day 1 Summary</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2019/11/12/using-kustomize-with-cluster-api-manifests/">Using Kustomize with Cluster API Manifests</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Cloud Computing Interview with Dave Malcolm, CTO of Surgient - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Cloud Computing Interview with Dave Malcolm, CTO of Surgient - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Cloud Computing Interview with Dave Malcolm, CTO of Surgient - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/09/cloud-computing-interview-with-dave-malcom-cto-of-surgient/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Cloud Computing Interview with Dave Malcolm, CTO of Surgient</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/interview">Interview</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1142 words (estimated 6 minutes to read)</span>
+  <p>I recently had the pleasure of conducting an e-mail interview with Surgient&rsquo;s Chief Technology Officer, Dave Malcolm. I&rsquo;ve reprinted the question and answer session here. Enjoy!</p>
+<h2 id="the-interview">The Interview</h2>
+<p><strong><em>Scott Lowe (SL): The term &ldquo;cloud computing&rdquo; is used in a variety of different ways to describe a variety of different things. How would you define cloud computing?</em></strong></p>
+<p>Dave Malcolm (DM): I believe cloud computing is defined as a pool of abstracted, highly scalable, and managed computing infrastructure capable of running end customer applications and is billed or charged by consumption. Therefore I think it has five primary attributes:</p>
+<ol>
+<li>
+<p><em>Dynamic Computing Infrastructure -</em> This is the foundation for the cloud and should include a standardized, scalable, secure, and highly available physical infrastructure. It also must be virtualized with server, storage, and network virtualization.</p>
+</li>
+<li>
+<p><em>Self-Service Based Usage Model -</em> Interacting with the cloud requires a self-service oriented approach. Self-service clouds must be intuitive and easy to use. The capabilities should include the ability to upload, build, deploy, schedule, manage, and report on the users&rsquo; business services, so they can manage the lifecycle of those services.</p>
+</li>
+<li>
+<p><em>Minimally or Self Managed -</em> In order for an IT team or a service provider to efficiently provide a cloud for its constituents, they must leverage a technology platform that is self managed. Best-of-breed clouds enable self-management via software automation, leveraging the following capabilities:</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>Deployment and recovery of business services and their computing resources (in the cloud)</p>
+</li>
+<li>
+<p>Self-service scheduling and reserving resource capacity</p>
+</li>
+<li>
+<p>Configuration, management, and reporting of resource capacity allocations</p>
+</li>
+<li>
+<p>Access control and policies for usage of resources by users</p>
+</li>
+</ul>
+<ol start="4">
+<li>
+<p><em>Business Service Centric -</em> Cloud computing must be business service centric. This is in stark contrast to more traditional system- or server-centric models. In most cases, users of the cloud generally want to run some business service or application for a specific, timely purpose; they don&rsquo;t want to get bogged down in the system and network administration of the environment. They would prefer to quickly and easily access a dedicated instance of an entire business service&mdash;such as selecting to instantiate an ERP system in the cloud (even if it is a complex multi-server networked environment).</p>
+</li>
+<li>
+<p><em>Consumption Based Charging or Billing -</em> Finally, cloud computing is usage-driven. Consumers pay for only what resources they use and therefore are charged or billed on a consumption-based model. Cloud computing platforms must provide mechanisms to capture usage information that enables chargeback reporting and/or integration with billing systems.</p>
+</li>
+</ol>
+<p><strong><em>SL: Based on your definition of cloud computing above, what would you say are the top three challenges to organizations seeking to embrace the cloud computing model?</em></strong></p>
+<p>DM: The top challenges are that most organizations face when organizations seek to embrace the cloud computing model is the lack of expertise, tools, and processes to implement, operate, and maintain a cloud computing infrastructure.</p>
+<p><em>Tools</em> - Most data center automation tools are not equipped to automate and manage resources in a dynamic computing infrastructure&mdash;they don&rsquo;t comprehend the transient nature of servers and the associated networks and storage elements. They don&rsquo;t have the ability to automate capacity management, enable self-service, or the instantiation of entire business services.</p>
+<p><em>Expertise</em> - Most organizations do not have deep expertise in understanding the requirements of a cloud computing environment, the deep knowledge of the technologies required, and experience with those technologies. Most organizations are learning and have mastered some pieces of the puzzle, but no one I have come across has a comprehensive understanding and the full expertise necessary.</p>
+<p><em>Processes and best Practices</em> - Most IT processes and best practices have been built around static physical infrastructures and the business services that have been implemented on them. Many of these processes breakdown when business services are instantiated, recovered, moved, and re-instantiated on the same resources within the cloud infrastructure. These processes were not designed to work in such a high change environment.</p>
+<p><strong><em>SL: Some industry experts have stated that interoperability and well-defined standards are the key to broad adoption of cloud computing. Do you agree or disagree? If you disagree, why?</em></strong></p>
+<p>DM: I don&rsquo;t really agree. I think that typically most disruptive technologies are adopted organically by innovators and early adopters. These risk takers try to solve real business problems with the technology and help it gain a level of maturity so that others, less risk oriented, can adopt the technology as well as enable it to gain mainstream market adoption. Cloud computing isn&rsquo;t any different. I believe via this organic adoption that <em>de facto</em> standards emerge from those technology leaders and can become successful solutions. I don&rsquo;t see many examples of broad industry standards driving technology adoption from the tops down.</p>
+<p>However, I do believe standards play a role. Once the technology has reached a level of mainstream adoption, there are usually several market leading vendors that emerge and have significant market penetration, but are likely not interoperable. This is where standards can provide the most value in bringing interoperability to solutions that have been successfully implemented and are delivering value. Trying to introduce standards too early in the market maturation process rarely gains any traction.</p>
+<p><strong><em>SL: What would you identify as the most promising developments around cloud computing today? You are welcome to include your own companys products, solutions, or technologies, but try to include other companies as well.</em></strong></p>
+<p>DM: First off, I don&rsquo;t think we would be having this cloud computing discussion without the invention of x86 server virtualization pioneered by VMware. This is the key to the whole cloud computing dynamic infrastructure. Microsoft and Xen have followed with alternative hypervisors, so server virtualization is key.</p>
+<p>Storage virtualization is also a significant component of the solution, so EMC, NetApp, HP, Hitachi, and others who are leaders in the storage market have also provided a significant element to the infrastructure.</p>
+<p>Amazon should get credit for pioneering the idea of cloud computing with EC2, but this is far from addressing the needs of enterprise organizations and the complex business services they require to run their business on.</p>
+<p>Finally, I have to mention Surgient. We also have been a pioneer in virtualization automation solutions, hosted clouds, as well as on-site private cloud implementations for many years. Our patented Surgient Virtual Automation Platform enables a virtualized infrastructure to become a cloud for enterprise uses via our automation capabilities&mdash;dynamic infrastructure orchestration, Policy-Driven Self-Service, self management, business service centric approach, and capacity usage management and reporting. In addition, because we work with 70 of the world&rsquo;s largest companies, with some of most complex computing needs, we have deep expertise in the implementation, operation, and maintenance of cloud computing infrastructures, and have developed significant process and best practices as well.</p>
+<h2 id="closing">Closing</h2>
+<p>If any other virtualization or cloud computing executives wish to conduct a similar interview, feel free to contact me.</p>
+<p>Readers, if this is something you like, let me know by speaking up in the comments. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cloud">Cloud</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/08/3010-a-multistore-primer/">3010: A MultiStore Primer</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/15/question-to-my-readers/">Question to my Readers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f09%2fcloud-computing-interview-with-dave-malcom-cto-of-surgient%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f09%2fcloud-computing-interview-with-dave-malcom-cto-of-surgient%2f&text=Cloud%20Computing%20Interview%20with%20Dave%20Malcolm%2c%20CTO%20of%20Surgient" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f09%2fcloud-computing-interview-with-dave-malcom-cto-of-surgient%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/04/08/3010-a-multistore-primer/">3010: A MultiStore Primer</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2009/04/07/attending-the-next-generation-vmware-launch-event/">Attending the Next-Generation VMware Launch Event</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2009/04/06/double-take-softwares-workload-optimization-suite/">Double-Take Software&#39;s Workload Optimization Suite</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

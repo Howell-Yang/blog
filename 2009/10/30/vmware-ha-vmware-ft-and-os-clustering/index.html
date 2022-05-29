@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMware HA, VMware FT, and OS Clustering - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMware HA, VMware FT, and OS Clustering - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMware HA, VMware FT, and OS Clustering - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/10/30/vmware-ha-vmware-ft-and-os-clustering/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMware HA, VMware FT, and OS Clustering</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;492 words (estimated 3 minutes to read)</span>
+  <p>With the release of VMware vSphere 4 earlier this year, VMware officially introduced VMware Fault Tolerance (VMware FT), a new mechanism for providing extremely high levels of availability to virtual machine workloads. As I&rsquo;ve talked with customers, I&rsquo;ve noticed a growing number of customers who are unaware of the differences between the types of high availability that VMware provides (in the form of VMware HA and VMware FT) and operating system-level clustering (such as Microsoft Windows Failover Clustering). Although both types of technology are intended to increase availability and reduce downtime, they are very different and offer different types of functionality.</p>
+<p>Consider these points:</p>
+<ul>
+<li>
+<p>While using VMware HA will protect you against the failure of an ESX/ESXi host, VMware HA won&rsquo;t&mdash;by default&mdash;protect you against the failure of the guest operating system. An OS-level cluster, on the other hand, does protect against the failure of the guest operating system. <strong><em>+1 for OS-level clustering.</em></strong></p>
+</li>
+<li>
+<p>VMware clusters that are using VMware HA can choose to use VM Failure Monitoring and gain some level of protection against the failure of the guest operating system, but you still won&rsquo;t get protection of the specific application within the guest operating system, unlike an OS-level cluster. <strong><em>+1 for OS-level clustering.</em></strong></p>
+</li>
+<li>
+<p>These same arguments also apply to VMware FT. VMware FT won&rsquo;t protect you against guest operating system failure&mdash;a crash of the OS in the primary VM generally means a crash of the OS in the secondary VM at the same time&mdash;and it won&rsquo;t protect you against application failure. <strong><em>+1 for OS-level clustering.</em></strong></p>
+</li>
+<li>
+<p>You can&rsquo;t failover between systems using VMware HA or VMware FT in order to perform OS upgrades or apply OS patches. <strong><em>+1 for OS-level clustering.</em></strong></p>
+</li>
+<li>
+<p>Similarly, you can&rsquo;t failover between systems using VMware HA or VMware FT in order to do a rolling upgrade of the application itself. <strong><em>+1 for OS-level clustering.</em></strong></p>
+</li>
+<li>
+<p>Of course, the VMware technologies do have some advantages. Both VMware HA and VMware FT are far, far simpler to enable and configure than an OS-level cluster. <strong><em>+1 for VMware.</em></strong></p>
+</li>
+<li>
+<p>Both VMware HA and VMware FT don&rsquo;t require any application support in order to protect the VM and its workloads. <strong><em>+1 for VMware.</em></strong></p>
+</li>
+<li>
+<p>Neither VMware HA nor VMware FT require that you license specific editions of the guest operating system or application in order to be able to use their benefits. <strong><em>+1 for VMware.</em></strong></p>
+</li>
+<li>
+<p>VMware HA can produce higher levels of utilization within a host cluster than using OS-level clustering. <strong><em>+1 for VMware.</em></strong></p>
+</li>
+<li>
+<p>VMware FT can provide higher levels of availability than what is available in most OS-level clustering solutions today. <strong><em>+1 for VMware.</em></strong></p>
+</li>
+</ul>
+<p>This is not a knock against any of technologies listed&mdash;VMware HA, VMware FT, or OS-level clustering&mdash;but rather an exploration of their advantages, disadvantages, similarities, and differences. Hopefully, this will help readers who might not be as familiar with these products make a more informed decision about which technologies to deploy in their data center. (Hint: You&rsquo;ll probably need all of them.)</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareft">VMwareFT</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/10/25/setting-up-fcoe-on-a-nexus-5000/">Setting Up FCoE on a Nexus 5000</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/10/31/vm-hardware-version-7-and-windows-server-2008/">VM Hardware Version 7 and Windows Server 2008</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f30%2fvmware-ha-vmware-ft-and-os-clustering%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f30%2fvmware-ha-vmware-ft-and-os-clustering%2f&text=VMware%20HA%2c%20VMware%20FT%2c%20and%20OS%20Clustering" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f10%2f30%2fvmware-ha-vmware-ft-and-os-clustering%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/10/01/virtualization-short-take-30/">Virtualization Short Take #30</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/07/05/another-reason-not-to-use-pvscsi-or-vmxnet3/">Another Reason Not to Use PVSCSI or VMXNET3</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

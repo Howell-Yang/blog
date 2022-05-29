@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Exploring Cluster API v1alpha2 Manifests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Exploring Cluster API v1alpha2 Manifests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Exploring Cluster API v1alpha2 Manifests - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/09/26/exploring-cluster-api-v1alpha2-manifests/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Exploring Cluster API v1alpha2 Manifests</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;857 words (estimated 5 minutes to read)</span>
+  <p>The <a href="https://kubernetes.io/">Kubernetes</a> community recently released v1alpha2 of Cluster API (a monumental effort, congrats to everyone involved!), and with it comes a number of fairly significant changes. Aside from <a href="https://cluster-api.sigs.k8s.io/user/quick-start.html">the new Quick Start</a>, there isn&rsquo;t (yet) a great deal of documentation on Cluster API (hereafter just called CAPI) v1alpha2, so in this post I&rsquo;d like to explore the structure of the CAPI v1alpha2 YAML manifests, along with links back to the files that define the fields for the manifests. I&rsquo;ll focus on the CAPI provider for AWS (affectionately known as CAPA).</p>
+<p>As a general note, any links back to the source code on GitHub will reference the v0.2.1 release for CAPI and the v0.4.0 release for CAPA, which are the first v1apha2 releases for these projects.</p>
+<p>Let&rsquo;s start with looking at a YAML manifest to define a Cluster in CAPA (this is taken directly from the Quick Start):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Cluster</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">clusterNetwork</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">pods</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">cidrBlocks</span>: [<span style="color:#e6db74">&#34;192.168.0.0/16&#34;</span>]
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">infrastructureRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSCluster</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSCluster</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">region</span>: <span style="color:#ae81ff">us-east-1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sshKeyName</span>: <span style="color:#ae81ff">default</span>
+</span></span></code></pre></div><p>Right off the bat, I&rsquo;ll draw your attention to the separate Cluster and AWSCluster objects. CAPI v1alpha2 begins to more cleanly separate CAPI from the various CAPI providers (CAPA, in this case) by providing &ldquo;generic&rdquo; CAPI objects that map to provider-specific objects (like AWSCluster for CAPA). The link between the two is found in the <code>infrastructureRef</code> field, which references the AWSCluster object by name.</p>
+<p>Astute readers may also note that the API group has changed from &ldquo;cluster.k8s.io&rdquo; in v1alpha1 to &ldquo;cluster.x-k8s.io&rdquo; in v1alpha2.</p>
+<p>More details on these objects and the fields users can use to define them can be found in <a href="https://github.com/kubernetes-sigs/cluster-api/blob/v0.2.1/api/v1alpha2/cluster_types.go"><code>cluster_types.go</code></a> (for the CAPI Cluster object) and in <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/v0.4.0/api/v1alpha2/awscluster_types.go"><code>awscluster_types.go</code></a> (for the AWSCluster object in CAPA). In particular, look for the definitions of the <code>ClusterSpec</code> and <code>AWSClusterSpec</code> structs (data structures).</p>
+<p>The <code>AWSClusterSpec</code> struct still supports a <code>NetworkSpec</code> struct that users can use to influence how CAPA instantiates infrastructure, so the techniques I outlined <a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">here</a> (for creating highly available clusters) and <a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">here</a> (for consuming pre-existing AWS infrastructure) should still work with v1alpha2. (I&rsquo;ll update this post once I&rsquo;ve had a chance to fully test.)</p>
+<p>Now, let&rsquo;s look at some v1alpha2 YAML for creating a node in a cluster (in CAPI parlance, a node in a cluster is a Machine; as before, this example is taken from the Quick Start):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Machine</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-controlplane-0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cluster.x-k8s.io/control-plane</span>: <span style="color:#e6db74">&#34;true&#34;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cluster.x-k8s.io/cluster-name</span>: <span style="color:#e6db74">&#34;capi-quickstart&#34;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">version</span>: <span style="color:#ae81ff">v1.15.3</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">bootstrap</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">configRef</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">bootstrap.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">KubeadmConfig</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-controlplane-0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">infrastructureRef</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSMachine</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-controlplane-0</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSMachine</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-controlplane-0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">instanceType</span>: <span style="color:#ae81ff">t3.large</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">iamInstanceProfile</span>: <span style="color:#e6db74">&#34;controllers.cluster-api-provider-aws.sigs.k8s.io&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sshKeyName</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">bootstrap.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">KubeadmConfig</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-controlplane-0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">initConfiguration</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#39;{{ ds.meta_data.hostname }}&#39;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">clusterConfiguration</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">apiServer</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">extraArgs</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">controllerManager</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">extraArgs</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>In addition to the split into a &ldquo;generic&rdquo; CAPI object (a Machine) and a provider-specific object (an AWSMachine) like shown above with Cluster and AWSCluster, for nodes the CAPI v1alpha2 release also brings a KubeadmConfig object. This new object allows users to customize the <code>kubeadm</code> configuration used by CAPI to configure nodes when bringing up the cluster. In this particular example, the KubeadmConfig object is enabling the AWS cloud provider (see <a href="/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">this post</a> for more details and links to other related posts regarding the AWS cloud provider).</p>
+<p>Readers interested in perusing the Golang code that defines these objects can find them in <a href="https://github.com/kubernetes-sigs/cluster-api/blob/v0.2.1/api/v1alpha2/machine_types.go"><code>machine_types.go</code></a> (for the CAPI Machine object) and in <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/v0.4.0/api/v1alpha2/awsmachine_types.go"><code>awsmachine_types.go</code></a> (for the CAPA AWSMachine object). For the KubeadmConfig object, the <code>kubeadm</code> bootstrap provider has its own repository <a href="https://github.com/kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm/">here</a>, and the struct is defined in <a href="https://github.com/kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm/blob/v0.1.0/api/v1alpha2/kubeadmbootstrapconfig_types.go"><code>kubeadmbootstrapconfig_types.go</code></a>.</p>
+<p>Finally, CAPI v1alpha2 still supports the MachineDeployment object (like a Deployment object is for Pods, but for Machines), but the underlying provider-specific objects are a bit different. Here&rsquo;s the example from the Quick Start:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">MachineDeployment</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-worker</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cluster.x-k8s.io/cluster-name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Labels beyond this point are for example purposes,</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># feel free to add more or change with something more meaningful.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Sync these values with spec.selector.matchLabels and spec.template.metadata.labels.</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">nodepool</span>: <span style="color:#ae81ff">nodepool-0</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">replicas</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">selector</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">matchLabels</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">cluster.x-k8s.io/cluster-name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">nodepool</span>: <span style="color:#ae81ff">nodepool-0</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">labels</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">cluster.x-k8s.io/cluster-name</span>: <span style="color:#ae81ff">capi-quickstart</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">nodepool</span>: <span style="color:#ae81ff">nodepool-0</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">version</span>: <span style="color:#ae81ff">v1.15.3</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">bootstrap</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">configRef</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-worker</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">bootstrap.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">KubeadmConfigTemplate</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">infrastructureRef</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-worker</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSMachineTemplate</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">infrastructure.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">AWSMachineTemplate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-worker</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">instanceType</span>: <span style="color:#ae81ff">t3.large</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">iamInstanceProfile</span>: <span style="color:#e6db74">&#34;nodes.cluster-api-provider-aws.sigs.k8s.io&#34;</span>
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">sshKeyName</span>: <span style="color:#ae81ff">default</span>
+</span></span><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">bootstrap.cluster.x-k8s.io/v1alpha2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">KubeadmConfigTemplate</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">metadata</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">capi-quickstart-worker</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">template</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">spec</span>:
+</span></span><span style="display:flex;"><span>      <span style="color:#f92672">joinConfiguration</span>:
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">name</span>: <span style="color:#e6db74">&#39;{{ ds.meta_data.hostname }}&#39;</span>
+</span></span><span style="display:flex;"><span>          <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>What&rsquo;s new here that wasn&rsquo;t shown in previous examples are the AWSMachineTemplate and KubeadmConfigTemplate objects, which&mdash;as you might suspect&mdash;serve as templates for AWSMachine and KubeadmConfig objects for the individual Machines in the MachineDeployment. These template structures are defined in <a href="https://github.com/kubernetes-sigs/cluster-api/blob/v0.2.1/api/v1alpha2/machinedeployment_types.go"><code>machinedeployment_types.go</code></a> (for the CAPI MachineDeployment object), in <a href="https://github.com/kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm/blob/v0.1.0/api/v1alpha2/kubeadmconfigtemplate_types.go"><code>kubeadmconfigtemplate_types.go</code></a> (for the KubeadmConfigTemplate object), and in <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/blob/v0.4.0/api/v1alpha2/awsmachinetemplate_types.go"><code>awsmachinetemplate_types.go</code></a> (for the CAPA AWSMachineTemplate object).</p>
+<p>I hope this information is useful. There&rsquo;s definitely more CAPI v1alpha2 content planned, and in the meantime feel free to browse <a href="/tags/capi/">all CAPI-tagged articles</a>. If you have questions, comments, or corrections&mdash;we&rsquo;re all human and make mistakes from time to time&mdash;feel free to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a>. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/yaml">YAML</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/09/13/an-introduction-to-kustomize/">An Introduction to Kustomize</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/09/27/technology-short-take-119/">Technology Short Take 119</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f26%2fexploring-cluster-api-v1alpha2-manifests%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f26%2fexploring-cluster-api-v1alpha2-manifests%2f&text=Exploring%20Cluster%20API%20v1alpha2%20Manifests" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f26%2fexploring-cluster-api-v1alpha2-manifests%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">Consuming Pre-Existing AWS Infrastructure with Cluster API</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2019/09/05/highly-available-kubernetes-clusters-on-aws-with-cluster-api/">Highly Available Kubernetes Clusters on AWS with Cluster API</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2019/08/27/bootstrapping-a-kubernetes-cluster-on-aws-with-clusterapi/">Bootstrapping a Kubernetes Cluster on AWS with Cluster API</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

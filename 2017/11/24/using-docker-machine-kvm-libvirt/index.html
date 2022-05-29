@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Docker Machine with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Docker Machine with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Docker Machine with KVM and Libvirt - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/24/using-docker-machine-kvm-libvirt/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Docker Machine with KVM and Libvirt</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;538 words (estimated 3 minutes to read)</span>
+  <p>Docker Machine is, in my opinion, a useful and underrated tool. I&rsquo;ve written before about using Docker Machine with various services/providers; for example, see <a href="/2016/03/22/using-docker-machine-with-aws/">this article on using Docker Machine with AWS</a>, or <a href="/2015/09/24/using-docker-machine-with-openstack/">this article on using Docker Machine with OpenStack</a>. Docker Machine also supports local hypervisors, such as <a href="http://www.vmware.com/products/fusion.html">VMware Fusion</a> or <a href="https://www.virtualbox.org/">VirtualBox</a>. In this post, I&rsquo;ll show you how to use Docker Machine with KVM and Libvirt on a Linux host (I&rsquo;m using <a href="https://getfedora.org/">Fedora</a> 27 as an example).</p>
+<p>Docker Machine ships with a bunch of different providers, but the KVM/Libvirt provider must be obtained separately (you can find it <a href="https://github.com/dhiltgen/docker-machine-kvm">here on GitHub</a>). Download a binary release (make sure it is named <code>docker-machine-driver-kvm</code>), mark it as executable, and place it somewhere in your PATH. Fedora 27 comes with KVM and the Libvirt daemon installed by default (in order to support the Boxes GUI virtualization app), but I found it helpful to also install the client-side tools:</p>
+<pre><code>sudo dnf install libvirt-client
+</code></pre>
+<p>This will make the <code>virsh</code> tool available, which is useful for viewing Libvirt-related resources. Once you have both the KVM/Libvirt driver and the Libvirt client tools installed, you can launch a VM:</p>
+<pre><code>docker-machine create -d kvm --kvm-network &quot;docker-machines&quot; machine1
+</code></pre>
+<p>It appears that, by default, the KVM/Libvirt provider uses a network named &ldquo;docker-machines&rdquo;, hence the need for the <code>--kvm-network</code> flag. (If you omit this flag, the provider will look for the &ldquo;default&rdquo; network, which may or may not exist on your system. It didn&rsquo;t exist on my Fedora laptop. This is where having <code>virsh</code> available is really handy.)</p>
+<p>(Note that if your user account isn&rsquo;t a member of the &ldquo;libvirt&rdquo; group, you&rsquo;ll get prompted for authentication for most every <code>docker-machine</code> command, even just listing machines.)</p>
+<p>There are a few other flags that might be useful as well when creating a Docker-equipped VM with Docker Machine and the KVM/Libvirt driver:</p>
+<ul>
+<li>Use the <code>--kvm-cpu-count</code> parameter to specify the number of virtual CPUs.</li>
+<li>Use the <code>--kvm-memory</code> parameter to control the amount of RAM allocated to the VM.</li>
+<li>Customize the name of the user used to log into the system (the default is &ldquo;docker&rdquo;) by using the <code>--kvm-ssh-user</code> parameter.</li>
+</ul>
+<p>You can view all the parameters by running <code>docker-machine create -d kvm --help</code>.</p>
+<p>Once the VM is up and running, you can use all the standard Docker Machine commands to work with this VM, just like with any other provider:</p>
+<ul>
+<li>Use <code>docker-machine ssh &lt;name&gt;</code> to connect to the VM via SSH.</li>
+<li>Use <code>docker-machine env &lt;name&gt;</code> to show the information needed to connect to the Docker Engine on the VM. (Use <code>eval $(docker-machine env &lt;name&gt;)</code> to load that information into the shell environment.)</li>
+<li>Use <code>docker-machine stop &lt;name&gt;</code> to stop the VM, and <code>docker-machine rm &lt;name&gt;</code> to remove/delete the VM.</li>
+</ul>
+<p>You might be wondering if there&rsquo;s any value in using Docker Machine to run a VM on Linux when you can just run Docker directly on the Linux host. I haven&rsquo;t fully tested the idea yet, but my initial thought is that it would enable users to run various different versions of the Docker Engine (using the <code>--engine-install-url</code> option, as I outlined <a href="/2015/08/04/using-vagrant-docker-machine-together/">here</a>). If you have other ideas where this sort of arrangement might have value, I&rsquo;d love to hear them; <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kvm">KVM</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/23/happy-thanksgiving/">Happy Thanksgiving 2017</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/25/installing-mmd6-on-fedora-27/">Installing MultiMarkdown 6 on Fedora 27</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f24%2fusing-docker-machine-kvm-libvirt%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f24%2fusing-docker-machine-kvm-libvirt%2f&text=Using%20Docker%20Machine%20with%20KVM%20and%20Libvirt" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f24%2fusing-docker-machine-kvm-libvirt%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/08/linux-migration-virtualization-provider/">The Linux Migration: Virtualization Provider</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2017/11/22/installing-older-docker-client-binaries-fedora/">Installing Older Docker Client Binaries on Fedora</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

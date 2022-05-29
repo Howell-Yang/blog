@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Vagrant-Photon OS Bug and Workaround - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Vagrant-Photon OS Bug and Workaround - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Vagrant-Photon OS Bug and Workaround - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/10/20/vagrant-photon-bug-workaround/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Vagrant-Photon OS Bug and Workaround</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;410 words (estimated 2 minutes to read)</span>
+  <p>I recently came across a bug in using <a href="https://vmware.github.io/photon/">VMware Photon OS</a> with <a href="https://www.vagrantup.com/">Vagrant</a>, and so in this post I&rsquo;m going to point out this bug and provide a workaround. The bug is, fortunately, pretty innocuous, and only affects Vagrant environments that configure additional network interfaces to Photon OS VMs. The workaround is equally easy, thankfully.</p>
+<p>First, I&rsquo;ll point out that <a href="https://github.com/mitchellh/vagrant/issues/7808">the fix for this bug</a> has already been pushed to Vagrant, but it hasn&rsquo;t yet (as of this writing) made it into a release. Vagrant 1.8.6 was the latest release of this writing, and it still exhibits the bug.</p>
+<p>There are a number of somewhat-interrelated issues:</p>
+<ol>
+<li>
+<p>First, the &ldquo;vagrant-guests-photon&rdquo; Vagrant plugin (latest version is 1.0.4) is <em>no longer needed.</em> This code has been replaced by code that is distributed as part of Vagrant itself. This wouldn&rsquo;t normally be an issue, except that&hellip;</p>
+</li>
+<li>
+<p>The plugin relies on <code>awk</code>, which is no longer included in recent releases of the Photon OS Vagrant box. I can&rsquo;t tell you exactly when this started, but I can confirm the last couple of releases (1.2.0 and 1.2.1) are definitely affected.</p>
+</li>
+<li>
+<p>Finally, the code which replaces the &ldquo;vagrant-guests-photon&rdquo; plugin (as mentioned above) has a typo that causes an error when additional network interfaces are configured.</p>
+</li>
+</ol>
+<p>The end result of this is that if you try to use Vagrant to spin up a VM based on a recent version of the Photon OS base box, then it will fail if you attempt to configure additional network interfaces (beyond the default NAT interface that Vagrant always configures). You&rsquo;ll either get:</p>
+<ul>
+<li>An <code>awk</code>-related error (if you have the plugin installed)</li>
+<li>An error related to a mistyped parameter to the <code>ifconfig</code> command (if you don&rsquo;t have the plugin installed)</li>
+</ul>
+<p>So what&rsquo;s the fix?</p>
+<ol>
+<li>
+<p>Remove the plugin using <code>vagrant plugin uninstall vagrant-guests-photon</code>.</p>
+</li>
+<li>
+<p>Edit 2 files that are part of Vagrant itself. The files are <code>&lt;v-dir&gt;/embedded/gems/gems/vagrant-&lt;ver&gt;/plugins/guests/photon/cap/configure_networks.rb</code> and <code>&lt;v-dir&gt;/embedded/gems/gems/vagrant-&lt;ver&gt;/test/unit/plugins/guests/photon/cap/configure_networks_test.rb</code>. You&rsquo;ll need to replace <code>&lt;v-dir&gt;</code> with the directory where Vagrant is installed, and <code>&lt;ver&gt;</code> with the version of Vagrant installed on your system. In these two files, replace the one instance of &ldquo;netmast&rdquo; with &ldquo;netmask&rdquo;. (Yes, it&rsquo;s a simple typo.)</p>
+</li>
+</ol>
+<p>Once you&rsquo;ve done these two steps, then you&rsquo;re good to go to use Vagrant to spin up Photon OS VMs with additional network interfaces.</p>
+<p>I&rsquo;ll update this post as soon as the fix rolls into a Vagrant release and this workaround is no longer needed.</p>
+<p><strong>UPDATE 2016-11-19</strong>: This fix is now available in Vagrant 1.8.7.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/photon">Photon</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/10/19/vmworld-emea-2016-day-2-keynote/">VMworld EMEA 2016 Day 2 Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/10/23/managing-aws-infrastructure-ansible/">Managing AWS Infrastructure with Ansible</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f20%2fvagrant-photon-bug-workaround%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f20%2fvagrant-photon-bug-workaround%2f&text=Vagrant-Photon%20OS%20Bug%20and%20Workaround" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f10%2f20%2fvagrant-photon-bug-workaround%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/04/21/running-photon-fusion-vagrant/">Running Photon on Fusion via Vagrant</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2016/10/05/triple-provider-vagrant-environment/">A Triple-Provider Vagrant Environment</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2016/03/21/vagrant-ubuntu-wily-networking-problem/">Vagrant, Ubuntu &#34;Wily Werewolf,&#34; and Networking</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

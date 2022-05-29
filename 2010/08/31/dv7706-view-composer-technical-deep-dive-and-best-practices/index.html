@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>DV7706: View Composer Technical Deep Dive and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="DV7706: View Composer Technical Deep Dive and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="DV7706: View Composer Technical Deep Dive and Best Practices - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/08/31/dv7706-view-composer-technical-deep-dive-and-best-practices/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">DV7706: View Composer Technical Deep Dive and Best Practices</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;996 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of VMworld 2010 session DV7706, titled &ldquo;View Composer Technical Deep Dive and Best Practices,&rdquo; in Moscone West 2004. The presenter(s) are Jeff Whitman and Jim Yanik, both with VMware.</p>
+<p>We start out the session with a quick review of some limitations. View Composer has a limit of eight ESX/ESXi hosts in a cluster. This is a VMFS limit involving the number of hosts that are accessing a read-only file at the same time. I wonder if VAAI hardware-assisted locking will affect this limit. As for the total number of VMs, you are limited by the usual suspects&mdash;HA failover time, vMotion time to put a host in maintenance most, HA limits, etc.</p>
+<p>View Composer is installed as a service on the vCenter Server computer. You can connect View Manager to the View Composer service inside the View Manager configuration dialog box. The presenters do recommend using the fully qualified domain name (FQDN) when configuring the connection between the View Manager and the View Composer service on a vCenter Server instance.</p>
+<p>The start of every linked clone is the parent VM. Follow the usual best practices for building the parent VM as included in the documentation from VMware. I couldn&rsquo;t record any of their recommendations because they didn&rsquo;t leave on the screen long enough.</p>
+<p>The parent VM needs a snapshot before you can create linked clones. Be sure to shut down the VM so that memory state isn&rsquo;t included. View 4.5 has a new checkbox that allows you to show incompatible images; this was added as a way to help administrators troubleshoot potential problems with incorrectly-taken snapshots. (As an example, a snapshot taken while the VM is running would be incompatible.)</p>
+<p>Linked clones can be stored on local or shared storage. You can have multiple linked clones per storage pool, and replica and linked clones can be on the same datastore or different datastores. This is new to View 4.5 and it allows you to store the replica on SSD/EFD for maximum performance but place the linked clone on slower-performing storage. Be aware that this is a potential single point of failure.</p>
+<p>View terminology appears to be changing again; what was once the user data disk is now called the persistent disk. In my opinion, VMware needs to settle into some consistent terminology.</p>
+<p>Some datastore recommendations include using similarly-sized datastores so that View can load balance the linked clones across the datastores (using round robin) fairly evenly. The number of VMs per datastore is really driven by IOPS; best practices run around &ldquo;50-64 or maybe 128&rdquo; (exact verbiage from the presentation).</p>
+<p>Quick definition: A <em>replica</em> consists of a clone of the parent VM plus the selected snapshot. Replicas are thin provisioned. Persistent disks (aka user data disks) are also thin provisioned. View 4.5 also introduces a &ldquo;disposable&rdquo; or temporary disk that allows View 4.5 to destroy the temporary disk and reclaim that space on a regular basis. The presenters think that the temporary disk is destroyed every time the user logs off. How does it handle the Windows swapfile then? Finally, View 4.5 also stored the Windows machine password in a separate &ldquo;internal disk&rdquo; that simplifies the process of refreshing linked clones when they are member of an Active Directory domain.</p>
+<p>The presenter next walks through a comparison of storage utilization both without and with linked clones. It&rsquo;s a comparison that most people have seen multiple times, nothing terribly new or surprising here.</p>
+<p>QuickPrep is included with View Composer, and 4.5 also includes Sysprep. You should use Sysprep only in those instances where you specifically need a new SID; in most cases, having a unique SID isn&rsquo;t as big of a deal as many people suspect that it is. Sysprep is a lot slower than QuickPrep, so be aware. The selection of QuickPrep/Sysprep on a pool is permanent for the life of that pool; you can&rsquo;t switch it later.</p>
+<p>VDMAdmin.exe is a tool provided with View Manager; it was necessary with previous versions of View to attach/detach user data disks. Persistent disks (the equivalent in View 4.5) can be managed directly inside the View Manager GUI. You can also script the interaction with the persistent disks for greater automation.</p>
+<p>The speakers just confirmed, as I already knew, that centralized profile management is not included in VMware View 4.5.</p>
+<p>Some troubleshooting tips:</p>
+<ul>
+<li>
+<p>All machines have same name and hang on customization - typically caused by a missing agent.</p>
+</li>
+<li>
+<p>If customization fails, check the QuickPrep domain setup in View Manager, Also be sure user has permissions to add and remove computers in Active Directory.</p>
+</li>
+<li>
+<p>DNS, DNS, DNS&mdash;name reoslution is critical!</p>
+</li>
+<li>
+<p>Be sure that you have adequate host resources for large refresh or recompose operations.</p>
+</li>
+<li>
+<p>Use View Manager to manipulate View desktops, not vCenter!</p>
+</li>
+<li>
+<p>Don&rsquo;t use static IP addressing in the parent VM.</p>
+</li>
+<li>
+<p>Use SVIConfig to help troubleshoot View database issues.</p>
+</li>
+</ul>
+<p>You can&rsquo;t use Storage vMotion with linked clones; it&rsquo;s not supported.</p>
+<p>What&rsquo;s the best way to handle Patch Tuesday? You can manually apply the patches, test, snapshot, and then recompose. You can also use automatic updates, test, power down and snapshot, and then recompose. Finally, if you are using a third-party agent, remove the agent before snapshotting and recomposing (you don&rsquo;t want the agent included in the linked clones).</p>
+<p>What about antivirus? The traditional method was to install the A/V engine and update definitions only; you would use a recompose to roll out a new engine. You could also <em>not</em> use A/V. Because linked clones are disposable, the impact of not using A/V isn&rsquo;t as great as you might initially think. With vSphere 4.1 you could use vShield Endpoint, which is an extension of the VMsafe APIs that allow the A/V vendors to completely pull their agents out of the guest VMs.</p>
+<p>When planning for business continuity, don&rsquo;t forget to plan for the View Manager database. For DR, be sure to replicate the View Server and install View Composer on the DR vCenter Server.</p>
+<p>That&rsquo;s it!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2010">VMworld2010</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/31/vmworld-2010-keynote-day-2/">VMworld 2010 Keynote, Day 2</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/09/01/ma6580-bridge-the-esxesxi-management-gap-with-vma/">MA6580: Bridge the ESX/ESXi Management Gap with vMA</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f31%2fdv7706-view-composer-technical-deep-dive-and-best-practices%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f31%2fdv7706-view-composer-technical-deep-dive-and-best-practices%2f&text=DV7706%3a%20View%20Composer%20Technical%20Deep%20Dive%20and%20Best%20Practices" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f31%2fdv7706-view-composer-technical-deep-dive-and-best-practices%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/30/vmworld-announcements-day-1/">VMworld Announcements, Day 1</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2010/08/31/vmworld-2010-keynote-day-2/">VMworld 2010 Keynote, Day 2</a> <span class="post-date-list">319 May 313131</span></li><li><a href="/2010/08/30/ta8037-vapps-ovf-and-advanced-vm-templates/">TA8037: vApps, OVF, and Advanced VM Templates</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

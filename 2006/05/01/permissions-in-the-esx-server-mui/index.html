@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Permissions in the ESX Server MUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Permissions in the ESX Server MUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Permissions in the ESX Server MUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/05/01/permissions-in-the-esx-server-mui/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Permissions in the ESX Server MUI</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;383 words (estimated 2 minutes to read)</span>
+  <p>I&rsquo;m reasonably familiar with Linux/Unix permissions, so this isn&rsquo;t really hard to understand for me, but I&rsquo;m going to post this information anyway for those of you that may not be as familiar with Linux/Unix-based permissions and how they affect the <a href="http://www.vmware.com/products/esx/">ESX Server</a> MUI.</p>
+<p>The Linux/Unix permission structure is defined in the following way.  There are three permissions: read, write, and execute. These three permissions may be granted to three entities: user, group, or others. You&rsquo;ll see them listed in the directory listing as &ldquo;rwxr-xr-x&rdquo;; this is decoded in the following way:</p>
+<ul>
+<li>
+<p>The first &ldquo;rwx&rdquo; is for the user (i.e., the owner of the file), and it specifies that the owner has read, write, and execute permissions.</p>
+</li>
+<li>
+<p>The second &ldquo;r-x&rdquo; is for the group assigned to the file, and this specifies that members of the group have read and execute permissions.</p>
+</li>
+<li>
+<p>The third &ldquo;r-x&rdquo; is for others (i.e, everyone who is not the owner and is not in the group), and again states that all others have read and execute permissions.</p>
+</li>
+</ul>
+<p>You&rsquo;ll also see the permissions written in a numeric format, especially when in combination with the chmod command. For example, the &ldquo;rwxr-xr-x&rdquo; permissions described earlier would have a numeric equivalent of 755. This number is calculated as r=4, w=2, x=1, so &ldquo;rwx&rdquo; equals 7, and &ldquo;r-x&rdquo; equals 5.</p>
+<p>How do these permissions affect the VMware MUI? The permissions on the VMware configuration file (the file ending in .vmx) control what operations will be permitted in the MUI. For example, if a user does not have write permissions to the VMX file, then the commands in the MUI change from &ldquo;Configure Hardware&rdquo; to &ldquo;View Hardware&rdquo;. In order to grant someone the permission to modify a virtual machine, their user account must have the appropriate permissions on the VMX file. This can be accomplished by changing the group on the VMX file (say, to something like &ldquo;vmops&rdquo; or &ldquo;vmadmins&rdquo;) and then adding write permissions for the group.</p>
+<p>This would be accomplished using the following commands:</p>
+<pre><code>chown user:vmops vmachine.vmx
+chmod g+w vmachine.vmx
+</code></pre>
+<p>Of course, you would substitute the appropriate names for &ldquo;user&rdquo; and &ldquo;vmops&rdquo;, as appropriate.</p>
+<p>Hopefully, this information will be helpful to those of you that are new to the Linux/Unix platform (upon which the console operating system for VMware ESX Server is based).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/05/01/esx-server-integration-with-active-directory/">ESX Server Integration with Active Directory</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/05/03/opendocument-gets-iso-approval/">OpenDocument Gets ISO Approval</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f01%2fpermissions-in-the-esx-server-mui%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f01%2fpermissions-in-the-esx-server-mui%2f&text=Permissions%20in%20the%20ESX%20Server%20MUI" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f01%2fpermissions-in-the-esx-server-mui%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/04/27/centos-on-esx-server/">CentOS on ESX Server</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/05/01/virtualization-layers/">Virtualization Layers</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

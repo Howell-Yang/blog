@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>CoreOS Continued: Fleet and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="CoreOS Continued: Fleet and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="CoreOS Continued: Fleet and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/08/20/coreos-continued-fleet-and-docker/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">CoreOS Continued: Fleet and Docker</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1712 words (estimated 9 minutes to read)</span>
+  <p>This post is the third in a series of posts on <a href="http://coreos.com/">CoreOS</a>, this time focusing on the use of <a href="https://github.com/coreos/fleet">fleet</a> and <a href="http://docker.com/">Docker</a> to deploy containers across a cluster of systems. This post builds on <a href="/2014/08/01/a-quick-introduction-to-coreos/">my earlier introduction to CoreOS</a> and <a href="/2014/08/18/coreos-continued-etcd/">the subsequent more in-depth look at etcd</a>.</p>
+<p>I&rsquo;m assuming that you&rsquo;re already reasonably familiar with CoreOS, etcd, and Docker. If you aren&rsquo;t familiar with CoreOS or etcd, have a look at the links in the previous paragraph. If you need a quick introduction to Docker, check out this <a href="/2014/03/11/a-quick-introduction-to-docker/">quick introduction to Docker</a>. While the example I&rsquo;m going to provide here is fairly simple, it should serve as a reasonable basis upon which to build later.</p>
+<h2 id="an-overview-of-fleet">An Overview of Fleet</h2>
+<p>The GitHub page for fleet describes it as a &ldquo;distributed init system&rdquo; that operates across a cluster of machines instead of on a single machine. It leverages <a href="https://github.com/coreos/etcd">etcd</a>, the distributed key-value store that ships with CoreOS, as well as <a href="http://freedesktop.org/wiki/Software/systemd/">systemd</a>. Fleet combines etcd and systemd to allow users to deploy containers (configured as systemd units) across a cluster of CoreOS systems.</p>
+<p>Using fleet, users can deploy a single container anywhere on the cluster, deploy multiple copies of the same container, ensure that containers run on the same machine (or different machines), or maintain a certain number of instances of a service (thus protecting against failure).</p>
+<p>Note that even though fleet helps with scheduling containers across a cluster of systems, fleet doesn&rsquo;t address some of the other significant challenges that arise from an architecture based on distributed micro-services in containers. Namely, fleet does not address inter-container communications, service registration, service discovery, or any form of advanced utilization-based scheduling. These are topics I hope to be able to explore here in the near future.</p>
+<p>Now that you have an idea of what fleet does, let&rsquo;s take a closer look at actually using fleet.</p>
+<h2 id="interacting-with-fleet">Interacting with Fleet</h2>
+<p>By default, the <code>fleetctl</code> command-line client that is provided to interact with fleet assumes it will be interacting with a local etcd endpoint on the loopback address. So, if you want to run <code>fleetctl</code> on an instance of CoreOS in your cluster, no further configuration is needed.</p>
+<p>However, it may be easier/more effective to use <code>fleetctl</code> from outside the cluster. There are a couple of different ways to do this: you can tell <code>fleetctl</code> to use a specific endpoint, or you can tunnel the traffic through SSH. Each approach has advantages and disadvantages; I&rsquo;ll leave it to the readers to determine which approach is the best approach for their specific configurations/situations.</p>
+<h3 id="using-a-custom-endpoint">Using a Custom Endpoint</h3>
+<p>This method is pretty straightforward and simple. Just set an environment variable named <code>FLEETCTL_ENDPOINT</code>, like this:</p>
+<pre><code>export FLEETCTL_ENDPOINT=http://10.1.1.7:4001
+</code></pre>
+<p>Obviously, you&rsquo;d want to make sure that you have the correct IP address (can be any node in the etcd cluster) and port (4001 is the default, I believe). With this environment variable set, now anytime you use <code>fleetctl</code> it will direct traffic to the endpoint you specified. If that specific node in the etcd cluster becomes unavailable, then <code>fleetctl</code> will stop working, and you&rsquo;ll need to point it to a different node in the cluster.</p>
+<h3 id="tunneling-through-ssh">Tunneling Through SSH</h3>
+<p>The second way of using <code>fleetctl</code> remotely is to tunnel the traffic through SSH. This method may be a bit more complicated, but naturally offers a bit more security.</p>
+<p>To make <code>fleetctl</code> tunnel its communications with etcd through SSH, set an environment variable called <code>FLEETCTL_TUNNEL</code> to the IP address of any node in the etcd cluster, like this:</p>
+<pre><code>export FLEETCTL_TUNNEL=10.1.1.7
+</code></pre>
+<p>However, the configuration involves more than just setting the environment variable. The <code>fleetctl</code> doesn&rsquo;t expose any options to configure the SSH connection, and it assumes you&rsquo;ll be using public key authentication. This means you&rsquo;ll need access to a public key that will work against the nodes in your etcd cluster. If you followed my instructions on <a href="/2014/08/13/deploying-coreos-on-openstack-using-heat/">deploying CoreOS on OpenStack via Heat</a>, then you can review the Heat template to see which key was specified to be injected when the instances were spawned. Once you know which key was used, then you&rsquo;ll need to either:</p>
+<ul>
+<li>
+<p>place that key on the system where <code>fleetctl</code> is installed, or</p>
+</li>
+<li>
+<p>install <code>fleetctl</code> on a system that already has that key present.</p>
+</li>
+</ul>
+<p>There&rsquo;s still at least one more step required (possibly two). Because <code>fleetctl</code> doesn&rsquo;t expose any SSH options, you&rsquo;re going to need to run an SSH agent on the system you&rsquo;re using. OS X provides an SSH agent by default, but on Linux systems you will probably have to manually run an SSH agent and add the appropriate SSH key:</p>
+<pre><code>eval `ssh-agent -s`
+ssh-add ~/.ssh/keyfile.pem
+</code></pre>
+<p>Once the SSH agent is running and the appropriate key is loaded (you&rsquo;d clearly need to make sure the path and filename are correct in the command listed above), then the last step is to configure your <code>~/.ssh/config</code> file with options for the CoreOS instances. It&rsquo;s possible you might be able to get by without this step; I haven&rsquo;t conducted enough testing to say with absolute certainty one way or another. I suspect it will be needed.</p>
+<p>In the <code>~/.ssh/config</code> file, add a stanza for the system through which you&rsquo;ll be tunneling the <code>fleetctl</code> traffic. The stanza will need to look something like this:</p>
+<pre><code>Host node-01
+  User core
+  Hostname 10.1.1.7
+  IdentityFile ~/.ssh/keyfile.pem
+</code></pre>
+<p>This configuration stanza ensures that when the system you&rsquo;re using attempts to communicate with the IP address listed above, it will use the specified username and public key. Since the SSH agent is loaded, it won&rsquo;t prompt for any password for the public key (even if the public key doesn&rsquo;t have a password associated, you&rsquo;ll still need the SSH agent), and the SSH connection will be successful <em>without any user interaction.</em> That last point is important&mdash;<code>fleetctl</code> doesn&rsquo;t expose any SSH options, so the connection needs to be completely automatic.</p>
+<p>Once you have all these pieces in place, then you can simply run <code>fleetctl</code> with the appropriate commands (described in the next section), and the connection to the etcd cluster will happen over SSH via the specified host. Naturally, if that node in the cluster goes away or is unavailable, you&rsquo;ll need to point your connection to a different node in the etcd cluster.</p>
+<h2 id="using-fleet">Using Fleet</h2>
+<p>Once you have access to the etcd cluster via <code>fleetctl</code> using one of the three methods described above (direct access via a CoreOS instance, setting a custom endpoint, or tunneling over SSH), then you&rsquo;re ready to start exploring how fleet works.</p>
+<p>First, you can list all the machines in the cluster with this command:</p>
+<pre><code>fleetctl list-machines
+</code></pre>
+<p>Note the &ldquo;METADATA&rdquo; column; this allows you to do some custom scheduling by associating systemd units with specific metadata parameters. Metadata can be assigned either via cloud-config parameters passed when the instance is spawned, or via modifications to the fleet config files.</p>
+<p>To see the units about which the cluster knows, use this command:</p>
+<pre><code>fleetctl list-units
+</code></pre>
+<p>If you&rsquo;re just getting your etcd cluster up and running, the output of this command is probably empty. Let&rsquo;s deploy a unit that spawns a Docker container running the popular Nginx web server. Here&rsquo;s a (very) simple unit file that will spin up an Nginx container via Docker:</p>
+<pre tabindex="0"><code>[Unit]
+Description=Nginx web front-end
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=/usr/bin/docker pull nginx
+ExecStart=/usr/bin/docker run --rm --name nginx -p 80:80 nginx
+ExecStop=/usr/bin/docker stop nginx
+</code></pre><p>(Click <a href="https://gist.github.com/scottslowe/a0777d789d91464441fd">here</a> to see the code excerpt as a GitHub Gist.)</p>
+<p>With this file in place on the system where you are running <code>fleetctl</code>, you can submit this to the etcd cluster with this command:</p>
+<pre><code>fleetctl submit nginx.service
+</code></pre>
+<p>Then, when you run <code>fleetctl list-units</code>, you&rsquo;ll see the new unit submitted (but not started). Start it with <code>fleetctl start nginx.service</code>.</p>
+<p>Where fleet becomes <em>really</em> useful (in my opinion) is when you want to run multiple units across the cluster. If you take the simple Nginx unit I showed you earlier and extend it slightly, you get this:</p>
+<pre tabindex="0"><code>[Unit]
+Description=Nginx web front-end
+After=docker.service
+Requires=docker.service
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=/usr/bin/docker pull nginx
+ExecStart=/usr/bin/docker run --rm --name nginx-01 -p 80:80 nginx
+ExecStop=/usr/bin/docker stop nginx-01
+
+[X-Fleet]
+X-Conflicts=nginx.*.service
+</code></pre><p>(Click <a href="https://gist.github.com/scottslowe/dc3cadbfbfd3ae3ebe08">here</a> for the code block above as a GitHub Gist.)</p>
+<p>Note the difference here: the Docker container name is changed (to <code>nginx-01</code>) and the filename is different (now <code>nginx.1.service</code>). If you make multiple copies of this file, changing the Docker container name and the unit filename, you can submit all of the units to the etcd cluster at the same time. For example, let&rsquo;s say you wanted to run 3 Nginx containers on the cluster. Make three copies of the file (<code>nginx.1.service</code>, <code>nginx.2.service</code>, and <code>nginx.3.service</code>), modifying the container name in each copy. Make sure that you have the &ldquo;X-Conflicts&rdquo; line in there; that tells fleet not to place two Nginx containers on the same system in the cluster. Then submit them with this command:</p>
+<pre><code>fleetctl submit nginx.*.service
+</code></pre>
+<p>And start (launch) them with this command:</p>
+<pre><code>fleetctl start nginx.*.service
+</code></pre>
+<p>Give it a few minutes to download the latest Nginx Docker image (assuming it isn&rsquo;t already downloaded), then run <code>fleetctl list-units</code> and you should see three Nginx containers distributed across three different CoreOS instances in the etcd cluster, all listed as &ldquo;loaded&rdquo; and &ldquo;active&rdquo;. (You can then test connectivity to those Nginx instances using something like <code>curl</code>.) Congratulations&mdash;you&rsquo;ve just deployed multiple containers automatically across a cluster of systems!</p>
+<p>(Want to see some of the magic behind fleet? Run <code>etcdctl --peers _&lt;IP address of cluster node&gt;_:4001 ls /_coreos.com --recursive</code> and see what&rsquo;s displayed. You&rsquo;re welcome.)</p>
+<p>Admittedly, this is a very simple example. However, the basic architecture I&rsquo;ve shown you here can be extended. For example, by using additional fleet-specific properties like &ldquo;X-ConditionMachineOf&rdquo; in your unit file(s), you can run what is known as a &ldquo;sidekick container.&rdquo; These containers do things like update an external load balancer, or register the presence of the &ldquo;primary&rdquo; container in some sort of service discovery mechanism. (In fact, as I alluded to in <a href="/2014/08/18/coreos-continued-etcd/">my etcd post</a>, you could use etcd as that service discovery mechanism.)</p>
+<p>Naturally, <code>fleetctl</code> includes commands for stopping units, destroying units, etc., as well as submitting and starting units. You can use <code>fleetctl help</code> to get more information, or visit <a href="https://github.com/coreos/fleet">the fleet GitHub page</a>.</p>
+<p>I hope you&rsquo;ve found this post to be helpful. Feel free to post any questions, corrections, clarifications, or thoughts in the comments below. Courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/08/18/coreos-continued-etcd/">CoreOS Continued: etcd</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/08/22/a-heat-template-for-docker-containers/">A Heat Template for Docker Containers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f20%2fcoreos-continued-fleet-and-docker%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f20%2fcoreos-continued-fleet-and-docker%2f&text=CoreOS%20Continued%3a%20Fleet%20and%20Docker" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f08%2f20%2fcoreos-continued-fleet-and-docker%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/08/18/coreos-continued-etcd/">CoreOS Continued: etcd</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2014/08/13/deploying-coreos-on-openstack-using-heat/">Deploying CoreOS on OpenStack Using Heat</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2014/08/01/a-quick-introduction-to-coreos/">A Quick Introduction to CoreOS</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

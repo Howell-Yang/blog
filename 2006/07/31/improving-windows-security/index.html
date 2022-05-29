@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Improving Windows Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Improving Windows Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Improving Windows Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/07/31/improving-windows-security/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Improving Windows Security</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;257 words (estimated 2 minutes to read)</span>
+  <p>The article, titled &ldquo;Five Ways to Get Vista&rsquo;s Security Now,&rdquo; discusses five options for getting the equivalent of Vista&rsquo;s <a href="http://www.microsoft.com/technet/windowsvista/security/uac.mspx">User Account Control</a> (UAC) functionality on today&rsquo;s Windows. UAC is one of the most widely touted new security features in <a href="http://www.microsoft.com/technet/windowsvista/default.mspx">Windows Vista</a> because it eliminates the security hole that is created by needing to log in with an administrative-level user account (many applications won&rsquo;t run properly without administrative permissions).</p>
+<p>There&rsquo;s nothing new here in terms of uncovering functionality that most security-conscious users didn&rsquo;t already know about; the options included the following:</p>
+<ul>
+<li>
+<p>Logging in as a limited user (not really an option because so many things stop working);</p>
+</li>
+<li>
+<p>Using &ldquo;Run As&rdquo; to run applications like the web browser and/or e-mail client as a limited user;</p>
+</li>
+<li>
+<p>Using <a href="http://www.sysinternals.com/Utilities/ProcessExplorer.html">Process Explorer</a> to run applications in a limited security context (does not require a separate limited user account); and</p>
+</li>
+<li>
+<p>Using an application that automates the process of running applications with limited permissions (the article suggests <a href="http://msdn.microsoft.com/security/securecode/columns/default.aspx?pull=/library/en-us/dncode/html/secure11152004.asp">DropMyRights</a>).</p>
+</li>
+</ul>
+<p>These are all good options (except for the first one), but it&rsquo;s option number 5 that makes me chuckle: Get a Mac.</p>
+<p>The article has this to say about why getting a Mac and switching to <a href="http://www.apple.com/macosx/">Mac OS X</a> is a good option:</p>
+<blockquote>
+<p>If Vista&rsquo;s UAC is a copy of Mac OS X&rsquo;s approach, why not stare in the horse&rsquo;s mouth?</p>
+</blockquote>
+<p>Why not indeed? The introduction of Intel-based Macs and the rise of near-native speed virtualization options such as <a href="http://www.parallels.com/en/products/desktop/">Parallels Desktop</a> make this quite viable. In my opinion, it&rsquo;s like having your cake and eating it, too.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macintosh">Macintosh</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/07/28/active-directory-and-vas/">Active Directory and VAS</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/07/31/best-practices-analyzers/">Best Practices Analyzers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f31%2fimproving-windows-security%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f31%2fimproving-windows-security%2f&text=Improving%20Windows%20Security" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f31%2fimproving-windows-security%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/07/19/powerpoint-zero-day-exploit/">PowerPoint Zero-Day Exploit</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2006/06/28/available-exploit-code-for-rras-vulnerability/">Available Exploit Code for RRAS Vulnerability</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2006/06/14/more-on-microsofts-calling-home-problem/">More on Microsoft&#39;s Calling Home Problem</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

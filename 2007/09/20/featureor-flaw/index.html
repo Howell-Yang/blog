@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Feature....or Flaw? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Feature....or Flaw? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Feature....or Flaw? - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/09/20/featureor-flaw/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Feature....or Flaw?</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;895 words (estimated 5 minutes to read)</span>
+  <p>In the end, I&rsquo;ll leave it to the readers to decide whether this functionality I uncovered today (which is not entirely secret, <em>per se</em>, just not widely discussed) is &ldquo;feature&rdquo; or &ldquo;flaw&rdquo;. I&rsquo;m kind of split on the issue myself.</p>
+<p>Here&rsquo;s the story. I&rsquo;m working on a VDI (virtual desktop infrastructure) project for a customer, and this application the customer uses to help manage their desktops (both physical and virtual) kept popping up a security warning dialog box every time a user logged in. We needed a way to suppress the warning so that the dialog didn&rsquo;t keep coming up over and over as users roamed within the pool of available desktops. What&rsquo;s stranger is that it only seemed to happen on some desktops, but not others, even when the systems were absolutely identical. We were baffled.</p>
+<p>Finally, this minor comment in <a href="http://support.microsoft.com/?id=889815">Microsoft KB889815</a> got me to thinking:</p>
+<blockquote>
+<p>This behavior is new in Windows XP SP2 because of the addition of the Attachment Execution Services (AES). Every program that is run by using the ShellExecute() API passes through AES. AES considers the downloaded update file to be from the Internet Zone. Therefore, AESdisplays the Open File - Security Warning dialog box. AES examines the file to see whether the file has a file stream of the type Zone.Identifier. Then AES determines what zone the file is from and what level of protection to apply when the file is run.</p>
+</blockquote>
+<p>Ah&hellip;file streams! I&rsquo;d learned long ago (when reading <em>Inside the Windows NT File System</em>, by Helen Custer) about alternate data streams. The idea is that a single file in NTFS can store different streams of data. At the time, I advocated the use of data streams for use by Office, such as for storing different versions of the file. Unfortunately, Microsoft never seemed to capitalize on the idea&hellip;until recently.</p>
+<p>The situation here is that when you download a file from the Internet using Internet Explorer, IE automatically creates an alternate data stream named &ldquo;Zone.Identifier&rdquo;. The contents of this alternate data stream are this:</p>
+<pre><code>[ZoneTransfer]
+ZoneID=3
+</code></pre>
+<p>I&rsquo;m not sure when this behavior started (with which version of Internet Explorer and/or which version of Windows), but I do know&mdash;according to the KB article above&mdash;that as of Windows XP Service Pack 2, the presence of this alternate data stream helps Windows determine what kind of security policy to apply to the file. What does this mean? Let me walk through it with you:</p>
+<ol>
+<li>
+<p>You download an executable file from the Internet. You are familiar with the site from which you are downloading this file, but the site is in the Internet Zone (Zone 3).</p>
+</li>
+<li>
+<p>When you download the file, IE automatically attaches the alternate data stream and embeds the zone information in this file.</p>
+</li>
+<li>
+<p>You copy this executable to a location on your local hard drive and you run it. You don&rsquo;t expect to be prompted for anything, since the executable is running from your local hard drive.</p>
+</li>
+<li>
+<p>Windows checks the alternate data stream, sees the embedded IE security zone, and applies a security policy appropriately&mdash;in this case, popping up a security dialog box prompting the user to confirm the action.</p>
+</li>
+</ol>
+<p>Now, forever for the life of this file (at least as long as it remains on an NTFS file system), it will have the IE security zone embedded with the file and Windows will apply security policies based on that information.</p>
+<p>So, in this particular case, this company had downloaded this executable from the vendor&rsquo;s site, then distributed it to hundreds of PCs throughout the organization. Presumably, somewhere along the way some of them lost the alternate data stream (perhaps they were copied to a non-NTFS partition at some point; this organization did have Novell also), and those were the ones that weren&rsquo;t popping up the security warning. Those that <em>did</em> have the alternate data stream had the warning that the user had to acknowledge&mdash;despite the fact that the executable was running from the user&rsquo;s local C: drive.</p>
+<p>To fix it, we used the <a href="http://www.microsoft.com/technet/sysinternals/FileAndDisk/Streams.mspx">Streams utility</a> from Sysinternals (now part of the Borg&hellip;er, Microsoft collective). This tool allowed us to identify and remove the alternate data stream.</p>
+<p>So here&rsquo;s where this discussion turns to the title: is this a feature, or a flaw? Clearly, Microsoft intended this as a security feature. I could see tagging the file on the system where the file was downloaded, but having the alternate data stream follow the file throughout the network (for the duration of the file&rsquo;s life, as long it remains on NTFS) seems just crazy. Not to mention that Microsoft provides <em>zero</em> ways to identify, track, or remove alternate data streams. That&rsquo;s right&mdash;there&rsquo;s no way to find or track alternate data streams on a single PC, much less find or track alternate data streams across a bunch of PCs on a network.</p>
+<p>So again I ask: feature, or flaw? I&rsquo;d love to hear your thoughts.</p>
+<p>Oh, yes, I almost forgot&mdash;for more information on identifying alternate data streams or viewing the contents of alternate data streams, see <a href="http://www.heysoft.de/nt/ntfs-ads.htm">this site</a>.</p>
+<p><strong>UPDATE:</strong> I forgot to mention that Firefox does not add the alternate data stream to files downloaded from the Internet. This makes sense, of course, given that Firefox doesn&rsquo;t use the idea of &ldquo;security zones&rdquo; and is designed to be a cross-platform browser. Nevertheless, I thought it important to point this out.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/09/17/one-potential-issue-in-ad-integration-scenarios/">One Potential Issue in AD Integration Scenarios</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/09/21/nfs-for-vmware-storage/">NFS for VMware Storage</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f20%2ffeatureor-flaw%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f20%2ffeatureor-flaw%2f&text=Feature....or%20Flaw%3f" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f20%2ffeatureor-flaw%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/07/09/uac-and-ktpassexe/">UAC and ktpass.exe</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2007/06/27/statistically-secure/">Statistically Secure</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2007/02/08/cancel-or-allow/">Cancel or Allow?</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

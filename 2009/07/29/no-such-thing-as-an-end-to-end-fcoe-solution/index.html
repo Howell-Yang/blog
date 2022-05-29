@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>No Such Thing as an End-to-End FCoE Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="No Such Thing as an End-to-End FCoE Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="No Such Thing as an End-to-End FCoE Solution - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/07/29/no-such-thing-as-an-end-to-end-fcoe-solution/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">No Such Thing as an End-to-End FCoE Solution</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;589 words (estimated 3 minutes to read)</span>
+  <p><strong>Update:</strong> See <a href="/2009/07/30/correction-there-might-be-an-end-to-end-fcoe-solution/">this follow-up post</a> for more information.</p>
+<p>I <a href="http://twitter.com/scott_lowe/status/2897123000">mentioned yesterday</a> on Twitter that I&rsquo;d had something of a revelation with regard to Fibre Channel over Ethernet (FCoE). This is probably nothing new to the experienced storage intelligentsia, but I&rsquo;m just a simple guy so this was a big deal. After a spirited discussion in the Cisco UCS class about how to best leverage &ldquo;FCoE-capable&rdquo; storage, I have come to this realization: <em>there is no such thing as an end-to-end FCoE solution.</em></p>
+<p>If you&rsquo;re impatient and want the short story, here it is: Even if you have an FCoE-capable storage array and you have FCoE converged network adapters (CNAs), you still can&rsquo;t build an end-to-end FCoE solution. Why? Because you <em>must</em> put a standard Fibre Channel switch into the mix in order to provide fabric services like zoning, etc., because equipment like the UCS 6100 fabric interconnects and the Nexus 5000 don&rsquo;t provide those services.</p>
+<p>Here&rsquo;s the longer version. We were having a discussion in the Cisco UCS training class revisiting the northbound FCoE connectivity issue that I discussed <a href="/2009/07/27/potential-ucs-issue-northbound-fcoe-connectivity/">here</a>. It turns out that the UCS 6100 fabric interconnect runs in NPV (or end-host) mode, so you can&rsquo;t hook up any sort of storage target, FC or FCoE, directly to the UCS 6100 fabric interconnect. Even if you were to enable the UCS 6100 fabric interconnect to run in switch mode&mdash;something that&rsquo;s not possible today&mdash;you <em>still</em> can&rsquo;t hook a storage target, FC or FCoE, to the fabric interconnect because the fabric interconnect doesn&rsquo;t provide any fabric services. Further, even if you were to leave the UCS 6100 fabric interconnect in NPV mode and add a Nexus 5000 switch to the mix, you can&rsquo;t hook the the UCS 6100 and the Nexus 5000 together because FCoE isn&rsquo;t multi-hop capable (yet). If I understand correctly, the FC-BB-5 standard includes FIP, which will address this limitation. However, according to the information I&rsquo;m getting here&mdash;and I&rsquo;m fully open to more information from others who are &ldquo;in the know&rdquo;&ndash;even that won&rsquo;t fully address the problem because neither the UCS 6100 nor the Nexus 5000 will offer fabric services. So, you will <em>still</em> need a traditional Fibre Channel switch, like a Cisco MDS 9000 series, to provide fabric services.</p>
+<p>The end result is that, today, it&rsquo;s impossible to build an end-to-end FCoE solution. You will still need a traditional Fibre Channel switch somewhere in the mix, either to connect the FCoE equipment together (for example, to link a UCS 6100 fabric interconnect to a Nexus 5000) and/or to provide fabric services.</p>
+<p>&lt;aside&gt;Now, there seems to be some confusion within Cisco, as the UCS resources to which I&rsquo;ve been speaking are confirming my conclusions, but others (consider <a href="http://twitter.com/bradhedlund/status/2911928501">this tweet</a> by Brad Hedlund) are saying it&rsquo;s not true. I don&rsquo;t know who&rsquo;s correct&mdash;I can only go on what I&rsquo;m being given.&lt;/aside&gt;</p>
+<p>As a result, it seems completely futile and useless for storage vendors to offer FCoE support on their storage arrays until these issues are addressed. In my mind, this further cements FCoE as an &ldquo;edge-only&rdquo; solution. Adding fabric services to the Nexus 5000 and/or UCS 6100 fabric interconnects would address this problem, and perhaps that&rsquo;s something that is now enabled and made possible via the FC-BB-5 standard and FIP. If so, I have yet to hear a timeline in which these limitations will be addressed.</p>
+<p>Either way, if you&rsquo;re thinking of deploying FCoE today, be sure to keep this in mind or you could find yourself in for a surprise.</p>
+<p>Courteous comments and clarifications are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/07/28/are-you-a-vmware-developer/">Are You a VMware Developer?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/07/29/vmworld-2009-spouse-activities-update/">VMworld 2009 Spouse Activities Update</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f29%2fno-such-thing-as-an-end-to-end-fcoe-solution%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f29%2fno-such-thing-as-an-end-to-end-fcoe-solution%2f&text=No%20Such%20Thing%20as%20an%20End-to-End%20FCoE%20Solution" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f29%2fno-such-thing-as-an-end-to-end-fcoe-solution%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/07/27/potential-ucs-issue-northbound-fcoe-connectivity/">Potential UCS Issue: Northbound FCoE Connectivity</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/07/27/ucs-training-day-1-wrap-up/">UCS Training, Day 1 Wrap-Up</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/06/30/thinking-out-loud-why-deploy-fcoe/">Thinking Out Loud: Why Deploy FCoE?</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

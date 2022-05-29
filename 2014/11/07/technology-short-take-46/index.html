@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #46 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #46 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #46 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/11/07/technology-short-take-46/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #46</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1069 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #46. That&rsquo;s right, it&rsquo;s time for yet another collection of links and articles from around the Internet on various data center-related technologies, products, projects, and efforts. As always, there is no rhyme or reason to my collection; this is just a glimpse into what I&rsquo;ve seen over the past few weeks. I hope you are able to glean something useful.</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>This post by Matt Oswalt&mdash;the first in a series, apparently&mdash;provides a great introduction to <a href="http://keepingitclassless.net/2014/10/five-dev-tools-network-engineers/">5 development tools for network engineers</a>. I&rsquo;ve already increased my usage of Git in an effort to become more fluent with this very popular version control tool, and I was already planning on exploring Jinja2 as well (these are both mentioned in Matt&rsquo;s article). This is a really useful post and I&rsquo;m looking forward to future posts in this series.</li>
+<li>Matt also recently posted part 4 (of 5) in his series on SDN protocols; this post covers <a href="http://keepingitclassless.net/2014/09/sdn-protocols-4-opflex-declarative-networking/">OpFlex and declarative networking</a>.</li>
+<li>It was good to read <a href="http://packetlife.net/blog/2014/oct/1/cumulus-linux-first-impressions/">this post on Cumulus Linux first impressions</a> by Jeremy Stretch. I&rsquo;m a fan of Cumulus, but I&rsquo;m admittedly a Linux guy (see <a href="/2014/04/16/crossing-the-threshold/">here</a>) so you might say I&rsquo;m a bit biased. Jeremy is a &ldquo;hard-core&rdquo; networking professional, and so hearing his feedback on Cumulus Linux was, in my opinion, useful. I like that Jeremy was completely honest: &ldquo;I&rsquo;m not going to lie: Cumulus Linux was not immediately appealing to me.&rdquo; I highly encourage reading this article.</li>
+<li>If you&rsquo;re interested in more details on how NSX handles ARP suppression, Dmitri Kalintsev has <a href="http://telecomoccasionally.wordpress.com/2014/10/27/nsx-v-under-the-hood-vxlan-arp-suppression/">a post just for you</a>. Dmitri has some <a href="http://telecomoccasionally.wordpress.com/category/nsx/">other great NSX-related content</a> as well.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>While all the attention is &ldquo;up the stack,&rdquo; there are still some occasions when you need to worry about the details in the hardware. Kevin Houston&rsquo;s recent article on <a href="http://bladesmadesimple.com/2014/10/choosing-the-right-memory-for-your-blade-server/">selecting the right memory for your blade server</a> is one such example.</li>
+<li><a href="http://www.storagebod.com/wordpress/?p=1675">&ldquo;Junk-box infrastructure,&rdquo;</a> eh? Interesting thought. There&rsquo;s no doubt Greg Ferro had to be involved somehow in this discussion; this rings of the &ldquo;post-scarcity&rdquo; discussions he and I had at IDF 2014 in September.</li>
+</ul>
+<h2 id="security">Security</h2>
+<p>Nothing this time around, but I&rsquo;ll stay tuned for material to include next time. You&rsquo;re also invited to share relevant links or articles in the comments!</p>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Jay Pipes has <a href="http://www.joinfu.com/2014/09/so-what-is-the-core-of-openstack/">an excellent and well-written post on the core of OpenStack</a>. I really appreciate Jay&rsquo;s focus on what&rsquo;s beneficial to the users of OpenStack: the cloud operators, the end users/consumers, and the developers building applications on top of OpenStack.</li>
+<li>Andy Bruce has an article on <a href="https://www.softwareab.net/wordpress/openstack-adding-external-networks-neutron-gre/">adding external networks to Neutron with GRE</a>.</li>
+<li>Previous Technology Short Takes have mentioned CoreOS and Kubernetes in the same sentence, but as far as I can tell I haven&rsquo;t pointed readers to this two part series on running Kubernetes directly on CoreOS. See <a href="https://coreos.com/blog/running-kubernetes-example-on-CoreOS-part-1/">part 1</a> and <a href="https://coreos.com/blog/running-kubernetes-example-on-CoreOS-part-2/">part 2</a> for the full details. (Nice use of VMware Fusion in part 2, by the way.)</li>
+<li>Here&rsquo;s an article on <a href="https://blog.starkandwayne.com/2014/10/16/terraforming-workloads-with-docker-and-digital-ocean/">using Terraform in conjunction with Docker and Digital Ocean</a>. Terraform looks interesting, but I wish it would add an OpenStack provider.</li>
+<li>Here&rsquo;s <a href="http://blog.pacogomez.com/running-containers-on-vcloud-air/">a walkthrough to running containers on vCloud Air</a>.</li>
+<li>VMware, Vagrant, and Docker together is the subject of <a href="http://gosddc.com/articles/dock-your-container-on-vmware-with-vagrant/">this blog post by Fabio Rapposelli</a>. This is useful information if you are looking to combine these technologies in a useful way.</li>
+<li>As can be expected given the very recent release of Juno, the fall 2014 release of OpenStack, a number of Juno-specific &ldquo;how to install&rdquo; pages are popping up. Here&rsquo;s <a href="http://intocloud.org/?p=281">one such example</a>. Much of the content is similar to previous &ldquo;how to install&rdquo; guides that I&rsquo;ve seen, but it might be useful to a few folks out there.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I&rsquo;m seriously considering using the information in <a href="https://dague.net/2014/09/13/my-irc-proxy-setup/">this article on an IRC proxy</a> for myself. I find it enormously helpful to stay connected to various open source-related IRC channels, but staying logged while on the move is, for all intents and purposes, impossible. Perhaps the use of an IRC proxy can help. Anyone else out there using a setup like this?</li>
+<li>Did you happen to notice that <a href="https://coreos.com/blog/coreos-available-on-azure/">CoreOS is now available on Microsoft Azure</a>? It makes me wonder when VMware will announce support for CoreOS on vCloud Air.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>I&rsquo;m not sure if this falls into storage or virtualization, but we&rsquo;ll place it here in the Storage section. Eric Sloof (in conjunction with VMworld TV) has <a href="http://www.ntpro.nl/blog/archives/2764-What-are-CloudVolumes.html">a video introducing readers to CloudVolumes</a>, the relatively recent VMware acquisition that&rsquo;s being put to work in the end-user computing space.</li>
+<li>Greg Schulz has a decent two-part (well, three part actually, but it&rsquo;s only the second two that interest me) series on VVols and storage I/O fundamentals (<a href="http://storageioblog.com/vmware-vvols-and-storage-io-fundementals/">part 1</a> and <a href="http://storageioblog.com/vmware-vvols-and-storage-io-fundementals-part-2/">part 2</a>).</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>It will be nice when the virtualization industry converges on some common set of disk formats for virtual machines. OVF/OVA was an attempt, but there&rsquo;s still some work to be done on that front. Until then, VM converters like <a href="http://www.microsoft.com/en-us/download/details.aspx?id=42497">version 3.0 of the Microsoft Virtual Machine Converter</a> will keep popping up.</li>
+<li>William Lam has a great guest post from Peter Bjork on <a href="http://www.virtuallyghetto.com/2014/10/a-killer-custom-apple-mac-mini-setup-running-vsan.html">a Mac Mini setup running VSAN</a>.</li>
+<li>A short while ago I gave you <a href="/2014/09/12/a-quick-introduction-to-vagrant/">a quick introduction to Vagrant</a>. One of the key components of Vagrant is the <em>box</em>, which is essentially a VM template. Cody Bunch recently published a post on <a href="http://blog.codybunch.com/posts/2014-10-28-Using-Packer-to-Make-Vagrant-Boxes/">using Packer to make Vagrant boxes</a>, which might come in handy if you want to create your own Vagrant boxes.</li>
+<li>Here&rsquo;s <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2014/10/16/the-rpc-server-is-unavailable-with-microsoft-virtual-machine-converter.aspx">a quick reminder</a> from Ben Armstrong that if you want to use the Microsoft Virtual Machine Converter 3.0, you&rsquo;ll need to be sure to unblock WMI in the Windows Firewall.</li>
+<li>Want to install ESXi 5.5 Patch03 on the new Mac Pro? William Lam <a href="http://www.virtuallyghetto.com/2014/10/how-to-install-esxi-5-5-patch03-on-the-new-mac-pro-61.html">shows you how</a>.</li>
+<li>Installing CoreOS on vSphere got a bit easier, thanks to the inclusion of Open VM Tools in CoreOS Alpha 490.0.0 and a new script by William Lam. <a href="http://www.virtuallyghetto.com/2014/11/how-to-quickly-deploy-new-coreos-image-wvmware-tools-on-esxi.html">Here&rsquo;s the details.</a> (I guess William has been doing some super-useful stuff, since I keep referencing his links here. Keep up the great work, William!)</li>
+<li>Gabrie van Zanten brings up a flaw between VMware Auto Deploy (in vSphere 5.1) and Microsoft Cluster Server (MSCS). What&rsquo;s the flaw, you say? <a href="http://www.gabesvirtualworld.com/vmware-auto-deploy-mscs-wont-work/">The two won&rsquo;t work together.</a></li>
+</ul>
+<p>I have more articles in my bucket labeled &ldquo;Articles to blog about,&rdquo; but I&rsquo;ll save those for some other time in the interest of keeping this from getting overly long (which it probably already is). Until next time!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/11/06/setting-up-the-tools-for-contributing-to-openstack-documentation/">Setting up the Tools for Contributing to OpenStack Documentation</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/11/21/removing-ovs-configuration-settings/">Removing OVS Configuration Settings</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f07%2ftechnology-short-take-46%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f07%2ftechnology-short-take-46%2f&text=Technology%20Short%20Take%20%2346" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f11%2f07%2ftechnology-short-take-46%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/06/11/technology-short-take-42/">Technology Short Take #42</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/10/08/technology-short-take-45/">Technology Short Take #45</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2014/08/08/technology-short-take-43/">Technology Short Take #43</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

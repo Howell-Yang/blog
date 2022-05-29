@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Creating UCS Service Profiles Part 4: All Together Now - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Creating UCS Service Profiles Part 4: All Together Now - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Creating UCS Service Profiles Part 4: All Together Now - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/05/11/creating-ucs-service-profiles-part-4-all-together-now/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Creating UCS Service Profiles Part 4: All Together Now</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;741 words (estimated 4 minutes to read)</span>
+  <p>This is the fourth and final post in my series on creating Cisco Unified Computing System (UCS) service profiles. What I&rsquo;ve tried to do so far in this series is define the various elements that I recommend you create or define before you start trying to create a service profile or service profile template. Certainly you could start creating service profiles right off the bat, but I&rsquo;ve found it easier to have all these other elements defined first. In <a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">part 1</a> of the series, I showed you what networking-related elements to define. In <a href="/2010/05/07/creating-ucs-service-profiles-part-2-storage-elements/">part 2</a> of the series, I described the storage-related elements, and in <a href="/2010/05/10/creating-ucs-service-profiles-part-3-other-elements/">part 3</a> of the series I covered the remaining elements.</p>
+<h2 id="creating-a-service-profile-template">Creating a Service Profile Template</h2>
+<p>Now that all the prerequisite elements have been defined, follow these steps to create a service profile template (creating an actual service profile would follow the same basic steps):</p>
+<ol>
+<li>
+<p>Right-click on Service Profile Templates and select Create Service Profile Template.</p>
+</li>
+<li>
+<p>On the first screen, supply a name for the new service profile template and make the template an Updating template. (This will ensure that changes made to the template are propagated to service profiles cloned from this template. You can always unbind the service profile from the template to prevent changes from propagating.)</p>
+</li>
+<li>
+<p>Select the UUID pool created earlier.</p>
+</li>
+<li>
+<p>Supply a description for the service profile template. Click Next to continue.</p>
+</li>
+<li>
+<p>On the second screen, select the desired local disk configuration policy.</p>
+</li>
+<li>
+<p>Do not select a scrub policy.</p>
+</li>
+<li>
+<p>Select Expert for the method of configuring SAN connectivity.</p>
+</li>
+<li>
+<p>Select the WWNN pool created earlier.</p>
+</li>
+<li>
+<p>Near the bottom of the screen (you might need to scroll down to see it), click Add (with the green plus symbol) to add a vHBA.</p>
+</li>
+<li>
+<p>Specify a name for the vHBA, such as &ldquo;vHBA-A&rdquo;. This name should match the name specified in the boot policy defined earlier.</p>
+</li>
+<li>
+<p>Select Use SAN Connectivity Template.</p>
+</li>
+<li>
+<p>Select the vHBA template created earlier and, optionally, an adapter performance profile. Click OK to return to the service profile template wizard.</p>
+</li>
+<li>
+<p>Repeat to add a second vHBA (if a dual fabric configuration). When using blades that have the Cisco Virtual Interface Controller (VIC) mezzanine card (aka &ldquo;Palo&rdquo;), the number of vHBAs can be greater than two.</p>
+</li>
+<li>
+<p>When you are done adding vHBAs, click Next to continue.</p>
+</li>
+<li>
+<p>On the third screen, do not select a dynamic vNIC connection policy.</p>
+</li>
+<li>
+<p>Select Expert for how you would like to configure LAN connectivity.</p>
+</li>
+<li>
+<p>Click Add (with the green plus symbol) to add a vNIC.</p>
+</li>
+<li>
+<p>Specify a name for the vNIC (like &ldquo;vNIC-A&rdquo;) and select Use LAN Connectivity Template. If you intend to use network boot, the name specified here must match the vNIC name specified in the boot policy.</p>
+</li>
+<li>
+<p>Select the vNIC template you created earlier and, optionally, select an adapter performance profile.</p>
+</li>
+<li>
+<p>Click OK to return to the service profile template wizard.</p>
+</li>
+<li>
+<p>Repeat steps 17 through 20 for each desired vNIC. When using blades that have the Cisco VIC mezzanine card the number of vNICs can be greater than two.</p>
+</li>
+<li>
+<p>When you are finished adding vNICs, click Next to continue.</p>
+</li>
+<li>
+<p>Do not make any changes to the vNIC/vHBA placement. Click Next to continue.</p>
+</li>
+<li>
+<p>Select the boot policy you created earlier. Be sure that the local disk configuration policy selected in step 5 is consistent with the boot policy you just selected. (This means that if the local disk configuration policy is set for No Local Disk, then your boot policy should not specify local disk as a boot method.)</p>
+</li>
+<li>
+<p>When prompted for server assignment, choose Assign Later and click Next.</p>
+</li>
+<li>
+<p>At the final screen, choose the IPMI profile you created earlier and the serial-over-LAN policy you created earlier.</p>
+</li>
+<li>
+<p>Click Finish to complete the creation of the service profile template.</p>
+</li>
+</ol>
+<p>And that&rsquo;s it! What you should have found in walking through these steps is that the process of actually creating the service profile template was really just a matter of selecting pools and policies that you&rsquo;d already defined. By doing all the legwork up front, you dramatically simplify the creation of the service profile or service profile template.</p>
+<p>Of course, one of the advantages of UCS is its flexibility; meaning you don&rsquo;t <em>have</em> to do things this way. This is just one way that I&rsquo;ve found quite useful and, to be honest, a way that makes sense to me.</p>
+<p>Courteous comments are always welcome! Feel free to add any clarifications, corrections, or other thoughts in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/05/11/emc-world-2010-symmetrix-vmax-auto-provisioning-groups/">EMC World 2010: Symmetrix VMAX Auto-Provisioning Groups</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/05/17/more-vplex-linkage/">More VPLEX Linkage</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f11%2fcreating-ucs-service-profiles-part-4-all-together-now%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f11%2fcreating-ucs-service-profiles-part-4-all-together-now%2f&text=Creating%20UCS%20Service%20Profiles%20Part%204%3a%20All%20Together%20Now" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f05%2f11%2fcreating-ucs-service-profiles-part-4-all-together-now%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/05/10/creating-ucs-service-profiles-part-3-other-elements/">Creating UCS Service Profiles Part 3: Other Elements</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">Creating UCS Service Profiles Part 1: Networking Elements</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2010/04/19/another-collection-of-ucs-posts/">Another Collection of UCS Posts</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

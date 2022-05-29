@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Retiring the Rockstar: A Counterpoint - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Retiring the Rockstar: A Counterpoint - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Retiring the Rockstar: A Counterpoint - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/03/23/retire-the-rockstar-a-counterpoint/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Retiring the Rockstar: A Counterpoint</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;978 words (estimated 5 minutes to read)</span>
+  <p>&ldquo;You&rsquo;re a rockstar!&rdquo; Chances are, you&rsquo;ve either a) been told this as a compliment for some work you&rsquo;d done; b) heard this told to someone else for some work they&rsquo;d done; or c) told someone this for some work they&rsquo;d done. If you said this to someone else&mdash;I just told someone this quite recently&mdash;chances are also very likely that you had nothing but positive intentions behind this statement and your goal was to compliment them on what you saw as outstanding work. But is &ldquo;rockstar&rdquo; the wrong term to use? And if so, what is the right term?</p>
+<p>Recently, Tyler Britten (a very talented professional and a former colleague when I worked as an EMC vSpecialist) posted <a href="http://vmtyler.com/retire-the-rockstar/">an article titled &ldquo;Time to Retire the Rockstar,&rdquo;</a> in which he draws a connection between the use of terms like &ldquo;rockstar,&rdquo; &ldquo;superstar,&rdquo; &ldquo;genius,&rdquo; or &ldquo;guru&rdquo; and <a href="https://medium.com/the-aspen-journal-of-ideas/the-myth-of-the-lone-genius-6a5146c7da10">the myth of the lone genius</a>. I see his point, and don&rsquo;t necessarily disagree with it. Something can be said that calling someone a rockstar (or any of the other terms listed) isn&rsquo;t automatically encouraging them to &ldquo;eschew teams and communities and to work alone&rdquo;, but that isn&rsquo;t the point of this post. Here I&rsquo;d rather focus on two alternate aspects to this discussion:</p>
+<ol>
+<li>The term &ldquo;rockstar&rdquo; (and others) are well-known terms that are easily understood. With what do we replace these terms when we want to give someone a compliment?</li>
+<li>While I don&rsquo;t agree with the myth of the lone genius&mdash;everyone&rsquo;s success is due in some part to the work of someone else, a point I tried to make in <a href="/2013/12/12/no-man-is-an-island/">this post</a> some time ago&mdash;there is work that is better suited for those who <em>mostly</em> work alone. (And there are individuals who are better suited for such work.)</li>
+</ol>
+<p>Let&rsquo;s look at these two points.</p>
+<h2 id="if-not-rockstar-then-what">If Not Rockstar, Then What?</h2>
+<p>When you call someone a &ldquo;rockstar,&rdquo; what are you trying to say to that person? When I use the term, I&rsquo;m telling that person they went above and beyond&mdash;they did someone that <em>really</em> stood out and made an impact. The term &ldquo;rockstar&rdquo; carries a lot of positive connotations. Yes, there are a few negative connotations, but I contend that the vast majority of the time these positive connotations are readily grasped by the recipients of the compliments. Have you ever heard someone say, &ldquo;My boss just called me a rockstar. What does that mean, exactly?&rdquo;</p>
+<p>It doesn&rsquo;t usually happen. People generally understand what that term means, and the positive message that is trying to be sent. So if we are going to remove the term &ldquo;rockstar&rdquo; (or &ldquo;superstar&rdquo; or &ldquo;genius&rdquo; or &ldquo;guru&rdquo; or whatever) from the list of terms with which we will compliment others in our industry, what is the replacement? What term or terms carry the same types of success-related connotations? What other terms will, as Tyler mentioned, help encourage and inspire others to do great things?</p>
+<p>As I said earlier, I don&rsquo;t disagree with some of the points Tyler makes in his post. Tyler said we need to fix this. OK, awesome. How do we fix it? What words do we use? How do we convey the right meanings&mdash;complimenting people on their hard work while simultaneously inspiring others to also put forth their best efforts and not unintentionally fueling imposter syndrome?</p>
+<p>(I suppose <a href="http://jmetz.com/2014/06/23/you-do-good-work/">this</a> is one way.)</p>
+<h2 id="pioneers-and-commandos">Pioneers and Commandos</h2>
+<p>The second aspect of this discussion is that there <em>are</em> certain tasks that are better suited to individuals who tend to work solo. Now, when I say &ldquo;tend to work solo&rdquo; I&rsquo;m <strong>not</strong> saying that they are the &ldquo;lone genius&rdquo;; recall that <a href="/2013/12/12/no-man-is-an-island/">I&rsquo;ve already established</a> that we are <em>all</em> indebted to others for our success. Let&rsquo;s face it, though: some tasks are better suited not to a large team, but to an individual (or a pair of individuals). Let&rsquo;s also face this fact: there are some people who are better suited to work on these tasks and in these sorts of arrangements.</p>
+<p>This makes me think of Cringely&rsquo;s commandos/infantry/police (see <a href="http://blog.codinghorror.com/commandos-infantry-and-police/">here</a>) and Simon Wardley&rsquo;s pioneers/settlers/town planners (see <a href="http://blog.gardeviance.org/2012/06/pioneers-settlers-and-town-planners.html">here</a>). Some people are best suited to the &ldquo;cutting edge&rdquo; stuff, and these people tend to work alone or in very small groups. Others are better suited to solidifying the beachhold the commandos have secured, and these tend work better in larger, more organized teams. Finally, some people are best suited to maintaining orderly arrangements within well-established boundaries, and these people tend to work best in very large, very procedure-heavy environments. There&rsquo;s nothing wrong with any of these&mdash;<em>they are all equally necessary.</em></p>
+<p>The folks that are likely to be called &ldquo;rockstars&rdquo; are probably the commandos/pioneers. That&rsquo;s perfectly natural and perfectly expected, and it isn&rsquo;t a slight against the others. The other roles tend to work in larger teams, and in those cases the entire team gets recognition. Each role has its place and its unique value. Refusing the recognize the value of the commandos/pioneers (because they are the ones most likely to be called a &ldquo;rockstar&rdquo; due to the style of work that is best suited to accomplish something in that role) while emphasizing the value of the infantry/settlers and the police/town planners overlooks the unique value each of these three roles plays in the larger picture.</p>
+<h2 id="in-summary">In Summary</h2>
+<p>Let me close by saying, once again, I agree with many of the recommendations Tyler makes in his post. However, I&rsquo;m not convinced (yet) that simply retiring the use of &ldquo;rockstar&rdquo; is going to accomplish what we&rsquo;re seeking&mdash;to inspire others to do their best, to encourage everyone to give credit where credit is due, to recognize that our individual success is built on the success and contributions of others. I look forward to working with others to foster these values in our community and industry, but I hope you&rsquo;ll forgive me if I call someone a &ldquo;rockstar&rdquo; when their outstanding work and excellence warrants a compliment.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/collaboration">Collaboration</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/career">Career</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/03/12/quick-update-congress/">A Quick Update on OpenStack Congress</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/04/06/plain-text-productivity-experiment/">The Plain Text Productivity Experiment</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f23%2fretire-the-rockstar-a-counterpoint%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f23%2fretire-the-rockstar-a-counterpoint%2f&text=Retiring%20the%20Rockstar%3a%20A%20Counterpoint" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f23%2fretire-the-rockstar-a-counterpoint%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/12/12/no-man-is-an-island/">No Man is an Island</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/12/11/presentation-from-midwest-regional-vmug/">Presentation from Midwest Regional VMUG</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2012/10/11/managing-your-e-mail-inbox/">Managing Your E-mail Inbox</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Building Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Building Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Building Libvirt 1.0.1 RPMs for CentOS 6.3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/01/16/building-libvirt-1-0-1-rpms-for-centos-6-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Building Libvirt 1.0.1 RPMs for CentOS 6.3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;774 words (estimated 4 minutes to read)</span>
+  <p>In previous articles, I&rsquo;ve shown you how to <a href="/2012/09/06/compiling-libvirt-0-10-1-on-centos-6-3/">compile libvirt 0.10.1 on CentOS 6.3</a>, but&mdash;as several readers have pointed out in the comments to that and other articles&mdash;compiling packages from source may not be the best long-term approach. Not only does it make it difficult to keep the system up-to-date, it also makes automating the configuration of the host rather difficult. In this post, I&rsquo;ll show you how to rebuild a source RPM for libvirt 1.0.1 so that it will install (and work) under CentOS 6.3. (These instructions should work for RHEL 6.3, too, but I haven&rsquo;t tested them.)</p>
+<h2 id="overview">Overview</h2>
+<p>The process for rebuilding a source RPM isn&rsquo;t too terribly difficult, assuming that you can get the dependencies worked out. Here&rsquo;s a quick look at the steps involved:</p>
+<ol>
+<li>
+<p>Create a set of build directories for source RPMs.</p>
+</li>
+<li>
+<p>Download the source RPM and install all prerequisites/dependencies onto the system.</p>
+</li>
+<li>
+<p>Rebuild the source RPM for the destination system.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a look at each of these steps in a bit more detail.</p>
+<h2 id="create-the-build-environment">Create the Build Environment</h2>
+<p>The CentOS wiki has <a href="http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment">a great page</a> for how to set up an RPM build environment. I won&rsquo;t repeat all the steps here (refer to the wiki page instead), but here&rsquo;s a quick summary of what&rsquo;s involved:</p>
+<ol>
+<li>
+<p>Install the necessary packages (typically you&rsquo;ll need the rpmbuild, redhat-rpm-config, make, and gcc packages). You might also need certain development libraries, but this will vary according the source RPMs you&rsquo;re rebuilding (more on that in the next section).</p>
+</li>
+<li>
+<p>Create the necessary directories under your home directory.</p>
+</li>
+</ol>
+<p>I&rsquo;ll assume that you&rsquo;ve followed the steps outlined in <a href="http://wiki.centos.org/HowTos/SetupRpmBuildEnvironment">the CentOS wiki</a> to set up your environment appropriately before continuing with the rest of this process.</p>
+<h2 id="download-the-source-rpm-and-install-prerequisites">Download the Source RPM and Install Prerequisites</h2>
+<p>The libvirt 1.0.1 source RPMs are available directly from the libvirt HTTP server, easily downloaded with <code>wget</code>:</p>
+<pre><code>wget http://libvirt.org/sources/libvirt-1.0.1-1.fc17.src.rpm
+</code></pre>
+<p>You can just download the source RPM to your home directory. Before you can build a new RPM from the source RPM, though, you&rsquo;ll first need to install all the various prerequisites that libvirt requires. Most of them can be installed easily using <code>yum</code> with a command like this:</p>
+<pre><code>yum install xhtml1-dtds augeas libudev-devel \
+libpci-access-devel yajl-devel, libpcap-devel libnl-devel \
+avahi-devel radvd ebtables qemu-img iscsi-initiator-utils \
+parted-devel device-mapper-devel numactl-devel netcfg-devel \
+systemtap-sdt-devel scrub numad libblkid-devel
+</code></pre>
+<p>There are two dependencies, though&mdash;sanlock and libssh2&ndash;that require versions newer than what are available in the CentOS/EPEL repositories. For those, you&rsquo;ll need to recompile your own RPMs. Fortunately, this is pretty straightforward. The next two sections provide more details on getting these prerequisites handled.</p>
+<h3 id="building-an-rpm-for-sanlock">Building an RPM for sanlock</h3>
+<p>To build a CentOS 6.3 RPM for version 2.4 of sanlock (the minimum version needed by libvirt 1.0.1), first use <code>wget</code> to download a Fedora 17 version of the source RPM. I&rsquo;ve wrapped the URL with a backslash for readability:</p>
+<pre><code>wget http://dl.fedoraproject.org/pub/fedora/linux/updates/17/SRPMS\
+/sanlock-2.4-3.fc17.src.rpm
+</code></pre>
+<p>Next, install an prerequisite library using <code>yum install libaio-devel</code>.</p>
+<p>Finally, use <code>rpmbuild</code> to rebuild the sanlock source RPM:</p>
+<pre><code>rpmbuild --rebuild sanlock-2.4-3.fc17.src.rpm
+</code></pre>
+<p>This process should proceed without any problems. The resulting RPMs that are created will be found in <code>~/rpmbuild/RPMS/x86_64</code> (assuming you are, as I am, using a 64-bit build of CentOS).</p>
+<p>Building the RPMs, however, isn&rsquo;t enough&mdash;you need to install them so that you can build the libvirt RPMs. So install the sanlock-devel and sanlock-lib RPMs using <code>yum locainstall</code> (do this command from the directory where the RPMs reside):</p>
+<pre><code>yum localinstall sanlock-devel-* sanlock-lib-*
+</code></pre>
+<p>That should take care of the sanlock dependency.</p>
+<h3 id="building-an-rpm-for-libssh2">Building an RPM for libssh2</h3>
+<p>To build a CentOS 6.3 RPM for version 1.4.1 of libssh2 (libvirt 1.0.1 requires at least version 1.3.0), first download the source RPM using <code>wget</code> (I&rsquo;ve wrapped the URL here for readability):</p>
+<pre><code>wget http://dl.fedoraproject.org/pub/fedora/linux/releases\
+/17/Everything/source/SRPMS/l/libssh2-1.4.1-2.fc17.src.rpm
+</code></pre>
+<p>(That&rsquo;s a lowercase L in the URL just after SRPMS.)</p>
+<p>Once you have the source RPM downloaded, then just rebuild the source RPM:</p>
+<pre><code>rpmbuild --rebuild libssh2-1.4.1-2.fc17.src.rpm
+</code></pre>
+<p>Then install the resulting RPMs using <code>yum localinstall</code>:</p>
+<pre><code>yum localinstall libssh2-1.4.1-* libssh2-devel-*
+</code></pre>
+<p>That takes care of the last remaining dependency. You&rsquo;re now ready to compile the RPMs for libvirt 1.0.1.</p>
+<h2 id="build-the-libvirt-rpm">Build the Libvirt RPM</h2>
+<p>This part is almost anticlimactic. Just use the <code>rpmbuild</code> command:</p>
+<pre><code>rpmbuild --rebuild libvirt-1.0.1-1.fc17.src.rpm
+</code></pre>
+<p>If you&rsquo;ve successfully installed all the necessary prerequisites, then the RPM compilation process should proceed without any issues.</p>
+<p>Once the RPM compilation process is complete, you&rsquo;ll find libvirt 1.0.1 RPMs in the <code>~/rpmbuild/RPMS/x86_64</code> directory (assuming a 64-bit version of CentOS) which you can easily install with <code>yum localinstall</code>, or post to your own custom repository.</p>
+<p>I hope this post helps someone. If you have any questions, or if you spot an error, please speak up in the comments below. All courteous comments are welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/01/10/technology-short-take-28/">Technology Short Take #28</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/01/22/using-mock-to-build-sanlock-2-4-rpms-for-centos-6-3/">Using Mock to Build Sanlock 2.4 RPMs for CentOS 6.3</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f16%2fbuilding-libvirt-1-0-1-rpms-for-centos-6-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f16%2fbuilding-libvirt-1-0-1-rpms-for-centos-6-3%2f&text=Building%20Libvirt%201.0.1%20RPMs%20for%20CentOS%206.3" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f01%2f16%2fbuilding-libvirt-1-0-1-rpms-for-centos-6-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/09/06/compiling-libvirt-0-10-1-on-centos-6-3/">Compiling libvirt 0.10.1 on CentOS 6.3</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2012/11/12/libvirt-ovs-integration-revisited/">Libvirt-OVS Integration Revisited</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2012/11/07/using-vlans-with-ovs-and-libvirt/">Using VLANs with OVS and libvirt</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

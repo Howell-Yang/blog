@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #9 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #9 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #9 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/05/31/virtualization-short-take-9/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #9</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;807 words (estimated 4 minutes to read)</span>
+  <p>Here are some virtualization links I found interesting over the last few days:</p>
+<ul>
+<li>
+<p>Duncan <a href="http://www.yellow-bricks.com/2008/05/20/vc-25-ha-constraints/">points out a VMTN thread regarding</a> VMware HA behaviors in &ldquo;heterogeneous&rdquo; clusters, i.e., clusters that include 1/2 vCPU VMs as well as 4 vCPU VMs. The recommendation is to move these 4 vCPU VMs into their own cluster to help address this issue. This is similar to the discussions I had here about <a href="/2007/12/04/calculating-vmware-ha-failover-capacity/">VMware HA failover capacity calculations</a>, and it goes to further reinforce the fact that planning is needed to fully take advantage of VMware HA&rsquo;s functionality. It&rsquo;s not quite &ldquo;fire and forget&rdquo; just yet, folks.</p>
+</li>
+<li>
+<p>Via a number of different sites, I learned that VMware has released version 2.1 of VDM. More information is available in the <a href="http://www.vmware.com/support/vdm20/doc/releasenotes_vdm20.html">Release Notes</a>. Of key interest to me is the defined process for bulk importing individual desktops, which will make it easier for organizations that already have a number of desktop images to bring those VMs into VDM.</p>
+</li>
+<li>
+<p>On the <a href="http://blogs.vmware.com/performance/">VMware performance blog</a>, they&rsquo;re discussing <a href="http://blogs.vmware.com/performance/2008/05/100000-io-opera.html">achieving 100K IOPS with a single ESX server</a>. While some of the readers are taking VMware to task for what they call an &ldquo;unrealistic&rdquo; test, I do have to agree with commenter Chad who points out that this exercise wasn&rsquo;t intended to create a &ldquo;best practices&rdquo; configuration. The point was simply to see just how high the IOPS could go&mdash;nothing more, nothing less, just a test to see how high they could take the number. Yes, I think we&rsquo;d all agree that using a cluster without 1:1 VM-to-VMFS mappings would be a realistic test, and personally I&rsquo;d love to see the results of a test like that as well. Even so, it&rsquo;s still handy to see that the I/O subsystem of ESX is more than capable of handling even the most demanding workloads.</p>
+</li>
+<li>
+<p>It becomes more obvious every day that I really need to take some time to learn PowerShell. With Microsoft embedding PowerShell in all their products and VMware embracing it via the VI Toolkit, it&rsquo;s becoming ubiquitous. Now VMware is even <a href="http://blogs.vmware.com/vipowershell/2008/05/ever-wonder-wha.html">showing off a series of videos</a> about the VI Toolkit and its functionality. Ugh..I need more hours in a day to keep up with all this stuff.</p>
+</li>
+<li>
+<p>Paul Shannon of VM-Aware <a href="http://www.vm-aware.com/2008/05/21/vmware-ms-support-from-oems/">points out</a> this <a href="http://www.vmware.com/support/policies/ms_support_statement.html">VMware page describing support for Microsoft products</a>, both from Microsoft as well as from various OEMs. Useful information to have, especially when you need to reassure a concerned customer about their support options. Personally, I think it&rsquo;s just poor business (or poor ethics, take your pick) for Microsoft to be giving customers a hard time about virtualization support while developing their own virtualization product. Come on, we all know that the day Hyper-V goes RTM, Microsoft will start offering full product support for virtualized instances&mdash;well, virtualized instances running on Hyper-V, anyway. Am I wrong?</p>
+</li>
+<li>
+<p><a href="http://www.brianmadden.com/blog/RubenSpruijt/Virtual-Desktop-Infrastructure-VDI-Connection-broker-comparison">Via Ruben at Brian Madden&rsquo;s site</a> (and thanks to an e-mail from Patrick Rouse himself), I learned about <a href="http://blogs.inside.quest.com/provision/2008/05/24/virtual-desktop-infrastructure-vdi-connection-broker-comparison/">this VDI broker comparison</a> created by Patrick Rouse of Quest/Provision Networks. Right now, it only compares VDM, XenDesktop, and Provision Networks Virtual Access Suite (VAS), but they are open to including additional brokers if enough requests come in.</p>
+</li>
+<li>
+<p>Brian Madden delves into an <a href="http://www.brianmadden.com/blog/BrianMadden/Citrixs-ICA-problem-while-not-as-bad-as-VMwares-RDP-problem-is-still-a-problem-for-widespread-VDI-adoption">extended discussion</a> of the key problem with VDI solutions: the display protocol. He posits that Citrix is in better shape than VMware because of the ICA protocol, but both suffer from the same problem in that &ldquo;neither ICA nor RDP can remote all applications.&rdquo; It&rsquo;s a good read.</p>
+</li>
+<li>
+<p>This may be a bit dated now, but here&rsquo;s some information on an <a href="http://blogs.technet.com/virtualization/archive/2008/05/07/unattended-installation-of-windows-server-2008-with-hyper-v-rc0.aspx">unattended installation</a> of Windows Server 2008 with Hyper-V.</p>
+</li>
+<li>
+<p>InformationWeek recently published an article <a href="http://www.infoweek.ca/index.php?page=shop.product_details&amp;category_id=116&amp;flypage=shop.flypage&amp;product_id=2144&amp;option=com_virtuemart&amp;vmcchk=1">describing Hyper-V&rsquo;s &ldquo;advanced virtualization features.&rdquo;</a> The two things that are really touted by the article are I/O optimization via driver enlightenments, and support for failover clustering at the host level. Driver enlightenments, unless I am mistaken, are equivalent to Xen&rsquo;s paravirtualized drivers, VMware&rsquo;s VMware Tools, and Virtual Iron&rsquo;s VI Tools; they all accomplish the same thing. I&rsquo;m not sure how having the same feature as all the other competitors makes it &ldquo;advanced&rdquo;. It sounds like a standard feature if you ask me. Host clustering support is nice, but not that different from VMware HA; I believe Citrix is due to introduce a similar feature for XenServer soon as well. (It&rsquo;s my understanding that Marathon Technologies plans to build their &ldquo;Continuous Availability&rdquo;-like product to extend this new XenServer HA functionality.) Not that I&rsquo;m knocking Hyper-V or these features that are slated to be included in Hyper-V; you just can&rsquo;t call them &ldquo;advanced&rdquo; if pretty much every other virtualization solution on the market also has the same features.</p>
+</li>
+</ul>
+<p>Well, that&rsquo;s it for now. If you have links that you&rsquo;d like to share with me or other readers, feel free to add them in the comments below or put them in my del.icio.us inbox. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/citrix">Citrix</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwareha">VMwareHA</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/05/30/brief-leostream-update/">Brief Leostream Update</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/06/04/teched-schedule/">TechEd Schedule</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f31%2fvirtualization-short-take-9%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f31%2fvirtualization-short-take-9%2f&text=Virtualization%20Short%20Take%20%239" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f31%2fvirtualization-short-take-9%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/05/26/virtualization-short-take-8/">Virtualization Short Take #8</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2008/04/25/my-thoughts-on-the-live-migration-quick-migration-discussion/">My Thoughts on the Live Migration-Quick Migration Discussion</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2008/03/24/virtualization-sea-change/">Virtualization Sea Change?</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

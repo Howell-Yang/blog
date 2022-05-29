@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>File Screens in Windows Server 2003 R2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="File Screens in Windows Server 2003 R2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="File Screens in Windows Server 2003 R2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/04/21/file-screens-in-windows-server-2003-r2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">File Screens in Windows Server 2003 R2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;360 words (estimated 2 minutes to read)</span>
+  <p>One nice feature I&rsquo;ve discovered in <a href="http://www.microsoft.com/windowsserver2003/default.mspx">Windows Server 2003 R2</a> is file screens. Now, finally, we have a way to make sure that users aren&rsquo;t storing the wrong types of files on our file servers.</p>
+<p>We&rsquo;ve all had those times when we are running low on disk space and we decide to go find out what (and who) is taking up all the available space on our file server. After searching through users&rsquo; directories, we finally find that one person who has saved 6.3GB of MP3 files to the server.</p>
+<p>With file screens, Windows administrators can now prevent that from happening. To create a file screen, you must create a file groups definition (or use an existing file groups definition). The file groups definition determines which files, according to extension, are affected by the screen. A few file groups definitions are already included with Windows Server 2003 R2. Once the file groups definition you need is ready, then you can create the file screen.</p>
+<p>The file screen itself is applied to a specific filesystem location (like, <code>D:\Users</code>). The screen can either be active (blocks users from saving files in the selected file groups) or passive (monitors/alerts when users save files in the selected file groups). The file screen also includes functionality to notify administrators in a variety of methods (SMTP e-mail, event log, etc.) when a user attempts to save a file in the selected file groups.</p>
+<p>While file screens are a big step forward for Windows-based file servers (administrators had to rely on third-party applications to provide this functionality), there are two key limitations I see so far:</p>
+<ul>
+<li>
+<p>First, file screens are strictly extension-based. If a user changes the extension on a file, he or she can easily bypass the file screen.</p>
+</li>
+<li>
+<p>Second, file screens cannot be combined at a single filesystem location. This would be handy, for example, to block music files (active screening) but monitor video files (passive screening). At this time (as far as I am aware), this is not possible.</p>
+</li>
+</ul>
+<p>Still, it&rsquo;s a great new feature to have and can certainly help keep burgeoning storage requirements in check due to unwarranted use of server resources.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/04/18/cisco-investing-in-file-virtualization/">Cisco Investing in File Virtualization</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/04/21/vista-failures/">Vista Failures</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f04%2f21%2ffile-screens-in-windows-server-2003-r2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f04%2f21%2ffile-screens-in-windows-server-2003-r2%2f&text=File%20Screens%20in%20Windows%20Server%202003%20R2" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f04%2f21%2ffile-screens-in-windows-server-2003-r2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/01/04/mac-os-x-and-local-domains/">Mac OS X and .local Domains</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2005/08/11/follow-up-on-access-based-enumeration/">Follow Up on Access-Based Enumeration</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2005/07/22/linux-ad-integration-wrap-up/">Linux-AD Integration Wrap-Up</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

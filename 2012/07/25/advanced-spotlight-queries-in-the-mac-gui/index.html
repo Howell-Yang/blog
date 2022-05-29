@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Advanced Spotlight Queries in the Mac GUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Advanced Spotlight Queries in the Mac GUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Advanced Spotlight Queries in the Mac GUI - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/07/25/advanced-spotlight-queries-in-the-mac-gui/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Advanced Spotlight Queries in the Mac GUI</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;688 words (estimated 4 minutes to read)</span>
+  <p>I mentioned on <a href="http://twitter.com/scott_lowe">Twitter</a> a couple days ago that I was mulling a switch from <a href="http://c-command.com/eaglefiler/">EagleFiler</a> to a pure file system-based approach leveraging <a href="https://code.google.com/p/openmeta/">OpenMeta</a> tags. Long-time readers may recall that it was only September of last year that I <a href="/2011/09/07/switching-to-eaglefiler/">switched to EagleFiler from Yojimbo</a>, my previous &ldquo;anything bucket&rdquo;. My decision to switch away from EagleFiler is not a reflection on the application itself; it&rsquo;s a great application. For me, it just seemed as if EagleFiler was duplicating functionality I could already get with just the file system, so what&rsquo;s the point? Plus, as I increasingly keep data synchronized across multiple systems, EagleFiler wasn&rsquo;t as friendly to my data synchronization solutions as I would have liked. A file system-based approach leveraging OpenMeta tags is perfectly happy with both <a href="http://www.dropbox.com">Dropbox</a> and <a href="http://www.cis.upenn.edu/~bcpierce/unison/">Unison</a>.</p>
+<p>The OpenMeta tags are really the key; using OpenMeta tags, I can set up saved searches that easily let me drill down to only certain subsets of files regardless of where on my computer those files might be stored. However, the problem that I was running into was that the Mac OS X GUI did not provide a way for me to find all <em>untagged</em> files (obviously, the key to making tags work effectively is using tags everywhere). For that, I had to drop out to the OS X command line and use the <code>mdfind</code> command, like this:</p>
+<pre><code>mdfind -onlyin ~ &quot;kOMUserTags != '*'&quot;
+</code></pre>
+<p>The <code>kOMUserTags</code> is the name of the extended attribute in which OpenMeta tags are stored. This particular query finds files that don&rsquo;t have any OpenMeta tags. Unfortunately, there didn&rsquo;t seem to be any way to bring this query (and the query results) into the GUI.</p>
+<p>After some further experimentation, I grew frustrated with how things were progressing (or not progressing, in this instance) and thought I&rsquo;d try to dig up some documentation on the syntax for <code>mdfind</code>. I didn&rsquo;t find the documentation&mdash;but I did find <a href="http://hints.macworld.com/article.php?story=20050427030707455">this page</a>, which gave me two important pieces of information:</p>
+<ol>
+<li>
+<p>It showed me the syntax to query on both filename as well as extended attributes at the same time.</p>
+</li>
+<li>
+<p>It showed me how to bring these queries into the Finder GUI.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a look at the first one. To query on both filename <em>and</em> one or more extended attributes, you can&rsquo;t use the <code>-name</code> parameter to <code>mdfind</code>. Instead, you have to use this syntax:</p>
+<pre><code>mdfind -onlyin ~ &quot;(kMDItemFSName == '*.txt') &amp;&amp; (kOMUserTags != '*')&quot;
+</code></pre>
+<p>That query will show you all the text files that don&rsquo;t have any OpenMeta tags applied. Obviously, you could customize the filename specification or the particular extended attributes you wanted to search, but you get the idea.</p>
+<p>The second thing I found was how to bring these advanced queries into the Finder GUI. The trick is in enabling &ldquo;Raw Query&rdquo; on the pop-up menu in the Spotlight search menu:</p>
+<ol>
+<li>
+<p>Open a Spotlight search window by pressing Cmd-F while Finder is active.</p>
+</li>
+<li>
+<p>Click the &ldquo;Kind&rdquo; pop-up menu and select &ldquo;Other&rdquo;.</p>
+</li>
+<li>
+<p>It may take a moment, but in a bit a window will open with all of the various types of Spotlight metadata. Scroll through the list to find Raw, then place a checkmark in the &ldquo;In Menu&rdquo; column. (By the way, this is also how to add Tags to the menu for use in Spotlight searches.)</p>
+</li>
+</ol>
+<p>Now, in a Spotlight search window (and that includes new Smart Folders), you can click the pop-up, select Raw Query, and then type your raw <code>mdfind</code> query like the one above, and it will be displayed in the Finder. Cool! Using this Raw Query support allows me to build extremely sophisticated Smart Folders.</p>
+<p>For example, I&rsquo;ve already shown you the query to list all untagged files (very first example in this post) and the query to list all untagged files of a certain type (second example). Here&rsquo;s the query to list files that have one tag but not another tag:</p>
+<pre><code>mdfind -onlyin ~ &quot;(kOMUserTags == 'Tag1') &amp;&amp; (kOMUserTags != 'Tag2')&quot;
+</code></pre>
+<p>You could, naturally, combine this with a filename filter to get even more specific. I hope this helps someone else out there fine tune their Spotlight searches as well!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/07/24/getting-hiera-working/">Getting Hiera Working</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/07/27/spouse-activities-at-vmworld-2012/">Spouse Activities at VMworld 2012</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f25%2fadvanced-spotlight-queries-in-the-mac-gui%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f25%2fadvanced-spotlight-queries-in-the-mac-gui%2f&text=Advanced%20Spotlight%20Queries%20in%20the%20Mac%20GUI" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f07%2f25%2fadvanced-spotlight-queries-in-the-mac-gui%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/04/05/setting-up-ipfw-on-mac-os-x/">Setting Up ipfw on Mac OS X</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2011/11/18/exporting-outlines-as-markdown/">Exporting Outlines as Markdown</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2011/10/05/content-creation-and-mind-mapping/">Content Creation and Mind Mapping</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

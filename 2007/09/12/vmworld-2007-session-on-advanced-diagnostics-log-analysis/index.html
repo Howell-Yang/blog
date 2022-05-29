@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMworld 2007 Session on Advanced Diagnostics Log Analysis - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMworld 2007 Session on Advanced Diagnostics Log Analysis - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMworld 2007 Session on Advanced Diagnostics Log Analysis - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/09/12/vmworld-2007-session-on-advanced-diagnostics-log-analysis/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMworld 2007 Session on Advanced Diagnostics Log Analysis</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;348 words (estimated 2 minutes to read)</span>
+  <p>I signed up for this session (titled &ldquo;Advanced ESX 3.0.x Diagnostics Log Analysis&rdquo;) with the hope of getting some in-depth, useful information on log analysis and troubleshooting. As a field person, out there in the trenches installing and supporting this stuff, having detailed information on the information that&rsquo;s being logged by the system is incredibly helpful. Let&rsquo;s hope that this session provides exactly that.</p>
+<p>The presenter is Mostafa Khalil, a member of VMware Product Support Engineering. His accent isn&rsquo;t too bad, which is a pleasant surprise. He prefaces his session by saying that log analysis is a topic that could span days, but he was only given 60 minutes. Sounds like a way of saying, &ldquo;I&rsquo;m not going to cover everything you want me to cover.&rdquo;</p>
+<p>We start out with a review of the ESX Server boot process, during which process Mostafa indicates that ESX no longer uses the Linux kernel to boot VMkernel. This is a fairly clear fact now with the release of ESX Server 3i, the embedded version of the hypervisor, but something to note nevertheless.</p>
+<p>The easiest way to collect log files is to use the Virtual Infrastructure (VI) Client. Select an ESX server, go to the Administration menu, and select &ldquo;Export Diagnostics Data&rdquo;. This will collect the following logs (all paths are relative to <code>/var/log</code>):</p>
+<ul>
+<li>vmkernel</li>
+<li>messages</li>
+<li>dmesg</li>
+<li>boot.log</li>
+<li>initrdlogs/*</li>
+<li>vmksummary</li>
+<li>vmware/hostd.log</li>
+<li>vmware/vpx/vpxa.log</li>
+<li>esxcfg-boot.log</li>
+<li>esxcg-firewall.log</li>
+<li>vmware-cim.log</li>
+<li>esxcfg-linuxnet.log</li>
+<li>esxupdate.log (see my <a href="/2007/09/12/vmworld-2007-session-on-esx-patch-management/">patch management session notes</a> for more on this one)</li>
+<li>oldconf/esx*.conf</li>
+<li>rpmpkgs</li>
+<li>vmkernel-version</li>
+</ul>
+<p>Questions after the session appeared to indicate that using the vm-support script is equivalent to gathering logs through the VI Client. If there was anyone else from the session there, can you confirm that&rsquo;s what you heard as well?</p>
+<p>Shortly after this point, my laptop battery died, and so I was unable to transcribe any more information. I will try to update this article later with some of the information I can remember. Sorry everyone! Feel free to chip in for a second laptop battery&hellip;</p>
+<p>More posts are on the way, so keep reading, and keep the comments and corrections coming!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2007">VMworld2007</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/09/12/vmworld-2007-session-on-esx-patch-management/">VMworld 2007 Session on ESX Patch Management</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/09/12/a-collection-of-vmworld-2007-links/">A Collection of VMworld 2007 Links</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f12%2fvmworld-2007-session-on-advanced-diagnostics-log-analysis%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f12%2fvmworld-2007-session-on-advanced-diagnostics-log-analysis%2f&text=VMworld%202007%20Session%20on%20Advanced%20Diagnostics%20Log%20Analysis" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f12%2fvmworld-2007-session-on-advanced-diagnostics-log-analysis%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/09/12/vmworld-2007-session-on-esx-patch-management/">VMworld 2007 Session on ESX Patch Management</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2007/09/10/vmworld-2007-partner-day/">VMworld 2007 Partner Day</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2007/09/12/vmworld-2007-day-2-keynote-liveblog/">VMworld 2007 Day 2 Keynote Liveblog</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

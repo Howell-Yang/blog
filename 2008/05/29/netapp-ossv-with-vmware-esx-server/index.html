@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>NetApp OSSV with VMware ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="NetApp OSSV with VMware ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="NetApp OSSV with VMware ESX Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/05/29/netapp-ossv-with-vmware-esx-server/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">NetApp OSSV with VMware ESX Server</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;742 words (estimated 4 minutes to read)</span>
+  <p>A couple of days ago my good friend Nick Triantos&mdash;formerly of <a href="http://storagefoo.blogspot.com/">Storage Foo</a> fame, now writing at the <a href="http://blogs.netapp.com/storage_nuts_n_bolts/">Storage Nuts &amp; Bolts Blog</a>&ndash;published <a href="http://blogs.netapp.com/storage_nuts_n_bolts/2008/05/open-systems-sn.html">a short piece</a> of a new version of Open Systems SnapVault (OSSV) that offers new functionality when used with VMware Infrastructure 3 (VI3).</p>
+<p>For those that aren&rsquo;t familiar with OSSV, it&rsquo;s basically a way to bring NetApp-style snapshots to non-NetApp storage. For example, it&rsquo;s pretty common to use OSSV to take snapshots of a server that is not attached to a NetApp SAN and store those snapshots on a NetApp SAN. Think of a remote office/branch office kind of scenario, for example, where the branch server can be easily backed up using incremental snapshots to a NetApp storage system in the main location. It&rsquo;s pretty handy technology, to be honest.</p>
+<p>After reading Nick&rsquo;s piece on OSSV, one question popped in my mind: is he talking about running OSSV on the guest, or running OSSV on the ESX host? So I contacted Nick, obtained clarification, and wanted to post that clarification here. (BTW, thanks, Nick, for taking the time to answer my questions and allowing me to discuss this here.)</p>
+<p>Nick&rsquo;s article primarily focuses on the use of OSSV at the ESX level, running within the ESX Console OS (or Service Console). In this respect, OSSV will be taking snapshots of the VMDK files via the Service Console and replicating them over to a NetApp storage system. As with running OSSV in other environments, the snapshots are block-level incremental snapshots and thus only the changed blocks will be replicated across the wire when a snapshot is taken and shipped off to the destination storage system.</p>
+<p>What&rsquo;s apparently new here is that NetApp has optimized the OSSV code so that the initial baseline will only capture the utilized portions of a VMDK file. Keep in mind that ESX, by default, uses thick-provisioned disks, so that a 30GB virtual disk takes up 30GB on the physical storage. OSSV 2.6, the new version, understands that if only 10GB of that 30GB VDMK is actually being utilized, it will only replicate 10GB of data. That is really important in reducing the overhead required for the initial baseline transfer. Thereafter, OSSV operates as usual by capturing and replicating only changed blocks.</p>
+<p>This is a nice addition to OSSV, and it greatly increases the usefulness of OSSV in VI3 environments. But there is a drawback&hellip;has anyone figured it out yet?</p>
+<p>If you guessed that taking block-level incremental snapshots of the VMDK files via the Service Console means that we lose file-level granularity within the guest file system, you would be correct! What does this mean? Basically, it means that if you have to restore a VMDK from an OSSV snapshot, you have to restore the <em>entire</em> VMDK. You can&rsquo;t restore individual files within a guest from an OSSV snapshot taken while OSSV is running at the ESX layer.</p>
+<p>Before you start knocking OSSV as worthless, however, consider that VCB suffers the same limitation when creating image-level backups. Also keep in mind that file-level backups are only possible with VCB when the guest is running Microsoft Windows, so you&rsquo;re forced to use image-level backups with any other operating system. Also keep in mind that file-level backups with VCB are slower than image-level backups. With these considerations in mind, it becomes clearer that the limitation is not inherent to OSSV <em>per se</em>, but rather a limitation of technologies operating at the ESX layer.</p>
+<p>Of course, there are a number of workarounds to this; one way is to attach the restored VMDK to a different VM, then pull the individual files out that are needed. If you do need file-level granularity from within the guest OS (such as the ability to quickly and easily restore a specific file within a guest), then you can always run OSSV inside the guest and replicate block-level incremental snapshots from the guest over to a target NetApp storage system. Just be sure to keep these distinct procedures in mind as you plan backups of VMs using OSSV.</p>
+<p>As always, I encourage you to ask questions, make comments, or add your thoughts below.</p>
+<p><strong>UPDATE:</strong> Keep in mind that OSSV is VMotion aware, meaning that block-level incrementals are preserved even after a VMotion operation. This is true even within DRS/HA clusters; you just have to install the OSSV agent on all ESX servers within the cluster. The real question: what effect will Storage VMotion have?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/snapshots">Snapshots</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/05/27/xen-trademark-policy/">Xen Trademark Policy</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/05/30/brief-leostream-update/">Brief Leostream Update</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f29%2fnetapp-ossv-with-vmware-esx-server%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f29%2fnetapp-ossv-with-vmware-esx-server%2f&text=NetApp%20OSSV%20with%20VMware%20ESX%20Server" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f05%2f29%2fnetapp-ossv-with-vmware-esx-server%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/04/09/keeping-thin-vmdks-using-netapp-snaprestore/">Keeping Thin VMDKs Using NetApp SnapRestore</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2007/10/08/vm-file-level-recovery-with-netapp-snapshots/">VM File-Level Recovery with NetApp Snapshots</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a> <span class="post-date-list">309 May 303030</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

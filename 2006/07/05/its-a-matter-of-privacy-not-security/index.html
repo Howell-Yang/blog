@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>It&#39;s a Matter of Privacy, Not Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="It&#39;s a Matter of Privacy, Not Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="It&#39;s a Matter of Privacy, Not Security - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/07/05/its-a-matter-of-privacy-not-security/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">It&#39;s a Matter of Privacy, Not Security</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;540 words (estimated 3 minutes to read)</span>
+  <p>Daniel Jalkut, in his <a href="http://www.red-sweater.com/blog/">Red Sweater Blog</a>, recently posted that he had detected (via Little Snitch) some <a href="http://www.red-sweater.com/blog/153/apple-phones-home-too">network activity from Dashboard</a> back to Apple&rsquo;s web site. Upon further investigation, he found that the activity was apparently tied to this one-line entry in the release notes for 10.4.7:</p>
+<blockquote>
+<p>You can now verify whether or not a Dashboard widget you downloaded is the same version as a widget featured on (<a href="https://www.apple.com">www.apple.com</a>) before installing it.</p>
+</blockquote>
+<p>To me, that doesn&rsquo;t do an adequate job of informing the end user that the computer will be contacting Apple on a regular basis to verify the installed widgets. What it says is that the OS <em>can</em> (i.e., has the ability to), upon the user&rsquo;s request, verify a widget before installing it. Those are two different things.</p>
+<p>A lot of the comments on Daniel&rsquo;s entry are blasting him for posting this information, stating that it&rsquo;s a matter of security, that Apple is providing functionality to help protect Mac users against malicious code. OK, I&rsquo;ll grant that the ability to verify the authenticity of a downloaded widget is a good idea. I&rsquo;ll even grant that the ability to manually, whenever I feel like it, ask my computer to verify the authenticity of the currently installed widgets is a good idea. I&rsquo;ll even go so far as to grant that having a checkbox somewhere that says, &ldquo;Periodically check my installed widgets for authenticity&rdquo; or something similar would be a good idea.</p>
+<p>What&rsquo;s <em>not</em> a good idea is adding a &ldquo;phone home&rdquo; feature that users (apparently) can&rsquo;t disable and that can&rsquo;t be configured, controlled, or adjusted. What&rsquo;s further <em>not</em> a good idea is misrepresenting this functionality in the release notes. Finally, what&rsquo;s <em>not</em> a good idea is for Mac users to confuse security with privacy.</p>
+<p>This isn&rsquo;t a matter of security. Most everyone agrees that having the ability to check widgets to make sure they are safe is a good idea. The problem here is that our computers are now communicating with Apple in a way that we did not authorize, were not informed about, and can not control. That makes it a matter of privacy, not security. And yes, while the communication right now is benign, will it always be so? What will the Mac users do when it is not benign?</p>
+<p>I posted a comment to the article to see what methods, if any, are available to disable this functionality. As soon as I get some additional information, I&rsquo;ll post it here.</p>
+<p><strong>UPDATE:</strong> This safety check can be disabled by using the command:</p>
+<pre><code>sudo launchctl unload -w /System/Library/LaunchDaemons/ 
+com.apple.dashboard.advisory.fetch.plist
+</code></pre>
+<p>(This should all be typed on a single line.) In addition, it&rsquo;s important to note that the dashboardadvisoryd process does not <em>send</em> any information to Apple currently; it only fetches information from Apple and compares it to the list of currently installed widgets. Also, in the light of the extensive information shared with Apple as a result of using Software Update (an aspect I did not consider originally), I retract most of my concerns regarding privacy. I do, however, stand by the statement that Apple should have been more informative and forthcoming with information on exactly how this work, as well as given users a means whereby to control it.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macintosh">Macintosh</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/privacy">Privacy</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/07/03/group-policy-resources/">Group Policy Resources</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/07/06/mass-renaming-computers/">Mass Renaming Computers</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f05%2fits-a-matter-of-privacy-not-security%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f05%2fits-a-matter-of-privacy-not-security%2f&text=It%27s%20a%20Matter%20of%20Privacy%2c%20Not%20Security" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f05%2fits-a-matter-of-privacy-not-security%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/07/02/trojan-horse-exploiting-os-x-flaw/">Trojan Horse Exploiting OS X Flaw</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2006/06/09/mac-firewall-wierdness/">Mac Firewall Wierdness</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2006/03/13/new-apple-security-update/">New Apple Security Update</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

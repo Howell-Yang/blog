@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Stretched Clusters, Distance vMotion and L2 Adjacency - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Stretched Clusters, Distance vMotion and L2 Adjacency - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Stretched Clusters, Distance vMotion and L2 Adjacency - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/05/12/stretched-clusters-distance-vmotion-and-l2-adjacency/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Stretched Clusters, Distance vMotion and L2 Adjacency</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;326 words (estimated 2 minutes to read)</span>
+  <p>Beth Pariseau recently published an article discussing <a href="http://itknowledgeexchange.techtarget.com/server-virtualization/long-distance-vmotion-inches-toward-realitywho-will-use-it/">the practical value of long-distance vMotion</a>, partially in response to EMC&rsquo;s announcement of VPLEX Geo at EMC World 2011. In that article, Beth quotes some text from a tweet I posted as well as some text from Chad Sakac&rsquo;s recent <a href="http://virtualgeek.typepad.com/virtual_geek/2011/05/vplex-geo-awesomesauce.html">post on VPLEX Geo</a>. However, there are a couple inaccuracies from Beth&rsquo;s article that I really feel need to be cleared up:</p>
+<ol>
+<li>
+<p>Long-distance vMotion and stretched clusters are not the same thing.</p>
+</li>
+<li>
+<p>L2 adjacency for virtual machines is not the same as L2 adjacency for the vMotion interfaces.</p>
+</li>
+</ol>
+<p>Regarding point #1, in her article, Beth implies that Chad&rsquo;s statement &ldquo;Stretched vSphere clusters over [long] distances are, as of right now, still not supported&rdquo; is a statement that long-distance vMotion is not supported. Long-distance vMotion, over distances with latencies of less than 5 ms round trip time (RTT), is fully supported. What&rsquo;s not supported is a stretched cluster, which is not a prerequisite for long-distance vMotion (as I pointed out in <a href="/2011/05/10/stretched-clustering-presentation/">the stretched clusters presentation</a> Beth also referenced). If you want to do long-distance vMotion, you don&rsquo;t need to set up a stretched cluster, so statements of support for stretched clusters cannot be applied as statements of support for long-distance vMotion. Let&rsquo;s not confuse the two, as they are separate and distinct.</p>
+<p>Regarding point #2, the L2 adjacency for virtual machines (VMs) is <strong>absolutely</strong> necessary for distance vMotion. As I explained <a href="/2010/08/19/vmotion-layer-2-adjacency-requirement/">here</a>, it is possible to use a Layer 3 protocol to handle the actual VMkernel (vMotion) traffic, but the VMs themselves still require Layer 2 adjacency. If you don&rsquo;t maintain a single Layer 2 domain for the VMs, then VMs would have to change their IP addresses on a live migration. That&rsquo;s REALLY BAD and it completely breaks live migration. Once again, there is a very separate and distinct behavior that you&rsquo;re trying to modify with large L2 domains.</p>
+<p>Am I off? Speak your mind in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmotion">VMotion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vplex">VPLEX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/05/10/stretched-clustering-presentation/">Stretched Clustering Presentation</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/05/16/technology-short-take-12-networking-edition/">Technology Short Take #12: Networking Edition</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f12%2fstretched-clusters-distance-vmotion-and-l2-adjacency%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f12%2fstretched-clusters-distance-vmotion-and-l2-adjacency%2f&text=Stretched%20Clusters%2c%20Distance%20vMotion%20and%20L2%20Adjacency" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f05%2f12%2fstretched-clusters-distance-vmotion-and-l2-adjacency%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/02/17/technology-short-take-11/">Technology Short Take #11</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2011/01/27/technology-short-take-10/">Technology Short Take #10</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2010/12/17/technology-short-take-8/">Technology Short Take #8</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

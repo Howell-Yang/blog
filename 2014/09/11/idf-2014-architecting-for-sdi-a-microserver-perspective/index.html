@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2014: Architecting for SDI, a Microserver Perspective - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2014: Architecting for SDI, a Microserver Perspective - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2014: Architecting for SDI, a Microserver Perspective - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/09/11/idf-2014-architecting-for-sdi-a-microserver-perspective/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2014: Architecting for SDI, a Microserver Perspective</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;743 words (estimated 4 minutes to read)</span>
+  <p>This is a liveblog for session DATS013, on microservers. I was running late to this session (my calendar must have been off&mdash;thought I had 15 minutes more), so I wasn&rsquo;t able to capture the titles or names of the speakers.</p>
+<p>The first speaker starts out with a review of exactly what a microserver is; Intel sees microservers as a natural evolution from rack-mounted servers to blades to microservers. Key microserver technologies include: Intel Atom C2000 family of processors; Intel Xeon E5 v2 processor family; and Intel Ethernet Switch FM6000 series. Microservers share some common characteristics, such as high integrated platforms (like integrated network) and being designed for high efficiency. Efficiency might be more important than absolute performance.</p>
+<p>Disaggregation of resources is a common platform option for microservers. (Once again this comes back to Intel&rsquo;s rack-scale architecture work.) This leads the speaker to talk about a Technology Delivery Vehicle (TDV) being displayed here at the show; this is essentially a proof-of-concept product that Intel built that incorporates various microserver technologies and design patterns.</p>
+<p>Upcoming microserver technologies that Intel has announced or is working on incude:</p>
+<ul>
+<li>
+<p>The Intel Xeon D, a Xeon-based SoC with integrated 10Gbs Ethernet and running in a 15-45 watt power range</p>
+</li>
+<li>
+<p>The Intel Ethernet Switch FM10000 series (a follow-on from the FM6000 series), which will offer a variety of ports for connectivity&mdash;not just Ethernet (it will support 1, 2.5, 10, 25, 40, and 100 Gb Ethernet) but also PCI Express Gen3 and connectivity to embedded Intel Ethernet controllers. In some way (the speaker is unclear) this is also aligned with Intel&rsquo;s silicon photonics efforts.</p>
+</li>
+</ul>
+<p>A new speaker (Christian?) takes the stage to talk about software-defined infrastructure (SDI), which is the vision that Intel has been talking about this week. He starts the discussion by talking about NFV and SDN, and how these efforts enable agile networks on standard high volume (SHV) servers (such as microservers). Examples of SDN/NFV workloads include wireless BTS, CRAN, MME, DSLAM, BRAS, and core routers. Some of these workloads are well suited for running on Intel platforms.</p>
+<p>The speaker transitions to talking about &ldquo;RouterBricks,&rdquo; a scalable soft router that was developed with involvement from Scott Shenker. The official term for this is a &ldquo;switch-route-forward&rdquo;, or SRF. A traditional SRF architecture can be replicated with COTS hardware using multi-queue NICs and multi-core/multi-socket CPUs. However, the speaker says that a single compute node isn&rsquo;t capable of replacing a large traditional router, so instead we have to scale compute nodes by treating them as a &ldquo;linecard&rdquo; using Intel DPDK. The servers are interconnected using a mesh, ToR, or multi-stage Clos network. Workloads are scheduled across these server/linecards using Valiant Load Balancing (VLB). Of course, there are issues with packet-level load balancing and flow-level load balancing, so tradeoffs must be made one way or another.</p>
+<p>An example SRF built using four systems, each with ten 10Gbps interfaces, is capable of sustaining 40Gbps line rate with 64 bytes, 128 bytes, 256 bytes, 512 bytes, 1024 bytes, and 1500 bytes. Testing latency and jitter using a Spirent shows that an SRF compares very favorably with an edge router, but not so well against a core router (even though everything on the SRF is software-based running on Linux). Out of order frames from the SRF were less than 0.04% in all cases.</p>
+<p>That SRF was built using Xeon processors, but what about an SRF built using Atom processors? A single Atom core can&rsquo;t sustain line rate at 64 or 128 bytes per packet, but 2 cores can sustain line rate. Testing latency and jitter showed results at less than 60 microseconds and less than 0.15 microseconds, respectively.</p>
+<p>Comparing Xeon to Atom, the speaker shows that a Xeon core can move about 4 times the number of packets compared to an Atom core. A Xeon core will also use far less memory bandwidth than an Atom core due to Xeon&rsquo;s support for Direct Data I/O, which copies (via DMA) data received by a NIC into the processor&rsquo;s cache. Atom does not support this feature.</p>
+<p>With respect to efficiency, Xeon versus Atom presents very interesting results. Throughput per rack unit is better for the Atom (40 Gbps/RU compared to 13.3Gbps/RU), while raw throughput is far better for the Xeon. Throughput per watt, on the other hand, is slightly better for the Atom (0.46 Gbps/watt versus 0.37 Gbps/watt for Xeon).</p>
+<p>At this point, the first presenter re-takes the stage and they open up the session for questions.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2014">IDF2014</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/09/11/idf-2014-open-source-storage-optimizations/">IDF 2014: Open Source Storage Optimizations</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/09/12/a-quick-introduction-to-vagrant/">A Quick Introduction to Vagrant</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f11%2fidf-2014-architecting-for-sdi-a-microserver-perspective%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f11%2fidf-2014-architecting-for-sdi-a-microserver-perspective%2f&text=IDF%202014%3a%20Architecting%20for%20SDI%2c%20a%20Microserver%20Perspective" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f11%2fidf-2014-architecting-for-sdi-a-microserver-perspective%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/09/09/idf-2014-virtualizing-the-network-to-enable-sdi/">IDF 2014: Virtualizing the Network to Enable SDI</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2014/09/11/idf-2014-open-source-storage-optimizations/">IDF 2014: Open Source Storage Optimizations</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/09/10/idf-2014-day-2-recap/">IDF 2014 Day 2 Recap</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

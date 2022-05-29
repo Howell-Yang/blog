@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Revisiting CentOS Atomic Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Revisiting CentOS Atomic Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Revisiting CentOS Atomic Host - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/04/25/revisiting-centos-atomic-host/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Revisiting CentOS Atomic Host</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;663 words (estimated 4 minutes to read)</span>
+  <p>A couple years ago, I wrote an article about how I was <a href="/2015/03/08/choosing-coreos-over-atomic/">choosing CoreOS over Project Atomic</a> based on some initial testing with CentOS Atomic Host builds. As it turns out&mdash;and as I pointed out in the &ldquo;Update&rdquo; section of that article&mdash;the Atomic Host builds I was using were pre-release builds, and therefore it wasn&rsquo;t really appropriate to form an assessment based on pre-release builds. Now that both <a href="https://projectatomic.io/">CentOS Atomic Host</a> and <a href="https://coreos.com/">CoreOS</a> Container Linux have both grown and matured, I thought I&rsquo;d revisit the topic and see how&mdash;if at all&mdash;things have changed.</p>
+<p>In my original post, there were 4 major issues I identified (not necessarily in the same order as the original post):</p>
+<ul>
+<li>Lack of container-specific cloud-init extensions</li>
+<li>Difficulty customizing Docker daemon</li>
+<li>Odd issues with cloud-init</li>
+<li>Stability of the distribution</li>
+</ul>
+<p>So how do these areas look now, 2 years later?</p>
+<ul>
+<li>
+<p><em>Container-specific cloud-init extensions:</em> Upon a closer examination of this issue, I realized that the cloud-init extensions were actually specific to CoreOS projects, like etcd and fleet. Thus, it wouldn&rsquo;t make sense for these sorts of cloud-init extensions to exist on Atomic Hosts. What <em>would</em> make sense would be extensions that help configure Atomic Host-specific functionality, though (to be honest) I can&rsquo;t think of any such functionality at the moment. I call this one a tie.</p>
+</li>
+<li>
+<p><em>Difficulty customizing the Docker daemon:</em> As evidenced in <a href="/2017/03/02/customizing-docker-centos-atomic-host/">this post</a>, I&rsquo;ve clearly figured out how to customize the Docker daemon on an Atomic Host instance, using either shell scripts or Ansible playbooks. (I&rsquo;m currently working on doing the same thing using <code>cloud-init</code> on AWS, but I still have some kinks to work out.) I&rsquo;d say this one is a tie as well. (CoreOS may have a slight edge in having better documentation around this topic.)</p>
+</li>
+<li>
+<p><em>Odd issues with cloud-init:</em> I don&rsquo;t use <a href="https://www.openstack.org/">OpenStack</a> in my home lab any longer (no fault of OpenStack&rsquo;s, I simply don&rsquo;t run a home lab), so my <code>cloud-init</code> testing defaults to using user data when spinning up AWS instances based on a CentOS Atomic Host AMI. I haven&rsquo;t seen the issues that I saw in my testing 2 years ago, which were most likely due to the pre-release status of the version I tested at the time. Again, a tie.</p>
+</li>
+<li>
+<p><em>Stability of the distribution:</em> Because I&rsquo;m not using OpenStack, the additional testing I&rsquo;ve done here isn&rsquo;t quite &ldquo;apples for apples&rdquo; compared to the original article. However, I&rsquo;ve been running more instances of CentOS Atomic Host, both via <a href="https://www.virtualbox.org/">VirtualBox</a> on my <a href="https://getfedora.org/">Fedora Linux</a> laptop and on AWS, and haven&rsquo;t seen the same sort of instability I saw 2 years ago. As I mentioned in the update to the original article, my testing was done with pre-release builds, and that may explain some of the instability issues. Both distributions seem equally stable at this point.</p>
+</li>
+</ul>
+<p>Aside from these particular issues, there are still a number of differences between the two options:</p>
+<ul>
+<li>CoreOS Container Linux runs a <em>much</em> newer Linux kernel, and supports newer container technologies like overlay/overlay2 file systems. CentOS Atomic Host runs Linux 3.10, and still relies on DeviceMapper for containers.</li>
+<li>CoreOS Container Linux publishes a JSON feed for their AWS AMIs, making it much easier <a href="/2017/03/29/easily-finding-latest-coreos-ami-id/">to find the latest CoreOS AMI ID</a>.</li>
+<li>CentOS Atomic Host includes Python, making it much easier to automate certain tasks using a tool like <a href="https://www.ansible.com/">Ansible</a>.</li>
+</ul>
+<p>So what&rsquo;s the final verdict? The answer certainly isn&rsquo;t as clear-cut as my misinformed view in the original post 2 years ago (see the updates on that original post for why I called my view misinformed). As with so many things in IT, it really boils down to requirements. Is there a need for some sort of host OS automation/configuration? If so, then Atomic Host might make more sense. Would the organization benefit from some consistency between a general-purpose OS (RHEL/CentOS) and a container-optimized OS (Atomic Host)? If not, then perhaps going with CoreOS Container Linux is the right approach. Either way, both are good options&mdash;for different reasons&mdash;for a container-optimized Linux distribution.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/04/19/dockercon-2017-day-2-keynote/">Liveblog: DockerCon 2017 Day 2 Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/04/26/big-news-full-stack-journey/">Big News About the Full Stack Journey Podcast</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f25%2frevisiting-centos-atomic-host%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f25%2frevisiting-centos-atomic-host%2f&text=Revisiting%20CentOS%20Atomic%20Host" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f04%2f25%2frevisiting-centos-atomic-host%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/03/08/choosing-coreos-over-atomic/">Choosing CoreOS over Project Atomic</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2015/02/20/config-mount-nfs-coreos/">Enabling and Mounting NFS on CoreOS</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2015/02/05/vagrant-coreos-etcd-fleet-docker/">Using Vagrant with CoreOS, etcd, fleet, and Docker</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

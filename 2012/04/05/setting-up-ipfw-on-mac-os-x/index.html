@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting Up ipfw on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting Up ipfw on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting Up ipfw on Mac OS X - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/04/05/setting-up-ipfw-on-mac-os-x/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting Up ipfw on Mac OS X</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;865 words (estimated 5 minutes to read)</span>
+  <p>Using multiple layers of security has long been recognized as a useful strategy in hardening your computers against attack or exploit. In this post, I want to explain how to set up and configure the BSD-level <code>ipfw</code> firewall that is present in Mac OS X. While <code>ipfw</code> is certainly not a security panacea, it can be a solid part of a broader security strategy.</p>
+<p>Setting up <code>ipfw</code> on Mac OS X has three basic steps:</p>
+<ol>
+<li>
+<p>Create a shell script that launches <code>ipfw</code>.</p>
+</li>
+<li>
+<p>Create a configuration file that the shell script from step 1 uses when launching <code>ipfw</code>.</p>
+</li>
+<li>
+<p>Create a LaunchDaemon in Mac OS X that calls the shell script from step 1 to start and configure <code>ipfw</code> every time your Mac boots.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a deeper look at each of these steps.</p>
+<h2 id="create-a-startup-shell-script">Create a Startup Shell Script</h2>
+<p>This part is harder than it sounds. At its most basic level, the script only needs to call <code>/sbin/ipfw</code> and a configuration file, like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/sh
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>
+</span></span><span style="display:flex;"><span>/sbin/ipfw -q /etc/ipfw.conf
+</span></span></code></pre></div><p>I did quite a bit of digging to see if something more than that was suggested, and finally came up with this startup shell script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/sh
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#75715e"># Startup script for ipfw on Mac OS X</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Flush existing rules</span>
+</span></span><span style="display:flex;"><span>/sbin/ipfw -f -q flush
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Silently drop unsolicited connections</span>
+</span></span><span style="display:flex;"><span>/usr/sbin/sysctl -w net.inet.tcp.blackhole<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>/usr/sbin/sysctl -w net.inet.udp.blackhole<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Load the firewall ruleset</span>
+</span></span><span style="display:flex;"><span>/sbin/ipfw -q /etc/ipfw.conf
+</span></span></code></pre></div><p>This startup shell script can generally be put anywhere; I chose to put it in <code>/usr/local/bin</code> (which may not exist by default on your system).</p>
+<p>With the startup shell script in place, you&rsquo;re now ready to proceed to the next step, which is perhaps the most involved and detailed step in the process.</p>
+<h2 id="create-the-configuration-file">Create the Configuration File</h2>
+<p>The configuration file contains all of the firewall rule definitions for <code>ipfw</code> and is therefore one of the most complicated steps. This complexity is not because the configuration file itself is difficult, but rather because the rules that should be included will vary greatly from user to user and network to network. I <strong>strongly</strong> encourage you to do your own research to understand what sort of firewall rules are most appropriate in your environment and for your setup.</p>
+<p>You can (theoretically) place the configuration file anywhere; I chose to place the file in <code>/etc</code> as <code>ipfw.conf</code> (very original, I know). If you do use something other than <code>/etc/ipfw.conf</code>, then adjust the startup shell script accordingly.</p>
+<p>Rather than provide any sort of suggested firewall ruleset here, let me suggest some other sites that provide excellent information on suggested rulesets for <code>ipfw</code>:</p>
+<p><a href="http://hints.macworld.com/dlfiles/custom_ipfw_105.txt">Use a custom firewall in 10.5 with ipfw (Mac OS X Hints)</a></p>
+<p><a href="http://www.novajo.ca/firewall.html">Setting up firewall rules on Mac OS X</a></p>
+<p><a href="http://www.ibiblio.org/macsupport/ipfw/">Configuring IPFW Firewalls on OS X</a></p>
+<p>From those sites&mdash;and there are many others besides just those&mdash;you should be able to put together an <code>ipfw</code> ruleset that is right for your network and your environment. Once you have the configuration file created and in place, then you&rsquo;re ready for the final step: ensuring that <code>ipfw</code> launches automatically when you boot your Mac.</p>
+<h2 id="create-a-launchdaemon">Create a LaunchDaemon</h2>
+<p>The final step is ensuring that <code>ipfw</code> launches automatically every time your Mac boots. This is accomplished by creating a text file&mdash;known as a property list file, or a plist file&mdash;with very specific contents into the <code>/Library/LaunchDaemons</code> folder.</p>
+<p>Here&rsquo;s a screenshot of my plist file, named <code>com.apple.ipfw.plist</code> (you can use a different name, like your own domain name, in the filename):</p>
+<p><img src="/public/img/ipfw-launchdaemon-file.png" alt="ipfw LaunchDaemon file"></p>
+<p>Don&rsquo;t just copy and paste this file &ldquo;as is&rdquo; into your system! You&rsquo;ll need to customize it to fit your system. Specifically, under the ProgramArguments key, the path to and name of the startup shell script should be adjusted to match the shell script you created earlier. In my case, the script is named <code>ipfwstartup.sh</code> and is found in <code>/usr/local/bin</code>. This startup shell script should, in turn, refer to the <code>ipfw</code> configuration file you created.</p>
+<p>I believe&mdash;but I could be mistaken&mdash;that you&rsquo;ll need to set ownership of the LaunchDaemon plist file to root:wheel. You can do this using the <code>chown</code> command in Terminal.</p>
+<p>Once the plist file is in place, reboot your Mac. Once your Mac boots up and you&rsquo;ve logged in, fire up the Terminal and run this command (you will need to use <code>sudo</code> if your account has administrative privileges; if your account doesn&rsquo;t have administrative privileges, you should log in as an account that does in order to test things):</p>
+<pre><code>sudo ipfw list
+</code></pre>
+<p>This command should return the list of firewall rules you embedded in the configuration file. If it doesn&rsquo;t, then go back and double-check your setup. Be sure that the plist file has the correct reference to the startup shell script, and that the startup shell script has the correct reference to the configuration file. You should also check to ensure that you made the startup shell script executable (using the <code>chmod</code> command).</p>
+<p>If the command does return your firewall ruleset, then you&rsquo;re all set.</p>
+<p>Note that using <code>ipfw</code> does <em>not</em> in any way prevent you from using other firewalls&mdash;such as the built-in application-level firewall in Mac OS X&mdash;to further secure your system.</p>
+<p>Questions? Comments? Clarifications? Please feel free to speak up in the comments below to add your thoughts.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/04/03/killing-ads-in-rss-feeds-in-vienna/">Killing Ads in RSS Feeds in Vienna</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/04/06/announcement-vmware-vsphere-training-video/">Announcement: VMware vSphere Training Video</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f04%2f05%2fsetting-up-ipfw-on-mac-os-x%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f04%2f05%2fsetting-up-ipfw-on-mac-os-x%2f&text=Setting%20Up%20ipfw%20on%20Mac%20OS%20X" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f04%2f05%2fsetting-up-ipfw-on-mac-os-x%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/25/some-useful-unix-commands-on-your-mac/">Some Useful UNIX Commands on your Mac</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2011/06/23/using-gnu-screen-with-ssh/">Using GNU Screen with SSH</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2011/06/17/trying-iterm2/">Trying iTerm2</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

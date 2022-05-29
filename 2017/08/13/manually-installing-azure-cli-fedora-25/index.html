@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Manually Installing Azure CLI on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Manually Installing Azure CLI on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Manually Installing Azure CLI on Fedora 25 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/08/13/manually-installing-azure-cli-fedora-25/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Manually Installing Azure CLI on Fedora 25</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;546 words (estimated 3 minutes to read)</span>
+  <p>For various reasons that we don&rsquo;t need to get into just yet, I&rsquo;ve started exploring <a href="https://azure.microsoft.com/en-us/">Microsoft Azure</a>. Given that I&rsquo;m a command-line interface (CLI) fan, and given that I use <a href="https://getfedora.org/">Fedora</a> as my primary laptop operating system, this led me to installing the Azure CLI on my Fedora 25 system&mdash;and that, in turn, led to this blog post.</p>
+<h2 id="some-background">Some Background</h2>
+<p>First, some background. Microsoft has <a href="https://docs.microsoft.com/en-us/cli/azure/install-azure-cli">instructions for installing Azure CLI on Linux</a>, but there are two problems with these instructions:</p>
+<ol>
+<li>
+<p>Official packages that can be installed via a package manager are only provided for Ubuntu/Debian. Clearly, this leaves Fedora/CentOS/RHEL users out in the cold.</p>
+</li>
+<li>
+<p>Users of other Linux distributions are advised to use <code>curl</code> to download a script and pipe that script directly into Bash. (&ldquo;Danger, Will Robinson!&rdquo;) Clearly, this is <em>not</em> a security best practice, although I am glad that they didn&rsquo;t recommend the use of <code>sudo</code> in the mix.</p>
+</li>
+</ol>
+<p>Now, if you dig into #2 a bit, you&rsquo;ll find that the <code>InstallAzureCli</code> script you&rsquo;re advised to download via <code>curl</code> really does nothing more than download a Python script named <code>install.py</code>. The <code>install.py</code> Python script really just uses <code>pip</code> and <code>virtualenv</code> to install the Azure CLI.</p>
+<p>This left me wondering&mdash;why not just advise users to use <code>virtualenv</code> and <code>pip</code> directly, instead of writing a shell script that calls a Python script that calls <code>virtualenv</code> and <code>pip</code>? I posted a message on the Azure Forums to that effect; I&rsquo;ll update this post when I learn more about the rationale.</p>
+<p>Since Microsoft&rsquo;s install script uses <code>virtualenv</code> and <code>pip</code>, I figured I&rsquo;d just do that myself manually.</p>
+<h2 id="manually-installing-the-azure-cli">Manually Installing the Azure CLI</h2>
+<p>With that background in mind, here are the steps I followed to install the Azure CLI.</p>
+<p>First, on Fedora 25:</p>
+<ol>
+<li>
+<p>Make sure that the &ldquo;gcc&rdquo;, &ldquo;libffi-devel&rdquo;, &ldquo;python-devel&rdquo;, and &ldquo;openssl-devel&rdquo; packages are installed (use <code>dnf</code> to take care of this). On my primary system, these were already installed, so I used a clean Fedora 25 Cloud Base Vagrant image to test. Only these four packages are prerequisites.</p>
+</li>
+<li>
+<p>Install Pip using <code>sudo dnf install python-pip</code>.</p>
+</li>
+<li>
+<p>Once Pip is installed, install virtualenv with <code>pip install virtualenv</code>. (I did a <code>sudo -H pip install virtualenv</code> to make virtualenv available to all users on the system, but as far as I know that&rsquo;s not required.)</p>
+</li>
+<li>
+<p>Create a new virtual environment with <code>virtualenv azure-cli</code> (feel free to use a different name).</p>
+</li>
+<li>
+<p>Activate the new virtual environment (typically accomplished by sourcing the <code>&lt;virtualenv&gt;/bin/activate</code> script).</p>
+</li>
+<li>
+<p>Install the Azure CLI with <code>pip install azure-cli</code>.</p>
+</li>
+</ol>
+<p>On macOS, the process is very similar:</p>
+<ol>
+<li>
+<p>If Pip isn&rsquo;t already installed, install it with <code>sudo easy_install pip</code>. (I&rsquo;d already installed Pip on my macOS systems, so I didn&rsquo;t need this step.)</p>
+</li>
+<li>
+<p>Use Pip to install virtualenv (with <code>pip install virtualenv</code>).</p>
+</li>
+<li>
+<p>Create a new virtual environment (<code>virtualenv azure-cli</code>).</p>
+</li>
+<li>
+<p>Activate the new virtual environment (source the <code>activate</code> script).</p>
+</li>
+<li>
+<p>Install the Azure CLI with <code>pip install azure-cli</code>.</p>
+</li>
+</ol>
+<p>Note that I did have the XCode command-line tools installed&mdash;in order to have <code>git</code>&mdash;so that may affect things. I tested this on both El Capitan (10.11.6) and Sierra (10.12.5), and the process was identical on both systems.</p>
+<p>So there you have it: how to install the Azure CLI using <code>virtualenv</code> and <code>pip</code> on Fedora 25 and macOS. Stay tuned for more Azure-related posts later this year.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/08/11/technology-short-take-85/">Technology Short Take 85</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/08/14/using-odrive-cloud-storage-linux/">Using ODrive for Cloud Storage on Linux</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f13%2fmanually-installing-azure-cli-fedora-25%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f13%2fmanually-installing-azure-cli-fedora-25%2f&text=Manually%20Installing%20Azure%20CLI%20on%20Fedora%2025" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f08%2f13%2fmanually-installing-azure-cli-fedora-25%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/02/03/technology-short-take-77/">Technology Short Take #77</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2016/12/16/linux-migration-initial-progress-report/">The Linux Migration: Initial Progress Report</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2017/07/10/linux-migration-july-2017-progress-report/">The Linux Migration: July 2017 Progress Report</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

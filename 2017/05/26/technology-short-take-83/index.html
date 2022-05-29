@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 83 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 83 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 83 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/05/26/technology-short-take-83/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 83</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 269 May 262626 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;801 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #83! This is a slightly shorter TST than usual, which might be a nice break from the typical information overload. In any case, enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>I enjoyed Dave McCrory&rsquo;s series on the future of the network (see <a href="https://blog.mccrory.me/2017/05/22/the-future-of-the-network/">part 1</a>, <a href="https://blog.mccrory.me/2017/05/22/the-future-of-the-network-part-2/">part 2</a>, <a href="https://blog.mccrory.me/2017/05/23/beyond-the-network-the-future-of-the-network-part-3/">part 3</a>, and <a href="https://blog.mccrory.me/2017/05/25/networks-openness-istio-the-future-of-networks-part-4/">part 4</a>&mdash;part 5 hadn&rsquo;t gone live yet when I published this). In my humble opinion, he&rsquo;s spot on in his viewpoint that network equipment is increasingly becoming more like servers, so why not embed services and functions in the network equipment? However, this isn&rsquo;t enough; you also need a strong control plane to help manage and coordinate these services. Perhaps <a href="https://istio.io/">Istio</a> will help provide that control plane, though I suspect something more will be needed.</li>
+<li>Michael Kashin has a handy little tool that functions like <code>ssh-copy-id</code> on servers, but for network devices (leveraging Netmiko). Check out <a href="https://github.com/networkop/ssh-copy-net">the GitHub repository</a>.</li>
+<li>Anthony Shaw has <a href="https://medium.com/@anthonypjshaw/ansible-v-s-salt-saltstack-v-s-stackstorm-3d8f57149368">a good comparison of Ansible, StackStorm, and Salt</a> (with a particular view at applicability in a networking context). This one is definitely worth a read, in my opinion.</li>
+<li>Miguel Gómez of Telefónica Engineering discusses <a href="https://engineering.telefonica.com/maximizing-performance-in-vxlan-overlay-networks-ec35ebe29440">maximizing performance in VXLAN overlay networks</a>.</li>
+<li>Nicolas Michel has a good post on <a href="http://vpackets.net/2017/05/network-engineer-v1-0-v2-0/">the transition from network engineer v1.0 to v2.0</a>, and some of the skillsets he believes network engineers must embrace moving forward.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Stephen Foskett <a href="http://blog.fosketts.net/2017/05/25/core-i7-macintosh-se">shares some details</a> on a nifty side project turning an old Macintosh SE into a Core i7 &ldquo;Hackintosh&rdquo;. Fun read if you&rsquo;re into custom builds.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>John Welsh has a post on <a href="http://samplefive.com/2017/05/why-the-heck-would-you-use-nsx/">why someone might use VMware NSX</a>. Rich Stroffolino has <a href="http://gestaltit.com/exclusive/rich/vmware-nsx-going-big-micro-segmentation/">a similar piece over at Gestalt IT</a>, though Rich points out that this use case is only one aspect of how NSX might be used in an environment. These viewpoints&mdash;that security via micro-segmentation is a compelling use case for NSX&mdash;is one I&rsquo;ve seen repeated in numerous environments.</li>
+<li>Here&rsquo;s <a href="http://ral-arturo.org/2017/05/05/debian-stretch-stable-nftables.html">a quick post</a> on <code>nftables</code>, the (eventual) Linux replacement for <code>iptables</code>.</li>
+<li>Turns out there&rsquo;s a security vulnerability in some of the wireless keyboard and mice out there. Unfortunately, if you were the owner of a Logitech device, you had to boot into Windows just to update the firmware&mdash;until now. Check out <a href="https://blogs.gnome.org/hughsie/2017/05/22/updating-logitech-hardware-on-linux/">this blog</a> on work done to bring firmware updates into the land of Linux.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>&ldquo;Even with public cloud and managed services, you can&rsquo;t avoid good old-fashioned data management processes.&rdquo; That&rsquo;s a great quote from Chris Evans discussing some <a href="https://blog.architecting.it/2017/03/26/learning-from-the-instapaper-outage/">lessons that can be learned from the Instapaper outage</a>. Cloud computing does make some things easier&mdash;but it doesn&rsquo;t eliminate other necessary tasks and design considerations.</li>
+<li>Rob Hirschfeld has a wrap-up of day 1 of the recent OpenStack Summit in Boston; read it <a href="https://robhirschfeld.com/2017/05/09/openstack-boston-day-1-notes/">here</a>. I like Rob&rsquo;s take for a few different reasons. First, Rob&rsquo;s been involved in OpenStack for quite a while; that gives him some perspective. Second, he&rsquo;s very pragmatic about OpenStack; I think he manages to strike a balanced view (not the &ldquo;rah-rah&rdquo; from the cheerleaders nor the doom-and-gloom from the pundits).</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I was recently reviewing some articles on Git, the popular distributed version control system, and came across a few related posts. First, there was <a href="http://endoflineblog.com/gitflow-considered-harmful">this post against GitFlow</a>, followed by <a href="http://endoflineblog.com/oneflow-a-git-branching-model-and-workflow">this post on OneFlow</a> (a potential replacement for GitFlow). Not having used Git or GitFlow in large development environments (only for personal projects), I can&rsquo;t speak to the author&rsquo;s criticisms, but they certainly seem valid. I also saw <a href="https://github.com/joemiller/git-flux">this proposed Git workflow for &ldquo;infrastructure-as-code&rdquo; projects</a>, which I&rsquo;m going to review in more detail to try to better understand.</li>
+<li>I found <a href="https://mndrix.blogspot.com/2017/05/switching-to-openbsd.html">this post</a> describing someone&rsquo;s migration from macOS to OpenBSD. While I&rsquo;ve played around a fair amount with OpenBSD on the server side, I (personally) wouldn&rsquo;t have considered it as a desktop OS. However, the author of this post seems to be getting along pretty well.</li>
+<li>Also on the topic of migrating to different OSes, here&rsquo;s a post on <a href="https://blog.roetert.eu/linux-on-chromebook/">using GalliumOS on a Chromebook</a>.</li>
+<li>I must confess I was, at first, a bit confused about <a href="https://blog.docker.com/2017/04/introducing-the-moby-project/">the Moby project</a>. After a little time and seeing how things seem to be progressing, I realize that it creates a clear separation between the open source project formerly known as Docker (now Moby) and Docker CE/EE (the products from Docker Inc.). This was the source of some confusion in the past; the move to Moby sidesteps those concerns.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time around, but I&rsquo;m sure I&rsquo;ll find content to include in future episodes.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Luc Dekens <a href="http://www.lucd.info/2017/03/10/vsphere-automation-sdks-powershell-part-1/">explores</a> the open-sourced vSphere Automation SDKs <a href="https://blogs.vmware.com/opensource/2017/03/09/integration-vmware-vsphere-using-new-open-sourced-software-development-kits/">announced back in March</a> (I think I may have referenced this already in a previous TST). Naturally, Luc&rsquo;s exploration primarily focuses on PowerCLI.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Ivan Pepelnjak has <a href="http://blog.ipspace.net/2017/05/few-secrets-of-successful-learning.html">a few secrets of successful learning</a> that any technology professional can leverage to his/her advantage.</li>
+</ul>
+<p>That&rsquo;s all this time around&mdash;I hope you found something useful here.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/stackstorm">StackStorm</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/salt">Salt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/05/25/container-deployment-demos/">Container Deployment Demos from Interop ITX</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/05/26/bastion-hosts-custom-ssh-configs/">Bastion Hosts and Custom SSH Configurations</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f26%2ftechnology-short-take-83%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f26%2ftechnology-short-take-83%2f&text=Technology%20Short%20Take%2083" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f05%2f26%2ftechnology-short-take-83%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/24/technology-short-take-80/">Technology Short Take 80</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2016/08/12/technology-short-take-70/">Technology Short Take #70</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

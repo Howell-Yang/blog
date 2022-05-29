@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #57 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #57 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #57 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/12/11/technology-short-take-57/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #57</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1280 words (estimated 7 minutes to read)</span>
+  <p>Welcome to Technology Short Take #57. I hope you find something useful here!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Tor Anderson has <a href="http://blog.toreanderson.no/2015/11/16/ipv6-network-boot-with-uefi-and-ipxe.html">an article</a> on using IPv6 for network boot using UEFI and iPXE.</li>
+<li>Larry Smith Jr. has a great blog series going called &ldquo;Hey, I can DevOps my Network too!&rdquo; He started out with <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-intro">an intro post</a> just to set the stage for the series, then had <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-prep-work-part-1">a post on the prep work</a> required to get ready to proceed with the series. In part 2 Larry walks through <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-define-nodes-part-2">the node definitions in Vagrant</a>, and in part 3 he reviews the <code>Vagrantfile</code> and <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-vagrant-up-part-3">turns up the environment</a>. Parts 4 and 5 walk through <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-auto-configured-ospf-part-4">auto-configured OSPF</a> and <a href="http://everythingshouldbevirtual.com/hey-i-can-devops-my-network-too-manual-configured-ospf-part-5">manually-configured OSPF</a>, respectively. I&rsquo;m looking forward to more posts in this series!</li>
+<li>Sometimes I see blog posts that tout themselves as a &ldquo;deep dive&rdquo; but aren&rsquo;t really <em>that</em> deep or detailed. However, <a href="http://galsagie.github.io/sdn/nfv/openstack/ovs/2015/11/23/ovn-l3-deepdive/">this OVN L3 deep dive by Gal Sagie</a> really <em>is</em> a deep dive&mdash;he goes into a pretty fair amount of detail on how OVN&rsquo;s L3 implementation works. Good stuff if you&rsquo;re interested in getting more details on how OVN is implementing new features like L3.</li>
+<li>Kirk Byers has <a href="http://www.networkcomputing.com/networking/network-automation-programming-and-scale/a/d-id/1323477">a helpful article</a> that provides some suggestions and guidelines for how to make your network automation/network scripts become more than just your own personal hobby at work.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>If you&rsquo;re looking for a cost-effective home lab setup, you might check out <a href="http://virtualviking.net/2015/12/09/500-poor-mans-vcloud-suite-lab/">this article</a> on a $500 vCloud Suite lab.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>We all know that security is more than just a host-based firewall, but a host-based firewall can be part of an overall security strategy. <a href="http://www.cyberciti.biz/tips/linux-iptables-examples.html">This article</a> provides a good introductory overview of Linux <code>iptables</code> commands for configuring host-based firewall rules on your Linux systems.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Eric Wright has a couple of posts I saw on the OpenStack Cookbook lab, which comes out of the most-excellent <em>OpenStack Cloud Computing Cookbook</em> (now in its third edition, by Kevin Jackson, Cody Bunch, and Egle Sigler). First up is a post <a href="http://discoposse.com/2015/11/21/installing-the-openstack-cookbook-on-osx/">on installing the OpenStack Cookbook lab on OS X</a>, followed by a post on <a href="http://discoposse.com/2015/11/21/suspending-and-restarting-the-openstack-cookbook-lab/">suspending and restarting the OpenStack Cookbook lab</a>. If you&rsquo;re just getting started with OpenStack, one of the first books you buy should be <em>OpenStack Cloud Computing Cookbook</em>, and one of the first things you should do after you buy the book is set up the lab.</li>
+<li>The areas of orchestration systems and resource scheduling are getting a bit more connected due to the efforts of Kubernetes-Mesos, which recently <a href="https://mesosphere.com/blog/2015/12/04/kubernetes-mesos-0-7-0/">announced the release of version 0.7.0</a>. What is Kubernetes-Mesos, you ask? It&rsquo;s a way to run Kubernetes (the container orchestration system) on top of Mesos (the cluster resource scheduler) as a native Mesos framework.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Benny Cornelissen has <a href="http://blog.bennycornelissen.nl/consul-the-end-of-the-cname/">a really good article</a> talking about the value of Consul, the distributed key/value store, in providing valuable infrastructure services. A lot of people think tools like Consul are only valuable in &ldquo;next-generation&rdquo; microservices-based architectures, but Benny&rsquo;s article shows how it can add a lot of value in &ldquo;traditional&rdquo; architectures. I <em>highly</em> recommend this article.</li>
+<li>Nigel Poulton attended DockerCon EU and has an article sharing some early thoughts on <a href="http://blog.nigelpoulton.com/docker-on-windows-state-of-play/">the state of Docker and Windows containers</a>. While it&rsquo;s still early yet (and Nigel fully acknowledges this in his article), I will say that I&rsquo;m not terribly surprised by some of his observations. The Windows architecture is so dramatically different from UNIX/Linux that trying to adapt per-process containers is quite naturally going to be more than a little bit challenging.</li>
+<li>And speaking of containers on Windows: this past week, Microsoft released Windows Server 2016 Technical Preview 4, with the first public preview of Hyper-V Containers and&mdash;according to <a href="http://blogs.technet.com/b/server-cloud/archive/2015/11/19/announcing-the-release-of-hyper-v-containers-in-windows-server-2016-technical-preview-4.aspx">this blog post</a>&mdash;&ldquo;significant enhancements to both Windows Server Containers and the Docker engine for Windows.&rdquo;</li>
+<li>Microsoft&rsquo;s focus on Windows Server 2016 is increasing; I also saw <a href="http://blogs.technet.com/b/windowsserver/archive/2015/11/16/moving-to-nano-server-the-new-deployment-option-in-windows-server-2016.aspx">this post on moving to Nano Server</a>, the new &ldquo;subset&rdquo; of Server Core, that will make its appearance in Windows Server 2016. It appears that applications that were written for Nano Server may require some porting/modification, which in turn may negatively impact the adoption of Nano Server among Microsoft&rsquo;s customers and ISVs.</li>
+<li>Need a &ldquo;cheat sheet,&rdquo; so to speak, for VMware&rsquo;s cloud-native applications initiatives? <a href="http://blog.think-v.com/?page_id=3277">Look no further.</a></li>
+<li>This post is slightly older (it&rsquo;s from June 2015), but still helpful, especially if you&rsquo;re trying to wrap your mind around the idea of a &ldquo;pod&rdquo; in Kubernetes. The article discusses <a href="http://blog.kubernetes.io/2015/06/the-distributed-system-toolkit-patterns.html">patterns for composite containers</a>&mdash;in other words, examples where a pod (a group of containers) make the ideal use case. As I said, it&rsquo;s definitely worth reading if you&rsquo;re (relatively) new to the Kubernetes scene and are trying to get some concrete examples of how the Kubernetes concepts play out.</li>
+<li>Just because I can: here&rsquo;s an article on <a href="http://www.cyberciti.biz/faq/apple-mac-os-x-update-softwareupdate-bash-shell-command/">updating OS X using the command-line <code>softwareupdate</code> tool</a>. Have fun.</li>
+<li>Tyler Cross has an article on <a href="http://blog.bandwidth.com/why-you-should-use-yaml-as-yaml-with-ansible/">using YAML as YAML with Ansible</a>. This may sound weird, but if you&rsquo;ve worked with Ansible you know it supports both YAML and a &ldquo;YAML-like&rdquo; syntax. Tyler&rsquo;s article argues for using &ldquo;pure&rdquo; YAML, a suggestion that I second (I switched my playbooks to YAML some time ago and found them to be much more readable).</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time around, but I&rsquo;ll keep searching for useful articles to include in the future.</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>William Lam shares (via guest author John Clendenen) some information on <a href="http://www.virtuallyghetto.com/2015/11/esxi-6-0-on-apple-xserve-31.html">running ESXi 6.0 on an Apple Xserve 3,1</a>. William also has a great post on migrating ESXi to a Distributed Virtual Switch with a single NIC running vCenter Server (how&rsquo;s that for a mouthful?). The trick, <a href="http://www.virtuallyghetto.com/2015/11/migrating-esxi-to-a-distributed-virtual-switch-with-a-single-nic-running-vcenter-server.html">as William explains</a>, lies in disabling the network rollback functionality while also using ephemeral port binding.</li>
+<li>To those who say that &ldquo;virtualization is dead, long live the container,&rdquo; I can only point to the numerous mashups between &ldquo;traditional&rdquo; virtualization and OS container concepts such as those espoused by Docker: vSphere Integrated Containers (VIC), Hyper-V Containers, Intel&rsquo;s Clear Containers, and now <a href="http://rancher.com/introducing-ranchervm-package-and-run-virtual-machines-as-docker-containers/">RancherVM (KVM VMs inside Docker containers)</a>. (Here&rsquo;s <a href="http://sebgoa.blogspot.com/2015/05/running-vms-in-docker-containers-via.html">an article</a> providing a bit more details on RancherVM and using it with Kubernetes.) Yes, containerization is a key part of the future, but virtualization isn&rsquo;t going away anytime soon.</li>
+<li>If you&rsquo;re interested in a bit more detail on the components and architecture of VMware&rsquo;s newly-open source Photon Controller (here&rsquo;s <a href="https://github.com/vmware/photon-controller">the GitHub repo</a>), check out <a href="https://blogs.vmware.com/cloudnative/vmware-photon-controller-deep-dive/">this blog post</a>.</li>
+<li>Ben Armstrong explains the reasons behind <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2015/11/16/why-are-there-two-hyper-v-powershell-modules-in-windows-10.aspx">two Hyper-V PowerShell modules in Windows 10</a>. (Hint: it&rsquo;s about supporting multiple versions of Hyper-V.)</li>
+<li>Ed Haletky <a href="http://www.astroarch.com/2015/11/kvm-upgrade-saga-open-vswitch-woes/">shares</a> some pain he experienced recently with a KVM host running Open vSwitch (OVS). I don&rsquo;t normally see <em>any</em> of the issues that Ed experienced with his KVM host, but this may be due to some Linux distribution differences (Ed&rsquo;s running CentOS, whereas I&rsquo;m running Ubuntu). In any case, if you&rsquo;re running KVM with OVS, you might find some of the scripts that Ed presents useful.</li>
+<li>Paul Gifford has an install script to turn up a complete container lab using VMware AppCatalyst, Docker Machine, Vagrant, Ansible, and Packer. Check out <a href="http://www.canuck.io/posts/appacatalyst-lab-installer">the blog post</a> for more details.</li>
+</ul>
+<h2 id="careersoft-skillsproductivity">Career/Soft Skills/Productivity</h2>
+<ul>
+<li>JJ Asghar has a post on <a href="http://jjasghar.github.io/blog/2015/11/18/characteristics-of-a-successful-chatroom-meeting/">some characteristics of a successful chatroom meeting</a>. Given the prevalent use of IRC and IRC meetings in open source projects (which is fine by me, I don&rsquo;t mind using IRC at all), this is a helpful post for both organizers and attendees. I particularly appreciated the suggestions around &ldquo;time-boxed pauses&rdquo; to encourage attendee feeback; I think this is something that too often gets overlooked.</li>
+</ul>
+<p>That&rsquo;s it for now. There&rsquo;s so much content out there; I&rsquo;d love to include more but these posts are already long enough as it is. I guess I need to try to increase the frequency at which I publish these things!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/12/11/using-ssh-multiplexing/">Using SSH Multiplexing</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/12/16/modifying-sec-groups-terraform/">Modifying OpenStack Security Groups with Terraform</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f11%2ftechnology-short-take-57%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f11%2ftechnology-short-take-57%2f&text=Technology%20Short%20Take%20%2357" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f12%2f11%2ftechnology-short-take-57%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/09/23/technology-short-take-54/">Technology Short Take #54</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2015/08/25/technology-short-take-53/">Technology Short Take #53</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

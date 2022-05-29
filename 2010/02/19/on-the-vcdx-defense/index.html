@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>On the VCDX Defense - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="On the VCDX Defense - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="On the VCDX Defense - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/02/19/on-the-vcdx-defense/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">On the VCDX Defense</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;910 words (estimated 5 minutes to read)</span>
+  <p>I&rsquo;ve been thinking about how to write this post since last Friday afternoon after I completed my VCDX defense panel. Even now, a week later, I&rsquo;m not sure that I have the right words to use.</p>
+<p>After many long hours of preparation on the application and the submitted design, after days and weeks of waiting, after hours spent reviewing the design, and after reading numerous tips and tricks from established VCDXs, it all culminated in the defense panel. There, in the defense panel, I would have to stand before three knowledgeable, established design experts and defend the choices made in the design. I&rsquo;d have to explain why I chose block storage over NFS, why Fibre Channel over iSCSI, why blade servers vs. rack-mount servers. I&rsquo;d have to explain why I chose the LUN size I chose, and I&rsquo;d have to defend the zoning that controlled the presentation of those LUNs. Clusters, cluster sizes, features enabled or not enabled, networking layout, VM density on the LUNs, projected IOPS&mdash;nothing was safe from their inquisition. And yes, I&rsquo;d have to explain why the design used NetApp storage instead of EMC storage. (It was a customer requirement, i.e., a design constraint.)</p>
+<p>Surprisingly, when the time for the VCDX defense panel arrived I found myself a lot more nervous than I had expected I would be. After all, this was just a friendly conversation with technical peers, right? In many ways it could be viewed that way, but the underlying purpose behind the conversation was ever-present: there was a reason I was there standing before these three people. It wasn&rsquo;t just &ldquo;shooting the breeze&rdquo; with friends; there was a purpose there. It wasn&rsquo;t just bouncing ideas off co-workers or industry colleagues; there was a reason for the conversation. It&rsquo;s not that the panelists did anything to cause this feeling; they were completely fine, very courteous and quite friendly. (In case you&rsquo;re wondering, I&rsquo;m not going to disclose who was on my panel. They are welcome to disclose if they so choose, but that will be their decision.)</p>
+<p>Looking back on it now, I realize that I should have gotten better control of my nerves. I spoke too quickly. I rushed through questions that probably deserved more explanation. I forgot details about my design. I got tripped up by relatively simple questions. I&rsquo;ve made no secret of the fact that I wasn&rsquo;t pleased by how well I performed&mdash;or didn&rsquo;t perform&mdash;in the VCDX defense panel. I was upset that I had been thrown off and that I wasn&rsquo;t able to recall all the details from my design. For a few hours after completing the defense panel, I beat myself up over how things had gone. But it didn&rsquo;t take me too long to make peace with not having passed. I knew that if I had not passed, the experience was still worthwhile as a learning experience. Even if I hadn&rsquo;t gained the VCDX certification, I&rsquo;d still gained knowledge and experience. And hey, there was always another chance to defend at VMworld, right?</p>
+<p>After returning home from Las Vegas, I spent the week thinking about what I would write after I&rsquo;d finally gotten my results. I tried to prepare for the questions like &ldquo;How in the world could Scott not pass?&rdquo; I thought about explaining that the defense panel was only doing their job; they were preserving the value of the certification. After all, if the bar is not held high, what is the value of VCDX? All the while I secretly hoped that the result would be something other than what I was confident it would be.</p>
+<p>And so it was that as I was driving my kids to a church youth group function tonight&mdash;after a long and unproductive day working with some rather stubborn equipment in the lab&mdash;that I received an e-mail from VMware. The first line of the message was this:</p>
+<blockquote>
+<p>Congratulations! You have achieved the VCDX3 certification. Your VCDX number is: VCDX39</p>
+</blockquote>
+<p>Unbelievable! I&rsquo;d passed! I was so excited. I&rsquo;d hoped for this result, but I honestly did not believe that I had managed to pull it off. I immediately called Crystal to tell her the news. I think she might have been even more excited than me.</p>
+<p>Having now been through this entire process, what advice do I have for aspiring VCDX candidates?</p>
+<ul>
+<li>
+<p>As many others have stated, <em>know your design.</em> If I had only one thing to change about my entire process, this would be it. You should know it forward and backward: every detail, every choice, and every reason behind the design.</p>
+</li>
+<li>
+<p>Don&rsquo;t be too nervous. I allowed my nerves to get the best of me, there&rsquo;s no question. I also don&rsquo;t doubt that I would have done better had I not been so nervous. (As a side note, it&rsquo;s interesting to me that I can stand up and speak in front of large crowds and not be nervous, but standing in front of those panelists really threw me. Odd.)</p>
+</li>
+<li>
+<p>Understand <em>the impact of your choices</em>. As Duncan pointed out in this recent blog post, it&rsquo;s really <a href="http://www.yellow-bricks.com/2010/02/15/impact-of-decisions/">about the impact</a>. Be prepared to discuss the reasons for the decisions in your design and the impact of the decisions in your design.</p>
+</li>
+</ul>
+<p>That&rsquo;s it from the latest VCDX to join the ranks. I&rsquo;ll post another update later with more tips and tricks that I learned from the experience, but those are some that jump to my mind immediately.</p>
+<p>Have a great weekend!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/02/18/a-collection-of-ucs-posts/">A Collection of UCS Posts</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/02/22/a-potential-use-for-the-ipad/">A Potential Use for the iPad</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f02%2f19%2fon-the-vcdx-defense%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f02%2f19%2fon-the-vcdx-defense%2f&text=On%20the%20VCDX%20Defense" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f02%2f19%2fon-the-vcdx-defense%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/02/18/virtualization-short-take-35/">Virtualization Short Take #35</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2010/02/11/vmware-vsphere-pro-video-training/">VMware vSphere Pro Video Training</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2010/02/11/partner-exchange-2010-session-techdv0721/">Partner Exchange 2010 Session TECHDV0721</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

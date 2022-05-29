@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Listing All Unique MailTags Keywords - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Listing All Unique MailTags Keywords - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Listing All Unique MailTags Keywords - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/08/24/listing-all-unique-mailtags-keywords/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Listing All Unique MailTags Keywords</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;286 words (estimated 2 minutes to read)</span>
+  <p>After figuring out yesterday how to <a href="/2007/08/23/listing-unique-projects-used-by-mailtags/">list all the unique MailTags projects</a> in use, today I worked out how to list all the unique <a href="http://www.indev.ca/MailTags.html">MailTags</a> keywords in use. As it turns out, it wasn&rsquo;t as hard as I had suspected that it would be.</p>
+<p>(Note to experienced UNIX hackers: I&rsquo;m sure that I probably could have worked out a more elegant solution involving more pipes and redirection, but this works for a UNIX apprentice such as me.)</p>
+<p>Here are the commands I used to parse down the list of unique keywords (this command is broken across two lines, but should be typed all on one line):</p>
+<pre><code>mdls &lt;path to mailbox&gt; | grep kMDItemKeywords |
+awk '{print $3 $4 $5 $6 $7 $8 $9}' &gt;&gt; outputfile.txt
+</code></pre>
+<p>This uses the <code>mdls</code> command to list all the metadata from the messages in the specified directory, pipes that through <code>grep</code> to pick out only the lines containing &ldquo;kMDItemKeywords&rdquo;, then uses <code>awk</code> to list all the keywords (which are in a comma-delimited list surrounded by parentheses. You&rsquo;ll want to repeat this command for every mailbox you use (I have different mailboxes to archive messages by year, so I had to repeat this for 2005, 2006, etc.)</p>
+<p>Once we have the keywords list, then we munge it:</p>
+<pre><code>cat outputfile.txt | tr ',' '\n' &gt; outputfile2.txt  
+sed s/\(//g &lt; outputfile2.txt &gt; outputfile3.txt  
+sed s/\)//g &lt; outputfile2.txt &gt; outputfile3.txt  
+sort outputfile3.txt &gt; sorted-file.txt  
+uniq sorted-file.txt &gt; unique-file.txt
+</code></pre>
+<p>This replaces commas with a newline (the <code>tr</code> command), strips out the parentheses (the next two <code>sed</code> commands), then sorts it and returns only the unique values. The end result, stored in <code>unique-file.txt</code>, contains a list of unique MailTags keywords used in all your mailboxes.</p>
+<p>Useful, eh?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/tagging">Tagging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/tags">Tags</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/08/23/listing-unique-projects-used-by-mailtags/">Listing Unique Projects Used by MailTags</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/08/25/user-profile-management-in-vdi-deployments/">User Profile Management in VDI Deployments</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f24%2flisting-all-unique-mailtags-keywords%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f24%2flisting-all-unique-mailtags-keywords%2f&text=Listing%20All%20Unique%20MailTags%20Keywords" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f08%2f24%2flisting-all-unique-mailtags-keywords%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/08/23/listing-unique-projects-used-by-mailtags/">Listing Unique Projects Used by MailTags</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2007/01/25/mac-bookmark-managers/">Mac Bookmark Managers</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2007/06/26/giving-iterm-a-try/">Giving iTerm a Try</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

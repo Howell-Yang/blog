@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Starting WireGuard Interfaces Automatically with Launchd on macOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Starting WireGuard Interfaces Automatically with Launchd on macOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Starting WireGuard Interfaces Automatically with Launchd on macOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/08/04/starting-wireguard-interfaces-automatically-launchd-macos/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Starting WireGuard Interfaces Automatically with Launchd on macOS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 49 May 4044 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;586 words (estimated 3 minutes to read)</span>
+  <p>In late June of this year, I wrote a piece on <a href="/2021/06/28/using-wireguard-on-mac-via-cli/">using WireGuard on macOS via the CLI</a>, where I walked readers using macOS through how to configure and use the <a href="https://www.wireguard.com/">WireGuard VPN</a> from the terminal (as opposed to using the GUI client, which I discussed <a href="/2021/04/01/using-wireguard-on-macos/">here</a>). In that post, I briefly mentioned that I was planning to explore how to have macOS&rsquo; <code>launchd</code> automatically start WireGuard interfaces. In this post, I&rsquo;ll show you how to do exactly that.</p>
+<p>These instructions borrow heavily from <a href="https://barrowclift.me/post/wireguard-server-on-macos">this post showing how to use macOS as a WireGuard VPN server</a>. These instructions also assume that you&rsquo;ve already walked through installing the necessary WireGuard components, and that you&rsquo;ve already created the configuration file(s) for your WireGuard interface(s). Finally, I wrote this using my M1-based MacBook Pro, so my example files and instructions will be referencing the default <a href="https://brew.sh">Homebrew</a> prefix of <code>/opt/homebrew</code>. If you&rsquo;re on an Intel-based Mac, change this to <code>/usr/local</code> instead.</p>
+<p>The first step is to create a <code>launchd</code> job definition. This file should be named <code>&lt;label&gt;.plist</code>, and it will need to be placed in a specific location. The <code>&lt;label&gt;</code> value is taken from the name given to the job itself, which you&rsquo;ll see in the example job definition below. Since this modifies the networking configuration of your macOS system, it will need to be treated as a &ldquo;global daemon&rdquo; and will need to be placed in the <code>/Library/LaunchDaemons</code> directory.</p>
+<p>Here&rsquo;s an example of a job definition:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-xml" data-lang="xml"><span style="display:flex;"><span><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34;?&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">&lt;!DOCTYPE plist PUBLIC &#34;-//Apple//DTD PLIST 1.0//EN&#34; &#34;http://www.apple.com/DTDs/PropertyList-1.0.dtd&#34;&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;plist</span> <span style="color:#a6e22e">version=</span><span style="color:#e6db74">&#34;1.0&#34;</span><span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;dict&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>Label<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;string&gt;</span>com.wireguard.wg0<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>ProgramArguments<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;array&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- Points to local version of wg-quick that
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">                 fixes path issues with the script --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;string&gt;</span>/Users/slowe/.local/bin/wg-quick<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;string&gt;</span>up<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;string&gt;</span>wg0<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/array&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>KeepAlive<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;dict&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;key&gt;</span>NetworkState<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>                <span style="color:#f92672">&lt;true/&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;/dict&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>RunAtLoad<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;true/&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>StandardErrorPath<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;string&gt;</span>/opt/homebrew/var/log/wireguard.err<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;key&gt;</span>EnvironmentVariables<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;dict&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;key&gt;</span>PATH<span style="color:#f92672">&lt;/key&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">&lt;!-- Adds in user-specific and Homebrew bin directories to start of PATH --&gt;</span>
+</span></span><span style="display:flex;"><span>            <span style="color:#f92672">&lt;string&gt;</span>/Users/slowe/.local/bin:/opt/homebrew/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin<span style="color:#f92672">&lt;/string&gt;</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#f92672">&lt;/dict&gt;</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">&lt;/dict&gt;</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">&lt;/plist&gt;</span>
+</span></span></code></pre></div><p>For the most part, the job definition is pretty easy to figure out, but here&rsquo;s a few notes:</p>
+<ul>
+<li>The <code>&lt;label&gt;</code> reference in naming the file pertains to the value of the <code>Label</code> key in the job definition. In my example, I&rsquo;m calling the job &ldquo;com.wireguard.wg0&rdquo;, so the filename should be <code>com.wireguard.wg0.plist</code>. Note that the extension is necessary.</li>
+<li>Note in the <code>ProgramArguments</code> key that I&rsquo;m referencing my personal changed copy of the Homebrew <code>wg-quick</code> script, which works around some path- and shell-related issues on M1-based Macs (as described <a href="/2021/06/22/making-wireguard-from-homebrew-work-on-an-m1-mac/">here</a>).</li>
+<li>As mentioned earlier, users of Intel-based Macs would want to change references to <code>/opt/homebrew</code> over to <code>/usr/local</code> (and the reference to the local copy of <code>wg-quick</code> may not be necessary).</li>
+</ul>
+<p>Make sure this job definition is saved to an appropriate file name (<code>&lt;label&gt;.plist</code>) and it&rsquo;s found in the <code>/Library/LaunchDaemons</code> directory. Then run these commands to inform <code>launchd</code> of the new job definition you just created:</p>
+<pre><code>sudo launchctl enable system/com.wireguard.wg0
+sudo launchctl bootstrap system /Library/LaunchDaemons/com.wireguard.wg0.plist
+</code></pre>
+<p>After running these two commands, you should be able to run <code>wg show</code> and see your WireGuard interface up and running. It should get turned up every time you restart your computer and there is a network present/active.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>In addition to <a href="https://barrowclift.me/post/wireguard-server-on-macos">the Barrowclift post</a>, I also found the <a href="https://launchd.info/">launchd.info</a> site to be quite helpful.</p>
+<p>Although the above instructions work without any issues on my Mac, I can&rsquo;t guarantee they&rsquo;ll work on every system out there. If you run into issues, or if you find that I&rsquo;ve provided incorrect or incomplete information, please let me know. You can interact with <a href="https://twitter.com/scott_lowe">me on Twitter</a>, or drop me an e-mail (my address isn&rsquo;t too hard to find).</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/08/03/alternate-approach-etcd-certificate-generation-kubeadm/">An Alternate Approach to etcd Certificate Generation with Kubeadm</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/08/06/technology-short-take-143/">Technology Short Take 143</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f04%2fstarting-wireguard-interfaces-automatically-launchd-macos%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f04%2fstarting-wireguard-interfaces-automatically-launchd-macos%2f&text=Starting%20WireGuard%20Interfaces%20Automatically%20with%20Launchd%20on%20macOS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f08%2f04%2fstarting-wireguard-interfaces-automatically-launchd-macos%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/06/28/using-wireguard-on-mac-via-cli/">Using WireGuard on macOS via the CLI</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2021/06/22/making-wireguard-from-homebrew-work-on-an-m1-mac/">Making WireGuard from Homebrew Work on an M1 Mac</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2021/06/25/installing-older-versions-of-kumactl-on-an-m1-mac/">Installing Older Versions of Kumactl on an M1 Mac</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Vagrant with CoreOS, etcd, fleet, and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Vagrant with CoreOS, etcd, fleet, and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Vagrant with CoreOS, etcd, fleet, and Docker - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/02/05/vagrant-coreos-etcd-fleet-docker/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Vagrant with CoreOS, etcd, fleet, and Docker</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 59 May 5055 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1255 words (estimated 6 minutes to read)</span>
+  <p>As a follow-up to <a href="http://professionalvmware.com/2015/02/vbrownbag-devops-follow-up-docker-and-friends-with-scott-lowe-scott_lowe/">my recent #vBrownBag session</a> on &ldquo;Docker and Friends,&rdquo; I wanted to provide a quick and relatively easy way for VMware administrators to experiment with some of the technologies I demonstrated. Since not everyone has their own OpenStack cloud running in their basement, <a href="http://www.vagrantup.com/">Vagrant</a> seemed like a reasonable solution. So, in this post, I&rsquo;ll show you how to use Vagrant to experiment with some of the technologies I demonstrated in the #vBrownBag session.</p>
+<p>If you&rsquo;d like to follow along on your own, I&rsquo;ve uploaded the necessary files to <a href="https://github.com/scottslowe/2015-vbrownbag-docker">the GitHub repo I created</a> for the #vBrownBag session. Just have a look in the <code>coreos-vagrant</code> folder in that repository.</p>
+<h2 id="what-youll-need">What You&rsquo;ll Need</h2>
+<ul>
+<li>Vagrant (I tested with Vagrant 1.7.2)</li>
+<li>VMware Fusion (I used Fusion 6.0.5 on OS X 10.9.5)</li>
+<li>the VMware plugin for Vagrant</li>
+<li>the CoreOS Vagrant box for the <code>vmware_fusion</code> provider (more on that in a moment)</li>
+<li>the necessary supporting files (more on that in a moment as well)</li>
+</ul>
+<p>I&rsquo;m not going to cover installing Fusion, Vagrant, or the VMware provider for Vagrant, as those steps are reasonably well-documented by the respective vendors. I will, though, talk about getting the CoreOS box and the supporting files.</p>
+<h3 id="getting-the-coreos-box">Getting the CoreOS Box</h3>
+<p>At the time of this writing, CoreOS supplied a Vagrant box for the <code>vmware_fusion</code> provider that you could install with a simple <code>vagrant box add</code>, like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>vagrant box add http://stable.release.core-os.net/amd64-usr/current/coreos_production_vagrant_vmware_fusion.json
+</span></span></code></pre></div><p>This command will download and install the Vagrant box you&rsquo;ll need for use with VMware Fusion. Once it&rsquo;s done, you&rsquo;ll see the box listed when you run <code>vagrant box list</code>. I chose the stable branch for my testing; you could just as easily run builds from the alpha or beta branches by replacing &ldquo;stable&rdquo; in the URL above with the branch you want to use.</p>
+<h3 id="getting-the-supporting-files">Getting the Supporting Files</h3>
+<p>There are two ways to get the supporting files you need:</p>
+<ol>
+<li>The <a href="https://github.com/scottslowe/2015-vbrownbag-docker">GitHub repo</a> I created for the &ldquo;Docker and Friends&rdquo; #vBrownBag session</li>
+<li>The <a href="https://github.com/coreos/coreos-vagrant">GitHub repo</a> created and maintained by CoreOS</li>
+</ol>
+<p>You can choose to either clone these repos to your local system (using <code>git clone</code> and the GitHub HTTPS clone URL), or simply download a ZIP archive of the repository and unpack it locally. It&rsquo;s up to you which approach you want to use.</p>
+<p>Either repository will do what you need; I chose to create my own supporting files because I wanted to leverage some lessons learned in <a href="/2014/10/22/multi-machine-vagrant-with-yaml/">using YAML to create multi-machine Vagrant environments</a>. For the rest of this post, I&rsquo;ll assume you&rsquo;re using the support files from my GitHub repo.</p>
+<h2 id="preparation">Preparation</h2>
+<p>Before you can just run <code>vagrant up</code> to turn up a cluster of systems on your laptop, there are a couple things you need to do first.</p>
+<h3 id="provide-vm-configuration-details">Provide VM Configuration Details</h3>
+<p>First, you&rsquo;ll need to edit the <code>servers.yml</code> to provide Vagrant with the details on the VMs you&rsquo;d like it to create. Here&rsquo;s a snippet from the supplied <code>servers.yml</code> in the repository:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span>- <span style="color:#f92672">name</span>: <span style="color:#ae81ff">coreos-01</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">box</span>: <span style="color:#ae81ff">coreos-stable</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">ram</span>: <span style="color:#ae81ff">512</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">vcpu</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">priv_ip</span>: <span style="color:#ae81ff">192.168.254.101</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">pub_ip</span>: <span style="color:#ae81ff">172.16.5.11</span>
+</span></span></code></pre></div><p>Let&rsquo;s walk through this real quick:</p>
+<ul>
+<li>On the <code>name</code> line, supply the friendly name you&rsquo;d like given to the VM spawned by Vagrant. This name will also be used as the hostname for the guest OS inside the VM.</li>
+<li>On the <code>box</code> line, supply the name of the Vagrant box you downloaded earlier. You can verify the name by running <code>vagrant box list</code>; whatever&rsquo;s listed there for the CoreOS box you downloaded, specify it here.</li>
+<li>On the <code>ram</code> and <code>vcpu</code> lines, tell Vagrant how much RAM and how many vCPUs should be assigned to the VMs it will create.</li>
+<li>On the <code>priv_ip</code> and <code>pub_ip</code> lines, supply IP addresses (both private and public) to be assigned to the CoreOS VMs.</li>
+</ul>
+<p>This last item deserves a bit more discussion/explanation. CoreOS uses a variant of cloud-init (called coreos-cloudinit) that will read a YAML-formatted file (more on that in a moment in the &ldquo;Provide Customization Information&rdquo; section) to initialize (or customize) the CoreOS configuration. When used with Vagrant, coreos-cloudinit will read the IP address assigned <em>in the Vagrantfile</em> (not what is actually assigned to the interfaces) and put them in a file named <code>/etc/environment</code>. The values in this file are then used in a variety of other places, including in the etcd configuration. This has a couple of ramifications. First, you can&rsquo;t leave the IP address out of the Vagrantfile, or else <code>/etc/environment</code> will get populated with the loopback address and nothing will work. Second, you can&rsquo;t use DHCP on the networks (or at least the public network), or else there&rsquo;s no guarantee that the address assigned to the interface will match the address specified in the Vagrantfile. (Unless you&rsquo;d like to jump through a few hoops with static MAC addresses and DHCP configurations.) Remember, it&rsquo;s the address supplied in the Vagrantfile that&rsquo;s used by coreos-cloudinit, <em>not</em> the address actually assigned to the interface.</p>
+<p>Repeat this block of information (making sure to include the &ldquo;-&rdquo; in front of &ldquo;name&rdquo; as per YAML syntax) for each VM you want Vagrant to spin up. The supplied <code>servers.yml</code> defines 3 VMs.</p>
+<h3 id="provide-customization-information">Provide Customization Information</h3>
+<p>In addition to providing the VM configuration details, you&rsquo;ll also need to edit the <code>user-data</code> file that is used by coreos-cloudinit to customize CoreOS on startup. My GitHub repo has a sample <code>user-data</code> (just as it has a sample <code>servers.yml</code>), but you&rsquo;ll need to supply an etcd discovery URL. This is documented inside the <code>user-data</code> file.</p>
+<p>To obtain a discovery URL, just visit <a href="https://discovery.etcd.io/new">https://discovery.etcd.io/new</a>. That URL will return a longer URL, which is your unique discovery URL. That&rsquo;s the value you&rsquo;ll supply in the <code>user-data</code> file where indicated by the comments.</p>
+<p>Note that each cluster needs its own unique discovery URL, so everytime you <code>vagrant destroy</code> you&rsquo;ll need to generate a new discovery URL.</p>
+<p>Also, note here that the <code>user-data</code> file references a variable <code>$public_ipv4</code>. This variable references the static IP address assigned to the public network in the Vagrantfile. This is why the static IP address is so important&mdash;it&rsquo;s used here in the configuration of both etcd and fleet, and if it is not correct or missing then everything breaks.</p>
+<p>Once you&rsquo;ve supplied the etcd discovery URL, you&rsquo;re ready to start things up.</p>
+<h2 id="starting-up-the-vms">Starting up the VMs</h2>
+<p>In the same directory where the Vagrantfile, <code>user-data</code>, and <code>servers.yml</code> files reside, simply run <code>vagrant up</code>. Vagrant will instantiate and configure the VMs given the information in <code>servers.yml</code>, customize them via coreos-cloudinit using the information in <code>user-data</code>, and then communicate out to the etcd discovery URL to form an etcd cluster. Once Vagrant has completed, then you can use <code>vagrant ssh &lt;name&gt;</code> to connect to one of the VMs, then use commands like <code>systemctl status etcd</code> (to check on the status of etcd) or <code>fleetctl list-machines</code> (to see the membership of the cluster). Once fleet is working as expected, then you can also use <code>fleetctl</code> to launch Docker containers across the etcd cluster. (This is all stuff I demonstrated during the #vBrownBag session.)</p>
+<p>Having an automated way to quickly and easily turn up a cluster of CoreOS systems running etcd, fleet, and Docker should make it much easier for newcomers to these technologies to begin to learn them and see how they could be put to work in their environments.</p>
+<h2 id="additional-information">Additional Information</h2>
+<p>If you&rsquo;d like some additional information on some of the technologies mentioned in this post, have a look at these articles:</p>
+<p><a href="/2014/09/12/a-quick-introduction-to-vagrant/">A Quick Introduction to Vagrant</a><br>
+<a href="/2014/08/18/coreos-continued-etcd/">CoreOS Continued: etcd</a><br>
+<a href="/2014/08/20/coreos-continued-fleet-and-docker/">CoreOS Continued: Fleet and Docker</a><br>
+<a href="/2014/08/13/deploying-coreos-on-openstack-using-heat/">Deploying CoreOS on OpenStack Using Heat</a><br>
+<a href="/2014/08/22/a-heat-template-for-docker-containers/">A Heat Template for Docker Containers</a></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fusion">Fusion</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/coreos">CoreOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/etcd">etcd</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/02/03/first-git-now-vagrant/">First Git, now Vagrant</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/02/06/quick-intro-to-consul/">A Quick Introduction to Consul</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f05%2fvagrant-coreos-etcd-fleet-docker%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f05%2fvagrant-coreos-etcd-fleet-docker%2f&text=Using%20Vagrant%20with%20CoreOS%2c%20etcd%2c%20fleet%2c%20and%20Docker" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f02%2f05%2fvagrant-coreos-etcd-fleet-docker%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/11/07/technology-short-take-46/">Technology Short Take #46</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2014/09/12/a-quick-introduction-to-vagrant/">A Quick Introduction to Vagrant</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2014/08/20/coreos-continued-fleet-and-docker/">CoreOS Continued: Fleet and Docker</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

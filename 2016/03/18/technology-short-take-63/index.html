@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #63 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #63 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #63 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/03/18/technology-short-take-63/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #63</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1034 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #63. I&rsquo;ve managed to (mostly) get back to my Friday publishing schedule, though I&rsquo;m running much later in the day this time around than usual. I&rsquo;ll try to correct that for the next one. In any case, here&rsquo;s another collection of links and articles from around the Net on the major data center technology areas. Have fun reading!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>At DevOps Networking Forum 2016, I had the opportunity to share a presentation on some Linux networking options. If you&rsquo;d like to see the presentation, it&rsquo;s available on <a href="http://www.slideshare.net/lowescott/an-overview-of-linux-networking-options">Slideshare</a> and <a href="https://speakerdeck.com/slowe/an-overview-of-linux-networking-options">Speakerdeck</a>. If you&rsquo;d like to re-create the demo environment, check out <a href="https://github.com/scottslowe/2016-dnf-materials">the presentation&rsquo;s GitHub repository</a>. I&rsquo;m also thinking of creating a video version of the presentation with some expanded content; I&rsquo;d love to hear from readers if they would find that useful.</li>
+<li>Here&rsquo;s another topic that came up at the recent DevOps Networking Forum: Spotify&rsquo;s SDN Internet Router (SIR). Here&rsquo;s a two-part series (<a href="https://labs.spotify.com/2016/01/26/sdn-internet-router-part-1/">Part 1</a> and <a href="https://labs.spotify.com/2016/01/27/sdn-internet-router-part-2/">Part 2</a>) that discusses the SIR, the motivations for building it, the challenges they faced in building SIR, and the solutions to those challenges. It&rsquo;s a pretty interesting read, in my opinion.</li>
+<li>I recently came across a couple useful troubleshooting guides, <a href="http://www.yet.org/2014/09/openvswitch-troubleshooting/">one for Open vSwitch (OVS) and OpenStack Neutron</a> and <a href="http://www.yet.org/2014/09/nsxv-troubleshooting/">one for VMware NSX</a>. Check these out if you&rsquo;re using any of these technologies.</li>
+<li>Microsoft seems to be all about shocking the world these days (see my related mention of their SQL Server announcement below). At the recent OCP Summit, Microsoft introduced Software for Open Networking in the Cloud (SONiC). Check out <a href="https://azure.microsoft.com/en-us/blog/ocp-2016-building-on-community-driven-innovation/">Mark Russinovich&rsquo;s blog post on SONiC</a>, then pop over to <a href="https://azure.microsoft.com/en-us/blog/microsoft-showcases-%E2%80%9Csoftware-for-open-networking-in-the-cloud-sonic-%E2%80%9D/">Kamala Subramaniam&rsquo;s more in-depth SONiC post</a>.</li>
+<li>Here&rsquo;s some information on <a href="http://www.nuagenetworks.net/blog/github-docker-plugin">Nuage Networks&rsquo; experimental Docker Network plugin</a>. (Why certain other companies that shall remain unnamed haven&rsquo;t done something similar is beyond me.)</li>
+<li>Matt Oswalt recently unveiled (and open sourced) a framework called ToDD, which stands for &ldquo;Testing on Demand: Distributed&rdquo;. Read more about it <a href="https://keepingitclassless.net/2016/03/test-driven-network-automation/">here</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<p>Sorry, I don&rsquo;t have anything for you this time.</p>
+<h2 id="security">Security</h2>
+<ul>
+<li>Russell Pope at Kovarus recently wrote about <a href="http://www.kovarus.com/managing-the-nsx-distributed-firewall-via-security-groups/">using security groups to manage the VMware NSX distributed firewall</a>. In talking with customers, I find that one of the things that really challenges their thinking is how to best utilize security groups to their maximum effect. Some of Anthony Burke&rsquo;s work here may also be useful; for example, check out his recent article on <a href="http://networkinferno.net/achieving-micro-segmentation-with-log-insight">using Log Insight to assist with achieving microsegmentation</a>.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Ravello Systems (now part of Oracle Cloud following their acquisition by Oracle) has a REST API that allows you to programmatically interact with their service. Jonatas Baldwin has <a href="http://deployeveryday.com/2016/01/25/ravello-systems-rest-api.html">a good article on the Ravello REST API</a> that is worth reviewing if this interests you.</li>
+<li>Marcos Hernandez (a colleague on the NSX team at VMware) recently pointed out <a href="https://github.com/nsxmarcos/vio/blob/master/heat/poc/validation_tests/3-tier_central-routing_nonat_single_quagga.yaml">this Heat template</a> for a multi-tier application with dynamic routing (via Quagga). Until such time as Neutron adds native dynamic routing support, this may be an option for some OpenStack deployments to consider.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I knew Microsoft was cozying up to Linux, but I honestly didn&rsquo;t expect they would <a href="https://blogs.microsoft.com/blog/2016/03/07/announcing-sql-server-on-linux/">port SQL Server to Linux</a>. Kudos to Microsoft and Microsoft&rsquo;s leadership for quite the culture change.</li>
+<li>There was some hubbub in the container world recently when Docker talked about Docker Swarm was faster than Kubernetes for scheduling containers at scale. Personally, I think it&rsquo;s an apples-to-oranges comparison, since Kubernetes is more than just a scheduler (think about replication controllers and services and such), but to each his own. <a href="https://blog.docker.com/2016/03/swarmweek-docker-swarm-exceeds-kubernetes-scale/">Here&rsquo;s the Docker blog post</a> talking about the performance study.</li>
+<li>Speaking of schedulers&hellip;HashiCorp is touting the performance of the latest release of <a href="https://www.nomadproject.io/">Nomad</a> for scheduling workloads in <a href="https://www.hashicorp.com/c1m.html">this post about scheduling 1 million containers</a>. I haven&rsquo;t had the chance to really dig into Nomad yet, but a cursory glance at the project&rsquo;s home page tells me it might be worth my while. Now, I just need to find more time in the day&hellip;</li>
+<li>This is a much older article on <a href="https://goldmann.pl/blog/2014/09/11/resource-management-in-docker/">resource management in Docker</a>, but still (as far as I can tell) useful and informative. You may also find this (related) article on <a href="http://fabiokung.com/2014/03/13/memory-inside-linux-containers/">memory inside Linux containers</a> to be helpful.</li>
+<li>Sometimes (more often than not, I would say) terminology is important. That&rsquo;s why it&rsquo;s important, in my humble opinion, to be clear when talking about containers (in general) or Docker (a specific implementation). And, in the case of Docker, whether you&rsquo;re talking about the open source Docker project or the company Docker, Inc. Hence, <a href="http://it20.info/2016/01/why-docker-containers-and-docker-oss-docker-inc/">this post</a> by Massimo Re Ferre&rsquo; might be helpful if you&rsquo;re unclear about any of these distinctions.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>VMware recently GA&rsquo;d version 6.2 of VSAN (alongside vSphere 6.0 U2). Naturally, there&rsquo;s been folks who have been blogging about some of the new features. Two articles in particular stood out to me: one by Christos Karamanolis on <a href="https://blogs.vmware.com/virtualblocks/2016/02/12/the-use-of-erasure-coding-in-virtual-san-6-2/">erasure coding with VSAN 6.2</a>, and one by my good friend Jase McCarty on <a href="http://www.jasemccarty.com/blog/vsan62-powercli-sparse-vswp/">the use of sparse virtual swap files</a>. Both are good articles (for different reasons), and if you&rsquo;re thinking about deploying VSAN I&rsquo;d recommend reading both. Finally, you might find the VMware <a href="https://www.vmware.com/files/pdf/products/vsan/virtual-san-6.2-design-and-sizing-guide.pdf">Virtual SAN 6.2 Design and Sizing Guide</a> helpful (thanks to <a href="http://www.ntpro.nl/blog/archives/3065-VMware-Virtual-SAN-6.2-Design-and-Sizing-Guide.html">Eric Sloof for the link</a>).</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>William Lam recently blogged about <a href="http://www.virtuallyghetto.com/2016/03/vsphere-6-0-update-2-hints-at-nested-esxi-support-for-paravirtual-scsi-pvscsi-in-the-future.html">the evolution of nested ESXi</a> over the last few years, and gave a sneak peek at the potential evolution moving forward.</li>
+<li>Iwan Rahabok has a couple of posts (these are slightly older) that discuss sample architectures for a VMware SDDC deployment. The first article provides <a href="http://virtual-red-dot.info/vmware-sddc-architecture-sample-for-500-and-2000-vm/">an overview of an architecture for 500 to 2000 VMs</a>; the second article dives a bit deeper into <a href="http://virtual-red-dot.info/vmware-sddc-architecture-sample-for-500-and-2000-vm-part-2/">the network architecture</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Many people take the use of a home lab as a given, but Max Mortillaro contends that the choice to use a home lab should be approach as rationally as any other technical or career decision. In <a href="http://www.kamshin.com/2016/03/a-rational-approach-to-home-labs/">this article</a>, he lays out some questions to ask yourself as you evaluate whether a home lab is the right (best) approach for you and your career.</li>
+</ul>
+<p>That&rsquo;s all, folks! In the interest of not taking up <em>too</em> much of your time, I&rsquo;ll wrap up here. As always, I hope you found something useful here. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/03/17/on-topic-of-lock-in/">On the Topic of Lock-In</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/03/21/vagrant-ubuntu-wily-networking-problem/">Vagrant, Ubuntu &#34;Wily Werewolf,&#34; and Networking</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f18%2ftechnology-short-take-63%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f18%2ftechnology-short-take-63%2f&text=Technology%20Short%20Take%20%2363" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f18%2ftechnology-short-take-63%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/12/18/technology-short-take-58/">Technology Short Take #58</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2015/03/10/technology-short-take-49/">Technology Short Take #49</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2016/03/09/technology-short-take-62/">Technology Short Take #62</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

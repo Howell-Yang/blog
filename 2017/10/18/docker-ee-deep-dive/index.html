@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Docker EE Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Docker EE Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Docker EE Deep Dive - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/10/18/docker-ee-deep-dive/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Docker EE Deep Dive</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;807 words (estimated 4 minutes to read)</span>
+  <p>This is a liveblog of the session titled &ldquo;Docker EE Deep Dive,&rdquo; part of the Docker Best Practices track here at DockerCon EU 2017 in Copenhagen, Denmark. The speaker is Patrick Devine, a Product Manager at Docker. I had also toyed with the idea of attending the Cilium presentation in the Black Belt track, but given that I attended a version of that talk in Austin in April (<a href="/2017/04/18/black-belt-cilium/">liveblog is here</a>), I figured I&rsquo;d better stretch my boundaries and dig deeper into <a href="https://www.docker.com/enterprise-edition">Docker EE</a>.</p>
+<p>Devine starts with a bit of information on his background, then provides an overview of the two editions (Community and Enterprise) of Docker. (Recall again that Docker is the downstream product resulting from the open source Moby upstream project.) Focusing a bit more on Docker EE, Devine outlines some of the features of Docker EE: integrated orchestration, stable releases for 1 year with support and maintenance, security patches and hotfixes backported to all supported versions, and enterprise-class support.</p>
+<p>So what components are found in Docker EE? It starts with the Docker Engine, which has the core container runtime, orchestration, networking, volumes, plugins, etc. On top of that is Universal Control Plane (UCP), which provides the higher-level management functions. UCP managers are typically clustered, and they leverage the Raft consensus protocol for clustering (Raft is the protocol behind etcd, for example). UCP workers are the nodes on which you actually will deploy containerized workloads. Finally, you also have the Docker Trusted Registry (DTR), which can also run in a high-availability mode; DTR provides the registry/repository for storing container images.</p>
+<p>Next, Devine moves into discussing security scanning, one of the features of Docker EE. Image scanning actually occurs at the binary level; it&rsquo;s not just looking at package versions but going through every single file. This functionality works both online (has Internet access) and offline (without Internet access, good for air-gapped installations). Scanning is supported for both Linux (x86_64) and Windows images (with support for IBM z Series in the works).</p>
+<p>Under the covers, scanning works along 4 steps. First, it gets the image layers (you can also see this information using <code>docker history</code>). Next, it generates a bill of materials; this is really just a JSON file containing details for the components located within each of the layers DTR found. Also found in the bill of materials are the vulnerabilities associated with the components in the layers.</p>
+<p>Image signing (Docker Content Trust) is integrated directly into DTR as well. Devine doesn&rsquo;t spend much time talking about image signing; instead, he points attendees to a separate session occurring later today (Wednesday 10/18) that focuses on image signing specifically.</p>
+<p>The next feature of DTR that Devine discusses is image distribution (comprising image caching, image promotion, and image mirroring [an unreleased feature]). First introduced in DTR 2.2, Docker introduced image caching. DTR 2.3 included image promotion, and image mirroring is something &ldquo;in the works&rdquo;.</p>
+<p>Devine now provides a few more details about some of these image distribution features:</p>
+<ul>
+<li>Image caching can be compared to a content distribution network (CDN) for Docker images by caching layers closer to where the layers are being consumed (pulled). It works globally for all repositories in DTR, and preserves access permissions.</li>
+<li>Image promotion is about moving images between repositories in the same DTR (for example, moving from &ldquo;dev&rdquo; to &ldquo;staging&rdquo; to &ldquo;qa&rdquo; to &ldquo;production&rdquo;). Promotion can be done manually, or handled automatically via a policy. Images can be re-tagged as part of the promotion process, and the repositories each have their own access control. Policies can be written to leverage a variety of criteria (tags, vulnerabilities [or lack thereof], package presence or version, size, or even software license). Promotion policies can also be &ldquo;chained&rdquo; (promoting from dev to QA and then to production), even support branching out to multiple repositories.</li>
+<li>Finally, image mirroring is similar to image promotion in that it works on &ldquo;blessed&rdquo; images, but this time across registries (promotion is across repositories within a registry). Registries maintain their own access control, and mirroring is bi-directional (supporting push, pull, and webhook-initiated mirroring topologies). Policies can be used to push to remote DTR instances. Image signing and image scanning data will <em>not</em> be preserved across registries. (Devine reminds everyone that this is not yet available in DTR, but is coming soon.)</li>
+</ul>
+<p>Devine switches to perform a demo of the new image mirroring functionality. Because the UI/UX for mirroring isn&rsquo;t yet complete, Devine uses DTR&rsquo;s RESTful API to configure the mirroring between two DTR instances (for the demo, these are VMs running&mdash;under <a href="https://www.vmware.com/products/personal-desktop-virtualization.html">VMware Fusion</a>, it appears&mdash;on Devine&rsquo;s laptop).</p>
+<p>Devine closes out the session by letting users know about a free 4 hour demo of Docker EE that&rsquo;s available, in case attendees are interested in trying out any of the features that were discussed in the session. Following some Q&amp;A, Devine ends the session.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/dockercon2017">DockerCon2017</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/10/18/dockercon-eu-2017-day-2-keynote/">DockerCon EU 2017 Day 2 Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/10/18/building-secure-supply-chain/">Building a Secure Supply Chain</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f18%2fdocker-ee-deep-dive%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f18%2fdocker-ee-deep-dive%2f&text=Docker%20EE%20Deep%20Dive" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f18%2fdocker-ee-deep-dive%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/10/18/dockercon-eu-2017-day-2-keynote/">DockerCon EU 2017 Day 2 Keynote</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/10/17/some-thoughts-on-docker-kubernetes-announcement/">Some Thoughts on the Docker-Kubernetes Announcement</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2017/10/17/container-relevant-kernel-developments/">Container-Relevant Kernel Developments</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

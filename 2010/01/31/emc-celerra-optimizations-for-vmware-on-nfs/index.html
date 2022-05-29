@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>EMC Celerra Optimizations for VMware on NFS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="EMC Celerra Optimizations for VMware on NFS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="EMC Celerra Optimizations for VMware on NFS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/01/31/emc-celerra-optimizations-for-vmware-on-nfs/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">EMC Celerra Optimizations for VMware on NFS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;591 words (estimated 3 minutes to read)</span>
+  <p>Recently Jason Boche posted <a href="http://www.boche.net/blog/index.php/2010/01/23/vmtn-storage-performance-thread-and-the-emc-celerra-ns-120/">some storage performance numbers</a> from his EMC Celerra NS-120. Out of those storage performance tests, Jason noted that the NFS performance of the NS-120 seemed a bit off, so he contacted EMC&rsquo;s vSpecialist team (also known as &ldquo;Chad&rsquo;s Army&rdquo;, but I like vSpecialists better) to see if there was something that could or should be done to improve NFS performance on the NS-120. After collaborating internally, one of our team members (a great guy named Kevin Zawodzinski) responded to Jason with some suggestions. I wanted to reproduce those suggestions here for everyone&rsquo;s benefit.</p>
+<p>Note that some of these recommendations are already found in the multi-vendor NFS post available on <a href="http://virtualgeek.typepad.com/virtual_geek/2009/06/a-multivendor-post-to-help-our-mutual-nfs-customers-using-vmware.html">here</a> on Chad&rsquo;s site as well as <a href="http://blogs.netapp.com/virtualstorageguy/2009/06/a-multivendor-post-to-help-our-mutual-nfs-customers-using-vmware.html">here</a> on Vaughn Stewart&rsquo;s site.</p>
+<p>In addition, most if not all of these recommendations are also found in the VMware on Celerra best practices document available from EMC&rsquo;s web site <a href="http://www.emc.com/collateral/hardware/technical-documentation/h5536-vmware-esx-srvr-using-celerra-stor-sys-wp.pdf">here</a>.</p>
+<p>Without further ado, then&hellip;</p>
+<ul>
+<li>
+<p>As has been stated on multiple occasions and by multiple people, be sure that virtual machine disk/application partitions have been properly aligned. We recommend a 1MB boundary. Note that Windows Server 2008 aligns at a 1MB boundary automatically.</p>
+</li>
+<li>
+<p>Use a block size of 8KB unless other recommended or required by the application vendor. Note that the default NTFS block size is 4KB. (Pages 128 through 138 of the Celerra best practices document contain more information on this bullet as well as the previous bullet.)</p>
+</li>
+<li>
+<p>Turn on the uncached write mechanism for NFS file systems used as VMware datastores. This can have a significant performance improvement for VMDKs on NFS but isn&rsquo;t the default setting. From the Control Station, you can use the <code>server mount</code> command with the &ldquo;uncached&rdquo; option to turn on the uncached write mechanism. The whole command would look something like <code>server_mount &lt;data mover name&gt; -option &lt;options&gt;,**uncached** &lt;file system name&gt; &lt;mount point&gt;</code> (the asterisks around &ldquo;uncached&rdquo; are for emphasis; don&rsquo;t actually include them in the command). Be sure to review pages 99 through 101 of the VMware on Celerra best practices document for more information on the uncached write mechanism and any considerations for its use.</p>
+</li>
+<li>
+<p>Change the VMware ESX settings <code>NFS.SendBufferSize</code> and <code>NFS.ReadBufferSize</code> to a value that is a multiple of 32. The recommended value is 64. See page 73 of the best practices document for more details.</p>
+</li>
+<li>
+<p>If you&rsquo;ve adjusted the <code>NFS.MaxVolumes</code> parameter in order to have access to more than 8 NFS datastores, you should also adjust <code>Net.TcpIpHeapSize</code> and <code>Net.TcpIpHeapMax</code> parameters. The increase should be proportional; if you increase the maximum volumes to 32 (a common configuration), then you should increase the other parameters by a factor of 4 as well. Page 73 of the best practices document covers this. <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1007909">This VMware KB article</a> and <a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=2239">this VMware KB article</a> also have more information.</p>
+</li>
+<li>
+<p>Although not directly related to performance, best practices call for setting <code>NFS.HeartbeatFrequency</code> (or <code>NFS.HeartbeatDelta</code> in VMware vSphere) to 12, <code>NFS.HeartbeatTimeout</code> to 5, and <code>NFS.HeartbeatMaxFailures</code> to 10.</p>
+</li>
+<li>
+<p>Ensure that the LUNs backing the NFS file systems are allocated to the clar_r5_performance pool. This configuration will balance the load across the SPs, LUNs, etc., and help improve performance.</p>
+</li>
+</ul>
+<p>Depending upon the other workloads on the system, another NFS performance optimization is to ensure that the maximum amount of write cache on the SPs is configured. However, be aware this may impact other workloads on the array.</p>
+<p>As Jason noted in his post, implementing these changes&mdash;especially the uncached write mechanism&mdash;offered performance benefits for NFS workloads.</p>
+<p>Keep these configuration recommendations in mind when setting up your EMC Celerra for VMware on NFS.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/celerra">Celerra</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/01/24/virtualization-short-take-34/">Virtualization Short Take #34</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/02/04/using-ip-based-storage-with-vmware-vsphere-on-cisco-ucs/">Using IP-Based Storage with VMware vSphere on Cisco UCS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f31%2femc-celerra-optimizations-for-vmware-on-nfs%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f31%2femc-celerra-optimizations-for-vmware-on-nfs%2f&text=EMC%20Celerra%20Optimizations%20for%20VMware%20on%20NFS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f01%2f31%2femc-celerra-optimizations-for-vmware-on-nfs%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2009/08/22/planning-for-fcoe-in-your-data-center-today/">Planning for FCoE in Your Data Center Today</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

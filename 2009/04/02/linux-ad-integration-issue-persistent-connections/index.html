@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Linux-AD Integration Issue: Persistent Connections - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Linux-AD Integration Issue: Persistent Connections - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Linux-AD Integration Issue: Persistent Connections - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/04/02/linux-ad-integration-issue-persistent-connections/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Linux-AD Integration Issue: Persistent Connections</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;478 words (estimated 3 minutes to read)</span>
+  <p>A reader contacted me a short while ago to inquire about a problem he was having with his Linux-AD integration efforts. It seems he had recently added a new domain controller (DC) that was intended to be a DC for a disaster recovery (DR) site. When he took this new DR DC offline in order to physically move it to the DR site, some of his AD-integrated Linux systems started failing to authenticate. More specifically, Kerberos continued to work, but LDAP lookups failed. When the reader would bring the DR DC back online, those systems started working again.</p>
+<p>There was a clear correlation between the DR DC and the AD-integrated Linux systems, even though the <code>/etc/ldap.conf</code> file specifically pointed to another DC by IP address. There was no reference whatsoever, by IP address or host name, to the DR DC. Yet, every time the DR DC was taken offline, the behavior returned on a subset of Linux hosts. The only difference we could find between the affected and unaffected hosts was that the affected hosts were not on the same VLAN as the production domain controllers.</p>
+<p>I theorized that Windows&rsquo; netmask ordering feature, which prioritizes the return of DNS lookups to provide clients with addresses that are &ldquo;closer&rdquo; to them, was playing a role here. However, the <code>/etc/ldap.conf</code> was using IP addresses, not the domain name or even the fully qualified domain name of a DC. It couldn&rsquo;t be DNS, at least not as far as I could tell.</p>
+<p>Upon further investigation, the reader discovered that the affected Linux servers&mdash;those that were on a different VLAN than both the production DCs as well as the DR DC&mdash;were maintaining persistent connections to the DR DC. (He found this via <code>netstat</code>.) When the DR DC went offline, the affected Linux hosts tried to continue to communicate to that DC and that DC only. Once the reader was able to get the affected Linux hosts to drop that persistent connection, he was able to take the DR DC offline and the Linux hosts worked as expected.</p>
+<p>So, the real question now becomes: <em>how (or why) did the Linux servers connect to the DR DC instead of the production DC for which they were configured?</em> I think that Active Directory issued an LDAP referral to direct the affected Linux servers to the DR DC as a result of site topology. Perhaps due to an incorrect or incomplete site topology configuration, Active Directory believed the DR DC should handle the VLANs where the affected Linux servers resided. If that is indeed the case, the fix would be to make sure that your AD site topology is correct and that subnets are appropriately associated with sites. Of course, this is just a theory.</p>
+<p>Has anyone else seen an issue similar to this? What fix were you able to implement in order to correct it?</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/04/02/partner-exchange-schedule/">Partner Exchange Schedule</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/04/03/a-collection-of-viewpoints-on-cisco-ucs/">A Collection of Viewpoints on Cisco UCS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f02%2flinux-ad-integration-issue-persistent-connections%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f02%2flinux-ad-integration-issue-persistent-connections%2f&text=Linux-AD%20Integration%20Issue%3a%20Persistent%20Connections" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f04%2f02%2flinux-ad-integration-issue-persistent-connections%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/03/22/sled-integration-into-active-directory/">SLED Integration into Active Directory</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

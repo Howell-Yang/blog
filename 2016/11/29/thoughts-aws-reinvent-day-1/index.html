@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Thoughts on AWS re:Invent Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Thoughts on AWS re:Invent Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Thoughts on AWS re:Invent Day 1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/11/29/thoughts-aws-reinvent-day-1/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Thoughts on AWS re:Invent Day 1</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;391 words (estimated 2 minutes to read)</span>
+  <p>As I wrap up Day 1 of AWS re:Invent 2016 in Las Vegas (can I consider today to be day 1?), I wanted to capture a quick summary of thoughts about the sessions, the content, the attendees, and the event (not necessarily in that order).</p>
+<p>First, here are some links to the liveblogs I posted from today&rsquo;s sessions:</p>
+<p><a href="/2016/11/29/scaling-first-10mil-users/">Liveblog: Scaling to Your First 10 Million Users</a><br>
+<a href="/2016/11/29/hybrid-bridging-gap-to-cloud/">Liveblog: Hybrid Architectures, Bridging the Gap to the Cloud</a><br>
+<a href="/2016/11/29/getting-bang-buck-ec2/">Liveblog: Getting the Most Bang for Your Buck with EC2</a></p>
+<p>Overall, the sessions have been pretty decent so far. Some portions of some of the sessions feel more like a sales pitch than an educational session, but I&rsquo;m sure that&rsquo;s the case at other events as well (yes, I&rsquo;m talking about VMworld). I&rsquo;m not yet sure if the nature of what AWS does/offers lends itself to subjectively <em>feel</em> more like a sales pitch or not. Case in point: how does a presenter suggest to attendees&mdash;for solid technical reasons&mdash;that they should consider using a service like Route 53 or DynamoDB or SQS (or any one of a dozen other services) without it also sounding like a sales pitch?</p>
+<p>From an attendee perspective, I&rsquo;ve been &ldquo;badge watching&rdquo; (is that bad?), and I&rsquo;m noticing lots of so-called traditional enterprise companies here. Whether that signals a move to the public cloud or just interest in moving to the public cloud is a question I&rsquo;ll leave to the clouderati to debate. Conversations I&rsquo;ve overheard (and no, I&rsquo;m not eavesdropping!) range anywhere from in-depth technical development conversations about how to re-architect an application using Lambda to laments about how someone&rsquo;s boss has put the kibosh on a migration of any services to AWS.</p>
+<p>Finally, from an event perspective: this event is <em>huge.</em> Word has it there are between 32,000 and 33,000 attendees, and it shows. The event is spread across three different Las Vegas hotels (the Wynn, the Venetian/Palazzo, and the Mirage), and rooms in all three venues are full. Lines are long. Sessions are waitlisted. Foot traffic is insane. One piece of advice I would offer potential future attendees: don&rsquo;t bother booking back-to-back sessions, you won&rsquo;t be able to get from point A to point B any time soon.</p>
+<p>That&rsquo;s it from day 1 here at re:Invent. I&rsquo;ll have more liveblogging tomorrow, so check out <a href="/tags/reinvent2016/">all the posts tagged &ldquo;reInvent2016&rdquo;</a>. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2016">reInvent2016</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/11/29/getting-bang-buck-ec2/">Liveblog: Getting the Most Bang for Your Buck with EC2</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/11/30/aws-reinvent-keynote-andy-jassy/">AWS re:Invent 2016 Keynote with Andy Jassy</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fthoughts-aws-reinvent-day-1%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fthoughts-aws-reinvent-day-1%2f&text=Thoughts%20on%20AWS%20re%3aInvent%20Day%201" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fthoughts-aws-reinvent-day-1%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/11/29/getting-bang-buck-ec2/">Liveblog: Getting the Most Bang for Your Buck with EC2</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2016/11/29/hybrid-bridging-gap-to-cloud/">Liveblog: Hybrid Architectures, Bridging the Gap to the Cloud</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2016/11/29/scaling-first-10mil-users/">Liveblog: Scaling to Your First 10 Million Users</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

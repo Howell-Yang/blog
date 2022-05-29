@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>An Introduction to Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="An Introduction to Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="An Introduction to Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/09/13/an-introduction-to-kustomize/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">An Introduction to Kustomize</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;991 words (estimated 5 minutes to read)</span>
+  <p><a href="https://kustomize.io"><code>kustomize</code></a> is a tool designed to let users &ldquo;customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is&rdquo; (wording taken directly from <a href="https://github.com/kubernetes-sigs/kustomize">the <code>kustomize</code> GitHub repository</a>). Users can run <code>kustomize</code> directly, or&mdash;starting with <a href="https://kubernetes.io/">Kubernetes</a> 1.14&mdash;use <code>kubectl -k</code> to access the functionality (although the standalone binary is newer than the functionality built into <code>kubectl</code> as of the Kubernetes 1.15 release). In this post, I&rsquo;d like to provide an introduction to <code>kustomize</code>.</p>
+<p>In its simplest form/usage, <code>kustomize</code> is simply a set of resources (these would be YAML files that define Kubernetes objects like Deployments, Services, etc.) plus a set of instructions on the changes to be made to these resources. Similar to the way <code>make</code> leverages a file named <code>Makefile</code> to define its function or the way Docker uses a <code>Dockerfile</code> to build a container, <code>kustomize</code> uses a file named <code>kustomization.yaml</code> to store the instructions on the changes the user wants made to a set of resources.</p>
+<p>Here&rsquo;s a simple <code>kustomization.yaml</code> file:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">deployment.yaml</span>
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">service.yaml</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namePrefix</span>: <span style="color:#ae81ff">dev-</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">development</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">commonLabels</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environment</span>: <span style="color:#ae81ff">development</span>
+</span></span></code></pre></div><p>This article won&rsquo;t attempt to explain <em>all</em> the various fields that could be present in a <code>kustomization.yaml</code> file (that&rsquo;s well handled <a href="https://github.com/kubernetes-sigs/kustomize/blob/master/docs/fields.md">here</a>), but here&rsquo;s a quick explanation of this particular example:</p>
+<ul>
+<li>The <code>resources</code> field specifies which things (resources) <code>kustomize</code> will modify. In this case, it will look for resources inside the <code>deployment.yaml</code> and <code>service.yaml</code> files in the same directory (full or relative paths can be specified as needed here).</li>
+<li>The <code>namePrefix</code> field instructs <code>kustomize</code> to prefix the name attribute of all resources defined in the <code>resources</code> field with the specified value (in this case, &ldquo;dev-&rdquo;). So, if the Deployment specified a name of &ldquo;nginx-deployment&rdquo;, then <code>kustomize</code> would change the value to &ldquo;dev-nginx-deployment&rdquo;.</li>
+<li>The <code>namespace</code> field instructs <code>kustomize</code> to add a namespace value to all resources. In this case, the Deployment and the Service are modified to be placed into the &ldquo;development&rdquo; namespace.</li>
+<li>Finally, the <code>commonLabels</code> field includes a set of labels that will be added to all resources. In this example, <code>kustomize</code> will label the resources with the label name &ldquo;environment&rdquo; and a value of &ldquo;development&rdquo;.</li>
+</ul>
+<p>When a user runs <code>kustomize build .</code> in the directory with the <code>kustomization.yaml</code> and the referenced resources (the files <code>deployment.yaml</code> and <code>service.yaml</code>), the output is the customized text with the changes found in the <code>kustomization.yaml</code> file. Users can redirect the output if they want to capture the changes:</p>
+<pre><code>kustomize build . &gt; custom-config.yaml
+</code></pre>
+<p>The output is deterministic (given the same inputs, the output will always be the same), so it may not be necessary to capture the output in a file. Instead, users could pipe the output into another command:</p>
+<pre><code>kustomize build . | kubectl apply -f -
+</code></pre>
+<p>Users can also invoke <code>kustomize</code> functionality with <code>kubectl -k</code> (as of Kubernetes 1.14). However, be aware that the standalone <code>kustomize</code> binary is more recent than the functionality bundled into <code>kubectl</code> (as of the Kubernetes 1.15 release).</p>
+<p>Readers may be thinking, &ldquo;Why go through this trouble instead of just editing the files directly?&rdquo; That&rsquo;s a fair question. In this example, users <em>could</em> modify the <code>deployment.yaml</code> and <code>service.yaml</code> files directly, but what if the files were a fork of someone else&rsquo;s content? Modifying the files directly makes it difficult, if not impossible, to rebase the fork when changes are made to the origin/source. However, using <code>kustomize</code> allows users to centralize those changes in the <code>kustomization.yaml</code> file, leaving the original files untouched and thereby facilitating the ability to rebase the source files if needed.</p>
+<p>The benefits of <code>kustomize</code> become more apparent in more complex <code>kustomize</code> use cases. In the example shown above, the <code>kustomization.yaml</code> and the resources are in the same directory. However, <code>kustomize</code> supports use cases where there is a &ldquo;base configuration&rdquo; and multiple &ldquo;variants&rdquo;, also known as <em>overlays</em>. Say a user wanted to take this simple Nginx Deployment and Service I&rsquo;ve been using as an example and create development, staging, and production versions (or variants) of those files. Using overlays with shared base resources would accomplish this.</p>
+<p>To help illustrate the idea of overlays with base resources, let&rsquo;s assume the following directory structure:</p>
+<pre tabindex="0"><code>- base
+  - deployment.yaml
+  - service.yaml
+  - kustomization.yaml
+- overlays
+  - dev
+    - kustomization.yaml
+  - staging
+    - kustomization.yaml
+  - prod
+    - kustomization.yaml
+</code></pre><p>In the <code>base/kustomization.yaml</code> file, users would simply declare the resources that should be included by <code>kustomize</code> using the <code>resources</code> field.</p>
+<p>In each of the <code>overlays/{dev,staging,prod}/kustomization.yaml</code> files, users would reference the base configuration in the <code>resources</code> field, and then specify the particular changes for <em>that environment</em>. For example, the <code>overlays/dev/kustomization.yaml</code> file might look like the example shown earlier:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">../../base</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namePrefix</span>: <span style="color:#ae81ff">dev-</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">development</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">commonLabels</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environment</span>: <span style="color:#ae81ff">development</span>
+</span></span></code></pre></div><p>However, the <code>overlays/prod/kustomization.yaml</code> file could look very different:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>- <span style="color:#ae81ff">../../base</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namePrefix</span>: <span style="color:#ae81ff">prod-</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">namespace</span>: <span style="color:#ae81ff">production</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">commonLabels</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">environment</span>: <span style="color:#ae81ff">production</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">sre-team</span>: <span style="color:#ae81ff">blue</span>
+</span></span></code></pre></div><p>When a user runs <code>kustomize build .</code> in the <code>overlays/dev</code> directory, <code>kustomize</code> will generate a development variant. However, when a user runs <code>kustomize build .</code> in the <code>overlays/prod</code> directory, a production variant is generated. All without <em>any</em> changes to the original (base) files, and all in a declarative and deterministic way. Users can commit the base configuration and the overlay directories into source control, knowing that repeatable configurations can be generated from the files in source control.</p>
+<p>There&rsquo;s a <em>lot</em> more to <code>kustomize</code> that what I&rsquo;ve touched upon in this post, but hopefully this gives enough of an introduction to get folks started.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>There are quite a few good articles and posts written about <code>kustomize</code>; here are a few that I found helpful:</p>
+<p><a href="https://levelup.gitconnected.com/kubernetes-change-base-yaml-config-for-different-environments-prod-test-6224bfb6cdd6">Change base YAML config for different environments prod/test using Kustomize</a></p>
+<p><a href="https://blog.stack-labs.com/code/kustomize-101/">Kustomize - The right way to do templating in Kubernetes</a></p>
+<p><a href="https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/">Declarative Management of Kubernetes Objects Using Kustomize</a></p>
+<p><a href="https://testingclouds.wordpress.com/2018/07/20/844/">Customizing Upstream Helm Charts with Kustomize</a></p>
+<p>If anyone has questions or suggestions for improving this post, I&rsquo;m always open to reader feedback. Feel free to <a href="https://twitter.com/scott_lowe">contact me via Twitter</a>, or hit me up on <a href="https://kubernetes.slack.com/">the Kubernetes Slack instance</a>. Have fun customizing your manifests with <code>kustomize</code>!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kustomize">Kustomize</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/yaml">YAML</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/09/09/consuming-preexisting-aws-infrastructure-with-cluster-api/">Consuming Pre-Existing AWS Infrastructure with Cluster API</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/09/26/exploring-cluster-api-v1alpha2-manifests/">Exploring Cluster API v1alpha2 Manifests</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f13%2fan-introduction-to-kustomize%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f13%2fan-introduction-to-kustomize%2f&text=An%20Introduction%20to%20Kustomize" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f09%2f13%2fan-introduction-to-kustomize%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2019/08/27/bootstrapping-a-kubernetes-cluster-on-aws-with-clusterapi/">Bootstrapping a Kubernetes Cluster on AWS with Cluster API</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2019/08/15/reconstructing-the-join-command-for-kubeadm/">Reconstructing the Join Command for Kubeadm</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/">Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

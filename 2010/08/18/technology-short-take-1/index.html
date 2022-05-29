@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #1 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/08/18/technology-short-take-1/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #1</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;810 words (estimated 4 minutes to read)</span>
+  <p>I&rsquo;ve decided to discontinue the Virtualization Short Takes series and replace it with a new series that incorporates items from the networking and storage realms as well. In truth, I was already doing a little bit of that anyway, but this will expand and formalize the coverage a bit. I&rsquo;d love to hear your feedback on this new series, to help me ensure that I&rsquo;m providing useful and pertinent information and to help me ensure that I&rsquo;m presenting it in the most efficient way. So, please speak up in the comments if you have any suggestions for improvement. Thanks!</p>
+<p>And with that brief introduction, welcome to Technology Short Take #1!</p>
+<ul>
+<li>
+<p>You can tell just how far behind I&rsquo;ve gotten with this sort of post when one of the items I&rsquo;m mentioning was published almost three months ago. Still, one phrase in this article by Frank Denneman on <a href="http://frankdenneman.nl/2010/05/virtual-machine-memory-overhead/">VM memory overhead</a> really caught my eye:</p>
+<blockquote>
+<p>Please be aware of the fact that memory overheads are growing with each new release of ESX, so keep this in mind when upgrading to a new version.</p>
+</blockquote>
+<p>What does this mean? Why are VM memory overheads increasing, and is this something to be concerned over? I can certainly understand the need to add features, but is the drive to add features to the hypervisor also driving bloat and making it less efficient in some aspects?</p>
+</li>
+<li>
+<p>Duncan Epping wrote a great post about a month ago on new behavior in vSphere 4.1 with respect to <a href="http://www.yellow-bricks.com/2010/07/22/6283/">HA/DRS and flattened shares</a>. This behavior is yet another reason you want to make sure that you really understand what you&rsquo;re doing when you assign reservations, limits, and shares to your VMs and resource pools. Both Duncan and his cohort-in-crime Frank, along with a few others, have been publishing lots of resource allocation-related posts:</p>
+<p><a href="http://www.yellow-bricks.com/2010/06/16/which-host-is-selected-for-an-ha-initiated-restart/">Which host is selected for an HA initiated restart?</a></p>
+<p><a href="http://frankdenneman.nl/2010/06/memory-reclaimation-when-and-how/">Memory reclamation, when and how?</a></p>
+<p><a href="http://frankdenneman.nl/2010/06/reservations-and-cpu-scheduling/">Reservations and CPU scheduling</a></p>
+<p><a href="http://professionalvmware.com/2010/06/the-math-behind-the-drs-stars/">The Math Behind the DRS Stars</a></p>
+</li>
+<li>
+<p>Need to flip the paths on your datastores over to a different HBA so you can perform some SAN maintenance? Leo Raikhman has a couple of scripts that can help with <a href="http://blog.core-it.com.au/?p=595">performing SAN fabric maintenance on ESX</a>.</p>
+</li>
+<li>
+<p>Larry Touchette at NetApp has a good <a href="http://blogs.netapp.com/virtualization/2010/07/drs-host-affinity-in-vsphere-41.html">write-up on DRS host affinity rules</a> in vSphere 4.1. I have to take exception to Larry&rsquo;s tying of DRS host affinity rules to NetApp MetroCluster (DRS host affinity rules have so many more applications than just stretched clusters!), but that&rsquo;s a minor nit. For more information on DRS host affinity rules, you can also check out <a href="http://frankdenneman.nl/2010/07/vm-to-hosts-affinity-rule/">this post</a>.</p>
+</li>
+<li>
+<p><a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1020893">This VMware KB article</a> looks like it could be pretty handy if you are using the Nexus 1000V and need to migrate to a new vCenter Server instance.</p>
+</li>
+<li>
+<p>Dave Alexander does some &ldquo;thinking out loud&rdquo; with a post on <a href="http://www.unifiedcomputingblog.com/?p=158">private VSANs</a>. In the post he asks why we don&rsquo;t use PVSANs in the FC world in the same way we use PVLANs in the networking world. It&rsquo;s an interesting thought, but it sounds like all it accomplishes is simplifying the creation of zones. Surely there are easier ways to simplify the creation of zones than creating an administrative construct like PVSANs.</p>
+</li>
+<li>
+<p>More &ldquo;thinking out loud&rdquo; comes from Didier Pironet in his post on <a href="http://deinoscloud.wordpress.com/2010/05/24/what-to-do-to-enhance-vmware-drshaft/">enhancements to VMware DRS/HA/FT</a>. In his post, Didier suggests the incorporation of hardware information into DRS/HA/FT to allow for the creation of policy driven decisions that help decide where to place VMs based on hardware attributes. This is a useful line of thought and one that I think vendors will need to explore in order to allow service providers to offer various differentiated levels of service.</p>
+</li>
+<li>
+<p>I found <a href="http://packetlife.net/blog/2010/jul/15/emerging-terminology-lisp-and-trill/">this brief post</a> quite helpful, as I was quite confused as to how the programming language had anything to do with routing. Turns out I was using the wrong acronym, and LISP instead stands for Location and Identity Separation Protocol. Ah, that makes a lot more sense now!</p>
+</li>
+<li>
+<p>Aside from a brief mention <a href="http://www.latogalabs.com/2010/07/vmware-releases-vsphere-41/">here</a>, I hadn&rsquo;t seen any references to the fact that VMware released <a href="http://www.vmware.com/support/developer/studio/studio21/release_notes.html">VMware Studio 2.1</a> along with vSphere 4.1.</p>
+</li>
+<li>
+<p>Fellow EMC vSpecialist Simon Seagrave <a href="http://www.techhead.co.uk/vmware-esx-i-moved-it-or-i-copied-it-whats-the-difference">recently published</a> a good article on when/how UUIDs are generated for virtual machines.</p>
+</li>
+</ul>
+<p>Because I&rsquo;m so far behind, I have a <em>ton</em> of other links that I&rsquo;ve been collecting. They are all good articles and worth reading if you can spare the time. Here are a few that stand out:</p>
+<p><a href="http://www.yellow-bricks.com/2010/06/30/how-does-das-maxvmrestartcount-work/">How does &ldquo;das.maxvmrestartcount&rdquo; work?</a></p>
+<p><a href="http://blogs.vmware.com/oracle/2010/06/yes-you-really-can-run-tier1-enterprise-applications-on-vsphere.html">Yes, You Really <em>Can</em> Run Tier-1 Enterprise Applications on vSphere</a></p>
+<p><a href="http://www.virtuallyghetto.com/2010/06/how-to-configure-likewise-open-ad.html">How to Configure Likewise &ldquo;Open&rdquo; Integration on vMA</a></p>
+<p><a href="http://blogs.vmware.com/networking/2010/07/got-network-io-control.html">Got Network I/O Control?</a></p>
+<p><a href="http://thickclouds.com/2010/06/29/vmware-ha-isolation-response-bug/">VMware HA Isolation Response Bug</a></p>
+<p><a href="http://blog.colovirt.com/2010/06/07/cisco-vmware-nexus-1000v-tracking-vm-interface-errors/">Cisco, VMware: Nexus 1000V Tracking VM Interface Errors</a></p>
+<p>I guess that&rsquo;s going to do it for this time around. As I said earlier, I&rsquo;d love to hear your feedback, positive or negative, as well as any suggestions for improvement. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/13/my-vmworld-2010-schedule/">My VMworld 2010 Schedule</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/08/18/some-ucs-links/">Some UCS Links</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2ftechnology-short-take-1%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2ftechnology-short-take-1%2f&text=Technology%20Short%20Take%20%231" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f18%2ftechnology-short-take-1%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/12/22/virtualization-short-take-32/">Virtualization Short Take #32</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2009/08/27/virtualization-short-take-29/">Virtualization Short Take #29</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

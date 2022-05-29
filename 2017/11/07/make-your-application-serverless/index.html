@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Make Your Application Serverless - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Make Your Application Serverless - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Make Your Application Serverless - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/07/make-your-application-serverless/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Make Your Application Serverless</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;567 words (estimated 3 minutes to read)</span>
+  <p>This is a liveblog from the last day of the OpenStack Summit in Sydney, Australia. The title of the session is &ldquo;Make Your Application Serverless,&rdquo; and discusses Qinling, a project for serverless (Functions-as-a-Service, or FaaS) architectures/applications on OpenStack. The presenters for the session are Lingxian Kong and Feilong Wang from Catalyst Cloud.</p>
+<p>Kong provides a brief background on himself and his co-presenter (Wang), and explains that Catalyst Cloud is an OpenStack-based public cloud based in New Zealand. Both presenters are active technical contributors to OpenStack projects.</p>
+<p>Kong quickly transitions into the core content of the presentation, which focuses on serverless computing and Qinling, a project for implementing serverless architectures on OpenStack. Kong points out that serverless computing doesn&rsquo;t mean there are no servers, only that the servers (typically VMs) are hidden from view. Functions-as-a-Service, or FaaS, is a better term that Kong prefers. He next provides an example of how a FaaS architecture may benefit applications, and contrasts solutions like AutoScaling Groups (or the equivalent in OpenStack) with FaaS.</p>
+<p>Some key characteristics of serverless, as summarized by Kong:</p>
+<ul>
+<li>No need to think about servers</li>
+<li>Run your code, not the whole application</li>
+<li>Highly available and horizontally scalable</li>
+<li>Stateless/ephemeral</li>
+<li>Lightweight/single-purpose functions</li>
+<li>Event-driven style</li>
+<li>Pay only for what you use</li>
+</ul>
+<p>Some use cases for serverless/FaaS:</p>
+<ul>
+<li>Scheduled (<code>cron</code>) jobs</li>
+<li>Microservices-based applications</li>
+<li>Data processing tasks</li>
+<li>IoT</li>
+<li>Mobile backends</li>
+<li>Chatbots</li>
+<li>Side tasks like sending a follow-up email in response to an order, etc.</li>
+</ul>
+<p>Some existing serverless/FaaS solutions include AWS Lambda or Azure Functions; in the open source space, there are projects like Apache OpenWhisk, Fission, or Kubeless. Most of these solutions/projects are leveraging container technologies.</p>
+<p>This leads Kong to introduce Qinling, which is an OpenStack project intended to provide FaaS. Qinling came out of some of Kong&rsquo;s work in Mistral, and the name has no special meaning other than it is from Kong&rsquo;s home province in China.</p>
+<p>Qinling uses Kubernetes on the backend to orchestrate containers that will, in turn, be used to execute functions. Architecturally, Qinling has only two components: the <code>qinling-api</code> service and the <code>qinling-engine</code> service. Some of the features present in Qinling include:</p>
+<ul>
+<li>RESTful API (API objects include runtimes, functions, executions, and jobs)</li>
+<li>Integrates with other OpenStack services</li>
+<li>Supports code/Docker images/Swift object as a function</li>
+<li>Sync/Async/Periodic execution</li>
+<li>Scale up/scale down</li>
+<li>Supports OpenStack CLI</li>
+</ul>
+<p>Qinling can also consume/integrate with Aodh, Zaqar, and Swift (as mentioned above).</p>
+<p>Kong now moves into a pair of demos. The first demo models a common Lambda use case surrounding an action executing after an object is uploaded to S3. In this demo, a Qinling function consumes an alarm from Aodh generated from an object being uploaded to Swift. The demo works, but is a bit slow; Kong explains that this is due to <em>cold start</em> considerations (first-time invocation takes longer than subsequent invocations).</p>
+<p>Kong now hands it over to Wang to show the second demo. The second demo shows how to use Zaqar with Qinling. (Zaqar, for those who aren&rsquo;t aware, is multi-tenant &ldquo;messaging-as-a-service&rdquo; for OpenStack, similar in nature to Amazon SQS.) This example shows how you might accomplish communications between various functions. Although it takes a few minutes, the demo is successful in sending an SMS to the presenters&rsquo; phones in response to a service being down in an OpenStack cloud.</p>
+<p>Some additional resources on Qinling are shared by the presenters:</p>
+<ul>
+<li><a href="https://github.com/openstack/qinling">https://github.com/openstack/qinling</a></li>
+<li><a href="http://qinling.readthedocs.io">http://qinling.readthedocs.io</a></li>
+<li>IRC channel is #openstack-qinling</li>
+</ul>
+<p>At this point, the presenters end the session.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/serverless">Serverless</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/faas">FaaS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/06/how-deploy-800-servers-8-hours/">How to Deploy 800 Servers in 8 Hours</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/07/lessons-learned-running-container-native-cloud/">Lessons Learnt from Running a Container-Native Cloud</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fmake-your-application-serverless%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fmake-your-application-serverless%2f&text=Make%20Your%20Application%20Serverless" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fmake-your-application-serverless%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/11/06/how-deploy-800-servers-8-hours/">How to Deploy 800 Servers in 8 Hours</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2017/11/06/ipv6-primer-for-deployments/">IPv6 Primer for Deployments</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2017/11/06/battle-scars-openstack-deployments/">Battle Scars from OpenStack Deployments</a> <span class="post-date-list">69 May 6066</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

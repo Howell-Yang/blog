@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Virtualization Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Virtualization Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Virtualization Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/03/03/virtualization-short-take-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Virtualization Short Take #3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;546 words (estimated 3 minutes to read)</span>
+  <p>It&rsquo;s that time again, folks&hellip;time for another Virtualization Short Take!</p>
+<ul>
+<li>
+<p>VMware&rsquo;s performance team <a href="http://blogs.vmware.com/performance/2008/02/16000-exchange.html">published some interesting information</a> on running Exchange Server 2007 on VMware ESX Server 3.5. 16,000 mailboxes on 1 physical server, eh? Now all we need is for Microsoft to actually support running Exchange Server on top of ESX Server and we&rsquo;ll be good to go.</p>
+</li>
+<li>
+<p>Speaking of vendor support, Simon Gallagher at <a href="http://vinf.net/">vinf.net</a> has started <a href="http://vinf.net/2008/02/21/support-for-virtualized-osapplications-an-open-debate/">an open discussion of vendor support</a> for virtualization. This is truly a difficult sticking point for many organizations. Visionary vendors, like SAP, will fully support their solutions on virtualized platforms, but others&mdash;which I won&rsquo;t mention by name but are based in the Pacific Northwest area of the United States&mdash;won&rsquo;t. At least, they won&rsquo;t until they need to build market share for their own virtualization solution, and then they&rsquo;ll only support their own platform. There is no easy answer to the dilemma that Simon brings to light, but I am interested in the same question as Simon: what is everyone out there doing about vendor support?</p>
+</li>
+<li>
+<p>vinternals.net has discovered that the 2.5 version of the VI Client finally <a href="http://www.vinternals.com/2008/02/virtualcenter-25-passthrough.html">supports passthrough authentication</a>, including&mdash;if you are willing to edit the vpxd.cfg file&mdash;Kerberos support. Good information!</p>
+</li>
+<li>
+<p>The team over at <a href="http://www.xtravirt.com/">xtravirt.com</a> has <a href="http://www.xtravirt.com/index.php?option=com_remository&amp;Itemid=75&amp;func=startdown&amp;id=21">updated their information on vimsh</a>, a woefully underdocumented but extremely useful command-line utility. This is must-have information for ESX Server engineers and architects.</p>
+</li>
+<li>
+<p>Chris Hoff has <a href="http://rationalsecurity.typepad.com/blog/2008/02/vmwares-vmsafe.html">responded</a> with <a href="http://rationalsecurity.typepad.com/blog/2008/03/vmwares-vmsafe.html">some thoughts</a> on VMsafe, the new set of security APIs that VMware announced at VMworld Europe last week. Chris, along <a href="http://gregness.wordpress.com/2008/01/11/dispelling-virtsec-myths/">with others</a>, has been trumpeting the need for a sea change in security to accommodate the changes wrought by virtualization. In his words, it looks like the security vendors have been given another chance at life. Let&rsquo;s hope they don&rsquo;t blow this one.</p>
+</li>
+<li>
+<p>Many of you are probably aware that <a href="http://dcsblog.burtongroup.com/data_center_strategies/2007/06/virtualization_.html">not all virtualization solutions support memory page sharing</a>. The implications of supporting or not supporting memory page sharing may be greater than you think, though; have a look at this <a href="http://vmmba.com/2008/01/03/why-does-oversubscription-matter.aspx">analysis</a>.</p>
+</li>
+<li>
+<p>OK, take a deep breath here and don&rsquo;t faint, but I&rsquo;m getting ready to do something I don&rsquo;t normally do: <em>I&rsquo;m going to defend Microsoft.</em> That&rsquo;s right. <a href="http://vmblog.com/archive/2008/03/03/hyper-v-s-slow-guest-installation-explained.aspx">Via VMblog</a>, I was turned on to some apparent controversy about VM performance under Hyper-V during guest OS installation. As Ben Armstrong aka &ldquo;Virtual PC Guy&rdquo; <a href="http://blogs.msdn.com/virtual_pc_guy/archive/2008/02/26/hyper-v-and-slow-guest-os-installation.aspx">explains at his site</a>, this is due to the use of emulated drivers during the installation process. People, this is no different than VMware. Before you install VMware Tools, VMware uses emulated drivers as well. Perhaps VMware&rsquo;s emulated drivers are a bit more efficient than Hyper-V&rsquo;s at this point, but Hyper-V is still in beta. And which would you rather have&mdash;highly optimized &ldquo;synthetic drivers&rdquo; (equivalent to VMware&rsquo;s paravirtualized drivers) or efficient emulated drivers? Personally, I&rsquo;ll take the second. So give Microsoft and Hyper-V a break for once. Save your energy for after the product is released.</p>
+</li>
+<li>
+<p>Information on <a href="http://www.activewin.com/awin/comments.asp?HeadlineIndex=42769">booting VMs from an iSCSI LUN under Hyper-V</a> is posted here. I don&rsquo;t know that I would actually call that booting from an iSCSI LUN, since to the VM it&rsquo;s a local drive, but I guess it all depends on your perspective.</p>
+</li>
+</ul>
+<p>That about wraps it up for now. As always, your thoughts, corrections, rants, and raves are welcome below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/exchange">Exchange</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/03/02/invoke/">Invoke</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/03/05/e-mail-subscriptions-now-available/">E-Mail Subscriptions Now Available</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f03%2fvirtualization-short-take-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f03%2fvirtualization-short-take-3%2f&text=Virtualization%20Short%20Take%20%233" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f03%2f03%2fvirtualization-short-take-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/02/06/windows-server-2008-and-vista-sp1/">Windows Server 2008 and Vista SP1</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2007/12/11/ok-i-had-to-comment-on-this/">OK, I Had to Comment on This</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2007/11/16/customizing-the-sysprepinf-created-by-virtualcenter/">Customizing the Sysprep.inf Created by VirtualCenter</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Restoring VCB Full Backups with VMware Converter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Restoring VCB Full Backups with VMware Converter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Restoring VCB Full Backups with VMware Converter - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/03/06/restoring-vcb-full-backups-with-vmware-converter/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Restoring VCB Full Backups with VMware Converter</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;413 words (estimated 2 minutes to read)</span>
+  <p>When performing full VM backups with <a href="http://www.vmware.com/products/vi/consolidated_backup.html">VMware Consolidated Backup</a> (VCB), the end result of the backup operation is a copy of the VMs VMDK files, in 2GB blocks. This format is similar to the format used by <a href="http://www.vmware.com/products/server/">VMware Server</a> and <a href="http://www.vmware.com/products/ws/">VMware Workstation</a>, VMware&rsquo;s hosted virtualization products. Given that <a href="http://www.vmware.com/products/converter/">VMware Converter</a> can convert VMs between ESX Server and the hosted virtualization products, I thought, &ldquo;Why not use VMware Converter to restore VCB backups?&rdquo;</p>
+<p>So, with that question in mind, I set to see if it would work. After conducting some tests, I have good news and bad news. The bad news first: it doesn&rsquo;t work without some manual massaging of the VCB backup. When you attempt to laod the VM&rsquo;s files into VMware Converter, you receive an error message that VMware Converter &ldquo;can&rsquo;t determine the guest OS&rdquo;.</p>
+<p>Fortunately, the good news is that it isn&rsquo;t hard to make it work. Thanks to this <a href="http://www.vmware.com/community/message.jspa?messageID=588351">VMTN forums thread</a>, we can see that the process is actually pretty straightforward:</p>
+<ol>
+<li>
+<p>Edit the <code>.vmx</code> file to remove the &ldquo;-NNNNNN&rdquo; suffix that is automatically appended to the names of any VMDK files referenced in the <code>.vmx</code> file. Make sure the VMDK filenames referenced in the <code>.vmx</code> file are indeed unique (they should be).</p>
+</li>
+<li>
+<p>Rename the actual VMDK files by removing the &ldquo;scsiN-N-N-&rdquo; prefix from the filenames. You&rsquo;ll want to ensure that the filenames match the filenames referenced in the <code>.vmx</code> file.</p>
+</li>
+<li>
+<p>Edit the VMDK index file (not the -sNNN files). This is just a text file that references the rest of the files that comprise the virtual hard disk. You&rsquo;ll need to edit the filenames referenced in this file to ensure that they match the names of the actual &ldquo;-sNNN&rdquo; files on the disk.</p>
+</li>
+</ol>
+<p>That should be it. After making those changes, VMware Converter should read the VM files without giving the &ldquo;can&rsquo;t determine guest OS&rdquo; error, and then will let you select your final destination (which would typically be VirtualCenter).</p>
+<p>Note that this will create a new VM, rather than restoring over the existing VM. As a result, this may be most applicable when you need to recover individual files within a VM and aren&rsquo;t performing file-level backups using VCB. By using VMware Converter and creating a new VM, you can boot the VM up, get the files that are needed, then shut the restored VM down and blow it away. This allows you to have the restore functionality of file-level backups but the speed of full VM backups.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/backup">Backup</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/03/05/vmware-consolidated-backup/">VMware Consolidated Backup</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/03/09/autopatching-esx/">Autopatching ESX</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f03%2f06%2frestoring-vcb-full-backups-with-vmware-converter%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f03%2f06%2frestoring-vcb-full-backups-with-vmware-converter%2f&text=Restoring%20VCB%20Full%20Backups%20with%20VMware%20Converter" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f03%2f06%2frestoring-vcb-full-backups-with-vmware-converter%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/12/30/recovering-data-inside-vms-using-netapp-snapshots/">Recovering Data Inside VMs Using NetApp Snapshots</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/12/15/iscsi-from-netapp-to-esx-server/">iSCSI from NetApp to ESX Server</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2006/11/09/vmworld-2006-day-3-and-wrap-up/">VMworld 2006 Day 3 and Wrap-Up</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Device Aliases on a Cisco MDS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Device Aliases on a Cisco MDS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Device Aliases on a Cisco MDS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/12/08/using-device-aliases-on-a-cisco-mds/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Device Aliases on a Cisco MDS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;501 words (estimated 3 minutes to read)</span>
+  <p>Last year, I posted a couple of articles on configuring and managing Cisco MDS Fibre Channel zones via the CLI:</p>
+<p><a href="/2009/08/24/new-users-guide-to-configuring-cisco-mds-zones-via-cli/">New User&rsquo;s Guide to Configuring Cisco MDS Zones via CLI</a></p>
+<p><a href="/2009/10/20/new-users-guide-to-managing-cisco-mds-zones-via-cli/">New User&rsquo;s Guide to Managing Cisco MDS Zones via CLI</a></p>
+<p>In those posts, I discussed the use of the <code>fcalias</code> command to create aliases for World Wide Port Names (WWPNs) on the fabric. A couple of people suggested via Twitter and blog comments that I should use device aliases instead of the the <code>fcalias</code> command. As a follow up to those posts, here is some information on using device aliases on a Cisco MDS Fibre Channel switch.</p>
+<p>To create a device alias, you&rsquo;ll use the <code>device-alias database</code> command in global configuration mode. Once you are in database configuration mode, you can create device aliases using the <code>device-alias command</code>, like this:</p>
+<pre><code>mds(config)# device-alias database  
+mds(config-device-alias-db)# device-alias name &lt;Friendly name&gt; pwwn &lt;Fibre Channel WWPN&gt;  
+mds(config-device-alias-db)# exit  
+mds(config)# end
+</code></pre>
+<p>There is an additional step required after defining the device aliases. You must also commit the changes to the device alias database, like this:</p>
+<pre><code>mds(config)# device-alias commit
+</code></pre>
+<p>This commits the changes to the device alias database and makes the device aliases active in the switch.</p>
+<p>Once a device alias is created, it applies to that WWPN regardless of VSAN. This means that you only have to define a single device alias for any given WWPN, whereas with the <code>fcalias</code> command a different alias needed to be defined for each VSAN. All other things being equal (and they&rsquo;re not equal, as you&rsquo;ll see in a moment), that alone is worth switching to device aliases in my opinion.</p>
+<p>Using device aliases also provides a couple other key benefits:</p>
+<ul>
+<li>
+<p>Device aliases are automatically distributed to other Cisco-attached switches. For example, I defined the device aliases on a Cisco MDS 9134 that was attached to the Fibre Channel expansion port of a Cisco Nexus 5010 switch. The Nexus switch automatically picked up the device aliases. As best I can tell, this is controlled by the <code>device-alias distribute</code> global configuration command (or its reverse, the <code>no device-alias distribute</code>, which would disable device alias distribution).</p>
+</li>
+<li>
+<p>Once a device alias is defined for a WWPN, anytime the WWPN is displayed the device alias is also displayed. So in the output of various commands like <code>show flogi database</code>, <code>show fcns database</code>, or <code>show zone</code> you will see not only the WWPN, but also that WWPN&rsquo;s associated device alias.</p>
+</li>
+<li>
+<p>You can use the device alias as the destination with the <code>fcping</code> command.</p>
+</li>
+</ul>
+<p>All in all, I see a lot of value in using device aliases over simple Fibre Channel aliases. I&rsquo;ll grant that some of this value is more readily apparent only in homogenous Cisco storage networks, but even in single-switch networks I personally would use device aliases.</p>
+<p>To those who suggested I look at device aliases, I thank you! You&rsquo;ve made my job easier.</p>
+<p>As always, I welcome your feedback! Feel free to speak up in the comments with corrections, clarifications, or suggestions.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/12/02/vlan-trunking-between-nexus-5010-and-dell-powerconnect-switches/">VLAN Trunking Between Nexus 5010 and Dell PowerConnect Switches</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/12/09/presentations-from-midwest-regional-vmug/">Presentations from Midwest Regional VMUG</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f08%2fusing-device-aliases-on-a-cisco-mds%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f08%2fusing-device-aliases-on-a-cisco-mds%2f&text=Using%20Device%20Aliases%20on%20a%20Cisco%20MDS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f12%2f08%2fusing-device-aliases-on-a-cisco-mds%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/11/30/san-port-channels-from-nexus-5010-to-mds-9134/">SAN Port Channels from Nexus 5010 to MDS 9134</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2009/08/22/planning-for-fcoe-in-your-data-center-today/">Planning for FCoE in Your Data Center Today</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2008/11/17/fcoe-versus-mr-iovhuh/">FCoE versus MR-IOV...huh?</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

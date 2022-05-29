@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Installing Ubuntu on an HP Compaq nc8230 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Installing Ubuntu on an HP Compaq nc8230 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Installing Ubuntu on an HP Compaq nc8230 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/03/22/installing-ubuntu-on-an-hp-compaq-nc8230/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Installing Ubuntu on an HP Compaq nc8230</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;431 words (estimated 3 minutes to read)</span>
+  <p>I was issued a new <a href="http://h10010.www1.hp.com/wwpc/us/en/sm/WF06b/321957-64295-89315-321838-f1-447338-447352-451419.html?jumpid=oc_R1002_USENC-001_HP%20Compaq%20nc8230%20Notebook%20PC&amp;lang=en&amp;cc=us">HP Compaq nc8230</a> laptop today, with the standard corporate image of Windows XP Professional Service Pack 2 and the assorted applications. One of the very first things I did was install <a href="http://www.ubuntu.com/">Ubuntu</a> 5.10. Here&rsquo;s some additional information on a few of the hurdles involved (there aren&rsquo;t many, fortunately).</p>
+<p>I was already familiar with Ubuntu 5.10, having already installed it for my daughters on two older Compaq laptops. However, I&rsquo;d never installed it on brand-new equipment, so I was a bit concerned that all the hardware wouldn&rsquo;t be detected properly. A bit of searching came up with this article indicating that <a href="http://www.freedesktop.org/~jg/nc8230">Ubuntu 5.04 had installed succesfully</a>, so I felt fairly confident that everything would be fine.</p>
+<p>So I popped in the Ubuntu installation CD, pressed Enter when prompted, and was soon greeted with a blank screen. That was odd. I rebooted, and got the same behavior. Upon the next reboot, I pressed F1 at the &ldquo;boot:&rdquo; prompt to review some parameters. I quickly stumbled onto the &ldquo;vga=771&rdquo; parameter. At the boot prompt, I used &ldquo;linux vga=771&rdquo; and the system booted into the installation menu. My first hurdle was overcome.</p>
+<p>The rest of the installation seemed to go smoothly, right up until the point where the installation crashed with a message that it couldn&rsquo;t copy files from the CD-ROM. In fact, it couldn&rsquo;t detect that the CD-ROM drive even existed.</p>
+<p>I rebooted, tried again, got a little bit farther, and got the same message again. Examining the CD a bit closer, I didn&rsquo;t see anything wrong with the disc (no obvious scratches, dirt, smudges, etc.), but cleaned the CD nevertheless and tried again. This time the installation process was successful, and everything was golden.</p>
+<p>Until the X Server didn&rsquo;t work on the final reboot. Sigh. Referring back to <a href="http://fsiu.uwc.ac.za/kinky/index.php?module=wiki&amp;action=wikilink&amp;pagename=Howto+for+Ubuntu+Breezy+on+the+HP+Compaq+nc8230+la">this article I&rsquo;d found earlier</a>, I followed the instructions to remove (if possible) and reinstall the xorg-driver-fglrx package and then reconfigure X. When I had finally completed those steps, the X Window System started up and dropped me onto a customized GNOME desktop. Finally!</p>
+<p>From there, I proceeded to install a 686 kernel (instead of the generic 386 kernel) and run an <code>apt-get upgrade</code> to pick up the latest packages from the Ubuntu repositories. So far (knock on wood), everything has been pretty stable and pretty functional.</p>
+<p><strong>UPDATE:</strong> Scratch that functional part. The laptop has locked up more times in <em>one afternoon</em> than my PowerBook has in the 2+ years that I&rsquo;ve owned it. I&rsquo;m not really sure what&rsquo;s going on with this thing, but clearly something isn&rsquo;t quite right.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/03/21/does-innovation-equal-increased-productivity/">Does Innovation Equal Increased Productivity?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/03/22/installing-vmware-workstation-on-ubuntu/">Installing VMware Workstation on Ubuntu</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f03%2f22%2finstalling-ubuntu-on-an-hp-compaq-nc8230%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f03%2f22%2finstalling-ubuntu-on-an-hp-compaq-nc8230%2f&text=Installing%20Ubuntu%20on%20an%20HP%20Compaq%20nc8230" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f03%2f22%2finstalling-ubuntu-on-an-hp-compaq-nc8230%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/12/08/ubuntu-510/">Ubuntu 5.10</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2005/12/01/updating-kubuntu-to-kde-35/">Updating Kubuntu to KDE 3.5</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2005/12/01/kubuntu-510/">Kubuntu 5.10</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

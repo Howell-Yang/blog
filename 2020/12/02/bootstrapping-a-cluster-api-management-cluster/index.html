@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Bootstrapping a Cluster API Management Cluster - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Bootstrapping a Cluster API Management Cluster - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Bootstrapping a Cluster API Management Cluster - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/12/02/bootstrapping-a-cluster-api-management-cluster/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Bootstrapping a Cluster API Management Cluster</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1409 words (estimated 7 minutes to read)</span>
+  <p><a href="https://cluster-api.sigs.k8s.io/">Cluster API</a> is, if you&rsquo;re not already familiar, an effort to bring declarative <a href="https://kubernetes.io/">Kubernetes</a>-style APIs to Kubernetes cluster lifecycle management. (I encourage you to check out <a href="/2019/08/26/an-introduction-to-kubernetes-cluster-api/">my introduction to Cluster API post</a> if you&rsquo;re new to Cluster API.) Given that it is using Kubernetes-style APIs to manage Kubernetes clusters, there must be a <em>management cluster</em> with the Cluster API components installed. But how does one establish that management cluster? This is a question I&rsquo;ve seen pop up several times in <a href="https://kubernetes.slack.com/">the Kubernetes Slack community</a>. In this post, I&rsquo;ll walk you through one way of bootstrapping a Cluster API management cluster.</p>
+<p>The process I&rsquo;ll describe in this post is also described in the upstream Cluster API documentation (see the &ldquo;Bootstrap &amp; Pivot&rdquo; section of <a href="https://cluster-api.sigs.k8s.io/clusterctl/commands/move.html">this page</a>).</p>
+<p>At a high level, the process looks like this:</p>
+<ol>
+<li>Create a temporary bootstrap cluster.</li>
+<li>Make the bootstrap cluster into a temporary management cluster.</li>
+<li>Use the temporary management cluster to establish a workload cluster (through Cluster API).</li>
+<li>Convert the workload cluster into a permanent management cluster.</li>
+<li>Remove the temporary bootstrap cluster.</li>
+</ol>
+<p>The following sections describe each of these steps in a bit more detail.</p>
+<h2 id="create-a-temporary-bootstrap-cluster">Create a Temporary Bootstrap Cluster</h2>
+<p>The first step is to create a temporary bootstrap cluster. This will be a short-lived cluster whose only purpose is just to get you to the point of having a more permanent management cluster. There&rsquo;s a few different ways to do this, but probably the <em>easiest</em> way (in my opinion) is to use <a href="https://kind.sigs.k8s.io/"><code>kind</code></a>. To use <code>kind</code>, you&rsquo;ll need to either a) be running on Linux with a container runtime (typically Docker, but Podman is experimentally supported), or b) use something like Docker Desktop for macOS or Windows. The <code>kind</code> website also has instructions for <a href="https://kind.sigs.k8s.io/docs/user/using-wsl2/">using Windows Subsystem for Linux 2 (WSL2) on Windows 10</a>.</p>
+<p>In order for your <code>kind</code> cluster to be able to function as a temporary management cluster, you&rsquo;ll need at least one worker node. The default for <code>kind</code> is to only provision a single control plane node, so we&rsquo;ll have to use a custom configuration file (this is <a href="https://kind.sigs.k8s.io/docs/user/configuration/">described pretty well on the <code>kind</code> website</a>). Here&rsquo;s an example configuration file you could use:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Cluster</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kind.x-k8s.io/v1alpha4</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">nodes</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">role</span>: <span style="color:#ae81ff">control-plane</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#f92672">role</span>: <span style="color:#ae81ff">worker</span>
+</span></span></code></pre></div><p>Save this to a file and then reference that file when creating the cluster by running <code>kind create cluster --config boostrap.yaml</code> (or whatever you named the file). <code>kind</code> will create the cluster and create a Kubeconfig file for accessing the cluster, leaving you ready to proceed directly to the next step. Use <code>kubectl get nodes</code> to check the status of the nodes, proceeding to the next step once both nodes report &ldquo;Ready&rdquo;.</p>
+<h2 id="establish-the-temporary-management-cluster">Establish the Temporary Management Cluster</h2>
+<p>For this step you&rsquo;ll need <code>clusterctl</code>, a Cluster API command-line tool that you&rsquo;ll use extensively through the rest of this process. This tool is available from <a href="https://github.com/kubernetes-sigs/cluster-api">the Cluster API GitHub repository</a>. Once you&rsquo;ve downloaded the tool, marked it as executable (if necessary for your OS), and placed it in your path (again, if necessary for your OS), then you&rsquo;re ready to proceed.</p>
+<p>I&rsquo;ll assume you&rsquo;re going to create a management cluster with the AWS provider, so the instructions below will reflect that. If you&rsquo;re going to use a different provider&mdash;say, <a href="https://github.com/kubernetes-sigs/cluster-api-provider-azure/">the Azure provider</a> or <a href="https://github.com/kubernetes-sigs/cluster-api-provider-vsphere/">the vSphere provider</a>&mdash;the insructions will look a bit different. Check <a href="https://cluster-api.sigs.k8s.io/user/quick-start.html">the Cluster API Quick Start page</a> for examples of how to initialize a management cluster with a particular provider.</p>
+<p>For the AWS provider, you&rsquo;ll also need <code>clusterawsadm</code> (available from <a href="https://github.com/kubernetes-sigs/cluster-api-provider-aws/">the Cluster API Provider for AWS GitHub repository</a>). I won&rsquo;t walk through all of the steps necessary to prep your AWS environment; <a href="https://cluster-api.sigs.k8s.io/user/quick-start.html">the Quick Start page</a> provides a great summary of what&rsquo;s needed.</p>
+<p>Once you&rsquo;ve prepared your AWS environment (or whatever platform you&rsquo;re going to use), run <code>clusterctl init --infrastructure aws</code> to initialize the bootstrap cluster as a Cluster API management cluster. (Replace &ldquo;aws&rdquo; with the provider you&rsquo;re using, naturally.) This process normally only takes a few minutes.</p>
+<p>Once the process has completed, run <code>kubectl get clusters</code> to verify the Cluster API components have been installed. You should get &ldquo;No resources found in default namespace&rdquo;; if you see that, you&rsquo;re good to go. If you get an error, then it&rsquo;s time to start troubleshooting.</p>
+<p>Once things are working, you&rsquo;re ready to proceed to the next step.</p>
+<h2 id="create-a-workload-cluster">Create a Workload Cluster</h2>
+<p>In this step, you&rsquo;ll use the Cluster API components in the bootstrap cluster to create a more long-lived cluster on the infrastructure provider of your choice (whatever provider you installed in the previous section). We refer to this first cluster as a &ldquo;workload cluster,&rdquo; because it will (initially) be managed by a separate management cluster&mdash;the temporary boostrap cluster you&rsquo;ve just initialized in the previous section.</p>
+<p>To do this, you&rsquo;ll use <code>clusterctl config cluster</code> to create a YAML manifest for the workload cluster you&rsquo;ll create. Because each infrastructure provider has different values that are needed in order to create the YAML manifest, I&rsquo;d recommend use you <code>clusterctl config cluster --list-variables &lt;provider&gt;</code>, replacing <code>&lt;provider&gt;</code> with the name of the infrastructure provider you&rsquo;re using (like &ldquo;aws&rdquo; or &ldquo;vsphere&rdquo;). This will give you a list of the values that <code>clusterctl</code> expects you to supply in order to generate a complete manifest. For the AWS provider, for example, that command produces this output:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>Variables:
+</span></span><span style="display:flex;"><span>  - AWS_CONTROL_PLANE_MACHINE_TYPE
+</span></span><span style="display:flex;"><span>  - AWS_NODE_MACHINE_TYPE
+</span></span><span style="display:flex;"><span>  - AWS_REGION
+</span></span><span style="display:flex;"><span>  - AWS_SSH_KEY_NAME
+</span></span><span style="display:flex;"><span>  - CLUSTER_NAME
+</span></span><span style="display:flex;"><span>  - CONTROL_PLANE_MACHINE_COUNT
+</span></span><span style="display:flex;"><span>  - KUBERNETES_VERSION
+</span></span><span style="display:flex;"><span>  - WORKER_MACHINE_COUNT
+</span></span></code></pre></div><p>This tells me <em>exactly</em> what values I need to supply to <code>clusterctl</code>&mdash;either as environment variables (what&rsquo;s listed above), as values in a configuration file that I&rsquo;ll then specify with the <code>--config &lt;file&gt;</code> parameter, or as command-line parameters to <code>clusterctl</code> directly (like the <code>--kubernetes-version</code> parameter). I&rsquo;m a fan of using the configuration file, which would need to look like this (values changed to protect sensitive information):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">AWS_CONTROL_PLANE_MACHINE_TYPE</span>: <span style="color:#ae81ff">m5a.large</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">AWS_NODE_MACHINE_TYPE</span>: <span style="color:#ae81ff">m5a.large</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">AWS_REGION</span>: <span style="color:#ae81ff">us-east-1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">AWS_SSH_KEY_NAME</span>: <span style="color:#ae81ff">blog_rsa_key</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">CLUSTER_NAME</span>: <span style="color:#ae81ff">demo</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">CONTROL_PLANE_MACHINE_COUNT</span>: <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">KUBERNETES_VERSION</span>: <span style="color:#ae81ff">v1.18.2</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">WORKER_MACHINE_COUNT</span>: <span style="color:#ae81ff">1</span>
+</span></span></code></pre></div><p>With the configuration file in place, you can create the YAML manifest for the workload cluster with <code>clusterctl config cluster &lt;cluster-name&gt; --config &lt;config-file.yaml&gt;</code>. This will output to the screen. To actually create this cluster using Cluster API, you have a couple of options:</p>
+<ol>
+<li>Pipe the output directly to <code>kubectl</code> by appending <code>| kubectl apply -f -</code> to the command above.</li>
+<li>Redirect the output to a file by adding <code>&gt; manifest.yaml</code> to the command above, and then apply separately with <code>kubectl apply -f manifest.yaml</code>.</li>
+</ol>
+<p>It will take some time for Cluster API to realize (create) the new cluster. You can use <code>kubectl get clusters</code> to check the status of the new cluster. Once the cluster starts reporting as &ldquo;Provisioned&rdquo;, then you can <a href="/2020/02/19/retrieving-kubeconfig-cluster-api-workload-cluster/">retrieve the Kubeconfig for the new cluster</a>. Using the Kubeconfig for the new cluster, install a CNI plugin of your choice (I&rsquo;m partial to Calico and Antrea). Once <code>kubectl get nodes</code> for the new cluster shows the nodes in the newly-created cluster as &ldquo;Ready&rdquo;, you can proceed to the next step.</p>
+<h2 id="convert-the-workload-cluster-to-a-management-cluster">Convert the Workload Cluster to a Management Cluster</h2>
+<p>Now you&rsquo;re finally ready to move the Cluster API components from the temporary <code>kind</code> cluster to the more permanent cluster on the infrastructure provider of your choice (whatever provider you used when you initialized the bootstrap cluster). This process is, in my opinion, pretty straightforward:</p>
+<ol>
+<li>Set your active Kubeconfig to the temporary management cluster.</li>
+<li>Run <code>clusterctl move --to-kubeconfig=&lt;path-to-kubeconfig-for-new-cluster&gt;</code>. The Kubeconfig being referenced here is the Kubeconfig for the workload cluster you created in the previous section.</li>
+</ol>
+<p>Note that this operates on the default namespace; add the <code>--namespace</code> flag if you used a different namespace.</p>
+<p>After this process completes, you should be able to run <code>kubectl get clusters</code> against the new cluster (not the temporary bootstrap cluster) and see the cluster object you defined earlier.</p>
+<h2 id="decommission-the-bootstrap-cluster">Decommission the Bootstrap Cluster</h2>
+<p>At this point, the <code>kind</code> bootstrap cluster is no longer needed, so delete it with <code>kind delete cluster</code>.</p>
+<p>And that&rsquo;s it&mdash;you&rsquo;ve just bootstrapped a management cluster on the infrastructure provider of your choice! You can now use <code>clusterctl</code> to create new workload clusters that will be managed by this management cluster.</p>
+<h2 id="wrapping-up">Wrapping Up</h2>
+<p>I hope this walk-through is helpful. To help make this process even easier, check out <a href="/2020/06/10/making-it-easier-to-get-started-with-cluster-api-on-aws/">this post on creating a pre-configured machine image</a> (currently only focusing on AWS) to eliminate the need to install <code>kind</code>, <code>clusterctl</code>, or any of the other utilities.</p>
+<p>If you have any questions, please feel free to contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>, or reach out to me on <a href="https://kubernetes.slack.com/">the Kubernetes Slack community</a>. I&rsquo;d love to hear from you!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/12/01/some-site-updates/">Some Site Updates</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/12/11/technology-short-take-135/">Technology Short Take 135</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f12%2f02%2fbootstrapping-a-cluster-api-management-cluster%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f12%2f02%2fbootstrapping-a-cluster-api-management-cluster%2f&text=Bootstrapping%20a%20Cluster%20API%20Management%20Cluster" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f12%2f02%2fbootstrapping-a-cluster-api-management-cluster%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/11/25/pausing-cluster-api-reconciliation/">Pausing Cluster API Reconciliation</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2020/03/17/kustomize-transformer-configuration-cluster-api-v1alpha3/">Kustomize Transformer Configurations for Cluster API v1alpha3</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2020/03/13/configuring-kustomize-transformers-for-cluster-api/">Configuring Kustomize Transformers for Cluster API</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

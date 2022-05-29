@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Sample Makefile for Publishing Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Sample Makefile for Publishing Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Sample Makefile for Publishing Blog Articles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/10/23/sample-makefile-publishing-blog-articles/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Sample Makefile for Publishing Blog Articles</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;543 words (estimated 3 minutes to read)</span>
+  <p>As some readers may already know, this site has been running on a static site generator since late 2014/early 2015, when <a href="/2015/01/05/blog-migration-complete/">I migrated from WordPress to Jekyll on GitHub Pages</a>. I&rsquo;ve since migrated again, <a href="/2015/01/05/blog-migration-complete/">this time to Hugo on S3/CloudFront</a>. Along the way, I&rsquo;ve taken an interest in using <code>make</code> and a <code>Makefile</code> to help automate certain tasks at the CLI. In this post, I&rsquo;ll share how I&rsquo;m using a <code>Makefile</code> to help with publishing blog articles.</p>
+<p>If you&rsquo;re not familiar with <code>make</code> or its use of a <code>Makefile</code>, have a look at this article I wrote on <a href="/2017/05/08/using-makefile-with-markdown-documents/">using a <code>Makefile</code> with Markdown documents</a>, then come back here.</p>
+<p>In general, the process for publishing a blog post using Hugo and S3/CloudFront basically looks like this:</p>
+<ol>
+<li>Write the blog post. (I haven&rsquo;t found a tool to automate this yet!)</li>
+<li>Put the blog post into the right section of the Hugo directory tree. (In my setup, it&rsquo;s in the <code>content/post</code> directory.)</li>
+<li>Build the static site using <code>hugo</code>.</li>
+<li>Upload the resulting HTML files to the appropriate S3 bucket.</li>
+<li>Invalidate the appropriate URLs (paths) in AWS CloudFront so that the CDN picks up the new files/pages.</li>
+</ol>
+<p>Some of these steps are easy to automate; what I&rsquo;ve tackled with <code>make</code> and a <code>Makefile</code> are steps 3, 4, and 5. Here&rsquo;s the current version of the <code>Makefile</code> I&rsquo;m using (with a few randomizations to protect some of my information):</p>
+<pre tabindex="0"><code>SRC_DIR := public/
+CF_DIST := ABCDEFG1234567
+BUCKET := my-destination-bucket
+
+build:
+    @hugo
+
+upload:
+    @s3deploy -source=$(SRC_DIR) -region=us-east-1 -bucket=$(BUCKET)
+
+invalidate:
+    @aws cloudfront create-invalidation --distribution $(CF_DIST) \
+    --paths / /archives/ /categories/ /feed.xml
+
+deploy: build upload invalidate
+
+server:
+    -@hugo server
+
+clean:
+    @rm -rf $(SRC_DIR)
+</code></pre><p>With this <code>Makefile</code> in place, <em>my</em> process for publishing looks like this:</p>
+<ol>
+<li>Write the blog post in Markdown.</li>
+<li>Move the blog post&rsquo;s Markdown file into the appropriate directory (in my case, <code>content/post</code>).</li>
+<li>Run <code>make build</code> to verify that the site builds correctly. If it runs into errors, fix the errors and repeat until the site builds correctly.</li>
+<li>Run <code>make deploy</code>. This will build the site (which I&rsquo;ve verified will build correctly in the previous step), upload the files to S3 using <code>s3deploy</code>, and then invalidate a few paths. Done!</li>
+</ol>
+<p>In earlier versions of the <code>Makefile</code>, I didn&rsquo;t have all the different targets (&ldquo;build&rdquo;, &ldquo;upload&rdquo;, and &ldquo;invalidate&rdquo;) broken out, but after working with this approach for a while it made more sense to me to split out the steps, then list them as dependencies in a final &ldquo;deploy&rdquo; target. So far, this approach has worked out pretty well.</p>
+<p>One thing I haven&rsquo;t quite worked out yet is the &ldquo;server&rdquo; target, which simply runs <code>hugo server</code> (for serving up a local version of the site). The hyphen at the front of this command tells <code>make</code> to ignore errors returned by the command it runs (so that it will ignore the error produced when I press Ctrl-C to stop Hugo), but this doesn&rsquo;t work so well. If anyone has any suggestions to work around this, I&rsquo;m open to hearing them (hit <a href="https://twitter.com/scott_lowe">me on Twitter</a>).</p>
+<p>In any case, in the event any readers out there are considering the use of a static site generator, I hope this information on helping to streamline and automate the process of publishing a post using a <code>Makefile</code> proves helpful.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/blogging">Blogging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/10/18/looking-under-hood-containerd/">Looking Under the Hood: containerD</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/10/23/denver-npug-meeting/">Denver Network Programmability User Group Meeting</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f23%2fsample-makefile-publishing-blog-articles%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f23%2fsample-makefile-publishing-blog-articles%2f&text=A%20Sample%20Makefile%20for%20Publishing%20Blog%20Articles" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f10%2f23%2fsample-makefile-publishing-blog-articles%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/09/18/some-qa-about-migration-hugo/">Some Q&amp;A About the Migration to Hugo</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2017/08/10/information-recent-site-migration/">Information on the Recent Site Migration</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2013/05/31/reducing-the-friction-bbedit-to-marsedit/">Reducing the Friction: BBEdit to MarsEdit</a> <span class="post-date-list">319 May 313131</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

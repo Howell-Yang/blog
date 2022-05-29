@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>INF-VSP1423: esxtop for Advanced Users - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="INF-VSP1423: esxtop for Advanced Users - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="INF-VSP1423: esxtop for Advanced Users - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/08/27/inf-vsp1423-esxtop-for-advanced-users/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">INF-VSP1423: esxtop for Advanced Users</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1282 words (estimated 7 minutes to read)</span>
+  <p>This is a session blog for INF-VSP1423, esxtop for Advanced Users, at VMworld 2012 in San Francisco, CA. The presenter is Krishna Raj Raja from VMware.</p>
+<p>The presenter starts out the session with an explanation of how the session is going to proceed. This year&mdash;this session has been presented multiple years at multiple VMworld conferences&mdash;he&rsquo;s choosing to focus on exposing the inner workings of the ESXi hypervisor through esxtop. High-level topics include NUMA, CPU usage, host cache, SR-IOV, and managing data.</p>
+<p>The session starts with managing data. The presenter suggests using vCenter Operations for managing data with large numbers of VMs, multiple vCenter instances, etc. However, in situations where you are focused on one host or one VM, then esxtop can be useful and pertinent. In many cases, though, vCenter Operations may be a better tool than esxtop.</p>
+<p>He then provides a quick overview of managing the esxtop screen, such as proper TERM settings for Mac OS X (use <code>export TERM=xterm</code>), focusing on particular values, and showing/hiding counters. It&rsquo;s also possible to exclude data by exporting the esxtop entities (using <code>--export-entity file.lst</code>), editing that text file, then importing them back in using <code>--import-entity file.lst</code>.</p>
+<p>Having now provided some details on managing the data, he switches his discussion to the topic of granted memory. He provides the example of assigning 8 GB of memory to a Windows 7 32-bit system, which is only capable of accessing 3 GB of RAM. Hence, Granted Memory will be limited to 3 GB. Switching to 64-bit shows that Granted Memory will change that to nearly 8 GB, as Windows touches all pages during boot. Later, that same value descreases, but the MCTLSZ counter increased to show that the memory balloon oontrol has reclaimed some of that memory.</p>
+<p>Interestingly enough, setting a limit doesn&rsquo;t cause Granted Memory to be reduced to the limit. In this case, though, the Zero counter increased to show that multiple virtual memory pages were being pointed to a single memory page. Reducing the limit even further shows Granted Memory dropping and the MCTLSZ counter increased (meaning ballooning was active).</p>
+<p>Next, the presenter talks about Active Memory. In many cases, when Active Memory is higher, CPU usage will also be higher. Similarly, when Active Memory is very low, CPU utilization is also low. This is not always the case, though. Be aware that Active Memory values can be reported as low if ballooning is active, even though CPU utilization might be high in that instance.</p>
+<p>Next up is Overhead Memory. Found in the OVHDUW counter, this is influenced by a number of things; perhaps the biggest contributor is video memory. Setting large video memory settings can increase the overhead memory. In vSphere 5.0 and vSphere 5.1, VMware has been able to dramatically reduce overhead memory usage (in the example shown, it went from 260 MB of overhead in vSphere 4.x to 130 MB of overhead in vSphere 5.x). Less overhead memory means hosting more VMs. He also discussed OVHDMAX, but I couldn&rsquo;t catch the details other than to say that this value is also greatly reduced in vSphere 5.x.</p>
+<p>With regard to NUMA, there is a counter called NHN (NUMA Home Node). When NHN has multiple values, that means RAM is being split (or interleaved) across multiple NUMA nodes. This occurs when the VM has been allocated more resources than can be satisfied using a single NUMA node. Even though the host is using multiple NUMA nodes, the guest OS still only sees it as a single NUMA node. vNUMA, introduced in hardware version 9 and applied to VMs with more than 8 vCPUs, means that NUMA information is exposed to the guest OS. This can be helpful in improving the performance of NUMA-aware applications like databases, Java application servers, etc. (Virtual hardware version 9 is introduced in vSphere 5.1.) <em>(CORRECTION: Although the presenter indicated that virtual hardware version 9 is required, documentation for vSphere 5.0 indicates that vNUMA only requires virtual hardware version 8.)</em></p>
+<p>Now the presenter moves on to user worlds. Any process that runs in the VMkernel is called a user world. In esxtop, the GID column indicates the group ID of a process (the ID for this world group), and the NWLD column indicates how many worlds are in that process. When %RUN is high for idle, that&rsquo;s perfectly normal and expected. There are world groups for VMs (and each VM has its own world group under the User world group). Pressing uppercase V, then esxtop will only display the VM world groups.</p>
+<p>Let&rsquo;s look at an application of world groups. By expanding a world group, you can see the specific worlds within a world group, and that will give you better visibility into what might be causing higher CPU usage. In the example he shared, turning on 3-D support meant that a separate SVGA thread (or world) could cause very high CPU usage in esxtop, even though the guest was not showing significant CPU utilization. The MKS threads (mouse, keyboard, screen) can also drive up CPU utilization. An example would be high CPU usage for the MKS worlds, but not necessary high CPU usage for the SVGA 3-D thread.</p>
+<p>Expanding the LUN display (by pressing e) can expose which world is contributing I/O to a particular LUN. From there, you can drill down into various screens within esxtop to determine exactly which thread/process/world is generating CPU usage as a result of the I/O being generated.</p>
+<p>Now the presenter moves on to CPU usage, starting with physical CPUs. esxtop recognizes when hyperthreading is enabled, but vCenter Server doesn&rsquo;t distinguish logical CPUs and reports values twice per core. CPU core speeds are denoted by different P-states; P0 is the maximum rated clock speed, whereas P-n is the current clock speed. Different counters in esxtop might report different values because some are based on P-0, whereas others are based on P-n. Choosing &ldquo;OS Control Mode&rdquo; (or the equivalent) in the server BIOS then causes esxtop to report all the different P-states for the CPUs, with utilizations reported for each P-state. The PSTATE MHZ value shows the different clock speeds supported for the CPUs.</p>
+<p>By default, the VMkernel tries to place (schedule) VMs on different cores, instead of just different logical CPUs (which might be hyperthreaded cores on the same physical core). This behavior can be modifed using the &ldquo;Hyperthreaded Core Sharing&rdquo; setting in vCenter Server; the default value for this setting is Any (which allows core sharing without any restrictions). For workloads that are sensitive to core sharing or caching behaviors, you can change this setting to optimize performance.</p>
+<p>The presenter next went through a discussion of caching, but I wasn&rsquo;t able to catch all the details. He discussed both cache to SSD as well as context-based read caching (CBRC). CBRC explains why esxtop might report some level of I/O at the VM level, but very little I/O at the LUN level. (CBRC is also referred to as the View Storage Accelerator.)</p>
+<p>SR-IOV&mdash;Single Root I/O Virtualization&mdash;isn&rsquo;t visible inside esxtop. SR-IOV allows a single physical device (or function; referred to as a PF) can present multiple virtual instances (or virtual functions, known as VFs) to the ESXi hypervisor. VFs can be presented directly to a guest OS using VMDirectPath. Running something like lspci in the guest OS shows the device being presented directly to the guest. esxtop will only show the physical NICs. There are other ways of viewing this information, though. You can look at CPU usage, or you can look at IRQs (interrupt requests), where esxtop will show a &ldquo;pcip&rdquo; device that denotes a PCI passthrough device (like an SR-IOV virtual function.)</p>
+<p>At this point the presenter wrapped up the session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esxi">ESXi</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2012">VMworld2012</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/08/27/vmworld-2012-keynote-day-1/">VMworld 2012 Keynote, Day 1</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/08/28/vmworld-2012-keynote-day-2/">VMworld 2012 Keynote, Day 2</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f27%2finf-vsp1423-esxtop-for-advanced-users%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f27%2finf-vsp1423-esxtop-for-advanced-users%2f&text=INF-VSP1423%3a%20esxtop%20for%20Advanced%20Users" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f27%2finf-vsp1423-esxtop-for-advanced-users%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/08/27/vmworld-2012-keynote-day-1/">VMworld 2012 Keynote, Day 1</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2012/08/21/my-vmworld-2012-schedule/">My VMworld 2012 Schedule</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2012/07/27/spouse-activities-at-vmworld-2012/">Spouse Activities at VMworld 2012</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

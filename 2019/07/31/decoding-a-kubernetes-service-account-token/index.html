@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Decoding a Kubernetes Service Account Token - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Decoding a Kubernetes Service Account Token - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Decoding a Kubernetes Service Account Token - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/07/31/decoding-a-kubernetes-service-account-token/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Decoding a Kubernetes Service Account Token</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;311 words (estimated 2 minutes to read)</span>
+  <p>Recently, while troubleshooting a separate issue, I had a need to get more information about the token used by Kubernetes Service Accounts. In this post, I&rsquo;ll share a quick command-line that can fully decode a Service Account token.</p>
+<p>Service Account tokens are stored as Secrets in the &ldquo;kube-system&rdquo; namespace of a Kubernetes cluster. To retrieve just the token portion of the Secret, use <code>-o jsonpath</code> like this (replace &ldquo;sa-token&rdquo; with the appropriate name for your environment):</p>
+<pre><code>kubectl -n kube-system get secret sa-token \
+-o jsonpath='{.data.token}'
+</code></pre>
+<p>The output is Base64-encoded, so just pipe the output into <code>base64</code>:</p>
+<pre><code>kubectl -n kube-system get secret sa-token \
+-o jsonpath='{.data.token}' | base64 --decode
+</code></pre>
+<p>The result you&rsquo;re seeing is a JSON Web Token (JWT). You could use <a href="https://jwt.io">the JWT web site</a> to decode the token, but given that I&rsquo;m a fan of the CLI I decided to use <a href="https://github.com/mike-engel/jwt-cli">this JWT CLI utility</a> instead:</p>
+<pre><code>kubectl -n kube-system get secret sa-token \
+-o jsonpath='{.data.token}' | base64 --decode | \
+jwt decode -
+</code></pre>
+<p>The final <code>-</code>, for those who may not be familiar, is the syntax to tell the <code>jwt</code> utility to look at STDIN for the JWT it needs to decode (this functionality was added in a very recent release of <code>jwt</code>, by the way).</p>
+<p>The output will look something like this (note that these credentials were taken from an ephemeral Kubernetes cluster that has since been decommissioned):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Token header
+</span></span><span style="display:flex;"><span>------------
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  &#34;alg&#34;: &#34;RS256&#34;,
+</span></span><span style="display:flex;"><span>  &#34;kid&#34;: &#34;&#34;
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Token claims
+</span></span><span style="display:flex;"><span>------------
+</span></span><span style="display:flex;"><span>{
+</span></span><span style="display:flex;"><span>  &#34;iss&#34;: &#34;kubernetes/serviceaccount&#34;,
+</span></span><span style="display:flex;"><span>  &#34;kubernetes.io/serviceaccount/namespace&#34;: &#34;kube-system&#34;,
+</span></span><span style="display:flex;"><span>  &#34;kubernetes.io/serviceaccount/secret.name&#34;: &#34;calico-node-token-bvwbn&#34;,
+</span></span><span style="display:flex;"><span>  &#34;kubernetes.io/serviceaccount/service-account.name&#34;: &#34;calico-node&#34;,
+</span></span><span style="display:flex;"><span>  &#34;kubernetes.io/serviceaccount/service-account.uid&#34;: &#34;530a0377-b34a-11e9-9553-020f8bca7f56&#34;,
+</span></span><span style="display:flex;"><span>  &#34;sub&#34;: &#34;system:serviceaccount:kube-system:calico-node&#34;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>There you have it&mdash;from Kubernetes Secret all the way to fully-decoded JSON Web Token. I don&rsquo;t know if you&rsquo;ll ever have the need for this process, but in the event you do, here it is. Hopefully it proves useful to someone! <a href="https://twitter.com/scott_lowe">Hit me up on Twitter</a> if you have any comments, questions, suggestions, or corrections.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/07/30/adding-a-name-to-kubernetes-api-server-certificate/">Adding a Name to the Kubernetes API Server Certificate</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/08/01/accessing-docker-daemon-via-ssh-bastion-host/">Accessing the Docker Daemon via an SSH Bastion Host</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f07%2f31%2fdecoding-a-kubernetes-service-account-token%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f07%2f31%2fdecoding-a-kubernetes-service-account-token%2f&text=Decoding%20a%20Kubernetes%20Service%20Account%20Token" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f07%2f31%2fdecoding-a-kubernetes-service-account-token%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/11/09/technology-short-take-106/">Technology Short Take 106</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2018/10/05/technology-short-take-105/">Technology Short Take 105</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2018/09/07/technology-short-take-104/">Technology Short Take 104</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

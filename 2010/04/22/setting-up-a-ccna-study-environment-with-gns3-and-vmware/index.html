@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up a CCNA Study Environment with GNS3 and VMware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up a CCNA Study Environment with GNS3 and VMware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up a CCNA Study Environment with GNS3 and VMware - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/04/22/setting-up-a-ccna-study-environment-with-gns3-and-vmware/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up a CCNA Study Environment with GNS3 and VMware</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1087 words (estimated 6 minutes to read)</span>
+  <p>If you were following <a href="http://twitter.com/scott_lowe">my tweets</a> over the last few days, you probably already know that I have been working on setting up a CCNA study environment using <a href="http://www.ubuntu.com">Ubuntu Linux</a>, <a href="http://gns3.net/">GNS3</a>, and <a href="http://www.vmware.com/products/workstation/index.html">VMware Workstation</a>. After a couple days of difficulties, I finally managed to make it work last night. Here are the steps that I took to make it work.</p>
+<p>Before we start, there is the standard disclaimer: these are the steps that worked <em>for me</em>; these steps might or might not work for you, and are almost guaranteed not to work with different Linux distributions or different versions of the associated software.</p>
+<p>Here are the software components and versions that I am using in my environment:</p>
+<ul>
+<li>Ubuntu Linux 8.04.4 LTS, 32 bit</li>
+<li>GNS3 0.6.1</li>
+<li>Dynamips 0.2.8-RC2</li>
+<li>Dynagen 0.10.1.090807</li>
+<li>VMware Workstation 7.0.1 for Linux, 32 bit</li>
+</ul>
+<p>I won&rsquo;t go into great detail on setting up Ubuntu Linux as there are plenty of resources available for that portion of this environment. You will need to be at least vaguely familiar with the Linux command-line interface (CLI) and basic Linux commands, or you&rsquo;ll find this process a bit difficult.</p>
+<p>Once you have Ubuntu Linux installed and configured appropriately, the first step is to go ahead and install some dependencies using <code>apt-get</code>:</p>
+<pre><code>sudo apt-get install dynagen python-qt4
+</code></pre>
+<p>This should download and install both Dynagen and the Python-QT4 libraries. Next, you&rsquo;ll need to download and install GNS3 0.6.1. There are newer versions of GNS3 available, but earlier attempts to get this environment running with the newer version of GNS3 resulted in problems. Again, your results might differ. Version 0.6.1 of GNS3 is available from <a href="http://sourceforge.net/projects/gns-3/files/">the GNS3 SourceForge site</a>.</p>
+<p>Once you have GNS3 downloaded, extract it into the directory of your choice (I chose to use <code>/opt/GNS3</code>).</p>
+<p>After you&rsquo;ve downloaded and extracted GNS3, create the following directories under the directory where GNS3 is found:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>&lt;GNS3 directory&gt;/project  
+</span></span><span style="display:flex;"><span>&lt;GNS3 directory&gt;/ios  
+</span></span><span style="display:flex;"><span>&lt;GNS3 directory&gt;/cache  
+</span></span><span style="display:flex;"><span>&lt;GNS3 directory&gt;/tmp  
+</span></span><span style="display:flex;"><span>&lt;GNS3 directory&gt;/dynamips
+</span></span></code></pre></div><p>Use the <code>chmod</code> and <code>chown</code> commands as necessary to ensure that your user account has full read/write permissions all of these directories except the <code>dynamips</code> directory.</p>
+<p>Download a copy of Dynamips (it&rsquo;s generally available <a href="http://www.ipflow.utc.fr/blog/">here</a>), put it into the <code>dynamips</code> directory you created, and use the <code>chmod</code> command to make it executable. I also found it necessary to set the Dynamips binary&rsquo;s SUID bit so that it would always run as root; I know this is not best practice but I could not find any other workaround. (Without setting it SUID, GNS3 would always report an error when trying to launch Dynamips.)</p>
+<p>Now launch GNS3 and use the Preferences in the application to set the correct path to your project directory (<code>&lt;GNS3 directory&gt;/project</code>) and the IOS/PIX directory (<code>&lt;GNS3 directory&gt;/ios</code>), the correct path to the Dynamips binary (<code>&lt;GNS3 directory&gt;/dynamips</code>), the correct path to the working directory (<code>&lt;GNS3 directory&gt;/tmp</code>), and the working directory for capture files (set it to your project directory).</p>
+<p>At this point you should have a working GNS3 installation. You&rsquo;ll still need to locate IOS images to use; once you have valid IOS images, place them in the <code>ios</code> directory you created earlier and configure them within GNS3 as needed. You should then be able to create a router instance, boot it, and access the router console from within GNS3.</p>
+<p>You <em>could</em> stop there and have a pretty cool environment, but I wanted to go a step further. I also installed VMware Workstation 7.0.1 (I won&rsquo;t go into detail here, it&rsquo;s a pretty simple process) and then used the Virtual Network Editor to create some additional host-only networks (in addition to the default vmnet1). Again, this is well-documented already, so I won&rsquo;t discuss the process in any length. Where it gets interesting is in how you connect GNS3 and these host-only networks so that VMs can be incorporated into your GNS3 router topology.</p>
+<p>Here&rsquo;s how you connect GNS3 and the VMware Workstation host-only networks:</p>
+<ol>
+<li>
+<p>In GNS3, add a cloud object to the topology.</p>
+</li>
+<li>
+<p>Right-click the cloud object and select Configure.</p>
+</li>
+<li>
+<p>On the NIO Ethernet tab in the Generic Ethernet NIO section, select one of the host-only networks (like vmnet1) and click Add. This creates a link between the cloud object and the selected host-only network.</p>
+</li>
+</ol>
+<p>At this point, you can attach a VM to the selected host-only network, attach a router to the cloud, and be able to pass traffic from the VM to the router. Pretty cool, huh?</p>
+<p>What I&rsquo;ve done so far is create a simple network with two VMs attached to two different host-only networks which are in turn connected to two different cloud objects and two different routers. Then I created a &ldquo;serial WAN link&rdquo; between the two routers (GNS3 won&rsquo;t, as far as I can tell, actually simulate WAN links with bandwidth limits and latency) and configured everything so that I could pass traffic from one VM to the second VM across the &ldquo;virtual WAN&rdquo;. The plan is to increase the network complexity&mdash;as much as my poor little Dell laptop will allow given its limited CPU and RAM&mdash;and work through the various CCNA study guides in preparation for my exam.</p>
+<p>One other quick note about this setup (and the reason why I chose Linux as my host platform): by setting up SSH on the Linux system (with a simple <code>sudo apt-get install openssh-server</code>), I can now SSH into the Linux host system and then use Telnet from there to access all the various routers. In addition, because I&rsquo;m using <a href="http://www.openbsd.org">OpenBSD</a> as the guest OS on my VMs, I can also SSH from the Linux host to the OpenBSD VMs (assuming my GNS3 network is configured correctly). I&rsquo;m also thinking that there&rsquo;s a way I can leverage some VNC connectivity through Workstation to access the VMs as well, but I&rsquo;ll need to research that a bit to see how it works.</p>
+<p>I would be remiss if I did not point out a couple of sites that were extremely helpful in getting this setup up and running. First, this site provided an <a href="http://www.thenetworktechnician.com/2009/08/how-to-install-gns3-in-ubuntu-9-04/">excellent overview of the GNS3 installation on Ubuntu</a>. Although the walk-through was for a newer version of Ubuntu, the instructions worked perfectly on 8.04.4 LTS. Second, this site gave me the &ldquo;missing link&rdquo; on <a href="http://geexhq.com/simulating-network-labs-using-gns3-and-vmware-on-your-pc/">how to connect GNS3 and VMware Workstation&rsquo;s host-only networks</a> so that you could mix the two environments. Thank you to both sites for outstanding information!</p>
+<p>If you are a GNS3 expert or have some additional tips or tricks to share, please add them in the comments below so that all readers can benefit. Courteous comments are always welcome.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ios">IOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/04/21/thinking-out-loud-what-is-multi-hop-fcoe/">Thinking Out Loud: What is multi-hop FCoE?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/04/23/configuring-inter-vlan-routing/">Configuring Inter-VLAN Routing</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f22%2fsetting-up-a-ccna-study-environment-with-gns3-and-vmware%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f22%2fsetting-up-a-ccna-study-environment-with-gns3-and-vmware%2f&text=Setting%20up%20a%20CCNA%20Study%20Environment%20with%20GNS3%20and%20VMware" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f04%2f22%2fsetting-up-a-ccna-study-environment-with-gns3-and-vmware%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/09/24/more-on-vswitch-load-balancing/">More on vSwitch Load Balancing</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2009/05/18/summary-of-cdp-articles/">Summary of CDP Articles</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2009/03/24/viewing-cdp-data-on-vmware-esx/">Viewing CDP Data on VMware ESX</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

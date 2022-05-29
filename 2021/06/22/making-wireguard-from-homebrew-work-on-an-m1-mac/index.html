@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Making WireGuard from Homebrew Work on an M1 Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Making WireGuard from Homebrew Work on an M1 Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Making WireGuard from Homebrew Work on an M1 Mac - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/06/22/making-wireguard-from-homebrew-work-on-an-m1-mac/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Making WireGuard from Homebrew Work on an M1 Mac</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;641 words (estimated 4 minutes to read)</span>
+  <p>After writing <a href="/2021/04/01/using-wireguard-on-macos/">the post on using WireGuard on macOS</a> (using the official <a href="https://www.wireguard.com">WireGuard</a> GUI app from the Mac App Store), I found the GUI app&rsquo;s behavior to be less than ideal. For example, tunnels marked as on-demand would later show up as no longer configured as an on-demand tunnel. When I decided to set up WireGuard on my M1-based MacBook Pro (see <a href="/2021/06/02/review-2020-m1-based-macbook-pro/">my review</a> of the M1 MacBook Pro), I didn&rsquo;t want to use the GUI app. Fortunately, <a href="https://brew.sh">Homebrew</a> has formulas for WireGuard. Unfortunately, the WireGuard tools as installed by Homebrew on an M1-based Mac won&rsquo;t work. Here&rsquo;s how to fix that.</p>
+<p>The key issues with WireGuard as installed by Homebrew on an M1-based Mac are:</p>
+<ul>
+<li>On an M1-based Mac, Homebrew installs (by default) to the <code>/opt/homebrew</code> prefix. By comparison, Homebrew uses <code>/usr/local</code> on Intel-based Macs. Some of the WireGuard-related scripts are hard-coded to use <code>/usr/local</code> as the Homebrew prefix. Because the prefix has changed, though, these scripts now don&rsquo;t work on an M1-based Mac.</li>
+<li>WireGuard has a dependency on <a href="https://www.gnu.org/software/bash/">Bash</a>. Unfortunately, the version of Bash supplied by macOS isn&rsquo;t supported by WireGuard (it&rsquo;s too old). Without a very specific PATH configuration, even installing the Homebrew version of Bash&mdash;which <em>is</em> supported by WireGuard&mdash;won&rsquo;t help. (You&rsquo;ll have to install it anyway; Homebrew requires it to satisfy a dependency.)</li>
+</ul>
+<p>Fortunately, there is a way to work around these issues. The following steps should enable you to use Homebrew&rsquo;s WireGuard on your M1-based Mac:</p>
+<ol>
+<li>Go ahead and use <code>brew install</code> to install the &ldquo;wireguard-go&rdquo;, &ldquo;wireguard-tools&rdquo;, and &ldquo;bash&rdquo; packages.</li>
+<li>Edit your shell startup file(s) to modify your PATH variable in such a way so that a personal directory&mdash;like <code>$HOME/bin</code> or similar&mdash;is listed first, followed by the <code>/opt/homebrew/bin</code> directory. (I <em>think</em> the order of the <code>/opt/homebrew/bin</code> directory in the PATH may not matter, but I need to do more testing before I&rsquo;ll know for certain.)</li>
+<li>Copy the <code>wg-quick</code> script installed by Homebrew into the personal directory specified in the previous step. This is necessary because the script is read-only in the location where Homebrew installs it.</li>
+<li>Edit the shebang line of the <code>wg-quick</code> script to say <code>#!/usr/bin/env -P/opt/homebrew/bin bash</code>. Basically, you&rsquo;re adding <code>-P/opt/homebrew/bin</code> to the shebang line, right before <code>bash</code>. (You can check <code>man env</code> to understand what the <code>-P</code> parameter does, but the &ldquo;TL;DR&rdquo; is that you&rsquo;re limiting where <code>env</code> will search to find a <code>bash</code> binary.)</li>
+<li>On or about line 44, the script defines a variable named <code>CONFIG_SEARCH_PATHS</code>. Edit this line to add <code>/opt/homebrew/etc/wireguard</code> to the existing list of directories that the script will search for the WireGuard configuration files.</li>
+</ol>
+<p>Once you&rsquo;ve done these steps, you can proceed with configuring WireGuard as outlined in a variety of articles and posts (such as this one I wrote on <a href="/2021/06/28/using-wireguard-on-mac-via-cli/">configuring WireGuard on macOS via the CLI</a>). Replace any references to <code>/usr/local/etc/wireguard</code> in these posts with <code>/opt/homebrew/etc/wireguard</code>.</p>
+<p>When you run <code>sudo wg-quick up wg0</code> to activate the VPN, your shell will find your modified version of this script first (because of step 2 above). This means your changes to the script will be in effect. Your modified version of this script will find the Homebrew-installed version of Bash (because of the change made in step 4, limiting where <code>env</code> will look to find the <code>bash</code> binary), which is compatible with WireGuard and will allow the script to complete properly. Finally, because you added the <code>/opt/homebrew/etc/wireguard</code> directory to the list of paths that <code>wg-quick</code> will search for WireGuard configuration files, it will find your configuration files and appropriately configure the interface(s).</p>
+<p>The steps described above should get you a working WireGuard installation on an M1-based Mac. Hopefully, I can contribute these changes (or improved versions of these changes) back to the Homebrew project. If you have questions, or if I have made a mistake in my recommendations, please contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>. I hope you find this useful!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/06/21/kubernetes-port-names-and-terminating-https-traffic-on-aws/">Kubernetes Port Names and Terminating HTTPS Traffic on AWS</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/06/25/installing-older-versions-of-kumactl-on-an-m1-mac/">Installing Older Versions of Kumactl on an M1 Mac</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f06%2f22%2fmaking-wireguard-from-homebrew-work-on-an-m1-mac%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f06%2f22%2fmaking-wireguard-from-homebrew-work-on-an-m1-mac%2f&text=Making%20WireGuard%20from%20Homebrew%20Work%20on%20an%20M1%20Mac" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f06%2f22%2fmaking-wireguard-from-homebrew-work-on-an-m1-mac%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2021/04/01/using-wireguard-on-macos/">Using WireGuard on macOS</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2021/01/15/technology-short-take-136/">Technology Short Take 136</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2020/06/19/technology-short-take-128/">Technology Short Take 128</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

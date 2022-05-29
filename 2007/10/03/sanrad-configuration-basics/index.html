@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Sanrad Configuration Basics - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Sanrad Configuration Basics - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Sanrad Configuration Basics - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/10/03/sanrad-configuration-basics/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Sanrad Configuration Basics</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;991 words (estimated 5 minutes to read)</span>
+  <p>The <a href="http://www.sanrad.com/Products/">Sanrad V-Switch</a> is a useful device that offers a number of features, including (but not limited to) storage virtualization, iSCSI-to-FC connectivity, snapshots, and data migration services. It&rsquo;s actually a pretty handy little device. I had the opportunity to spend the day today with a V-Switch 2000, an entry-level model, connected in front of a small Fibre Channel array. I thought it might be handy to include some configuration commands here in the event that someone else needed them (to be honest, the Sanrad documentation is <em>horrible</em>).</p>
+<p>Overall, the process for configuring a V-Switch looks something like this:</p>
+<ol>
+<li>
+<p>Physically connect the V-Switch to the Ethernet network and the Fibre Channel fabric(s).</p>
+</li>
+<li>
+<p>Set the IP configuration for the Ethernet interfaces on the V-Switch.</p>
+</li>
+<li>
+<p>Create an iSCSI portal and an iSCSI target on the V-Switch.</p>
+</li>
+<li>
+<p>Present FC storage to the V-Switch.</p>
+</li>
+<li>
+<p>Create volumes on the V-Switch.</p>
+</li>
+<li>
+<p>Present the volumes as iSCSI LUNs.</p>
+</li>
+</ol>
+<p>And that&rsquo;s it! Once you get used to the interface (I used the command line interface because&hellip;well, I prefer the command line to the GUI). Let&rsquo;s walk through those steps real quick.</p>
+<h2 id="physically-connect-the-v-switch">Physically Connect the V-Switch</h2>
+<p>The V-Switch gets connected via Gigabit Ethernet and via Fibre Channel. Physically connecting the V-Switch is as simple as plugging in the Ethernet and Fibre Channel ports to the appropriate switches. It&rsquo;s probably also going to be necessary to modify your Fibre Channel zones as well, so that the V-Switch can see any Fibre Channel targets on the fabric(s).</p>
+<h2 id="configure-ip">Configure IP</h2>
+<p>The V-Switch comes with two Gigabit Ethernet interfaces. To assign IP address(es) to the interface(s), use the <code>ip config set</code> command, like this:</p>
+<pre><code>ip config set -ip 10.2.3.45 -if eth1 -im 255.255.255.0
+</code></pre>
+<p>Verify the IP address has been added using <em>ip config show</em> command, as well as by pinging the new IP address from another system on the same subnet.</p>
+<p>By the way, the system comes with a pre-assigned IP address (I believe it is 10.11.12.123) which can&rsquo;t be removed. At least, I couldn&rsquo;t figure out how to remove or change it.</p>
+<h2 id="create-iscsi-portal-and-iscsi-target">Create iSCSI Portal and iSCSI Target</h2>
+<p>Next, we create an iSCSI portal (IP address and listening TCP port) on the assigned IP address:</p>
+<pre><code>iscsi portal create -ip 10.2.3.45 -p 3260
+</code></pre>
+<p>TCP port 3260 is the default, so you could omit that if desired. The <code>iscsi portal show</code> command will verify the creation of the iSCSI portal.</p>
+<p>Once the iSCSI portal is created, create an iSCSI target with the <code>iscsi target create</code> command, like this (I used a backslash to denote line continuation):</p>
+<pre><code>iscsi target create -ta vmtarget \  
+-tn iqn.2000-04.com.sanrad:vswitch01
+</code></pre>
+<p>We can verify the creation of the iSCSI target using <code>iscsi target show</code>. At this point, iSCSI initiators will see the iSCSI target, but won&rsquo;t see any LUNs, because we haven&rsquo;t connected and configured the back-end storage yet. That&rsquo;s next.</p>
+<h2 id="present-fc-storage-to-the-v-switch">Present FC Storage to the V-Switch</h2>
+<p>The exact procedures and commands here will vary based on the back-end storage array. Create the volumes, disk groups, LUNs, RAID groups, etc., using the standard tools and commands provided by the back-end storage array. Present those storage containers to the V-Switch using the V-Switch&rsquo;s WWNN (which can be displayed using the <code>fc interface show</code> command).</p>
+<p>Once that&rsquo;s done, the V-Switch should discover it automatically. To show the storage that the V-Switch has discovered, use this command:</p>
+<pre><code>storage show
+</code></pre>
+<p>This will show disks and controllers with very unimaginative (and undescriptive) names like &ldquo;Stor_10&rdquo;. To keep things logicaly and organized, rename the storage to something that more closely identifies what it is. In this example, we&rsquo;ll identify the storage with a logical drive identifier and an array identifier:</p>
+<pre><code>storage set -s Stor_15 -na LD09-Ar01 -info Log drv 9, Array 1  
+storage set -s Stor_6 -na LD00-Ar00 -info Log drv 0, Array 0
+</code></pre>
+<p>With the storage now recognized by the V-Switch and labeled as something recognizable (and traceable back to the storage array itself), we can create a couple of simple volumes:</p>
+<pre><code>volume create simple -vol simple00 -d LD00-Ar00  
+volume create simple -vol simple05 -d LD05-Ar01
+</code></pre>
+<p>Simple volumes are the building blocks for more complex structures like mirrored volumes or striped volumes. With a couple of simple volumes created, we can create a mirrored volume from these simple volumes:</p>
+<pre><code>volume create mirror -vol mirror01 -ch simple00 -ch simple05
+</code></pre>
+<p>Verify the creation of the volumes (simple or mirrored) with the <code>volume show</code> command.</p>
+<p>Let&rsquo;s create a few more simple volumes:</p>
+<pre><code>volume create simple -vol simple01 -d LD01-Ar00  
+volume create simple -vol simple02 -d LD02-Ar00  
+volume create simple -vol simple06 -d LD06-Ar01  
+volume create simple -vol simple02 -d LD07-Ar01
+</code></pre>
+<p>Then, using these four simple volumes, let&rsquo;s create a striped volume (this should be entered as a single command; I&rsquo;ve added backslashes here to denote line breaks for readability):</p>
+<pre><code>volume create stripe -vol stripe01 -nbc 4 \  
+-sus 64 -ch simple01 -ch simple02 -ch simple06 \  
+-ch simple07
+</code></pre>
+<p>Again, we can use the <code>volume show</code> command to list the volumes that have been created. However, our job is not yet done. We have to present these volumes as LUNs to the iSCSI initiators.</p>
+<h2 id="present-iscsi-luns">Present iSCSI LUNs</h2>
+<p>The volumes have been created from back-end storage, but now we need to expose the volumes to iSCSI initiators on the iSCSI target created earlier. We do that with this command:</p>
+<pre><code>volume expose -vol mirror01 -ta vmtarget
+</code></pre>
+<p>This exposes the volume named &ldquo;mirror01&rdquo; on the iSCSI target named &ldquo;vmtarget&rdquo; (created earlier). That target is accessible on the iSCSI portal also created earlier.</p>
+<p>You can verify or show that the volume is exposed as a LUN on the iSCSI target using the <code>lu show</code> command.</p>
+<p>Assuming that it is properly exposed, then you should be able to now see the exposed LUN via your iSCSI initiator (software or hardware).</p>
+<p>The V-Switch also has some other advanced functionality, like subdisks (carving up LUNs from back-end storage into smaller pieces), snapshots, and data replication/migration. I hope to get the opportunity to discuss those features more in the future.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/10/02/exciting-new-opportunity/">Exciting New Opportunity</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/10/04/vi-35-expected-in-december/">VI 3.5 Expected in December</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f03%2fsanrad-configuration-basics%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f03%2fsanrad-configuration-basics%2f&text=Sanrad%20Configuration%20Basics" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f10%2f03%2fsanrad-configuration-basics%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/09/13/vmworld-2007-ip-based-storage-sessions/">VMworld 2007 IP-Based Storage Sessions</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2007/09/10/interesting-new-vmware-storage-product/">Interesting New VMware Storage Product</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2007/06/29/esx-iscsi-basic-configuration-from-the-cli/">ESX iSCSI Basic Configuration from the CLI</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

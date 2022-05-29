@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NSX, Part 13: Revisiting Logical Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NSX, Part 13: Revisiting Logical Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NSX, Part 13: Revisiting Logical Networking - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/04/28/learning-nsx-part-13-revisiting-logical-networking/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NSX, Part 13: Revisiting Logical Networking</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;976 words (estimated 5 minutes to read)</span>
+  <p>Welcome to part 13 of the Learning NSX blog series, in which I revisit the idea of logical networking with VMware NSX. This is a topic I first discussed in <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">part 5</a> of this series, but I want to go back and look at it again, this time from a more practical perspective of what it looks like to use VMware NSX for logical networking in an OpenStack environment.</p>
+<p>If you haven&rsquo;t been keeping up with the Learning NVP/NSX series, you&rsquo;ll probably want to go back and catch up. Links to all the articles are found on <a href="/learning-nvp-nsx/">my Learning NVP/NSX page</a>. You&rsquo;ll particularly want to be sure that you&rsquo;ve read <a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">part 11</a> and <a href="/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">part 12</a>, which cover the OpenStack integration I&rsquo;ll be leveraging in this post.</p>
+<p>To start things off, let&rsquo;s first do a quick recap of what it looks like to <em>manually</em> create a logical network in VMware NSX (all of this is described in <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">part 5</a> of the series):</p>
+<ol>
+<li>
+<p>Create a logical switch.</p>
+</li>
+<li>
+<p>Add logical switch ports to the newly-created logical switch.</p>
+</li>
+<li>
+<p>Edit the attachment of the logical switch ports to connect a VM&rsquo;s virtual network interface card (NIC).</p>
+</li>
+</ol>
+<p>These three steps will establish a simple logical network within VMware NSX. Of course, this logical network won&rsquo;t have any Dynamic Host Configuration Protocol (DHCP) services, but it will still work (you could manually assign IP address to VMs attached to this logical network).</p>
+<p>Now that we have VMware NSX integrated with OpenStack, let&rsquo;s revisit this process to see what it looks like. (I&rsquo;ll assume that you&rsquo;re logged into the OpenStack dashboard and have the necessary permissions to create networks, launch instances, etc.)</p>
+<p>First, you&rsquo;d need to create a network in OpenStack. To do this, it&rsquo;s as simple as selecting Networks &gt; Create Network, then providing a name for the new network (you could also use the <code>neutron net-create</code> command as well):</p>
+<p><a href="/public/img/openstack-create-network.png"><img src="/public/img/openstack-create-network-small.png" alt="Creating a logical network in OpenStack"></a></p>
+<p>To exactly mirror the process I showed you in <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">part 5</a>&mdash;which did not include DHCP services&mdash;you&rsquo;d need to also go to the Subnet tab and uncheck &ldquo;Create Subnet&rdquo; as well as go to the Subnet Detail tab and uncheck &ldquo;Enable DHCP.&rdquo; Once you unselect those options and click Create, then OpenStack will (through the Neutron plugin for NSX) create a logical switch in NSX. You can pop into NSX Manager to see this:</p>
+<p><a href="/public/img/nsx-new-logical-switch.png"><img src="/public/img/nsx-new-logical-switch-small.png" alt="New logical switch in NSX Manager"></a></p>
+<p>As I pointed out in <a href="/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">part 12</a>, the UUID and <code>os_tid</code> tag on this object in NSX will provide the necessary ties back to the corresponding object in OpenStack.</p>
+<p>Now go spin up a new instance and attach that instance to the logical network you just created. What you&rsquo;ll find is that OpenStack will <em>automatically</em> handle the creation of the logical switch ports as well as the attachment of the VM&rsquo;s virtual NIC to the logical switch. This helps underscore how VMware NSX was designed to be used in conjunction with a cloud management/orchestration system like OpenStack. (You can verify that the logical switch port is automatically created using NSX Manager and comparing the number of logical switch ports both before and after launching the new instance.)</p>
+<p>Now that we have OpenStack up and running, though, we can create a logical network that <em>does</em> have DHCP services:</p>
+<ol>
+<li>
+<p>Use the <code>neutron net-create</code> command to create a new logical network. For example, <code>neutron net-create logical-net-02</code>.</p>
+</li>
+<li>
+<p>Use <code>neutron subnet-create</code> to create a subnet for the new network. The full command would look something like <code>neutron subnet-create --name logical-subnet-02 logical-net-02 10.1.1.0/24</code> (you&rsquo;d want to substitute the appropriate IP subnet range there, naturally).</p>
+</li>
+</ol>
+<p>If you log into NSX Manager, you&rsquo;ll see that a new logical switch (whose name matches the name you gave the logical network above) has been created, and you&rsquo;ll also note that 1 logical switch port is already in use&mdash;even though you haven&rsquo;t launched any instances yet! The easiest way to find out what is attached to that port is via the OpenStack dashboard. Once logged into the dashboard, select Networks, then click on the network you just created, and scroll down to the list of Ports. You&rsquo;ll see there that OpenStack has automatically created a logical switch port for the DHCP services associated with the subnet you created above:</p>
+<p><a href="/public/img/openstack-network-ports.png"><img src="/public/img/openstack-network-ports-small.png" alt="Ports on a logical network"></a></p>
+<p>If you&rsquo;re a command-line freak, you could also get this information from the CLI. To find the subnet associated with the logical network you just created:</p>
+<pre><code>SUBNET_ID=$(neutron subnet-list | awk '/\ logical-net-02\ / {print $2}')
+</code></pre>
+<p>To list all the ports on that subnet:</p>
+<pre><code>neutron port-list | grep $SUBNET_ID
+</code></pre>
+<p>In this case (if you&rsquo;ve been following my examples), there is only one port on that subnet, so you can capture the ID of that port in order to get more information about the port:</p>
+<pre><code>PORT_ID=$(neutron port-list | grep $SUBNET_ID | awk '{print $2}')
+</code></pre>
+<p>To list the information associated with that specific port, paying particular attention to the <code>device_owner</code> attribute (which should show &ldquo;network:dhcp&rdquo;):</p>
+<pre><code>neutron port-show $PORT_ID
+</code></pre>
+<p>If you have been reading along diligently, you&rsquo;ll probably be able to put 2 and 2 together here to realize that the &ldquo;network:dhcp&rdquo; port is actually a port on OVS on the network node (which, if you&rsquo;ll recall, is registered as a hypervisor in VMware NSX). If you&rsquo;ve <em>really</em> been following my stuff closely, you&rsquo;ll probably also know that the OVS port is connected to a veth pair, which in turn connects to a network namespace where an instance of <code>dnsmasq</code> is running. (Want to learn more about network namespaces? See <a href="/2013/09/04/introducing-linux-network-namespaces/">here</a>.)</p>
+<p>At this point, you should have a fairly clear understanding of how logical networking functions within an OpenStack environment with VMware NSX. I wanted to take the time to revisit this topic because future posts are going to assume that you understand these basic concepts and interactions as we explore more advanced functionality and more complex networking topologies.</p>
+<p>Thanks for reading, and feel free to post any corrections, clarifications, or questions in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvp">NVP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">Learning NSX, Part 12: Integrating VMware NSX with OpenStack</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/04/30/vsphere-network-health-check-and-cisco-ucs/">vSphere Network Health Check and Cisco UCS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f28%2flearning-nsx-part-13-revisiting-logical-networking%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f28%2flearning-nsx-part-13-revisiting-logical-networking%2f&text=Learning%20NSX%2c%20Part%2013%3a%20Revisiting%20Logical%20Networking" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f04%2f28%2flearning-nsx-part-13-revisiting-logical-networking%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/04/25/learning-nsx-part-12-integrating-vmware-nsx-with-openstack/">Learning NSX, Part 12: Integrating VMware NSX with OpenStack</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2014/03/12/learning-nsx-part-11-reviewing-openstack-integration-basics/">Learning NSX, Part 11: Reviewing OpenStack Integration Basics</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2014/02/27/learning-nsx-part-10-adding-a-service-node/">Learning NSX, Part 10: Adding a Service Node</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

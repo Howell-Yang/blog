@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Deep Dive into Container Images in Kolla - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Deep Dive into Container Images in Kolla - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Deep Dive into Container Images in Kolla - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/07/deep-dive-into-container-images-in-kolla/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Deep Dive into Container Images in Kolla</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 79 May 7077 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;637 words (estimated 3 minutes to read)</span>
+  <p>This is a liveblog of my last session at the Sydney OpenStack Summit. The session title is &ldquo;OpenStack images that fit your imagination: deep dive into container images in Kolla.&rdquo; The presenters are Vikram Hosakote and Rich Wellum, from Cisco and Lenovo, respectively.</p>
+<p>Hosakote starts with an overview of Kolla. Kolla is a project to deploy OpenStack services into Docker containers. There are two ways to use Kolla: using Ansible (referred to as Kolla-Ansible) or using Kubernetes (referred to as Kolla-Kubernetes). Hosakote mentions that Kolla-Kubernetes also uses Helm and Helm charts; this makes me question the relationship between Kolla-Kubernetes and OpenStack-Helm.</p>
+<p>Why Kolla? Some of the benefits of Kolla, as outlined by Hosakote, include:</p>
+<ul>
+<li>Fast(er) deployment (Hosakote has deployed in as few as 9 minutes)</li>
+<li>Easy maintenance, reconfiguration, patching, and upgrades</li>
+<li>Containerized services are found in container registry</li>
+<li>One tool to do multiple things</li>
+</ul>
+<p>Hosakote briefly mentions his preference for Kolla over other tools, including Juju, DevStack, PackStack, Fuel, OpenStack-Ansible, TripleO, OpenStack-Puppet, and OpenStack-Chef.</p>
+<p>Other benefits of using containers for OpenStack:</p>
+<ul>
+<li>Reproduce golden state easily</li>
+<li>No more &ldquo;Works in DevStack&rdquo; but doesn&rsquo;t work in production</li>
+<li>Production-ready images (this seems specific to Kolla, not just containers for OpenStack control plane)</li>
+<li>Easy to override the configuration files</li>
+<li>Dev mode (enables faster dev/test cycles)</li>
+<li>Portable, tested, replicated images in well-known registries (again, this is specific to Kolla, not just using containers for the OpenStack control plane)</li>
+</ul>
+<p>Next, Hosakote goes over the Kolla architecture. The &ldquo;deploy node&rdquo; runs Ansible, Docker, the Docker Python libraries, and Jinja. All the <code>Dockerfiles</code>, Ansible playbooks, Jinja templates, Helm charts, etc., are pulled from GitHub. By default, Kolla uses the Docker Hub for container images, but it can also use a custom registry. The deploy node deploys Docker containers with OpenStack services onto target nodes.</p>
+<p>When Kubernetes is in play (via Kolla-Kubernetes), the architecture is similar but with the addition of Kubernetes-specific components (such as the <code>kubelet</code> on worker nodes).</p>
+<p>Hosakote takes care to point out that Kolla can be used for a variety of &ldquo;advanced&rdquo; configurations, like:</p>
+<ul>
+<li>Jumbo frames</li>
+<li>SR-IOV (PCI passthrough)</li>
+<li>Ceph storage</li>
+<li>EFK (ElasticSearch, Fluentd, Kibana)</li>
+<li>Prometheus (cloud-native monitoring and alerting)</li>
+<li>Numerous other customizations and configuration overrides</li>
+</ul>
+<p>Next, Hosakote briefly reviews how to use Kolla (Kolla-Ansible, specifically). He went through the content so quickly that I wasn&rsquo;t able to catch all the details.</p>
+<p>Now, Wellum takes over the presentation to discuss Kolla-Kubernetes. Wellum mentions a few resources for using Kolla-Kubernetes, but immediately transitions into a discussion of why you may want to build your own custom Kolla images (as opposed to using the &ldquo;official&rdquo; Kolla images available on Docker Hub). Some of these reasons include:</p>
+<ul>
+<li>You run a &ldquo;custom&rdquo; or &ldquo;proprietary&rdquo; version of OpenStack</li>
+<li>You are an OpenStack contributor and would like to test in production-quality environments</li>
+<li>Your company develops drivers unique to hardware (this allows you to easily stand up OpenStack so you can spend more of your time focusing on hardware support/integration)</li>
+</ul>
+<p>This leads Wellum into an example of how you might use Kolla to build custom images for a couple of OpenStack services, but use &ldquo;vanilla&rdquo; upstream code for the rest of the OpenStack services. Wellum again mentions the use of Helm, but does not provide any information on interaction between Kolla-Kubernetes and OpenStack-Helm.</p>
+<p>Next, Wellum shows a recorded demo that shows everything he just discussed about the example of building custom images for a couple of OpenStack services. The presenters run into some permissions issues with Google Docs, but after a few minutes manage to finally resolve those so they can show the demo. The demo, unfortunately, is limited in size and has poor color contrast that makes it difficult to see from the back of the room.</p>
+<p>After watching the demo for a while, I wrapped up the liveblog as the session was running over its time limit.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/07/carrier-grade-sdn-openstack-networking-solution/">Carrier-Grade SDN-Based OpenStack Networking Solution</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/08/how-tag-docker-images-git-commit-information/">How to Tag Docker Images with Git Commit Information</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fdeep-dive-into-container-images-in-kolla%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fdeep-dive-into-container-images-in-kolla%2f&text=Deep%20Dive%20into%20Container%20Images%20in%20Kolla" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f07%2fdeep-dive-into-container-images-in-kolla%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/03/technology-short-take-79/">Technology Short Take #79</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2017/02/03/technology-short-take-77/">Technology Short Take #77</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2015/09/24/using-docker-machine-with-openstack/">Using Docker Machine with OpenStack</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

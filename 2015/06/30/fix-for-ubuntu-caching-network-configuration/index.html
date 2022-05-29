@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Fix for Ubuntu Apparently Caching Network Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Fix for Ubuntu Apparently Caching Network Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Fix for Ubuntu Apparently Caching Network Configuration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/06/30/fix-for-ubuntu-caching-network-configuration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Fix for Ubuntu Apparently Caching Network Configuration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;573 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;ve been wrestling with an <a href="http://www.ubuntu.com">Ubuntu</a> network configuration issue over the last couple of weeks (off and on between working on other projects), and today I finally found a fix for the problem. The issue was that Ubuntu wouldn&rsquo;t pick up changes to network interfaces. The fix is so simple I&rsquo;m almost embarrassed to talk about it (it seems like something that I should have known), but I&rsquo;m posting it here in case others run into the same issue.</p>
+<p>Here&rsquo;s a bit more context: I was switching some of the network interfaces in my Ubuntu 14.04.2 servers from a &ldquo;standard&rdquo; network configuration to using VLAN interfaces (after all, it seemed like such a shame to not more fully utilize the 10GbE and 40GbE interfaces in these servers). Before the reconfiguration, the servers had a network interface configuration file (located in <code>/etc/network/interfaces.d</code> and sourced in <code>/etc/network/interfaces</code>) that looked something like this:</p>
+<pre tabindex="0"><code>auto p55p1
+iface p55p1 inet static
+address 172.16.3.201
+netmask 255.255.255.0
+</code></pre><p>This interface was connected to a port on a <a href="http://cumulusnetworks.com">Cumulus Linux</a>-powered <a href="http://www.dell.com">Dell</a> S6000-ON that was configured as an access port on a particular VLAN. Everything seemed to work just fine.</p>
+<p>After reconfiguration (done using <a href="http://www.ansible.com/home">Ansible</a>, more on that in a future post), I had <em>two</em> interface configuration files&mdash;one for the physical interface, and one for the VLAN interface. The physical interface file looked like this:</p>
+<pre tabindex="0"><code>auto p55p1
+iface p55p1 inet manual
+up ip link set p55p1 up
+down ip link set p55p1 down
+</code></pre><p>And the VLAN interface file looked like this:</p>
+<pre tabindex="0"><code>auto p55p1.3
+iface p55p1.3 inet static
+address 172.16.3.201
+netmask 255.255.255.0
+</code></pre><p>At the same time, the switch port on the Dell S6000-ON was being taken from an access port to a VLAN trunk port (using the configuration found in <a href="/2015/06/25/vlan-trunking-cumulus-linux/">this post</a>). It was a pretty simple reconfiguration&mdash;just move the IP address from the physical interface to the VLAN interface. Piece of cake, right?</p>
+<p>Except that I saw all sorts of really weird results&mdash;HostA could ping HostB, but HostB couldn&rsquo;t ping HostA. Restarting the network interfaces using a variety of methods (<code>initctl</code>, <code>service networking restart</code>, <code>ip link set</code>, and <code>ifup</code>/<code>ifdown</code>) all resulted in what appeared to be <em>reverting</em> the changes. I&rsquo;d see the IP address pop back onto the physical interface, which resulted in the same IP address on two different interfaces. This caused multiple routes in the routing table, etc. Very odd.</p>
+<p>Rebooting would fix it, but come on&mdash;rebooting a server to make network changes? What is this, Windows in the 1990s? (Sorry, couldn&rsquo;t resist!) I tried the #ubuntu-server IRC channel on Freenode; although the folks there were helpful, no solution presented itself.</p>
+<p>Finally, today, I found the solution. As described <a href="http://askubuntu.com/questions/509975/how-can-i-change-the-network-configuration-on-ubuntu-14-04-server">here</a>, Ubuntu will apparently totally ignore changes in the network configuration files for devices that have already been defined and then changed (which was the case here&mdash;the physical interface was defined, then changed). The fix is to run the command <code>ip addr flush dev &lt;devicename&gt;</code> after taking the interface down. Simple! I incorporated this command into the Ansible tasks in my playbook, re-ran the playbook to institute some changes (with a <code>--limit</code> switch to restrict operation to a particular host), and it worked perfectly.</p>
+<p>The takeaway, therefore, is to be sure to flush the device configuration (using <code>ip addr flush dev &lt;devicename&gt;</code>) when you need to move the IP address from one interface to another so as to avoid the same issues that I was seeing.</p>
+<p>Here&rsquo;s hoping this helps someone else!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/25/vlan-trunking-cumulus-linux/">VLAN Trunking with Cumulus Linux</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/07/02/vlan-trunking-mikrotik-routeros/">VLAN Trunking with Mikrotik RouterOS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f30%2ffix-for-ubuntu-caching-network-configuration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f30%2ffix-for-ubuntu-caching-network-configuration%2f&text=A%20Fix%20for%20Ubuntu%20Apparently%20Caching%20Network%20Configuration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f06%2f30%2ffix-for-ubuntu-caching-network-configuration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/12/02/weirdness-with-virtual-ethernet-interfaces-on-ubuntu/">Weirdness with Virtual Ethernet Interfaces on Ubuntu</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2013/09/09/namespaces-vlans-open-vswitch-and-gre-tunnels/">Namespaces, VLANs, Open vSwitch, and GRE Tunnels</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2013/05/29/a-quick-introduction-to-linux-policy-routing/">A Quick Introduction to Linux Policy Routing</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

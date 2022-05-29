@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Planning for FCoE in Your Data Center Today - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Planning for FCoE in Your Data Center Today - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Planning for FCoE in Your Data Center Today - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/08/22/planning-for-fcoe-in-your-data-center-today/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Planning for FCoE in Your Data Center Today</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1109 words (estimated 6 minutes to read)</span>
+  <p><em>By Aaron Delp</em></p>
+<p>This week I&rsquo;ve had the privilege of attending a Cisco Nexus 5000/7000 class. I have learned a tremendous amount about FCoE this week and after some conversations with Scott about the topic, I wanted to tackle it one more time from a different point of view. I have included a list of some of Scott&rsquo;s FCoE articles at the bottom for those interested in a more in-depth analysis.</p>
+<p>Disclaimer: I am by no means an FCoE expert! My working knowledge of FCoE is about four days old at this point. If I am incorrect in some of my situations below, please let me know (keep it nice and professional, people!) and I will be happy to make adjustments.</p>
+<p>If you are an existing VMware customer today with FC as your storage transport layer, should you be thinking about FCoE? How would you get started? What investments can you make in the near future to prepare you for the next generation?</p>
+<p>These are questions I am starting to get from my customers in planning/white board sessions around VMware vSphere and the next generation of virtualization. The upgrade to vSphere is starting to prompt planning and discussions around the storage infrastructure.</p>
+<p>Before I tackle the design aspect, let me start out with some hardware and definitions.</p>
+<p><strong>Cisco Nexus 5000 series switch:</strong> The Nexus 5K is a Layer 2 switch that is capable of FCoE and can provide both Ethernet and FC ports (with an expansion module). In addition to Ethernet switching, the switch also operates as an FC fabric switch providing full fabric services, or it can be set for N_Port Virtualization (NPV) mode. The Nexus 5K can&rsquo;t be put in FC switch mode and NPV mode at the same time. You must pick one or the other.</p>
+<p><strong>N_Port Virtualization (NPV) mode:</strong> NPV allows the Nexus 5K to act as a FC &ldquo;pass thru&rdquo; or proxy. NPV is great for environments where the existing fabric is <em>not</em> Cisco and merging the fabrics could be ugly. There is a downside to this. In NPV mode, no targets (storage arrays) can be hung off the Nexus 5K. This is true for both FC and FCoE targets.</p>
+<p><strong>Converged Network Adapter (CNA):</strong> A CNA is single PCI card that contains both FC and Ethernet logic, negating the need for separate cards, separate switches, etc.</p>
+<p>Now that the definitions and terminology is out of the way, I see four possible paths if you have FC in your environment today.</p>
+<p><strong><em>1. FCoE with a Nexus 5000 in a non-Cisco MDS environment (merging)</em></strong></p>
+<p>In this scenario, the easiest way to get the Nexus on the existing non-Cisco FC fabric is to put the switch in NPV mode. You could put the switch in interop mode (and all the existing FC switches), but it is a nightmare to get them all talking and you often lose vendor specific features in interop mode. Plus, to configure interop mode, the entire fabric has to be brought down. (You <em>do</em> have redundant fabrics, right?)</p>
+<p>With the Nexus in NPV mode, what will it do?  Not much. You can&rsquo;t hang storage off of it. You aren&rsquo;t taking advantage of Cisco VSANs or any other features that Cisco can provide. You are merely a pass thru. The zoning is handled by your existing switches; your storage is off the existing switches, etc.</p>
+<p>Why would you do this? By doing this, you could put CNAs in new servers (leaving the existing servers alone) to talk to the Nexus. This will simplify the server side infrastructure because you will have fewer cables, cards, switch ports, etc. Does the cost of the CNA and new infrastructure offset the cost of just continuing the old environment? That is for you to decide.</p>
+<p><strong><em>2. FCoE with a Nexus 5000 in a non-Cisco MDS environment (non-merging)</em></strong></p>
+<p>Who says you have to put the Nexus into the existing FC fabric? We have many customers that purchase &ldquo;data centers in a box&rdquo;. By that I mean a few servers, FC and/or Ethernet switches, storage, and VMware all in one solution. This &ldquo;box&rdquo; sits in the data center and the network is merged with the legacy network, but we stand up a Cisco SAN next to the existing non-Cisco SAN and just not let them talk to each other. In this instance, we would use CNAs in the servers, Nexus as the switch, and you pick a storage vendor. This will work just like option 3.</p>
+<p><strong><em>3. FCoE with a Nexus 5000 in a Cisco MDS environment</em></strong></p>
+<p>Now we&rsquo;re talking. Install the Nexus in FC switch mode, merge it with the MDS fabric, put CNAs in all the servers and install the storage off the Nexus as either FC or FCoE. You&rsquo;re off to the races!</p>
+<p>You potentially gain the same server side savings by replacing FC and Ethernet in new servers with CNAs. You are able to use all of the Cisco sexy features of FCoE. Nice solution if the cost is justified in your environment.</p>
+<p><strong><em>4. Keep the existing environment and use NFS to new servers</em></strong></p>
+<p>What did I just say? Why would I even consider that option?</p>
+<p>OK, this last one is a little tongue-in-cheek for customers that are already using FC. The NFS vs. traditional storage for VMware is a bit of a religious debate. I know you aren&rsquo;t going to sway me and I know I&rsquo;m not going to sway you.</p>
+<p>I admit I&rsquo;m thinking NetApp here in a VMware environment; I&rsquo;m a big fan so this is a biased opinion. NetApp is my background but other vendors play in this space as well. I bet Chad will be happy to leave a comment to help tell us why (and I hope he does!).</p>
+<p>Think of it this way. You&rsquo;re already moving from FC cards to CNAs. Why not buy regular 10Gb Ethernet cards instead? Why not just use the Nexus 5K as a line-rate, non-blocking 10Gb Ethernet switch? This configuration is very simple compared to FCoE at the Nexus level and management of the NetApp is very easy! Besides, you could always turn up FCoE on the Nexus (and the NetApp) at a future date.</p>
+<p>In closing, I really like FCoE but as you can see it isn&rsquo;t a perfect fit <em>today</em> for all environments. I really see this taking off in 1-2 years and I can&rsquo;t wait. Until then, use caution and ask all the right questions!</p>
+<p>If you are interested in some more in-depth discussion, here are links to some of Scott&rsquo;s articles on FCoE:</p>
+<p><a href="/2008/12/09/continuing-the-fcoe-discussion/">Continuing the FCoE Discussion</a></p>
+<p><a href="/2009/08/11/why-no-multi-hop-fcoe/">Why No Multi-Hop FCoE?</a></p>
+<p><a href="/2009/07/30/correction-there-might-be-an-end-to-end-fcoe-solution/">There Might Be an FCoE End to End Solution</a></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nexus">Nexus</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/guestpost">GuestPost</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/08/22/vmworld-2009-spouse-activities-faqs-and-updates/">VMworld 2009 Spouse Activities FAQs and Updates</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/08/23/my-vmworld-2009-schedule/">My VMworld 2009 Schedule</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f08%2f22%2fplanning-for-fcoe-in-your-data-center-today%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f08%2f22%2fplanning-for-fcoe-in-your-data-center-today%2f&text=Planning%20for%20FCoE%20in%20Your%20Data%20Center%20Today" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f08%2f22%2fplanning-for-fcoe-in-your-data-center-today%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/08/13/getting-qlogic-gen2-cnas-working-with-esx-4/">Getting QLogic Gen2 CNAs Working with ESX 4</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2009/08/02/ucs-class-wrap-up/">UCS Class Wrap-Up</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2008/08/14/storage-protocol-performance-whitepaper-from-netapp/">Storage Protocol Performance Whitepaper from NetApp</a> <span class="post-date-list">149 May 141414</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Netronome, 1 Year Later - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Netronome, 1 Year Later - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Netronome, 1 Year Later - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/10/24/netronome-1-year-later/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Netronome, 1 Year Later</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/musing">Musing</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;561 words (estimated 3 minutes to read)</span>
+  <p>In August 2009 I <a href="/2009/08/04/netronome-and-io-virtualization/">wrote about</a> a company called <a href="http://netronome.com/">Netronome</a> and the network processor they were developing. Late last week I had another conversation with Netronome and was able to follow-up on last year&rsquo;s discussion as well as get an idea of where they might be headed.</p>
+<p>The product in question in August 2009 was the Network Flow Processor; specifically, the NFP-3200, a 40-core processor specifically designed to provide line-rate functionality like switching, load balancing, firewalling, or Quality of Service (QoS)&mdash;all embedded in hardware and handled directly by the NFP-3200. The idea, of course, is to offload all this functionality into the NFP so as to reduce the load on host CPUs. You can get a few more details about the NFP-32xx via <a href="http://netronome.com/pages/network-flow-processors">Netronome&rsquo;s product page</a>.</p>
+<p>At first glance, it might seem like Netronome hasn&rsquo;t made a great deal of progress since last year. In August 2009, Netronome only had support for open source Xen. Unfortunately, that&rsquo;s still the case today. However, Netronome&rsquo;s business is a bit different. The comparison was made to Bose: you can buy a Bose radio as an OEM part from BMW, but you can also buy a Bose radio directly from Bose. In Netronome&rsquo;s case, you can buy NFP functionality when it is embedded into another manufacturer&rsquo;s products, or you can buy Netronome&rsquo;s products directly. In the past year, Netronome has been primarily focusing on the former line of business (the OEM aspect). For example, Netronome&rsquo;s NFP is used in an intrusion prevention system (IPS) produced by Sourcefire.</p>
+<p>Based on my conversation late last week, it would now appear that Netronome is preparing to add a bit more visibility to their second line of business: selling Netronome-branded products. One of the form factors Netronome is exploring is a PCIe-based card with the NFP embedded on the card; this will be a dual-port 10GbE card that offers hardware-based, line-rate switching and QoS. VMware vSphere support is tentatively targeted for Q2/Q3 of 2011 (although, as with all roadmap dates, that might change). The idea here is that an IT end-user could install this card into their servers and gain hardware-virtualized NIC instances and hardware-based switching functionality directly on the card. In VMware environments, this means you could leverage something like VMDirectPath to bypass the hypervisor. Astute readers will, of course, immediately point out that VMDirectPath has its own challenges (like losing vMotion in its current incarnation); Netronome will need to address those challenges in order to make their product valuable to the end-user community.</p>
+<p>Netronome&rsquo;s dual-pronged business model&mdash;targeting both OEMs and end users&mdash;means that their measures of success are very different than what many readers would consider success. For Netronome to become a Tier 1 supplier of components to a major networking vendor or carrier would be a huge success, even if Netronome-branded products never take off. As for the end-user focused business, I&rsquo;ll reiterate today what I said a year ago after first speaking with Netronome: the real challenge for Netronome is getting the appropriate support from major vendors, including VMware, and addressing some of the challenges of the potential use cases for their product.</p>
+<p>In the spirit of full disclosure, Netronome did not provide any consideration or compensation for this blog post; I wrote it because the technology sounded interesting and I thought it was something about which my readers might be interested in learning more.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/10/22/shortening-urls-via-bitly-the-apple-way/">Shortening URLs via bit.ly the Apple Way</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/10/27/need-some-help-with-subnetting/">Need Some Help With Subnetting?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f24%2fnetronome-1-year-later%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f24%2fnetronome-1-year-later%2f&text=Netronome%2c%201%20Year%20Later" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f10%2f24%2fnetronome-1-year-later%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">Creating UCS Service Profiles Part 1: Networking Elements</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2009/08/04/netronome-and-io-virtualization/">Netronome and I/O Virtualization</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2009/07/27/ucs-training-day-1-wrap-up/">UCS Training, Day 1 Wrap-Up</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

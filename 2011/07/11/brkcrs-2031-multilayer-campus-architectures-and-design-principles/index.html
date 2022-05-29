@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>BRKCRS-2031: Multilayer Campus Architectures and Design Principles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="BRKCRS-2031: Multilayer Campus Architectures and Design Principles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="BRKCRS-2031: Multilayer Campus Architectures and Design Principles - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/07/11/brkcrs-2031-multilayer-campus-architectures-and-design-principles/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">BRKCRS-2031: Multilayer Campus Architectures and Design Principles</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1322 words (estimated 7 minutes to read)</span>
+  <p>This session is BRKCRS-2031, Multilayer Campus Architectures and Design Principles. The presenter is Mark Montaez, a Principal Engineer in the Office of the CTO at Cisco.</p>
+<p>The session focuses on the basics of building a rock-solid campus design, providing a foundation for more advanced campus design sessions available later this week at Cisco Live.</p>
+<p>One goal of campus design is to drive down convergence, ideally to the 200 ms goal. The human ear will notice drops in 150 to 200 ms, and video is even worse.</p>
+<p>The agenda will start with multilayer campus design principles, then move on to foundation services, campus design best practices, IP telephony considerations, QoS considerations, and security considerations. All in all, it looks like quite a beefy and information-packed session.</p>
+<p>A typical multilayer campus design uses a modular, structured approach using the core-distribution-access architecture. The idea is to avoid organic growth and ensure deterministic behavior. If a node fails, you want to be able to easily determine the impact of that failure.</p>
+<p>Some key advantages of a multilayer campus design include:</p>
+<ul>
+<li>
+<p>Offers hierarchy; each layer has a specific role</p>
+</li>
+<li>
+<p>Promote small failure domains (limits the impact of a failure)</p>
+</li>
+<li>
+<p>It&rsquo;s modular, using a &ldquo;building block&rdquo; approach</p>
+</li>
+<li>
+<p>Promotes load balancing and redundancy</p>
+</li>
+<li>
+<p>Incorporates balance of Layer 2 and Layer 3 and leverages the strengths of both layers</p>
+</li>
+<li>
+<p>Promotes deterministic traffic patterns</p>
+</li>
+<li>
+<p>Easy to grow, understand, and troubleshoot</p>
+</li>
+</ul>
+<p>Focusing on the access layer. Some key thoughts about the access layer include:</p>
+<ul>
+<li>
+<p>The access layer is a feature-rich layer</p>
+</li>
+<li>
+<p>The access layer provides services like QoS, trust boundary, broadcast suppression, IGMP snooping</p>
+</li>
+<li>
+<p>The access layer supplies security-related features like DHCP snooping, 802.1x, port security, DAI, and IPSG. (Some of these acronyms I&rsquo;m not familiar with&mdash;can anyone fill me in?)</p>
+</li>
+</ul>
+<p>Now moving on to the distribution layer, this is where we provide policy, convergence, QoS, and high availability.</p>
+<p>Above the distribution layer is the core, which provides additional aggregation. The core provides flexibility and room for growth. Is a core layer necessary? It depends on your network. If two layers provides enough growth for your environment, two layers (access and distribution) are just fine. However, if the environment needs to grow, then a core layer provides more flexibility. Even using a full mesh with a two-layer design (access and fully-meshed distribution) is OK, if that satisfies the needs of the network.</p>
+<p>Generally speaking, when you have three or more distribution blocks, you need a core layer. Without a core layer, as you move beyond three distribution blocks with a full mesh it becomes increasingly complex, increasingly difficult to troubleshoot, and less deterministic in the event of link or node failure.</p>
+<p>The use of distribution blocks gives flexibility in what &ldquo;types&rdquo; of access layers you can deploy: routed access, VSS, WAN, data center (broad Layer 2), Internet, etc. This gives lots of flexiblity at the access layer while remaining standardized at the distribution and core layers.</p>
+<p>The help eliminate Spanning Tree issues, you can use a &ldquo;Layer 2 access&rdquo; model where VLAN = subnet = single access switch. VLANs do not span access layer switches. In many cases, though, it&rsquo;s necessary to span VLANs across access layer switches (think vMotion).</p>
+<p>There are also &ldquo;Routed Access&rdquo; and VSS access layer designs. In the Routed Access design, you push Layer 3 all the way down to the access layer switches. This commits you to the &ldquo;VLAN = subnet = single access layer switch&rdquo; mentality and you can&rsquo;t span some VLANs if that&rsquo;s necessary. Mark (the presenter) describes routed access as &ldquo;brittle&rdquo; because it doesn&rsquo;t offer the flexibility to span VLANs where necessary. (A comment was raised that there are ways to bridge Layer 2 across Layer 3 to address this limitation.) The VSS access layer design helps eliminate loops and provide the logical hub-and-spoke design that encourages deterministic behavior.</p>
+<p>Use point-to-point interconnections to help ensure that physical link failure or node failure is immediately detected. Also, use fibre optic cabling because it provides more flexibility in detecting failures (fibre optic can detect the failure more quickly and help us achieve the 200 ms convergence time we&rsquo;re shooting for).</p>
+<p>Another way to help improve convergence times is to use fibre optic interconnections; this provides faster detection of link failure. Using physical interfaces for routing instead of SVIs can also provide faster convergence and quicker routing updates.</p>
+<p>The presenter also made mention of the recommended version of Spanning Tree to run, but I was unable to capture what he said. I think it&rsquo;s in the presentation; I&rsquo;ll review it later and see if I can update this blog post.</p>
+<p>How do we harden Spanning Tree and make it behave the way we want? Some things to do:</p>
+<ul>
+<li>
+<p>Place the root where you want it</p>
+</li>
+<li>
+<p>Enable RootGuard (on downlinks), LoopGuard (on uplinks and Layer 2 link between distribution switches), UplinkFast, UDLD</p>
+</li>
+<li>
+<p>Only end station traffic should be seen on an edge port (use BPDU Guard, RootGuard, PortFast, and port-security). Port security, in particular, can help against switches coming onto the network that don&rsquo;t provide BPDUs and therefore BPDU Guard wouldn&rsquo;t protect us.</p>
+</li>
+</ul>
+<p>Even when using VSS solutions (VSS and vPC), you still need to configure STP to protect against loops during those times when the link aggregates aren&rsquo;t fully configured.</p>
+<p>There was a question asked about FlexLink, but I&rsquo;m not familiar with FlexLink. Anyone have resources for more information on FlexLink?</p>
+<p>The presenter now moves on to Routing (Layer 3) considerations and best practices. This is primarily focused on routing between the distribution and core layers.</p>
+<p>One recommendation is &ldquo;build triangles not squares&rdquo;. With a &ldquo;triangle&rdquo; architecture, link/node failure does not require routing protocol convergence; a square architecture requires routing protocol convergence which increases convergence time (remember we are shooting for a 200 ms convergence target).</p>
+<p>With regard to routing protocols, limit OSPF/EIGRP peering through the access layer. Use the <code>passive-interface</code> command to limit unnecessary peering. Using <code>passive-interface default</code> (and then unblocking the desired interfaces) is a less labor-intensive way of handling it.</p>
+<p>You should also summarize routes at the distribution list. If I&rsquo;m understanding the presenter correctly, this helps limits EIGRP queries and OSPF LSA propagation. This helps ensure more deterministic behavior in the event of link/node failure. If you do use summarization at the distribution layer, you must provide a link between the distribution layer switches.</p>
+<p>By default, the current load balancing options will generally provide good utilization of ECMP (Equal Cost Multipath) links. However, you might need to tune the load balancing algorithms. Be careful to avoid CEF polarization by using the same algorithm at all the layers of the network; this can result in underutilized interfaces. To avoid CEF polarization, set different algorithms at each layer.</p>
+<p>VTP version 3 can provide the necessary hardening functionality to address issues with VTP v1/2 (where VLANs accidentally get killed due to a new server taking over VTP server role and overwriting VLAN configuration network-wide). Generally don&rsquo;t need VTP in the &ldquo;VLAN=subnet=access switch&rdquo; sort of configuration.</p>
+<p>Disabling DTP negotiation can help improve link up convergence time (using the <code>switchport nonegotiate</code> command). There&rsquo;s a trade-off here, naturally.</p>
+<p>UDLD is Unidirectional Link Detection and protects against one-way communication. UDLD is primarily used on fibre optic links and helps ensure proper communication between switches. UDLD Aggressive sets both sides to err-disabled; UDLD Normal only err-disables the side where unidirectional communication was detected.</p>
+<p>Turning PAgP off on CatOS switches and ensuring matching link aggregation configuration on both sides can help improve link restoration convergence times.</p>
+<p>The general rule of thumb is 20:1 oversubscription from access to distribution and 4:1 oversubscription from distribution to core.</p>
+<p>Pay close attention to the interaction between ECMP links and EtherChannel/link aggregation and how links will/will not be utilized in the event of a link failure.</p>
+<p>The presenter was still going strong (there had been lots of questions and that threw off the schedule), but I had to go ahead and leave to make the next session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ciscolive2011">CiscoLive2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/06/23/using-gnu-screen-with-ssh/">Using GNU Screen with SSH</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/07/11/brkmpl-1101-introduction-to-mpls/">BRKMPL-1101: Introduction to MPLS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkcrs-2031-multilayer-campus-architectures-and-design-principles%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkcrs-2031-multilayer-campus-architectures-and-design-principles%2f&text=BRKCRS-2031%3a%20Multilayer%20Campus%20Architectures%20and%20Design%20Principles" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f07%2f11%2fbrkcrs-2031-multilayer-campus-architectures-and-design-principles%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/06/17/my-cisco-live-2011-schedule/">My Cisco Live 2011 Schedule</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2011/05/16/technology-short-take-12-networking-edition/">Technology Short Take #12: Networking Edition</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2011/05/04/a-few-references-for-ccna-certification/">A Few References for CCNA Certification</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Adding a MachineHealthCheck using Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Adding a MachineHealthCheck using Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Adding a MachineHealthCheck using Kustomize - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2021/03/19/adding-a-machinehealthcheck-with-kustomize/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Adding a MachineHealthCheck using Kustomize</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;570 words (estimated 3 minutes to read)</span>
+  <p>MachineHealthChecks are a powerful feature in the Kubernetes <a href="https://cluster-api.sigs.k8s.io">Cluster API</a> (CAPI), and something I played around with not too long ago on <a href="https://tgik.io/143">TGIK 143</a>. Recently, I was helping to document the use of <a href="https://github.com/kubernetes-sigs/kustomize/"><code>kustomize</code></a> with Cluster API for inclusion in the upstream CAPI documentation, and I learned a simple trick with <code>kustomize</code> that I&rsquo;d apparently overlooked in the past. If you&rsquo;ve used <code>kustomize</code> for any great length of time you probably already know and have used the functionality I&rsquo;ll describe in this post, but if you&rsquo;re new to <code>kustomize</code> or, like me, a user of <code>kustomize</code> that hasn&rsquo;t had time to dig into all of its functionality, then read on and see how you can use <code>kustomize</code> to add a MachineHealthCheck to a CAPI workload cluster.</p>
+<p>If you&rsquo;re not familiar with <code>kustomize</code>, then reading <a href="/2019/09/13/an-introduction-to-kustomize/">my introduction to <code>kustomize</code></a> may be useful before continuing on with the rest of this article.</p>
+<p>In this use case&mdash;adding a MachineHealthCheck to an workload cluster in CAPI&mdash;I&rsquo;ll work from the assumption that you have a &ldquo;base&rdquo; CAPI workload cluster definition (perhaps one you&rsquo;ve generated using <code>clusterctl config cluster</code>). In the directory where this workload cluster manifest exists, you&rsquo;d need to add a <code>kustomization.yaml</code> to specify resources. It would look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.config.k8s.io/v1beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">base.yaml</span>
+</span></span></code></pre></div><p>Now, let&rsquo;s say you want to add a MachineHealthCheck for this workload cluster. You&rsquo;d create a <code>kustomize</code> overlay directory, and in that overlay directory you&rsquo;d place (at least) two files:</p>
+<ol>
+<li>Another <code>kustomization.yaml</code> file (more on that in a moment)</li>
+<li>A YAML manifest for a MachineHealthCheck</li>
+</ol>
+<p>(I say &ldquo;at least&rdquo; two files because you could also place other patches or other resources in the directory as well.)</p>
+<p>The YAML manifest for the MachineHealthCheck is straightforward; I&rsquo;ll only point out to make sure to specify the correct cluster name and deployment name, taking into account any &ldquo;namePrefix&rdquo; or &ldquo;nameSuffix&rdquo; directives you may be using.</p>
+<p>The <code>kustomization.yaml</code> would look something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span>---
+</span></span><span style="display:flex;"><span><span style="color:#f92672">apiVersion</span>: <span style="color:#ae81ff">kustomize.config.k8s.io/v1beta1</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">kind</span>: <span style="color:#ae81ff">Kustomization</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">resources</span>:
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">../../base</span>
+</span></span><span style="display:flex;"><span>  - <span style="color:#ae81ff">workload-mhc.yaml</span>
+</span></span></code></pre></div><p>Now, you may also include various other directives, but the key here is in the &ldquo;resources&rdquo; section. It does, of course, specify the base configuration, but it also lists the MachineHealthCheck manifest that resides in this overlay directory. When you run <code>kustomize build .</code>, <code>kustomize</code> will <em>combine</em> the specified resources together. In this case, that means it will combine the base workload cluster manifest and the MachineHealthCheck manifest, and the end result&mdash;when you feed this to <code>kubectl apply</code>&mdash;will be a new workload cluster <em>and</em> a MachineHealthCheck to go along with it.</p>
+<p>The functionality of combining resources in an overlay is a core part of the functionality of <code>kustomize</code>, but for some reason I hadn&rsquo;t leveraged it yet. Kudos to the Cluster API Provider for Azure (CAPZ) team for illustrating this use case in the creation of <a href="https://github.com/kubernetes-sigs/cluster-api-provider-azure/tree/master/templates/flavors">workload cluster template &ldquo;flavors.&rdquo;</a> Now that I know it&rsquo;s there, I can begin to see other potential use cases, such as adding extra MachineDeployments to a base workload cluster configuration.</p>
+<p>I hope this information is useful. As I said, if you&rsquo;re a long-time <code>kustomize</code> user, this is probably not news to you, but for others who are still exploring all the various pieces of functionality that <code>kustomize</code> offers I hope this opens up some new possibilities for you. I welcome all constructive feedback; feel free to reach out to me on <a href="https://kubernetes.slack.com">the Kubernetes Slack instance</a> or contact <a href="https://twitter.com/scott_lowe">me on Twitter</a>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/capi">CAPI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kustomize">Kustomize</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2021/03/12/technology-short-take-138/">Technology Short Take 138</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2021/04/01/using-wireguard-on-macos/">Using WireGuard on macOS</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f19%2fadding-a-machinehealthcheck-with-kustomize%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f19%2fadding-a-machinehealthcheck-with-kustomize%2f&text=Adding%20a%20MachineHealthCheck%20using%20Kustomize" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2021%2f03%2f19%2fadding-a-machinehealthcheck-with-kustomize%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/03/17/kustomize-transformer-configuration-cluster-api-v1alpha3/">Kustomize Transformer Configurations for Cluster API v1alpha3</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2020/03/13/configuring-kustomize-transformers-for-cluster-api/">Configuring Kustomize Transformers for Cluster API</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2019/11/12/using-kustomize-with-cluster-api-manifests/">Using Kustomize with Cluster API Manifests</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

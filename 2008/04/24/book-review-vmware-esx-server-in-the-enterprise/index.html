@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Book Review: VMware ESX Server in the Enterprise - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Book Review: VMware ESX Server in the Enterprise - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Book Review: VMware ESX Server in the Enterprise - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/04/24/book-review-vmware-esx-server-in-the-enterprise/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Book Review: VMware ESX Server in the Enterprise</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;364 words (estimated 2 minutes to read)</span>
+  <p><em>VMware ESX Server in the Enterprise: Planning and Securing Virtualization Servers</em>, by Edward Haletky, is a book I&rsquo;ve been working on reviewing for quite a while now. It&rsquo;s a fairly hefty tome, weighing in at just over 550 pages, and is chock full of technical details on both ESX Server 2.5.x and ESX 3.0.x. Throughout the book, the author faithfully covers information for both versions&mdash;where applicable, of course&mdash;and highlights differences and similarities.</p>
+<p>Although I personally found the constant &ldquo;back and forth&rdquo; between ESX Server 2.5.x and ESX 3.0.x to be distracting, I can easily see where readers fresh out of an ESX Server 2.5.x migration&mdash;or still managing some servers running ESX Server 2.5.x&mdash;would find that aspect of the book useful. VMware administrators familiar with the older version but perhaps just now making the move to VI3 would also find the book useful as a &ldquo;transition&rdquo; manual.</p>
+<p>I did run into a few technical inaccuracies, but these are minor in scope and do not materially affect the content. For example, on page 180 in the section titled &ldquo;iSCSI/NFS Best Practices,&rdquo; the author makes the following statement:</p>
+<blockquote>
+<p>The iSCSI VMkernel device <em>must</em> be part of at least one service console vSwitch, which implies that the service console must be on the same network as the iSCSI servers. This is required whether using CHAP authentication, or not, to pass credentials to the iSCSI server.</p>
+</blockquote>
+<p>Technically, the iSCSI VMkernel device can be on <em>any</em> vSwitch; the requirement is that there is Service Console connectivity to the iSCSI target. This connectivity could be direct (on the same subnet) or routed. While following the author&rsquo;s guidance and placing a Service Console port group on the same vSwitch and same IP network as the iSCSI VMkernel device will most certainly work, it&rsquo;s not <em>required.</em> It&rsquo;s a very minor inaccuracy, as I said earlier, and does not substantially or materially change the validity of the material.</p>
+<h4 id="summary">Summary</h4>
+<p>Overall, I found the book to be good reference material. Haletky covers a broad range of topics, from installation to storage and networking to disaster recovery. Anyone needing reference material for such a wide range of topics could do far worse than choosing this book.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/writing">Writing</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/04/24/vmware-fusion-112-now-available/">VMware Fusion 1.1.2 Now Available</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/04/25/my-thoughts-on-the-live-migration-quick-migration-discussion/">My Thoughts on the Live Migration-Quick Migration Discussion</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fbook-review-vmware-esx-server-in-the-enterprise%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fbook-review-vmware-esx-server-in-the-enterprise%2f&text=Book%20Review%3a%20VMware%20ESX%20Server%20in%20the%20Enterprise" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fbook-review-vmware-esx-server-in-the-enterprise%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/04/16/the-dark-side-of-virtualization/">The Dark Side of Virtualization</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2008/04/04/virtualization-short-take-5/">Virtualization Short Take #5</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2008/03/07/configuration-for-protecting-vmotion/">Configuration for Protecting VMotion</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

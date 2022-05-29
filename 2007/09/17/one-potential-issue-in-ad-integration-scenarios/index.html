@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>One Potential Issue in AD Integration Scenarios - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="One Potential Issue in AD Integration Scenarios - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="One Potential Issue in AD Integration Scenarios - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/09/17/one-potential-issue-in-ad-integration-scenarios/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">One Potential Issue in AD Integration Scenarios</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 179 May 171717 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;734 words (estimated 4 minutes to read)</span>
+  <p>Regular readers of this blog know that I like to work on integrating various systems into Active Directory. I&rsquo;ve written a couple of articles on the issue:</p>
+<p><a href="/2007/01/15/linux-ad-integration-version-4/">Linux-AD Integration, Version 4</a><br>
+<a href="/2007/04/25/solaris-10-ad-integration-version-3/">Solaris 10-AD Integration, Version 3</a><br>
+<a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a></p>
+<p>These articles have been pretty successful and from what I understand have helped a fair number of people integrate their non-Windows systems into Active Directory for simplified user management and authentication. Occasionally, though, we run into the odd issue that isn&rsquo;t quite so straightforward to resolve.</p>
+<p>For example, I recently had a reader (let&rsquo;s call him Johnny) who was having a difficult time getting the Linux-AD integration to work. The <code>ldapsearch</code> and <code>kinit</code> commands worked fine, but <code>getent passwd</code> or <code>getent group</code> failed with no output. The users in Active Directory did indeed have UNIX attributes added to their accounts. There were no firewalls between the non-Windows systems and the Active Directory domain controllers, and there did not appear to be any connectivity issues whatsoever (this further underscored by the fact that <code>ldapsearch</code> successfully returned LDAP search results from AD, and <code>kinit</code> successfully obtained a Kerberos ticket from AD). We were stumped.</p>
+<p>Johnny and I traded e-mails back and forth a few times, until finally Johnny found his error and notified me about what had been happening. As I read the description about the problem, I realized that this may be a problem that is affecting a lot of users, and may, in fact, have stumped some of you out there reading right now. Here&rsquo;s the details.</p>
+<p>The method that I suggest using for AD integration uses two parts:</p>
+<ul>
+<li>
+<p>First, we use Kerberos to obtain a Kerberos ticket from an Active Directory domain controller (also a Kerberos key distribution center, or KDC). This handles the authentication side of things and prevents the password from crossing the wire at any point in time.</p>
+</li>
+<li>
+<p>Next, we use LDAP to centrally store account information, such as UID number, GID number, home directory, login shell, etc. This is the part that typically requires schema extensions (although there is a workaround for that) and using this technique ensures that we don&rsquo;t have to manage accounts individually on each Linux server.</p>
+</li>
+</ul>
+<p>This approach doesn&rsquo;t work without both pieces. The Kerberos authentication takes care of the password, but without account information logins still fail. So if Kerberos works but LDAP doesn&rsquo;t, logins will fail. If Kerberos doesn&rsquo;t work but LDAP is fine, logins will fail. So part of troubleshooting this configuration is isolating where the problem lies. In this particular case, <code>kinit</code> worked fine&mdash;no error was returned and <code>klist</code> showed a valid Kerberos ticket. So the problem had to be with LDAP. But where? The <code>ldapsearch</code> command worked fine.</p>
+<p>The problem lie with the <code>/etc/ldap.conf</code> file. See, the nss_ldap libraries (which are responsible for using LDAP&mdash;and other sources, as defined in <code>/etc/nsswitch.conf</code>&mdash;as the backend information database for account information) are controlled by this file, but <code>ldapsearch</code> does not use it. Specifically, the error was with the account that is used to bind (or connect) to Active Directory to perform the searches.</p>
+<p>There are two ways of specifying this account in <code>/etc/ldap.conf</code>. You can use the full DN, which looks something like &ldquo;cn=Scott Lowe,cn=Users,dc=example,dc=com&rdquo; or &ldquo;cn=John Smith,ou=Marketing,ou=Departments,dc=example,dc=com&rdquo;. Alternately, you can use the universal principal name (UPN), which looks something like an e-mail address, such as &ldquo;<a href="mailto:slowe@example.com">slowe@example.com</a>&rdquo; or &ldquo;<a href="mailto:john.smith@example.com">john.smith@example.com</a>&rdquo;. In this particular case, Johnny (our reader with the problem) was using the full DN, but he was using the wrong attribute in the DN. Here&rsquo;s the information he had:</p>
+<pre><code>First Name: John  
+Last Name: Smith  
+Full Name: John Smith  
+Display Name: John Smith  
+UPN: jsmith@example.com  
+SAM Account Name (downlevel logon name): jsmith  
+Object name: jsmith
+</code></pre>
+<p>Which of these do you suppose should be used in the DN? Full name? No. Display name? No. It must be the <strong><em>object name</em></strong>, in this case &ldquo;jsmith&rdquo;. You can double-check your object name (or CN) using ADSI Edit or a similar utility. You <em>could</em> use Active Directory Users and Computers, but that&rsquo;s typically the confusing part. In any case, once Johnny fixed the syntax for the bind account then <code>getent passwd</code> and <code>getent group</code> worked like a champ.</p>
+<p>How do we avoid this kind of issue? Simple: just use the UPN instead of the full DN. This syntax works just as well and avoids the potential problem of using the wrong name when building the full DN.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/solaris">Solaris</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/09/15/finally-home-from-vmworld-2007/">Finally Home from VMworld 2007</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/09/20/featureor-flaw/">Feature....or Flaw?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f17%2fone-potential-issue-in-ad-integration-scenarios%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f17%2fone-potential-issue-in-ad-integration-scenarios%2f&text=One%20Potential%20Issue%20in%20AD%20Integration%20Scenarios" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f17%2fone-potential-issue-in-ad-integration-scenarios%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2007/04/25/solaris-10-ad-integration-version-3/">Solaris 10-AD Integration, Version 3</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2007/04/24/solaris-ad-integration-update-coming/">Solaris-AD Integration Update Coming</a> <span class="post-date-list">249 May 242424</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

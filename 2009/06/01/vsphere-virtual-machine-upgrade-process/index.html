@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>vSphere Virtual Machine Upgrade Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="vSphere Virtual Machine Upgrade Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="vSphere Virtual Machine Upgrade Process - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/06/01/vsphere-virtual-machine-upgrade-process/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">vSphere Virtual Machine Upgrade Process</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;603 words (estimated 3 minutes to read)</span>
+  <p>Upgrading a VMware Infrastructure 3.x environment to VMware vSphere 4 involves more than just upgrading vCenter Server and upgrading your ESX/ESXi hosts (as if that wasn&rsquo;t enough). You should also plan on upgrading your virtual machines. VMware vSphere introduces a new hardware version (version 7), and vSphere also introduces a new paravirtualized network driver (VMXNET3) as well as a new paravirtualized SCSI driver (PVSCSI). To take advantage of these new drivers as well as other new features, you&rsquo;ll need to upgrade your virtual machines. This process I describe below works really well.</p>
+<p>I&rsquo;d like to thank <a href="http://bussink.ch/erik/">Erik Bussink</a>, whose <a href="http://twitter.com/erikbussink">posts on Twitter</a> got me started down this path.</p>
+<p>Please note that this process <strong>will require</strong> some downtime. I personally tested this process with both Windows Server 2003 R2 as well as Windows Server 2008; it worked flawlessly with both versions of Windows. (I&rsquo;ll post a separate article on doing something similar with other operating systems, if it&rsquo;s even possible.)</p>
+<ol>
+<li>
+<p>Record the current IP configuration of the guest operating system. You&rsquo;ll end up needing to recreate it.</p>
+</li>
+<li>
+<p>Upgrade VMware Tools in the guest operating system. You can do this by right-clicking on the virtual machine and selecting Guest &gt; Install/Upgrade VMware Tools. When prompted, choose to perform an automatic tools upgrade. When the VMware Tools upgrade is complete, the virtual machine will reboot.</p>
+</li>
+<li>
+<p>After the guest operating system reboots and is back up again, shutdown the guest operating system. You can do this by right-clicking on the virtual machine and selecting Power &gt; Shutdown Guest.</p>
+</li>
+<li>
+<p>Upgrade the virtual machine hardware by right-clicking the virtual machine and selecting Upgrade Virtual Hardware.</p>
+</li>
+<li>
+<p>In the virtual machine properties, add a new network adapter of the type VMXNET3 and attach it to the same port group/dvPort group as the first network adapter.</p>
+</li>
+<li>
+<p>Remove the first/original network adapter.</p>
+</li>
+<li>
+<p>Add a new virtual hard disk to the virtual machine. Be sure to attach it to SCSI node 1:<em>x</em>; this will add a second SCSI adapter to the virtual machine. The size of the virtual hard disk is irrelevant.</p>
+</li>
+<li>
+<p>Change the type of the newly-added second SCSI adapter to VMware Paravirtual.</p>
+</li>
+<li>
+<p>Click OK to commit the changes you&rsquo;ve made to the virtual machine.</p>
+</li>
+<li>
+<p>Power on the virtual machine. When the guest operating system is fully booted, log in and recreate the network configuration you recorded for the guest back in step 1. Windows may report an error that the network configuration is already used by a different adapter, but proceed anyway. Once you&rsquo;ve finished, shut down the guest operating system again.</p>
+</li>
+<li>
+<p>Edit the virtual machine to remove the second hard disk you just added.</p>
+</li>
+<li>
+<p>While still in the virtual machine properties, change the type of the original SCSI controller to VMware Paravirtual (<strong>NOTE:</strong> See update below.)</p>
+</li>
+<li>
+<p>Power on the virtual machine. When the guest operating system is fully booted up, log in.</p>
+</li>
+<li>
+<p>Create a new system environment variable named DEVMGR_SHOW_NONPRESENT_DEVICES and set the value to 1.</p>
+</li>
+<li>
+<p>Launch Device Manager and from the View menu select Show Hidden Devices.</p>
+</li>
+<li>
+<p>Remove the drivers for the old network adapter and old SCSI adapter. Close Device Manager and you&rsquo;re done!</p>
+</li>
+</ol>
+<p>If you perform these steps on a template, then you can be assured that all future virtual machines cloned from this template also have the latest paravirtualized drivers installed for maximum performance.</p>
+<p>Post any questions or clarifications in the comments. Thanks!</p>
+<p><strong>UPDATE:</strong> Per <a href="http://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&amp;externalId=1010398">this VMware KB article</a>, VMware doesn&rsquo;t support using the PVSCSI adapter for boot devices. That is not to say that it doesn&rsquo;t work (it does work), but that it is not <em>supported.</em> Thanks to Eddy for pointing that out in the comments!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/06/01/train-signal-welcome/">Train Signal, Welcome!</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/06/04/vmware-vsphere-review-in-the-works/">VMware vSphere Review in the Works</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f01%2fvsphere-virtual-machine-upgrade-process%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f01%2fvsphere-virtual-machine-upgrade-process%2f&text=vSphere%20Virtual%20Machine%20Upgrade%20Process" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f06%2f01%2fvsphere-virtual-machine-upgrade-process%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/04/06/double-take-softwares-workload-optimization-suite/">Double-Take Software&#39;s Workload Optimization Suite</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2009/01/09/sanbolic-optimizes-melio-fs-adds-virtualization-support/">Sanbolic Optimizes Melio FS, Adds Virtualization Support</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2009/01/07/virtualization-short-take-25/">Virtualization Short Take #25</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

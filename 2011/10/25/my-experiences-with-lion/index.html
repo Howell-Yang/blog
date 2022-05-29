@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>My Experiences with Lion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="My Experiences with Lion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="My Experiences with Lion - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/10/25/my-experiences-with-lion/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">My Experiences with Lion</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 259 May 252525 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/review">Review</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;992 words (estimated 5 minutes to read)</span>
+  <p>About two weeks ago, I purchased a new 13&quot; MacBook Pro for use as my primary laptop. As you probably know, I&rsquo;ve been a Mac user for a while; this 13&quot; MBP replaces a 15&quot; MBP that I purchased about two years ago. Predictably, the new laptop was preloaded with Mac OS X 10.7 &ldquo;Lion&rdquo;, the latest and greatest OS from Apple. Since the release of Lion, I&rsquo;d made no secret of the fact that I had no intention of upgrading my existing laptop from 10.6 to 10.7, as I didn&rsquo;t see any real need to upgrade&mdash;Mac OS X 10.6 (aka &ldquo;Snow Leopard&rdquo;) was working just fine for me. If the existing OS is running just fine and you don&rsquo;t need any of the features of the new OS, what&rsquo;s the point in upgrading?</p>
+<p>Since the new laptop came preloaded with Lion, I decided that I should at least give the new OS an honest try and see if I liked it. With that in mind, I upgraded the new laptop to the latest Lion release, 10.7.2, and installed any and all applicable software updates. I then set out to migrate all my files, apps, and data, which I managed to complete just before leaving for Copenhagen for VMworld EMEA 2011.</p>
+<p>Throughout the show and the accompanying travel, the new 13&quot; MacBook Pro was my primary system, and I used it for all my daily tasks: e-mail, browsing the web, posting to Twitter, writing documents, creating presentations, building mind maps, configuring network equipmentyou get the idea. Here are some of the observations I gathered during this time:</p>
+<ul>
+<li>
+<p>Even though I was able to unhide my user Library folder (using <code>chflags nohidden</code>), I wasn&rsquo;t able to search the Library folder from Finder using Spotlight. I verified that the folder wasn&rsquo;t excluded from Spotlight (there were no indications in the GUI that it was excluded). I was able to search the folder using <code>mdfind.</code></p>
+</li>
+<li>
+<p>I found that even though Finder was configured to search the current window when performing a search, it always defaulted to searching my entire home directory. No amount of fiddling changed this behavior.</p>
+</li>
+<li>
+<p>Finder windows didn&rsquo;t &ldquo;remember&rdquo; their toolbar/sidebar state. Just about every time I&rsquo;d open a Finder window, the toolbar and sidebar were visible, even though I&rsquo;d turned off the toolbar and sidebar the last time I had the folder open.</p>
+</li>
+<li>
+<p>AppleScripts that I&rsquo;d written to manipulate mail messages ran significantly slower against the version of Mail in Lion compared to Mail in Snow Leopard.</p>
+</li>
+<li>
+<p>The new version of Growl from the Mac App Store would consistently crash under Lion. These crashes were typically caused by Twitterrific. A matching configuration on my older laptop never demonstrated the same behaviors.</p>
+</li>
+<li>
+<p>Little things here and there throughout the interface felt sluggish. For example, there was always a noticeable delay between the sending of an e-mail message and the &ldquo;whoosh&rdquo; sound. That delay did not exist with Snow Leopard. This implied, IMHO, some sort of performance issue that prevented snappier sound performance.</p>
+</li>
+<li>
+<p>I personally found the minor UI changes (smaller window controls, for example, and changes in window shading between active and inactive windows) made the OS harder to use. Distinguishing between active and inactive windows was particularly problematic.</p>
+</li>
+<li>
+<p>Active windows would, from time to time, open behind an inactive window. There did not seem to be any noticeable pattern as to when this happened.</p>
+</li>
+</ul>
+<p>Because of all these various things, I found that the &ldquo;frictionless&rdquo; experience that I&rsquo;d enjoyed in Mac OS X for years no longer existed. Lion, for me, now felt like Windows&mdash;the operating system was &ldquo;getting in the way&rdquo; and making it harder for me to get my work accomplished. To be fair, there were a few features that I really <em>did</em> like (the new Spaces, some of the gestures, Resume), but those features didn&rsquo;t and couldn&rsquo;t outweigh the disadvantages. I was so disappointed.</p>
+<p>By the time I arrived back in the States, I&rsquo;d resolved that I would rebuild the laptop with Snow Leopard. Because this particular model of 13&quot; MacBook Pro originally shipped with Snow Leopard, I knew that it would run properly (not the case with the new MacBook Air laptops, for example&mdash;they won&rsquo;t run Snow Leopard at all because of drivers that don&rsquo;t exist in 10.6.x). This past Sunday night, I rebuilt the 13&quot; MacBook Pro with Snow Leopard. Since that time, the laptop and my applications have been rock solid and functional. It&rsquo;s surprising to me just how much of a difference I saw in usability and reliability between the original factory Lion install and my own clean Snow Leopard install. Snow Leopard has been, for me, worlds better.</p>
+<p>So what&rsquo;s the key takeaway here? Apple wants to make Mac OS X &ldquo;easier&rdquo; and &ldquo;simpler,&rdquo; to grow their installed base via the popularity of iOS, the iPhone, and the iPad. To that end, they shifted Lion closer to iOS and away from the UNIX roots that originally drew me to Mac OS X. Snow Leopard, on the other hand, retains the power and flexibility that were the key drivers for me to switch so many years ago (back in the days of the PowerPC G4 and Mac OS X 10.2k &ldquo;Jaguar&rdquo;). I suspect&mdash;although I don&rsquo;t have any hard facts&mdash;that many other technical professionals switched to the Mac for similar reasons. Will those users also be alienated by the changes in Lion? Is Apple pushing away the highly technical audience that has been one of their biggest proponents in the Mac market? For me, this shift toward iOS made Lion less appealing, less powerful, less useful for me. It introduced friction in my computing experience where previously there had been none.</p>
+<p>Am I alone in my experience? Do you love Lion, or still prefer Snow Leopard? If you are a Mac user, I&rsquo;d be interested in hearing your own experiences or thoughts regarding Lion and Snow Leopard. Feel free to speak up in the comments.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/apple">Apple</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/10/08/formatting-rtfs-with-textsoap/">Formatting RTFs with TextSoap</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/11/01/fate-free-will-virtualization-and-storage/">Fate, Free Will, Virtualization, and Storage</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f10%2f25%2fmy-experiences-with-lion%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f10%2f25%2fmy-experiences-with-lion%2f&text=My%20Experiences%20with%20Lion" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f10%2f25%2fmy-experiences-with-lion%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/24/essential-apps-for-new-mac-owners/">Essential Apps for New Mac Owners</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2011/05/21/a-quicksilver-primer/">A Quicksilver Primer</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2011/05/03/applescripts-for-yojimbo-camino-and-skim/">AppleScripts for Yojimbo, Camino, and Skim</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

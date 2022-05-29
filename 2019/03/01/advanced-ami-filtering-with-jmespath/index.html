@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Advanced AMI Filtering with JMESPath - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Advanced AMI Filtering with JMESPath - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Advanced AMI Filtering with JMESPath - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2019/03/01/advanced-ami-filtering-with-jmespath/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Advanced AMI Filtering with JMESPath</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 19 May 1011 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;589 words (estimated 3 minutes to read)</span>
+  <p>I recently had a need to do some &ldquo;advanced&rdquo; filtering of AMIs returned by the AWS CLI. I&rsquo;d already mastered the use of the <code>--filters</code> parameter, which let me greatly reduce the number of AMIs returned by <code>aws ec2 describe-images</code>. In many cases, using filters alone got me what I needed. In one case, however, I needed to be even more selective in returning results, and this lead me to some (slightly more) complex <a href="http://jmespath.org/">JMESPath</a> queries than I&rsquo;d used before. I wanted to share them here for the benefit of my readers.</p>
+<p>What I&rsquo;d been using before was a command that looked something like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ec2 describe-images --owners <span style="color:#ae81ff">099720109477</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>--filters Name<span style="color:#f92672">=</span>name,Values<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*ubuntu-xenial-16.04*&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>virtualization-type,Values<span style="color:#f92672">=</span>hvm <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>root-device-type,Values<span style="color:#f92672">=</span>ebs <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>architecture,Values<span style="color:#f92672">=</span>x86_64 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>--query <span style="color:#e6db74">&#39;sort_by(Images,&amp;CreationDate)[-1].ImageId&#39;</span>
+</span></span></code></pre></div><p>The part after <code>--query</code> is a JMESPath query that sorts the results, returning only the <code>ImageId</code> attribute of the most recent result (sorted by creation date). In this particular case, this works just fine&mdash;it returns the most recent Ubuntu Xenial 16.04 LTS AMI.</p>
+<p>Turning to Ubuntu Bionic 18.04, though, I found that the same query <em>didn&rsquo;t</em> return the result I needed. In addition to the regular builds of 18.04, Canonical apparently also builds EKS (Amazon&rsquo;s managed Kubernetes offering) versions and special minimal versions of Ubuntu 18.04 AMIs. It was one of those AMIs (the EKS-related one, in fact) that was getting returned by my command. So how do I go about filtering out images in a more granular fashion?</p>
+<p>After reading through a few blogs (see <a href="https://opensourceconnections.com/blog/2015/07/27/advanced-aws-cli-jmespath-query/">here</a>, <a href="https://blog.ashiny.cloud/2017/09/25/useful-jmespath-in-awscli/">here</a>, and <a href="http://iambelmin.com/2016/03/20/using-aws-cli-to-find-rhel-and-ubuntu-amis/">here</a>&mdash;great work by their respective authors, thank you!), I finally stumbled upon the syntax that would work:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ec2 describe-images --owners <span style="color:#ae81ff">099720109477</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>--filters Name<span style="color:#f92672">=</span>name,Values<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;*ubuntu-bionic-18.04*&#34;</span> <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>virtualization-type,Values<span style="color:#f92672">=</span>hvm <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>root-device-type,Values<span style="color:#f92672">=</span>ebs <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>Name<span style="color:#f92672">=</span>architecture,Values<span style="color:#f92672">=</span>x86_64 <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>--query <span style="color:#e6db74">&#39;sort_by(Images,&amp;CreationDate)[?Name!=`null`]|[?contains(Name,`ubuntu-eks`)==`false`]|[?contains(Name,`minimal`)==`false`]|[-1].ImageId&#39;</span>
+</span></span></code></pre></div><p>Let me walk through this command a bit:</p>
+<ul>
+<li>The first part of it uses <code>--filters</code> to show only those AMIs that are for the x86_64 architecture, using an EBS volume as the root device type, using hardware virtualization, with the string &ldquo;ubuntu-bionic-18.04&rdquo; somewhere in the name. This is pretty much identical to the Xenial version I showed earlier.</li>
+<li>The JMESPath query is more complex, however. The first part removes entries that don&rsquo;t have a value for the Name attribute. This is to prevent an error with JMESPath trying to evaluate results with no Name attribute and failing.</li>
+<li>The next two portions check for results that contain either &ldquo;ubuntu-eks&rdquo; <em>or</em> &ldquo;minimal&rdquo; in the Name attribute. If either of those strings are present, the query will return a true result, and those AMIs would not be included in the final set of results (because the command is only selecting false results, i.e., items that do <em>not</em> contain those strings).</li>
+<li>Finally, it selects the most recent AMI (using the <code>[-1]</code> syntax, since things are sorted by the creation date) and then returns only the value of the <code>ImageId</code> attribute.</li>
+<li>You&rsquo;ll note the command is using JMESPath&rsquo;s pipe (<code>|</code>) operator, which just takes the result of the previous query as its input.</li>
+</ul>
+<p>This got me the result I saw seeking: the AMI ID for the latest Canonical build of Ubuntu Bionic 18.04, not any of the &ldquo;special&rdquo; builds that are also offered. Obviously, I can extend this command to exclude other variations as well as needed.</p>
+<p>Hopefully, providing this example will be useful to readers in the event one of you needs to do the same kind of slightly more &ldquo;advanced&rdquo; filtering of results from an AWS CLI command. This example was for AMIs, but you could equally apply the same concepts to any number of other resources as well.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2019/03/01/technology-short-take-111/">Technology Short Take 111</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2019/03/12/split-tunneling-with-vpnc/">Split Tunneling with vpnc</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2019%2f03%2f01%2fadvanced-ami-filtering-with-jmespath%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f03%2f01%2fadvanced-ami-filtering-with-jmespath%2f&text=Advanced%20AMI%20Filtering%20with%20JMESPath" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2019%2f03%2f01%2fadvanced-ami-filtering-with-jmespath%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/06/28/more-handy-cli-tools-json/">More Handy CLI Tools for JSON</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2018/06/22/a-quick-intro-to-aws-cli/">A Quick Intro to the AWS CLI</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2018/05/23/quick-post-parsing-aws-instance-data-with-jq/">Quick Post: Parsing AWS Instance Data with JQ</a> <span class="post-date-list">239 May 232323</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

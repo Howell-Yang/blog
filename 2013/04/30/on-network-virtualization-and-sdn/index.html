@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>On Network Virtualization and SDN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="On Network Virtualization and SDN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="On Network Virtualization and SDN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/04/30/on-network-virtualization-and-sdn/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">On Network Virtualization and SDN</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/rant">Rant</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1050 words (estimated 5 minutes to read)</span>
+  <p>Is there a difference between network virtualization and Software-Defined Networking (SDN)? If so, what is the relationship between them? Is one a subset of the other? This is a topic that is increasingly being discussed and debated. So, in a similar fashion to my post on <a href="/2013/04/16/network-overlays-vs-network-virtualization/">network overlays vs. network virtualization</a>, I thought I&rsquo;d weigh in with some thoughts. This post, like all of my posts, is intended to help spark a conversation, so I encourage you to share your thoughts in the comments after you&rsquo;ve finished reading.</p>
+<p>Last week I had the opportunity to join John Troyer on the VMware Communities podcast. My purpose, as John put it when he invited me, was to &ldquo;gently introduce&rdquo; the community to the idea of network virtualization, which is where I now spend most of my time since <a href="/2013/01/25/new-year-new-challenges-new-opportunities/">joining VMware in early February</a>. One of the topics we discussed on the podcast was the relationship between SDN and network virtualization, which sparked <a href="http://virtualizedgeek.com/2013/04/24/networkvirtualizationvssdn/">this blog post</a> by Keith Townsend, one of the attendees. I encourage you to read Keith&rsquo;s full blog post, but I think the key point he makes is right here:</p>
+<blockquote>
+<p>How is this different from Software Defined Networking or SDN? I think VMware (who Scott works for) would like you to consider SDN as just the abstraction of the control plane from the physical plane_<strong>I believe the industry outside of VMware is defining SDN in a broader sense.</strong>_ <em>(emphasis mine)</em></p>
+</blockquote>
+<p>I&rsquo;ll get to the definition of SDN in just a moment, but first let&rsquo;s look at the definition of network virtualization. In my earlier post on <a href="/2013/04/16/network-overlays-vs-network-virtualization/">network overlays vs. network virtualization</a>, I provided a definition (taken from <a href="/2013/04/15/openstack-summit-2013-nicira-nvp-deep-dive/">a presentation Dan Wendlandt gave</a> at the OpenStack Summit in Portland) for network virtualization: <em>&ldquo;A faithful and accurate reproduction of the physical network that is fully isolated and provides both location independence and physical network state independence.&rdquo;</em> Several of the readers of that particular blog post then came up with a definition of a virtualized network: <em>&ldquo;A virtualized network is one which can be instantiated, operated, and removed without physical asset interaction by the network manager.&rdquo;</em></p>
+<p>These definitions are, in my humble opinion, reasonably precise and accurate. They are easy to understand and easy to explain to others who aren&rsquo;t familiar with the concept of network virtualization.</p>
+<p>With this definition in hand, let&rsquo;s compare network virtualization to SDN. To compare network virtualization to SDN, we must first define SDN. So&mdash;how do we define SDN?</p>
+<p>There are two definitions we can use for SDN:</p>
+<ol>
+<li>
+<p>We can use the original definition when SDN was first coined in 2009.</p>
+</li>
+<li>
+<p>We can use the definition currently in use within the industry.</p>
+</li>
+</ol>
+<p>Let&rsquo;s look at the first scenario, and let&rsquo;s examine SDN and network virtualization in the context of the original definition of SDN. I&rsquo;ve had some discussions with Martin Casado, the so-called &ldquo;Father of SDN&rdquo; (he&rsquo;s going to hate me for using that term&mdash;sorry Martin!), about what SDN meant when it was first coined. According to Martin, the term SDN originally referred to a change in the network architecture to include a) decoupling the distribution model of the control plane from the data plane; and b) generalized rather than fixed function forwarding hardware.</p>
+<p>Bruce Davie (Principal Engineer at VMware and long-time networking guru) recently talked with some of the other creators of OpenFlow in preparation for his presentation at ONS 2013. According to the research that Bruce did, the term &ldquo;SDN&rdquo; was first coined in 2009 to refer specifically to the work being done on OpenFlow. Their original definition of SDN is consistent with Martin&rsquo;s definition&mdash;it refers to the decoupling of the control plane from the data plane.</p>
+<p>Therefore, if we look at the original definition of SDN&mdash;not VMware&rsquo;s definition, but the definition of those involved in the creation of the term in 2009&ndash;it becomes fairly clear that SDN is not the same as network virtualization. Instead, SDN is a tool that can be leveraged in order to create network virtualization. SDN is a tool or a technique that can be used in the creation of virtualized networks and in satisfying the definition of network virtualization. This subtle distinction, by the way, is one that Bruce addressed in <a href="http://networkheresy.com/2013/04/29/netvirt-delivering/">his recent ONS 2013 presentation</a>.</p>
+<p>Now, let&rsquo;s talk about the second scenario, and let&rsquo;s examine SDN and network virtualization in the context of the current industry definition of SDN. The problem that we have here is that &ldquo;SDN,&rdquo; like &ldquo;cloud,&rdquo; can really be made to mean just about anything. Think about it: existing protocols like OSPF and BGP (which run in <em>software</em>) manipulate the forwarding rules in the data plane&mdash;does that make them SDN, too? What about NX-OS, JUNOS, or EOS? These are all software&mdash;does that make them SDN? What about having APIs on switches? What about virtualized load balancers? Or virtualized firewalls? Are these SDN too? What about products that existed long before the SDN term was coined in 2009? Are they now SDN? No, we generally don&rsquo;t accept all the vast assortment of software that&rsquo;s involved in networking today as SDN, because SDN originated as a term to refer to the separation of the control plane from the data plane. I think it&rsquo;s telling when Martin Casado indicates that <a href="http://www.enterprisenetworkingplanet.com/netsp/openflow-inventor-martin-casado-sdn-vmware-software-defined-networking-video.html">he doesn&rsquo;t even know what SDN means anymore</a>, the term is probably being overused. SDN-washing, anyone?</p>
+<p>Therefore, we can&rsquo;t take the current industry definition of SDN, because SDN currently means all things to all people. If your company is doing &ldquo;something cool&rdquo; in networking, it&rsquo;s probably going to be called SDN. There is no clear, crisp, understandable definition.</p>
+<p>This lack of clarity around &ldquo;what is SDN vs. what isn&rsquo;t SDN&rdquo; is part of the reason, I think, that VMware has converged on the use of network virtualization. This isn&rsquo;t just about differentiating itself from all the other SDN players out there, but it&rsquo;s also about giving customers something concrete and precise they can understand.</p>
+<p>Now, if we want to&mdash;as an industry&mdash;come up with a clearer and more precise definition of SDN, then we can revisit this discussion. In fact, I encourage you to speak up in the comments below with what you might consider would be a useful, clear, precise definition of SDN. Clear definitions and better understanding enable meaningful communication, which can only be beneficial for everyone.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/sdn">SDN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/04/22/collection-of-openstack-summit-session-liveblogs/">Collection of OpenStack Summit Session Liveblogs</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/05/02/spousetivities-at-ibm-edge-2013/">Spousetivities at IBM Edge 2013</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f30%2fon-network-virtualization-and-sdn%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f30%2fon-network-virtualization-and-sdn%2f&text=On%20Network%20Virtualization%20and%20SDN" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f04%2f30%2fon-network-virtualization-and-sdn%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/04/08/technology-short-take-31/">Technology Short Take #31</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2013/04/03/thinking-out-loud-targeting-the-real-problem/">Thinking Out Loud: Targeting the Real Problem</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2013/03/05/technology-short-take-30/">Technology Short Take #30</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

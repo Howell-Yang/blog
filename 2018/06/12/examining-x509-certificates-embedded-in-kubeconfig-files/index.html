@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Examining X.509 Certificates Embedded in Kubeconfig Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Examining X.509 Certificates Embedded in Kubeconfig Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Examining X.509 Certificates Embedded in Kubeconfig Files - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/06/12/examining-x509-certificates-embedded-in-kubeconfig-files/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Examining X.509 Certificates Embedded in Kubeconfig Files</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;439 words (estimated 3 minutes to read)</span>
+  <p>While exploring some of the intricacies around the use of X.509v3 certificates in <a href="https://kubernetes.io/">Kubernetes</a>, I found myself wanting to be able to view the details of a certificate embedded in a kubeconfig file. (See <a href="https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/">this page</a> if you&rsquo;re unfamiliar with what a kubeconfig file is.) In this post, I&rsquo;ll share with you the commands I used to accomplish this task.</p>
+<p>First, you&rsquo;ll want to extract the certificate data from the kubeconfig file. For the purposes of this post, I&rsquo;ll use a kubeconfig file named <code>config</code> and found in the <code>.kube</code> subdirectory of your home directory. Assuming there&rsquo;s only a single certificate embedded in the file, you can use a simple <code>grep</code> statement to isolate this information:</p>
+<pre><code>grep 'client-certificate-data' $HOME/.kube/config
+</code></pre>
+<p>Combine that with <code>awk</code> to isolate <em>only</em> the certificate data:</p>
+<pre><code>grep 'client-certificate-data' $HOME/.kube/config | awk '{print $2}'
+</code></pre>
+<p>This data is Base64-encoded, so we decode it (I&rsquo;ll wrap the command using backslashes for readability now that it has grown a bit longer):</p>
+<pre><code>grep 'client-certificate-data' $HOME/.kube/config | \
+awk '{print $2}' | base64 -d
+</code></pre>
+<p>You could, at this stage, redirect the output into a file (like <code>certificate.crt</code>) if so desired; the data you have is a valid X.509v3 certificate. It lacks the private key, of course.</p>
+<p>However, if you&rsquo;re only interested in viewing the properties of the certificate, as I was, there&rsquo;s no need to redirect the output to a file. Instead, just pipe the output into <code>openssl</code>:</p>
+<pre><code>grep 'client-certificate-data' $HOME/.kube/config | \
+awk '{print $2}' | base64 -d | openssl x509 -text
+</code></pre>
+<p>The output of this command should be a decoded breakdown of the data in the X.509 certificate. Notable pieces of information in this context are the Subject (this will identify the user being authenticated to Kubernetes with this certificate):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>Certificate:
+</span></span><span style="display:flex;"><span>    Data:
+</span></span><span style="display:flex;"><span>        Version: 3 (0x2)
+</span></span><span style="display:flex;"><span>        Serial Number: 8264125584782928183 (0x72b0126f24342937)
+</span></span><span style="display:flex;"><span>    Signature Algorithm: sha256WithRSAEncryption
+</span></span><span style="display:flex;"><span>        Issuer: CN=kubernetes
+</span></span><span style="display:flex;"><span>        Validity
+</span></span><span style="display:flex;"><span>            Not Before: Jun 13 01:52:46 2018 GMT
+</span></span><span style="display:flex;"><span>            Not After : Jun 13 01:53:17 2019 GMT
+</span></span><span style="display:flex;"><span>        Subject: CN=system:kube-controller-manager
+</span></span></code></pre></div><p>Also of interest is the X509v3 Extended Key Usage (which indicates the certificate is used for client authentication, i.e., &ldquo;TLS Web Client Authentication&rdquo;):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>        X509v3 extensions:
+</span></span><span style="display:flex;"><span>            X509v3 Key Usage: critical
+</span></span><span style="display:flex;"><span>                Digital Signature, Key Encipherment
+</span></span><span style="display:flex;"><span>            X509v3 Extended Key Usage: 
+</span></span><span style="display:flex;"><span>                TLS Web Client Authentication
+</span></span></code></pre></div><p>Note that the certificate is <em>not</em> configured for encryption, meaning this certificate doesn&rsquo;t ensure the connection to Kubernetes is encrypted. That function is handled by a different certificate; this one is only used for client authentication.</p>
+<p>This is probably nothing new for experienced Kubernetes folks, but I thought it might prove useful to a few people out there. Feel free <a href="https://twitter.com/scott_lowe">to hit me up on Twitter</a> with any corrections, clarifications, or questions. Have fun examining certificate data!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/06/11/using-variables-in-aws-tags-with-terraform/">Using Variables in AWS Tags with Terraform</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/06/22/a-quick-intro-to-aws-cli/">A Quick Intro to the AWS CLI</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f12%2fexamining-x509-certificates-embedded-in-kubeconfig-files%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f12%2fexamining-x509-certificates-embedded-in-kubeconfig-files%2f&text=Examining%20X.509%20Certificates%20Embedded%20in%20Kubeconfig%20Files" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f06%2f12%2fexamining-x509-certificates-embedded-in-kubeconfig-files%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/06/05/exploring-kubernetes-kubeadm-part-1-introduction/">Exploring Kubernetes with Kubeadm, Part 1: Introduction</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2018/04/27/technology-short-take-98/">Technology Short Take 98</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2018/01/05/technology-short-take-92/">Technology Short Take 92</a> <span class="post-date-list">59 May 5055</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

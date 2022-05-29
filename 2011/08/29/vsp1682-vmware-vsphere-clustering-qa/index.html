@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VSP1682: VMware vSphere Clustering Q&amp;A - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VSP1682: VMware vSphere Clustering Q&amp;A - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VSP1682: VMware vSphere Clustering Q&amp;A - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/08/29/vsp1682-vmware-vsphere-clustering-qa/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VSP1682: VMware vSphere Clustering Q&amp;A</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1415 words (estimated 7 minutes to read)</span>
+  <p>This is the session almost-live-blog (no wireless signal available in the session room) of VSP1682, VMware vSphere Clustering Q&amp;A. The panelists are Duncan Epping, Frank Denneman, and Chris Colotti, all of VMware.</p>
+<p>Lots of notable names were present in the session&mdash;Jason Boche, Kendrick Coleman, Mike Foley, Andy Banta, fellow co-authors Forbes Guthrie and Maish Saidel-Keesing were among the ones I noticed, and I&rsquo;m sure that there were even more that I didn&rsquo;t notice. Clearly this session has received a lot of attention, due in no small part I&rsquo;m sure to Duncan and Frank&rsquo;s successful vSphere 5 Clustering book.</p>
+<p>As the session gets started and they open the floor for questions, the audience is a bit reluctant to get started with participation. The first question from the audience is in regard to a large-scale HA environment: what is the actual usable amount of bandwidth that you can/should allocate to an environment? Duncan answers with an observation that I would echo: very few environments are network constrained, even in 1Gbps network environments. Frank expands upon that discussion with a mention that higher network speeds for vMotion will affect DRS and how it will help DRS keep the cluster workload balanced.</p>
+<p>The second question regards shared storage and what best practices might exist. Duncan answers first; one key consideration is the vSphere version; for example, what sort of servers could affect your architecture because of HA dependencies in pre-vSphere 5 environments. The question is really more of a storage design question than a clustering question, to be honest; while storage design and clustering design are linked, they are relatively independent. Frank adds that EVC (Enhanced vMotion Compatibility) and LUN access is another consideration, especially with very large (32 host) clusters. Identical configuration on all the hosts will help the DRS algorithms more effectively balance the cluster workload.</p>
+<p>The third question concerns VM swap files and the interaction with Storage DRS. Frank answers that; he mentions that by default Storage DRS has a built-in VMDK affinity rule that keeps all the VM&rsquo;s virtual disks together. But what is the affect? Is there an effect on VM swap file performance or on Storage DRS? Frank mentions that he really doesn&rsquo;t think there will be an impact. The attendee follows up with a clarifying question about placement of the swap files; Frank indicates that placing them on slower (cheaper) disks might be a viable approach. The discussion then evolves into the use of auto-tiering arrays with Storage DRS; the general recommendation is to disable I/O metrics when using Storage DRS with auto-tiering arrays.</p>
+<p>The next question is if there is a dependence on VAAI by Storage DRS. Duncan answers; there is no dependence on VAAI or VASA on Storage DRS. That being said, VAAI would be preferential to help offload Storage vMotion operations invoked by Storage DRS. The audience member has a unclear understanding of VAAI and VASA; he believes that I/O metrics and information are passed from the storage array to vSphere by VAAI/VASA. That is, of course, incorrect; Duncan points this out by explaining (again) the use of the I/O injector to gather I/O information from the array. Future versions might leverage VASA/VAAI to gather information.</p>
+<p>The next question is about why someone should use HA in vSphere 5 if they are reluctant to implement HA due to problems with previous versions? Duncan responds that earlier versions of vSphere had a strong reliance on DNS; this reliance on DNS was removed/addressed in vSphere 5. I would agree with Duncan&rsquo;s response; name resolution was vitally important in HA environments prior to vSphere 5. Duncan mentions that the user will want to consider admission control policy and settings, but otherwise recommends that the user should enable HA. Duncan also goes into a more detailed description of storage heartbeating.</p>
+<p>Next, a couple is asked about Storage DRS and VMs with virtual disks that live on different datastores. (The example given is database workloads with OS disks and data disks on separate tiers of storage.) What impact/benefit will this have with Storage DRS? Frank explains that Storage DRS uses both capacity (space available) and I/O metrics to determine recommendations. As a result, setting the appropriate latency on the datastore and datastore cluster will help drive SLAs, and suggests that using different tiers of disks might be unnecessary depending on the underlying disk structure. Or, as Duncan points out, you could use different Storage DRS datastore clusters.</p>
+<p>Chris Colotti (who is acting as moderator) points out that Storage DRS is a new factor that will affect everyone&rsquo;s designs.</p>
+<p>The next question is why someone should use HA when they are using a load balancer. Duncan&rsquo;s response is that, from an operational perspective, it helps address the failure of hardware nodes. Even with an F5 load balancer as this user has, someone still has to address the failure of the hardware node and restart VMs; HA can do that automatically even though hardware load balancers can help address traffic flows. Chris Colotti asks how many people are NOT using HA; a small number of people raise their hands.</p>
+<p>Next, a user asks about the interaction of Microsoft clustering and vSphere HA/DRS. Duncan&rsquo;s response is that most people disable HA/DRS for Microsoft clusters, and that VMware is working on technologies that could replace Microsoft clustering. In the end, though, the answer for Microsoft clustering is still that you have to disable HA/DRS on the VMs participating in the cluster.</p>
+<p>The next question is about the interaction of multiple HA clusters accessing a single datastore and the impact of that design decision. Duncan mentions that he masks datastores on a cluster level, instead of exposing a datastore to multiple clusters. This user also asks about VM failure monitoring; not many people are using it (based on the number of hands raised when Duncan asks how many are using it). It&rsquo;s not enabled by default, but it can help with guest OS failures. VMware has also opened the SDK for application monitoring. Frank adds that vCenter Server takes a guest OS console screenshot before resetting the VM, and Duncan answers a follow-up question about the interaction between VMware Tools and VM failure monitoring. The VM failure monitoring feature looks for network I/O, disk I/O, and the VMware Tools heartbeat to detect guest OS failure.</p>
+<p>The next user asks about handling storage failures with vSphere HA; is there a way to handle storage array failure with vSphere HA? Duncan points out that HA will not address storage array failure. The customer mentions that EMC VPLEX will address the concern, but there are not any VMware software-based solutions to this need.</p>
+<p>With regard to EVC, Frank highly recommends always enabling EVC on a cluster; there is no performance impact and it will help ensure processor compatibility between old and new hosts. In addition, enabling EVC on a cluster with VMs running could require some downtime in order for the CPU masks to get applied.</p>
+<p>The next question is about VMFS-5 and the 2TB limit. What is the &ldquo;sweet spot&rdquo; with regards to datastore sizing? (I personally would say the answer depends on many different factors, not the least of which is the underlying storage architecture.) Frank asks the question back about how many VMs he&rsquo;s comfortable placing on a single datastore. Many of the attendees are still using only a few VMs per LUN; I&rsquo;m curious to know why this is the case. Is it I/O driven? Is it based on time to backup and time to recovery? That&rsquo;s not clear to me, and if any readers would like to provide some feedback in the comments that would be great.</p>
+<p>The next user asks about array-based snapshots and Storage DRS; how do the two interact? Replication, snapshots, deduplication, and thin provisioned LUNs are all affected by Storage DRS. You will definitely want to adjust operational procedures and how you use array-based features like snapshots and replication with Storage DRS. Frank recommends using Storage DRS for initial placement, but don&rsquo;t use I/O metrics and don&rsquo;t enable migrations.</p>
+<p>The next user asks if Storage DRS and SRM work together; Duncan mentions that it breaks replication but doesn&rsquo;t break SRM. I thought I recalled that you couldn&rsquo;t use datastore clusters at all with SRM, but I don&rsquo;t remember where I saw that. Anyone have more information on that?</p>
+<p>There were a few more questions, but I had to shut down and prepare for my next session, which is my vSphere design session (VSP1926).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2011">VMworld2011</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/08/25/technology-short-take-13/">Technology Short Take #13</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/08/29/vsp3205-tech-preview-vstorage-apis/">VSP3205: Tech Preview, vStorage APIs</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f29%2fvsp1682-vmware-vsphere-clustering-qa%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f29%2fvsp1682-vmware-vsphere-clustering-qa%2f&text=VSP1682%3a%20VMware%20vSphere%20Clustering%20Q%26A" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f29%2fvsp1682-vmware-vsphere-clustering-qa%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/08/25/technology-short-take-13/">Technology Short Take #13</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2011/08/25/looking-again-at-vasa/">Looking Again at VASA</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2011/08/12/a-deeper-look-at-vasa/">A Deeper Look at VASA</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

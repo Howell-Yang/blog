@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Changing the IP Address on a VPLEX Management Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Changing the IP Address on a VPLEX Management Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Changing the IP Address on a VPLEX Management Server - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/01/18/changing-the-ip-address-on-a-vplex-management-server/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Changing the IP Address on a VPLEX Management Server</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;634 words (estimated 3 minutes to read)</span>
+  <p>EMC VPLEX leverages a Linux-based management server as an integral part of the overall architecture. The management server, as the name implies, provides the management interfaces&mdash;both HTTPS (web-based) and CLI&mdash;for managing the VPLEX cluster(s). In a VPLEX Local configuration, changing the IP address is a single-step process; in a VPLEX Metro configuration, there is an additional step required. In this post I&rsquo;ll walk you through both situations.</p>
+<p>All in all, it&rsquo;s a pretty simple process, but the one thing that might trip you up is the different CLI environments involved. Some commands are run from the management server&rsquo;s native Linux-based CLI, while other commands are run from the Vplexcli. Remember that you&rsquo;ll access the management server&rsquo;s Linux-based CLI by simply opening an SSH session to the management server. You&rsquo;ll access the Vplexcli by running either the <code>vplexcli</code> or <code>telnet localhost 49500</code> commands once you&rsquo;ve logged into the management server.</p>
+<h2 id="vplex-local">VPLEX Local</h2>
+<p>When you are running in a VPLEX Local configuration, changing the IP address of the management server is a single-step process. From the Vplexcli, a single command is all you need:</p>
+<pre><code>management-server set-ip -i &lt;IP address:Netmask&gt; -g &lt;Gateway IP address&gt; -p eth3
+</code></pre>
+<p>This command changes the IP address on the management server and you&rsquo;re done.</p>
+<h2 id="vplex-metro">VPLEX Metro</h2>
+<p>In addition to providing the management interfaces for the VPLEX cluster(s), in a VPLEX Metro configuration each management server is also responsible for creating and maintaining an IPSec-based VPN between itself and its peer management server in a VPLEX Metro configuration. The management servers use this VPN as a private connection between them in order to communicate with the directors in the remote cluster. Therefore, changing the IP address of a management server in a VPLEX Metro configuration could impact more than just the address used to access the VPLEX cluster(s).</p>
+<p>So, in a VPLEX Metro configuration there&rsquo;s a second step you must also follow in order to update the configuration for the VPN between the two management servers.</p>
+<p>First, you&rsquo;ll change the management server&rsquo;s IP address using the <code>management-server set-ip</code> command I described above.</p>
+<p>After changing the IP address using the <code>management-server set-ip</code> command, you then need to edit the <code>/etc/ipsec.conf</code> file on the <strong>other</strong> management server to reflect the new IP address you just assigned. For example, if you changed the IP address on management server 1 to 172.16.100.100, then you would edit the <code>/etc/ipsec.conf</code> file on management server 2 to show that management server 1 is now reachable at a new address. This ensures that the VPN configuration on each management server properly reflects the correct IP address of its peer.</p>
+<p>To do this, open an SSH session to the peer management server&mdash;whose VPN configuration needs to be updated&mdash;and use <code>vi</code> to edit the <code>/etc/ipsec.conf</code> file. The specific line in the file that needs to be changed is the &ldquo;right=&rdquo; line, where the IP address indicates the remote server (&ldquo;right&rdquo; means &ldquo;remote&rdquo; in this case). Save your changes and return to the management server&rsquo;s Linux-based CLI.</p>
+<p>You&rsquo;ll then need to re-enter the Vplexcli (again, using the <code>vplexcli</code> or <code>telnet localhost 49500</code> commands). Once in the Vplexcli, restart the VPN using the <code>vpn restart</code> command. Restart the VPN on both management servers using this process.</p>
+<p>To verify that the VPN is working properly, from the Vplexcli you can use the <code>vpn status</code> command like this:</p>
+<pre><code>vpn status -l &lt;Local cluster ID&gt; -n &lt;Number of engines in local cluster&gt; -c &lt;Remote cluster ID&gt; -e &lt;Number of engines in remote cluster&gt; -r &lt;IP address of remote management server&gt;
+</code></pre>
+<p>The output of that command should show that each director in each engine, both local and remote, is reachable.</p>
+<p>If you need to change the IP addresses of both management servers in a VPLEX Metro configuration, then change one at a time following the process I described above.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vplex">VPLEX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/01/07/looking-back-looking-forward/">Looking Back, Looking Forward</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/01/20/additional-recoverpoint-vaai-update/">Additional RecoverPoint-VAAI Update</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f18%2fchanging-the-ip-address-on-a-vplex-management-server%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f18%2fchanging-the-ip-address-on-a-vplex-management-server%2f&text=Changing%20the%20IP%20Address%20on%20a%20VPLEX%20Management%20Server" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f01%2f18%2fchanging-the-ip-address-on-a-vplex-management-server%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/12/22/an-introduction-to-the-vplex-cli/">An Introduction to the VPLEX CLI</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2010/12/20/using-vplex-and-data-replication-together/">Using VPLEX and Data Replication Together</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2010/12/13/a-quick-review-of-vplex-storage-objects/">A Quick Review of VPLEX Storage Objects</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Bypassing Root&#39;s Password - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Bypassing Root&#39;s Password - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Bypassing Root&#39;s Password - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/01/24/bypassing-roots-password/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Bypassing Root&#39;s Password</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;302 words (estimated 2 minutes to read)</span>
+  <p>I had a situation today where a customer forgot the root password to a <a href="http://www.debian.org/">Debian</a> GNU/Linux 3.1 system in their office. That left it up to me to try to find a way to get into the system. Here&rsquo;s how I managed to gain access.</p>
+<p>(Note: As far as I am aware, <em>NONE</em> of the information I&rsquo;m going to list in this article will work across the network; you <em>MUST</em> have physical access to the server. Therefore, I&rsquo;m not too terribly worried about &ldquo;making it easier for the hackers.&rdquo; If you don&rsquo;t have physical security, then no amount of electronic security is going to help you!)</p>
+<p>Here&rsquo;s how it works:</p>
+<ol>
+<li>
+<p>With physical console access, reboot the server.</p>
+</li>
+<li>
+<p>When the Grub menu comes up, press &ldquo;e&rdquo; to edit the menu selections.</p>
+</li>
+<li>
+<p>Use the arrow keys to select the Kernel line, then press &ldquo;e&rdquo; again.</p>
+</li>
+<li>
+<p>Add <code>single init=/bin/bash</code> to the end of the existing line.</p>
+</li>
+<li>
+<p>Press &ldquo;b&rdquo; to boot the modified line.</p>
+</li>
+<li>
+<p>The system will boot up into single-user mode. Unfortunately, the root filesystem will be mounted read-only, so you&rsquo;ll need to remount it using the <code>mount -o remount,rw /</code> command.</p>
+</li>
+<li>
+<p>Use the <code>passwd</code> command to change the password for root to whatever you like.</p>
+</li>
+<li>
+<p>Reboot the computer again and log in as root with the new password.</p>
+</li>
+</ol>
+<p>There are ways to protect against even this (a BIOS-based power-on password, or passwords in Grub to prevent casual editing of the boot configuration), and those steps may be necessary depending upon the other aspects of physical security. If this system is out where people can get to it, then I&rsquo;d highly recommend taking these additional steps to secure the server.</p>
+<p>Please note that I&rsquo;ve only done this on Debian GNU/Linux 3.1, but I would be reasonably confident that the steps will work elsewhere as well.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/debian">Debian</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/01/22/cisco-nat-issue-resolved/">Cisco NAT Issue Resolved</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/01/24/again-i-ask-isnt-there-a-better-way/">Again I Ask: Isn&#39;t There a Better Way?</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f24%2fbypassing-roots-password%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f24%2fbypassing-roots-password%2f&text=Bypassing%20Root%27s%20Password" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f01%2f24%2fbypassing-roots-password%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/01/14/novell-open-sources-apparmor/">Novell Open Sources AppArmor</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2005/12/27/initial-impressions-of-debian-gnulinux-31/">Initial Impressions of Debian GNU/Linux 3.1</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2005/12/13/application-specific-vpns/">Application-Specific VPNs</a> <span class="post-date-list">139 May 131313</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

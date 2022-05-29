@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Kubeadm on Scott&#39;s Weblog</title>
+    <link>https://www.howellyang.com/tags/kubeadm/</link>
+    <description>Recent content in Kubeadm on Scott&#39;s Weblog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 12 Oct 2021 12:00:00 -0600</lastBuildDate><atom:link href="https://www.howellyang.com/tags/kubeadm/feed.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Using the External AWS Cloud Provider for Kubernetes</title>
+      <link>https://www.howellyang.com/2021/10/12/using-the-external-aws-cloud-provider-for-kubernetes/</link>
+      <pubDate>Tue, 12 Oct 2021 12:00:00 -0600</pubDate>
+      
+      <guid>https://www.howellyang.com/2021/10/12/using-the-external-aws-cloud-provider-for-kubernetes/</guid>
+      <description>&lt;p&gt;In 2018, after finding a dearth of information on setting up &lt;a href=&#34;https://kubernetes.io&#34;&gt;Kubernetes&lt;/a&gt; with AWS integration/support, I set out to try to establish some level of documentation on this topic. That effort resulted in a few different blog posts, but ultimately culminated in &lt;a href=&#34;https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/&#34;&gt;this post on setting up an AWS-integrated Kubernetes cluster using &lt;code&gt;kubeadm&lt;/code&gt;&lt;/a&gt;. Although originally written for Kubernetes 1.15, the process described in that post is still accurate for newer versions of Kubernetes. With the release of Kubernetes 1.22, though, the in-tree AWS cloud provider&amp;mdash;which is what is used/described in the post linked above&amp;mdash;has been deprecated in favor of &lt;a href=&#34;https://github.com/kubernetes/cloud-provider-aws&#34;&gt;the external cloud provider&lt;/a&gt;. In this post, I&amp;rsquo;ll show how to set up an AWS-integrated Kubernetes cluster using the external AWS cloud provider.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>An Alternate Approach to etcd Certificate Generation with Kubeadm</title>
+      <link>https://www.howellyang.com/2021/08/03/alternate-approach-etcd-certificate-generation-kubeadm/</link>
+      <pubDate>Tue, 03 Aug 2021 15:25:00 -0600</pubDate>
+      
+      <guid>https://www.howellyang.com/2021/08/03/alternate-approach-etcd-certificate-generation-kubeadm/</guid>
+      <description>&lt;p&gt;I&amp;rsquo;ve written a fair amount about &lt;code&gt;kubeadm&lt;/code&gt;, which was my preferred way of bootstrapping &lt;a href=&#34;https://kubernetes.io&#34;&gt;Kubernetes&lt;/a&gt; clusters until &lt;a href=&#34;https://cluster-api.sigs.k8s.io&#34;&gt;Cluster API&lt;/a&gt; arrived. Along the way, I&amp;rsquo;ve also discussed using &lt;code&gt;kubeadm&lt;/code&gt; to assist with setting up etcd, the distributed key-value store leveraged by the Kubernetes control plane (see &lt;a href=&#34;https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/&#34;&gt;here&lt;/a&gt;, &lt;a href=&#34;https://www.howellyang.com/2018/10/29/more-on-setting-up-etcd-with-kubeadm/&#34;&gt;here&lt;/a&gt;, and &lt;a href=&#34;https://www.howellyang.com/2020/04/02/setting-up-etcd-with-kubeadm-containerd-edition/&#34;&gt;here&lt;/a&gt;). In this post, I&amp;rsquo;d like to revisit the topic of using &lt;code&gt;kubeadm&lt;/code&gt; to set up an etcd cluster once again, this time taking a look at an alternate approach to generating the necessary TLS certificates than what the official documentation describes.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Setting up etcd with Kubeadm, containerd Edition</title>
+      <link>https://www.howellyang.com/2020/04/02/setting-up-etcd-with-kubeadm-containerd-edition/</link>
+      <pubDate>Thu, 02 Apr 2020 09:30:00 -0700</pubDate>
+      
+      <guid>https://www.howellyang.com/2020/04/02/setting-up-etcd-with-kubeadm-containerd-edition/</guid>
+      <description>&lt;p&gt;In late 2018, I wrote a couple of blog posts on using &lt;code&gt;kubeadm&lt;/code&gt; to set up an etcd cluster. The first one was &lt;a href=&#34;https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/&#34;&gt;this post&lt;/a&gt;, which used &lt;code&gt;kubeadm&lt;/code&gt; only to generate the TLS certs but ran etcd as a systemd service. I followed up that up a couple months later with &lt;a href=&#34;https://www.howellyang.com/2018/10/29/more-on-setting-up-etcd-with-kubeadm/&#34;&gt;this post&lt;/a&gt;, which used &lt;code&gt;kubeadm&lt;/code&gt; to run etcd as a static Pod on each system. It&amp;rsquo;s that latter post&amp;mdash;running etcd as a static Pod on each system in the cluster&amp;mdash;that I&amp;rsquo;ll be revisiting in this post, only this time using &lt;a href=&#34;https://containerd.io/&#34;&gt;containerd&lt;/a&gt; as the container runtime instead of Docker.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Setting up K8s on AWS with Kubeadm and Manual Certificate Distribution</title>
+      <link>https://www.howellyang.com/2020/02/18/setting-up-k8s-on-aws-kubeadm-manual-certificate-distribution/</link>
+      <pubDate>Tue, 18 Feb 2020 06:00:00 -0500</pubDate>
+      
+      <guid>https://www.howellyang.com/2020/02/18/setting-up-k8s-on-aws-kubeadm-manual-certificate-distribution/</guid>
+      <description>&lt;p&gt;&lt;em&gt;Credit for this post goes to Christian Del Pino, who created this content and was willing to let me publish it here.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;The topic of setting up Kubernetes on AWS (including the use of the AWS cloud provider) is a topic I&amp;rsquo;ve tackled a few different times here on this site (see &lt;a href=&#34;https://www.howellyang.com/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/&#34;&gt;here&lt;/a&gt;, &lt;a href=&#34;https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/&#34;&gt;here&lt;/a&gt;, and &lt;a href=&#34;https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/&#34;&gt;here&lt;/a&gt; for other posts on this subject). In this post, I&amp;rsquo;ll share information provided to me by a reader, Christian Del Pino, about setting up Kubernetes on AWS with &lt;code&gt;kubeadm&lt;/code&gt; but using manual certificate distribution (in other words, not allowing &lt;code&gt;kubeadm&lt;/code&gt; to distribute certificates among multiple control plane nodes). As I pointed out above, all this content came from Christian Del Pino; I&amp;rsquo;m merely sharing it here with his permission.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Using Kustomize with Kubeadm Configuration Files</title>
+      <link>https://www.howellyang.com/2019/10/16/using-kustomize-with-kubeadm-configuration-files/</link>
+      <pubDate>Wed, 16 Oct 2019 10:00:00 -0700</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/10/16/using-kustomize-with-kubeadm-configuration-files/</guid>
+      <description>&lt;p&gt;Last week I had a crazy idea: if &lt;a href=&#34;https://github.com/kubernetes-sigs/kustomize/&#34;&gt;&lt;code&gt;kustomize&lt;/code&gt;&lt;/a&gt; can be used to modify YAML files like &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; manifests, then could one use &lt;code&gt;kustomize&lt;/code&gt; to modify a &lt;code&gt;kubeadm&lt;/code&gt; configuration file, which is also a YAML manifest? So I asked about it in one of the Kubernetes-related channels in Slack at work, and as it turns out it&amp;rsquo;s not such a crazy idea after all! So, in this post, I&amp;rsquo;ll show you how to use &lt;code&gt;kustomize&lt;/code&gt; to modify &lt;code&gt;kubeadm&lt;/code&gt; configuration files.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Reconstructing the Join Command for Kubeadm</title>
+      <link>https://www.howellyang.com/2019/08/15/reconstructing-the-join-command-for-kubeadm/</link>
+      <pubDate>Thu, 15 Aug 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/08/15/reconstructing-the-join-command-for-kubeadm/</guid>
+      <description>&lt;p&gt;If you&amp;rsquo;ve used &lt;code&gt;kubeadm&lt;/code&gt; to bootstrap a &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; cluster, you probably know that at the end of the &lt;code&gt;kubeadm init&lt;/code&gt; command to bootstrap the first node in the cluster, &lt;code&gt;kubeadm&lt;/code&gt; prints out a bunch of information: how to copy over the admin Kubeconfig file, and how to join both control plane nodes and worker nodes to the cluster you just created. But what if you didn&amp;rsquo;t write these values down after the first &lt;code&gt;kubeadm init&lt;/code&gt; command? How does one go about reconstructing the proper &lt;code&gt;kubeadm join&lt;/code&gt; command?&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Setting up an AWS-Integrated Kubernetes 1.15 Cluster with Kubeadm</title>
+      <link>https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/</link>
+      <pubDate>Wed, 14 Aug 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/08/14/setting-up-aws-integrated-kubernetes-115-cluster-kubeadm/</guid>
+      <description>&lt;p&gt;In this post, I&amp;rsquo;d like to walk through setting up an AWS-integrated &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; 1.15 cluster using &lt;code&gt;kubeadm&lt;/code&gt;. Over the last year or so, the power and utility of &lt;code&gt;kubeadm&lt;/code&gt; has vastly improved (thank you to all the contributors who have spent countless hours!), and it is now&amp;mdash;in my opinion, at least&amp;mdash;at a point where setting up a well-configured, highly available Kubernetes cluster is pretty straightforward.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Calculating the CA Certificate Hash for Kubeadm</title>
+      <link>https://www.howellyang.com/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/</link>
+      <pubDate>Fri, 12 Jul 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/07/12/calculating-ca-certificate-hash-for-kubeadm/</guid>
+      <description>&lt;p&gt;When using &lt;code&gt;kubeadm&lt;/code&gt; to set up a new &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; cluster, the output of the &lt;code&gt;kubeadm init&lt;/code&gt; command that sets up the control plane for the first time contains some important information on joining additional nodes to the cluster. One piece of information in there that (until now) I hadn&amp;rsquo;t figured out how to replicate was the CA certificate hash. (Primarily I hadn&amp;rsquo;t figured it out because I hadn&amp;rsquo;t tried.) In this post, I&amp;rsquo;ll share how to calculate the CA certificate hash for &lt;code&gt;kubeadm&lt;/code&gt; to use when joining additional nodes to an existing cluster.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Using Kubeadm to Add New Control Plane Nodes with AWS Integration</title>
+      <link>https://www.howellyang.com/2019/04/16/using-kubeadm-add-new-control-plane-nodes-aws-integration/</link>
+      <pubDate>Tue, 16 Apr 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/04/16/using-kubeadm-add-new-control-plane-nodes-aws-integration/</guid>
+      <description>&lt;p&gt;In &lt;a href=&#34;https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/&#34;&gt;my recent post&lt;/a&gt; on using &lt;code&gt;kubeadm&lt;/code&gt; to set up a &lt;a href=&#34;https://kubernetes.io&#34;&gt;Kubernetes&lt;/a&gt; 1.13 cluster with AWS integration, I mentioned that I was still working out the details on enabling AWS integration (via the AWS cloud provider) while also using new functionality in &lt;code&gt;kubeadm&lt;/code&gt; (specifically, the &lt;code&gt;--experimental-control-plane&lt;/code&gt; flag) to make it easier to join new control plane nodes to the cluster. In this post, I&amp;rsquo;ll share with you what I&amp;rsquo;ve found to make this work.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Kubernetes, Kubeadm, and the AWS Cloud Provider</title>
+      <link>https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/</link>
+      <pubDate>Mon, 18 Feb 2019 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2019/02/18/kubernetes-kubeadm-and-the-aws-cloud-provider/</guid>
+      <description>&lt;p&gt;Over the last few weeks, I&amp;rsquo;ve noticed quite a few questions appearing in the Kubernetes Slack channels about how to use &lt;code&gt;kubeadm&lt;/code&gt; to configure Kubernetes with the AWS cloud provider. You may recall that I wrote a post about &lt;a href=&#34;https://www.howellyang.com/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/&#34;&gt;setting up Kubernetes with the AWS cloud provider&lt;/a&gt; last September, and that post included a few snippets of YAML for &lt;code&gt;kubeadm&lt;/code&gt; config files. Since I wrote that post, the &lt;code&gt;kubeadm&lt;/code&gt; API has gone from v1alpha2 (Kubernetes 1.11) to v1alpha3 (Kubernetes 1.12) and now v1beta1 (Kubernetes 1.13). The changes in the &lt;code&gt;kubeadm&lt;/code&gt; API result in changes in the configuration files, and so I wanted to write this post to explain how to use &lt;code&gt;kubeadm&lt;/code&gt; 1.13 to set up a Kubernetes cluster with the AWS cloud provider.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>More on Setting up etcd with Kubeadm</title>
+      <link>https://www.howellyang.com/2018/10/29/more-on-setting-up-etcd-with-kubeadm/</link>
+      <pubDate>Mon, 29 Oct 2018 12:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2018/10/29/more-on-setting-up-etcd-with-kubeadm/</guid>
+      <description>&lt;p&gt;A while ago I wrote about &lt;a href=&#34;https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/&#34;&gt;using &lt;code&gt;kubeadm&lt;/code&gt; to bootstrap an etcd cluster with TLS&lt;/a&gt;. In that post, I talked about one way to establish a secure etcd cluster using &lt;code&gt;kubeadm&lt;/code&gt; and running etcd as systemd units. In this post, I want to focus on a slightly different approach: running etcd as static pods. The information on this post is intended to build upon the information already available in the Kubernetes official documentation, not serve as a replacement.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Kubernetes with Cilium and Containerd using Kubeadm</title>
+      <link>https://www.howellyang.com/2018/09/06/kubernetes-cilium-containerd-using-kubeadm/</link>
+      <pubDate>Thu, 06 Sep 2018 15:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2018/09/06/kubernetes-cilium-containerd-using-kubeadm/</guid>
+      <description>&lt;p&gt;Now, if that isn&amp;rsquo;t a title jam-packed with buzzwords, I don&amp;rsquo;t know what is! In seriousness, though, I wanted to share how to use &lt;code&gt;kubeadm&lt;/code&gt; to turn up a &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt; cluster using &lt;a href=&#34;https://github.com/containerd/containerd&#34;&gt;containerd&lt;/a&gt; (instead of Docker) and &lt;a href=&#34;https://cilium.io/&#34;&gt;Cilium&lt;/a&gt; as the CNI plugin. I&amp;rsquo;m posting this because I wasn&amp;rsquo;t able to find a reasonable article that combined &lt;em&gt;all&lt;/em&gt; the different threads&amp;mdash;some posts talked about using containerd, others talked about using Cilium, and the official Kubernetes docs have examples for using &lt;code&gt;kubeadm&lt;/code&gt;. The purpose of this post is to try to pull those threads together.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Bootstrapping an etcd Cluster with TLS using Kubeadm</title>
+      <link>https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/</link>
+      <pubDate>Tue, 21 Aug 2018 13:00:00 +0000</pubDate>
+      
+      <guid>https://www.howellyang.com/2018/08/21/bootstrapping-etcd-cluster-with-tls-using-kubeadm/</guid>
+      <description>&lt;p&gt;The &lt;a href=&#34;https://github.com/coreos/etcd/&#34;&gt;etcd distributed key-value store&lt;/a&gt; is an integral part of &lt;a href=&#34;https://kubernetes.io/&#34;&gt;Kubernetes&lt;/a&gt;. I first wrote about etcd back in 2014 in &lt;a href=&#34;https://www.howellyang.com/2014/08/18/coreos-continued-etcd/&#34;&gt;this post&lt;/a&gt;, but haven&amp;rsquo;t really discussed it in any great detail since then. However, as part of my recent efforts to dive &lt;em&gt;much&lt;/em&gt; deeper into Kubernetes, I needed to revisit etcd. In this post, I wanted to share how to boostrap a new etcd cluster with TLS certificates using &lt;code&gt;kubeadm&lt;/code&gt;.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

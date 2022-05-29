@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>3183: VMware SRM on NetApp Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="3183: VMware SRM on NetApp Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="3183: VMware SRM on NetApp Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/12/11/3183-vmware-srm-on-netapp-storage/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">3183: VMware SRM on NetApp Storage</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;597 words (estimated 3 minutes to read)</span>
+  <p>This session described VMware Site Recovery Manager (SRM) on NetApp storage. The session started out with a review of VMware SRM, its features and functionality, and some of the requirements. I was not aware, for example, that SRM cannot use SQL Server Express like VirtualCenter can; you must use a full-blown instance of SQL Server. Given VMware&rsquo;s development history, I should not have been surprised to find that Perl 5.8 is required (it&rsquo;s included in the distribution and installed automatically).</p>
+<p>On the NetApp side, it&rsquo;s important to note that users must first configure SecureAdmin in order for VMware SRM to use HTTPS when communicating with the NetApp storage arrays. If this isn&rsquo;t done first, then the NetApp Site Recovery Adapter (SRA) will drop back to plain HTTP. The storage controllers must also have licenses for SnapMirror, iSCSI (included with the storage controllers), FCP (where applicable), and FlexClone. Without FlexClone, it&rsquo;s impossible to do failover testing. NetApp again re-iterated that they anticipate seeing NFS support in VMware SRM somewhere in the March 2009 timeframe.</p>
+<p>Note that there is no support for SnapVault or MetroCluster in SRM, although there are some interesting synergies between MetroCluster and VMware HA that are being explored. It will be interesting to see where, if anywhere, that may lead. NetApp admins may use either Volume SnapMirror (VSM) or Qtree SnapMirror (QSM), although VSM is preferred since it preserves deduplication with replication. QSM does not.</p>
+<p>The presenters referred attendees to <a href="http://www.netapp.com/us/library/technical-reports/tr-3671.html">TR-3671</a>, &ldquo;VMware Site Recovery Manager in a NetApp Environment,&rdquo; for more detailed information.</p>
+<p>At the Recovery Site, users must configure an additional, non-replicated datastore. This additional datastore does not have to be very large, but it&rsquo;s required for storing the &ldquo;shadow VMs&rdquo; (or &ldquo;placeholder VMs&rdquo;) that are created and maintained by VMware SRM.</p>
+<p>At present, there is no integration between SnapManager for Virtual Infrastructure (SMVI) and VMware SRM. There are numerous technical questions, and I&rsquo;m not entirely sure that I fully understand the implications just yet. This will be an area that I will be exploring further so that I can better understand the considerations of using these technologies together. NetApp is working with VMware to try to resolve some of the technical concerns around SMVI-SRM integration, but that will take some time. In other words, don&rsquo;t hold your breath.</p>
+<p>Finally, if you&rsquo;ve downloaded the NetApp SRA prior to the last week or so (this was back in the middle of November), download it again. There were some issues fixed that have been addressed in a more recent release of the SRA. Unfortunately, VMware would not let NetApp increment the version number on the SRA, so it&rsquo;s a bit difficult to tell what version you are running. If anyone has more information on that&mdash;I don&rsquo;t recall or have any notes from the session on how to do this&mdash;it would be greatly appreciated.</p>
+<p>Other miscellaneous notes from the session:</p>
+<ul>
+<li>
+<p>There are issues backing up a VMware SRM recovery plan; it&rsquo;s not currently possible to export it to CSV/XML and then import it back in again)</p>
+</li>
+<li>
+<p>VMware SRM and the NetApp SRA support dissimilar protocols between the Protected and Recovery Sites (e.g., FCP at Protected and iSCSI at Recovery) and dissimilar storage (e.g., FC disks at Protected and SATA disks at Recovery)</p>
+</li>
+<li>
+<p>The appropriate iGroups must exist at the Recovery Site and the VMware ESX servers must be in the correct iGroups, but VMware SRM will handle mapping the LUNs to the iGroups</p>
+</li>
+</ul>
+<p>I think that&rsquo;s all I have for this session. If any other session attendees have more information, please add it in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/insight2008">Insight2008</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmwaresrm">VMwareSRM</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/12/09/continuing-the-fcoe-discussion/">Continuing the FCoE Discussion</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/12/12/google-apps-doesnt-play-nice-with-mailtags/">Google Apps Doesn&#39;t Play Nice with MailTags</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f11%2f3183-vmware-srm-on-netapp-storage%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f11%2f3183-vmware-srm-on-netapp-storage%2f&text=3183%3a%20VMware%20SRM%20on%20NetApp%20Storage" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f12%2f11%2f3183-vmware-srm-on-netapp-storage%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/07/17/virtualization-short-take-13/">Virtualization Short Take #13</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2008/12/01/4198-hyper-v-on-netapp-deep-dive/">4198: Hyper-V on NetApp Deep Dive</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2008/11/02/a-couple-more-articles-published-2/">A Couple More Articles Published</a> <span class="post-date-list">29 May 2022</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

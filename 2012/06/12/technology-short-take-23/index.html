@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #23 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/06/12/technology-short-take-23/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #23</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1472 words (estimated 7 minutes to read)</span>
+  <p>Welcome to Technology Short Take #23, another collection of links and thoughts related to data center technologies like networking, storage, security, cloud computing, and virtualization. As usual, we have a fairly wide-ranging collection of items this time around. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>A couple of days ago I learned that there are a couple open source implementations of LISP (Locator/ID Separation Protocol). There&rsquo;s <a href="http://www.openlisp.org/">OpenLISP</a>, which runs on FreeBSD, and there&rsquo;s also a project called <a href="http://lispmob.org/">LISPmob</a> that brings LISP to Linux. From what I can tell, LISPmob appears to be a bit more focused on the endpoint than OpenLISP.</p>
+</li>
+<li>
+<p>In an <a href="/2012/03/12/some-thoughts-and-questions-about-stt/">earlier post on STT</a>, I mentioned that STT&rsquo;s re-use of the TCP header structure could cause problems with intermediate devices. It looks like someone has figured out how to allow STT through a Cisco ASA firewall; the configuration is <a href="http://www.cupfighter.net/index.php/2012/05/allow-stt-stateless-transport-tunneling-through-an-cisco-asa/">here</a>.</p>
+</li>
+<li>
+<p>Jose Barreto posted a nice <a href="http://blogs.technet.com/b/josebda/archive/2012/05/13/the-basics-of-smb-multichannel-a-feature-of-windows-server-2012-and-smb-3-0.aspx">breakdown of SMB Multichannel</a>, a bandwidth-enhancing feature of SMB 3.0 that will be included in Windows Server 2012. It is, unexpectedly, only supported between two SMB 3.0-capable endpoints (which, at this time, means two Windows Server 2012 hosts). Hopefully additional vendors will adopt SMB 3.0 as a network storage protocol. Just don&rsquo;t call it CIFS!</p>
+</li>
+<li>
+<p>Reading <a href="http://blog.ioshints.info/2012/05/virtual-networks-skype-analogy.html">this article</a>, you might deduce that Ivan really likes overlay/tunneling protocols. I am, of course, far from a networking expert, but I do have to ask: at what point does it become necessary (if ever) to move some of the intelligence &ldquo;deeper&rdquo; into the stack? Networking experts everywhere advocate the &ldquo;complex edge-simple core&rdquo; design, but does it ever make sense to move certain parts of the edge&rsquo;s complexity into the core? Do we hamper innovation by insisting that the core always remain simple? As I said, I&rsquo;m not an expert, so perhaps these are stupid questions.</p>
+</li>
+<li>
+<p>Massimo Re Ferre posted a good article on <a href="http://it20.info/2012/05/typical-vxlan-use-case/">a typical VXLAN use case</a>. Read this if you&rsquo;re looking for a more concrete example of how VXLAN could be used in a typical enterprise data center.</p>
+</li>
+<li>
+<p>Bruce Davie of Nicira helps explain <a href="http://nicira.com/blog/vpns-meet-network-virtualization">the difference between VPNs and network virtualization</a>; this is a nice companion article to his colleague&rsquo;s post (which Bruce helped to author) on <a href="https://networkheresy.wordpress.com/2012/05/31/network-virtualization/">the difference between network virtualization and software-defined networking (SDN)</a>.</p>
+</li>
+<li>
+<p>The folks at Nicira also collaborated on this post regarding <a href="http://networkheresy.com/2012/06/08/the-overhead-of-software-tunneling/">software overhead of tunneling</a>. The results clearly favor STT (which was designed to take advantage of NIC offloading) over GRE, but the authors do admit that as &ldquo;GRE awareness&rdquo; is added to the cards that protocol&rsquo;s performance will improve.</p>
+</li>
+<li>
+<p>Oh, and while we&rsquo;re on the topic of SDNyou might have noticed that VMware has taken to using the term &ldquo;software-defined&rdquo; to describe many of the services that vSphere (and related products) provide. This includes the use of software-defined networking (SDN) to describe the functionality of vSwitches, distributed vSwitches, vShield, and other features. Personally, I think that the term software-based networking (SBN) is <strong>far</strong> more applicable than SDN to what VMware does. It is just me?</p>
+</li>
+<li>
+<p>Brad Hedlund wrote <a href="http://bradhedlund.com/2012/02/08/dodging-open-protocols-with-open-software/">this post</a> a few months ago, but I&rsquo;m just now getting around to commenting about it. The gist of the article&mdash;forgive me if I munge it too much, Brad&mdash;is that the use of open source software components might dramatically change the shape/way/means in which networking protocols and standards are created and utilized. If two components are communicating over the network via open source components, is some sort of networking standard needed to avoid being &ldquo;proprietary&rdquo;? It&rsquo;s an interesting thought, and goes to show the power of open source on the IT industry. Great post, Brad.</p>
+</li>
+<li>
+<p>One more mention of OpenFlow/SDN: it&rsquo;s great technology (and I&rsquo;m excited about the possibilities that it creates), but it&rsquo;s <a href="http://highscalability.com/blog/2012/6/4/openflowsdn-is-not-a-silver-bullet-for-network-scalability.html">not a silver bullet for scalability</a>.</p>
+</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>I came across this interesting post on <a href="http://www.insinuator.net/2012/05/vmdk-has-left-the-building/">a security attack based on VMDKs</a>. It&rsquo;s quite an interesting read, even if the probability of being able to actually leverage this attack vector is fairly low (as I understand it).</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Chris Wahl has a good series on NFS with VMware vSphere. You can catch the start of the series <a href="http://wahlnetwork.com/2012/04/19/nfs-on-vsphere-a-few-misconceptions/">here</a>. One comment on the testing he performs in <a href="http://wahlnetwork.com/2012/04/23/nfs-on-vsphere-technical-deep-dive-on-same-subnet-storage-traffic/">the &ldquo;Same Subnet&rdquo; article</a>: if I&rsquo;m not mistaken, I believe the VMkernel selection is based upon which VMkernel interface is listed in the first routing table entry for the subnet. This is something about which I wrote back in 2008, but I&rsquo;m glad to see Chris bringing it to light again.</p>
+</li>
+<li>
+<p>George Crump published this article on <a href="http://www.storage-switzerland.com/Articles/Entries/2012/1/17_iSCSI_2.0_-_Using_Data_Center_Bridging_To_Enhance_iSCSI.html">using DCB to enhance iSCSI</a>. (Note: The article is quite favorable to Dell, and George discloses an affiliation with Dell at the end of the article.) One thing I did want to point out is that&mdash;if I recall correctly&mdash;the 802.1Qbb standard for Priority Flow Control only defines a single &ldquo;no drop&rdquo; class of service (CoS). Normally that CoS is assigned to FCoE traffic, but in an environment without FCoE you could assign it to iSCSI. In an environment with both, that could be a potential problem, as I see it. Feel free to correct me in the comments if my understanding is incorrect.</p>
+</li>
+<li>
+<p>Microsoft is introducing data deduplication in Windows Server 2012, and here is a good post providing an <a href="http://blogs.technet.com/b/filecab/archive/2012/05/21/introduction-to-data-deduplication-in-windows-server-2012.aspx">introduction to Microsoft&rsquo;s deduplication implementation</a>.</p>
+</li>
+<li>
+<p><a href="http://www.sanrad.com/VXL/4/1/8">SANRAD VXL</a> looks interesting&mdash;anyone have any experience with it? Or more detailed technical information?</p>
+</li>
+<li>
+<p>I really enjoyed Scott Drummonds&rsquo; recent <a href="http://vpivot.com/2012/05/10/storage-performance-analysis-singb-case-study/">storage performance analysis post</a>. He goes pretty deep into some storage concepts and provides real-world, relevant information and recommendations. Good stuff.</p>
+</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>After moving CloudStack to the Apache Software Foundation, Citrix published <a href="http://blogs.citrix.com/2012/04/11/beware-of-open-washing-%E2%80%93-three-key-questions-to-ask-your-software-vendor/">this discourse on &ldquo;open washing&rdquo;</a> and provides a set of questions to determine the &ldquo;openness&rdquo; of software projects with which you may become involved. While the article is clearly structured to favor Citrix and CloudStack, the underlying point&mdash;to understand exactly what &ldquo;open source&rdquo; means to your vendors&mdash;is valid and worth consideration.</p>
+</li>
+<li>
+<p>Per <a href="http://aws.typepad.com/aws/2012/05/vm-export-for-ec2.html">the AWS blog</a>, you can now export EC2 instances out of Amazon and into another environment, including VMware, Hyper-V, and Xen environments. I guess this kind of puts a dent in the whole &ldquo;Hotel California&rdquo; marketing play that some vendors have been using to describe Amazon.</p>
+</li>
+<li>
+<p>Unless you&rsquo;ve been hiding under a rock for the past few weeks, you&rsquo;ve most likely heard about Nick Weaver&rsquo;s Razor project. (If you haven&rsquo;t heard about it, here&rsquo;s Nick&rsquo;s <a href="http://nickapedia.com/2012/05/21/lex-parsimoniae-cloud-provisioning-with-a-razor/">blog post</a> on it.) To help with the adoption/use of Razor, Nick also recently <a href="http://nickapedia.com/2012/06/05/api-all-the-things-razor-api-wiki/">announced an overview of the Razor API</a>.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Frank Denneman continues to do a great job writing solid technical articles. The latest article to catch my eye (and I&rsquo;m sure that I missed some) was this post on <a href="http://blogs.vmware.com/vsphere/2012/05/combining-affinity-rule-types.html">combining affinity rule types</a>.</p>
+</li>
+<li>
+<p>This is an interesting post on <a href="http://vmtoday.com/2012/02/vsphere-5-networking-bug-affects-software-iscsi/">a vSphere 5 networking bug affecting iSCSI</a> that was fixed in vSphere 5.0 Update 1.</p>
+</li>
+<li>
+<p>Make a note of <a href="http://kb.vmware.com/kb/2019944">this VMware KB article</a> regarding UDP traffic on Linux guests using VMXNET3; the workaround today is using E1000 instead.</p>
+</li>
+<li>
+<p>This post is actually over a year old, but I just came across it: Luc Dekens <a href="http://www.lucd.info/2011/04/22/get-the-maximum-iops/">posted</a> a PowerCLI script that allows a user to find the maximum IOPS values over the last 5 minutes for a number of VMs. That&rsquo;s handy. (BTW, I have fixed the error that kept me from seeing the post when it was first published&mdash;I&rsquo;ve now subscribed to Luc&rsquo;s blog.)</p>
+</li>
+<li>
+<p>Want to use a Debian server to provide NFS for your VMware environment? <a href="http://www.mattpson.info/2011/03/28/using-a-debian-server-as-nfs-storage-for-vmware-esxi/">Here</a> is some information that might prove helpful.</p>
+</li>
+<li>
+<p>Jeremy Waldrop of Varrow provides some <a href="http://jeremywaldrop.wordpress.com/2012/04/27/custom-esxi-5-iso-for-ucs-nexus-1000v-and-powerpath-ve/">information on creating a custom installation ISO</a> for ESXi 5, Nexus 1000V, and PowerPath/VE. Cool!</p>
+</li>
+<li>
+<p>Cormac Hogan continues to pump out some very useful storage-focused articles on the official VMware vSphere blog. For example, both the <a href="http://blogs.vmware.com/vsphere/2012/05/vmfs-locking-uncovered.html">VMFS locking article</a> and the article on <a href="http://blogs.vmware.com/vsphere/2012/06/extending-an-eagerzeroedthick-disk.html">extending an EagerZeroedThick disk</a> were great posts. I sincerely hope that Cormac keeps up the great work.</p>
+</li>
+<li>
+<p>Thanks to <a href="http://wiki.xen.org/wiki/Project_Kronos">this Project Kronos page</a>, I&rsquo;ve been able to successfully set up XCP on Ubuntu Server 12.04 LTS. Here&rsquo;s hoping it gets easier in future releases.</p>
+</li>
+<li>
+<p>Chris Colotti <a href="http://www.chriscolotti.us/vmware/how-to-handle-some-vcloud-director-challenges/">takes on some vCloud Director &ldquo;challenges&rdquo;</a>, mostly surrounding vShield Edge and vCloud Director&rsquo;s reliance on vShield Edge for specific networking configurations. While I do agree with many of Chris&rsquo; points, I personally would disagree that using vSphere HA to protect vShield Edge is an acceptable configuration. I was also unable to find any articles that describe how to use vSphere FT to protect the deployed vShield appliances. Can anyone point out one or more of those articles? (Put them in the comments.)</p>
+</li>
+<li>
+<p>Want to use Puppet to automate the deployment of vCenter Server? See <a href="http://puppetlabs.com/blog/module-of-the-week-puppetlabs-vcenter-vmware-vcenter-deployment/">here</a>.</p>
+</li>
+</ul>
+<p>I guess it&rsquo;s time to wrap up now, lest my &ldquo;short take&rdquo; get even longer than it already is! Thanks for reading this far, and I hope that I&rsquo;ve shared something useful with you. Feel free to speak up in the comments if you have questions, thoughts, or clarifications.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/citrix">Citrix</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lisp">LISP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xen">Xen</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/06/02/thoughts-on-a-couple-of-books/">Thoughts on a Couple of Books</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/06/20/choosing-the-right-tool/">Choosing the Right Tool</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f12%2ftechnology-short-take-23%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f12%2ftechnology-short-take-23%2f&text=Technology%20Short%20Take%20%2323" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f06%2f12%2ftechnology-short-take-23%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2010/11/29/technology-short-take-7/">Technology Short Take #7</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

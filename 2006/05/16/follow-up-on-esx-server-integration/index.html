@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Follow Up on ESX Server Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Follow Up on ESX Server Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Follow Up on ESX Server Integration - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/05/16/follow-up-on-esx-server-integration/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Follow Up on ESX Server Integration</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 169 May 161616 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;560 words (estimated 3 minutes to read)</span>
+  <p>A short while ago, I published an entry <a href="/2006/05/01/esx-server-integration-with-active-directory/">discussing the integration of VMware ESX Server with Active Directory</a> for the authentication of virtual machine management. In that entry, I noted that I had not created a keytab as part of the configuration of Kerberos authentication. I was curious as to why it worked, so I did some research. Here&rsquo;s what I found.</p>
+<p>Seeking expertise, I started a <a href="http://groups.google.com/group/comp.protocols.kerberos/browse_thread/thread/c73b9867c97d92b1/6573afa662540d28?q=comp.protocols.kerberos&amp;rnum=6&amp;hl=en#6573afa662540d28">thread on the comp.protocols.kerberos</a> Usenet group about the presence or absence of the keytab, and its impact on the operation of pam_krb5 for authentication. Based on the feedback received there, the keytab should be used to protect against a KDC spoofing attack, i.e., to verify the identity of the KDC against which pam_krb5 is attempting to authenticate and retrieve tickets. Richard E. Silverman (of <a href="http://www.oreilly.com/catalog/sshtdg2/">&ldquo;Secure Shell: The Definitive Guide&rdquo;</a> fame) stated:</p>
+<blockquote>
+<p>pam_krb5 verifies your password against Kerberos, right? In that case, there <em>should</em> be a keytab, due to the issue alluded to earlier in this thread: the module should obtain a host ticket to defend against a KDC spoofing attack. If it let you in without that, perhaps there&rsquo;s a &ldquo;verify KDC&rdquo; option that&rsquo;s turned off (and ideally, should be turned on).</p>
+</blockquote>
+<p>With that in mind, I set out to see if pam_krb5 supported just such an option. According to <a href="http://www.die.net/doc/linux/man/man8/pam_krb5.8.html">this pam_krb5 man page</a>, there is a &ldquo;validate&rdquo; option that is supposed to force pam_krb5.so to &ldquo;verify that the TGT obtained from the realm&rsquo;s servers has not been spoofed. Note that the process which is performing authentication must be able to read the keytab in order for validation to be possible.&rdquo;</p>
+<p>However, even with this option set (and the permissions set on the keytab so that it is readable by any user), this validation still did not take place (as evidenced by the fact that pam_krb5 still authenticated users against Active Directory even when the keytab wasn&rsquo;t present). The presence or absence of the keytab did not appear to affect the operation of pam_krb5 in any way.</p>
+<p>Russ Alberry added this comment in the Usenet thread:</p>
+<blockquote>
+<p>The pam_krb5 modules that I&rsquo;ve used either don&rsquo;t do this or only do this when the keytab is available, presumably doing a security vs. ease of deployment tradeoff.</p>
+</blockquote>
+<p>So, apparently, even though the option is there, pam_krb5 still doesn&rsquo;t perform validation of the TGT to ensure that the KDC wasn&rsquo;t spoofed.</p>
+<p>To test all of this, I used a freshly-built server running <a href="http://www.centos.org/">CentOS</a> 4.3 and pam_krb5. The server was authenticating against Active Directory running on Windows Server 2003 R2, where a computer account had been created and a principal mapped to that account using <code>ktpass.exe</code>. The keytab generated by <code>ktpass.exe</code> was securely copied over to the Linux server and placed in the <code>/etc</code> directory as <code>krb5.keytab</code>. Initially, only root had any permissions on the file, but read permissions were added later to see if that affected the behavior of the Kerberos module.</p>
+<p>The final answer still remains unknown. The man page for pam_krb5.so module indicates that the validate option should force the behavior we are seeking; but the tests that I&rsquo;ve conducted so far don&rsquo;t support that statement. I plan to conduct additional tests and more research to see what other information I can uncover.</p>
+<p>In the meantime, any Kerberos experts out there are invited to add their comments to this article and share any additional information.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/05/16/mass-password-changes-in-ad-revisited/">Mass Password Changes in AD Revisited</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/05/18/openbsd-39-on-esx-server/">OpenBSD 3.9 on ESX Server</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f16%2ffollow-up-on-esx-server-integration%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f16%2ffollow-up-on-esx-server-integration%2f&text=Follow%20Up%20on%20ESX%20Server%20Integration" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f05%2f16%2ffollow-up-on-esx-server-integration%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/03/30/vmware-weak-spot/">VMware Weak Spot</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2006/05/01/esx-server-integration-with-active-directory/">ESX Server Integration with Active Directory</a> <span class="post-date-list">19 May 1011</span></li><li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

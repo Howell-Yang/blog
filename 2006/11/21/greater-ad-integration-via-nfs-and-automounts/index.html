@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Greater AD Integration via NFS and Automounts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Greater AD Integration via NFS and Automounts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Greater AD Integration via NFS and Automounts - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/11/21/greater-ad-integration-via-nfs-and-automounts/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Greater AD Integration via NFS and Automounts</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1396 words (estimated 7 minutes to read)</span>
+  <p>This solution builds upon the integration of Solaris 10 and Linux (again, CentOS specifically, but I&rsquo;ll use Linux here instead of mentioning the specific distribution) into Active Directory for authentication and authorization as outlined in these related articles:</p>
+<p><a href="/2006/10/16/refined-solaris-10-ad-integration-instructions/">Refined Solaris 10-AD Integration Instructions</a><br>
+<a href="/2006/08/08/linux-active-directory-and-windows-server-2003-r2-revisited/">Linux, Active Directory, and Windows Server 2003 R2 Revisited</a></p>
+<p>In these articles, I describe a configuration whereby you can use Kerberos against Active Directory for authentication, and LDAP against Active Directory for user and group lookups. This allows you to centralize the user account information (username, UID number, home directory, login shell, etc.) into Active Directory so that when an account is provisioned in AD it is also available to associated UNIX and Linux systems (as applicable). Using the information in this article, you can extend that integration to auto-mounted shared home directories between Solaris and Linux.</p>
+<p>I&rsquo;ll accomplish this by using the UNIX interoperability tools included in <a href="http://www.microsoft.com/windowsserver/default.mspx">Windows Server 2003 R2</a>; namely, the Server for NFS, Server for NIS, and the User Name Mapping Server. On the Solaris and Linux side, I&rsquo;ll use autofs.</p>
+<p>OK, let&rsquo;s dive right in.</p>
+<h3 id="configuring-solaris">Configuring Solaris</h3>
+<p>Configuring Solaris is pretty straightforward; it&rsquo;s pretty much designed out of the box to use auto-mounted home directories. This is one area where Solaris shows its enterprise pedigree (that&rsquo;s not a knock against Linux, just an observation about Solaris).</p>
+<p>The only real change that needs to be made is to the <code>/etc/auto_home</code> file, which specifies the auto-mounted home directory mappings. The easiest thing to do is use a wildcard mapping, like this:</p>
+<pre><code>*   nfssrvr.example.com:/home/&amp;
+</code></pre>
+<p>Here, the asterisk (*) and the ampersand (&amp;) will be replaced with the appropriate information. So, if a user name &ldquo;bjones&rdquo; logs on, then the the <code>/home/bjones</code> NFS share on the server nfssrvr.example.com would be mounted on <code>/home/bjones</code> on the Solaris server. Useful, eh?</p>
+<p>Note that autofs <em>may</em> be disabled in your installation of Solaris; it wasn&rsquo;t in mine, but I&rsquo;ve seen references elsewhere that this is not typical. Use these commands to check the status and enable autofs, if necessary:</p>
+<pre><code>svcs -a | grep autofs  
+svcadm -v enable svc:/system/filesystem/autofs
+</code></pre>
+<p>At this point, Solaris should be ready to go. Let&rsquo;s look at the Linux configuration.</p>
+<h3 id="configuring-linux">Configuring Linux</h3>
+<p>The Linux configuration is only slightly more complicated than the Solaris configuration. Whereas Solaris uses <code>/etc/auto_master</code> to define the automounted filesystems, autofs on Linux uses <code>/etc/auto.master</code>, and it does not (by default, as far as I can tell) define a map for automounted home directories.</p>
+<p>So we must first edit <code>/etc/auto.master</code> and add the following line:</p>
+<pre><code>/home   /etc/auto.home
+</code></pre>
+<p>This tells autofs to look in the file <code>/etc/auto.home</code> to find the automounted directories under <code>/home</code>. Then we create the <code>/etc/auto.home</code> file with the following line:</p>
+<pre><code>*   nfssrvr.example.com:/home/&amp;
+</code></pre>
+<p>(Just like the Solaris box in this case.) Finally, we can check for the autofs startup status, fix it, and start autofs with the following commands, respectively:</p>
+<pre><code>chkconfig --list autofs  
+chkconfig autofs on  
+service autofs start
+</code></pre>
+<p>In fact, you will need to restart the autofs daemon (with <code>service autofs restart</code>) in order for the changes to <code>/etc/auto.master</code> and <code>/etc/auto.home</code> to be recognized. (The same goes for Solaris, too, only using the <code>svcadm -v restart svc:/system/filesystem/autofs</code> command instead.)</p>
+<p>To further streamline any differences between Solaris and Linux, I also created a <code>/export/home</code> on the Linux server, in the event I wanted/needed local home directories as well. Please note that I would need to modify the <code>/etc/auto.home</code> (on Linux) or <code>/etc/auto_home</code> (on Solaris) as well if this were the case.</p>
+<p>Now that Linux and Solaris are both done, let&rsquo;s have a look at configuring the UNIX interoperability components on Windows.</p>
+<h3 id="configuring-windows-nfs-nis-and-user-name-mapping">Configuring Windows (NFS, NIS, and User Name Mapping)</h3>
+<p>Surprisingly enough, this part was the hardest part for me. I don&rsquo;t know if it was the documentation (if it can be called that) or something else, but I had a hard time with this. Hopefully the information I share here can help someone else avoid this headache.</p>
+<h4 id="configuring-the-domain-controllers">Configuring the Domain Controllers</h4>
+<p>On the domain controllers in your Active Directory domain, install the following components:</p>
+<ul>
+<li>
+<p>Server for NIS and Administration Components (under Active Directory Services &gt; Identity Management for UNIX)</p>
+</li>
+<li>
+<p>Microsoft Services for NFS Administration, RPC External Data Representation, RPC Port Mapper, Server for NFS Authentication, and User Name Mapping (under Other Network File and Print Services &gt; Microsoft Services for NFS)</p>
+</li>
+</ul>
+<p>It may be possible to get by with less than that installed, but I couldn&rsquo;t get it working until all of those are installed. If you&rsquo;ve followed my instructions for AD integration, the Server for NIS and Administration Components are probably already installed, as those expose the &ldquo;UNIX Attributes&rdquo; tab in Active Directory Users &amp; Computers.</p>
+<p>Once these are installed, use these steps to configure them appropriately:</p>
+<ol>
+<li>
+<p>Using the Services MMC, make sure that Server for NIS is running.</p>
+</li>
+<li>
+<p>In the Microsoft Services for NFS MMC, right-click on &ldquo;Microsoft Services for NFS&rdquo; and select Properties. Specify the name of the DC as the &ldquo;User Name Mapping Server&rdquo;, check the box labeled &ldquo;Active Directory Lookup&rdquo;, and specify the name of the Active Directory domain. Click OK to save those changes and close the dialog box.</p>
+</li>
+<li>
+<p>Still in Microsoft Services for NFS MMC console, right-click User Name Mapping and select Properties. Go to the &ldquo;Simple Mapping&rdquo; tab, check the box marked &ldquo;Use simple maps&rdquo;, and then add one of the DCs from the domain that&rsquo;s running Server for NIS at the bottom of the dialog box.</p>
+</li>
+<li>
+<p>Right-click on both User Maps and Group Maps and select &ldquo;Show simple maps,&rdquo; then click Refresh. You should see a list of the users in Active Directory that have been UNIX-enabled, i.e., have UNIX attributes specified for their account. At this point, you can close the Microsoft Services for NFS MMC.</p>
+</li>
+</ol>
+<p>The DC should now be ready to go. It&rsquo;s time to move to the file server.</p>
+<h4 id="configuring-the-file-server">Configuring the File Server</h4>
+<p>We need to install the Server for NFS component on the file server that will host our automounted home directories. The Server for NFS is found under &ldquo;Other Network File and Print Services&rdquo; in Add Windows Components.</p>
+<p>Once that has been installed, repeat step #2 above (configuring the User Name Mapping Server and Active Directory lookup) on the file server.</p>
+<p>We&rsquo;re now ready to create some NFS shares. Right-click the folder you&rsquo;d like to share via NFS (I created a folder named &ldquo;home&rdquo;&mdash;I know, not very creative) and shared that via NFS (there&rsquo;s an NFS Sharing tab when you open the properties for the folder). When specifying the share name, be wary of the case since UNIX/Linux are cAsE sEnSiTiVe. (It&rsquo;s probably best to stick to all lowercase.) If you want to allow anonymous access and/or root access, configure it appropriately at this point.</p>
+<p>Word of warning: be sure to include UNIX-enabled groups and/or users in the NTFS access control list for the folder and containing files! This one threw me for a loop. At first, I didn&rsquo;t have any UNIX-enabled groups in the ACL and I kept getting &ldquo;insufficient permissions&rdquo; errors when trying to mount the share via NFS. It wasn&rsquo;t until I ensured that at least one UNIX-enabled group had read permission to the folder that things started working as expected.</p>
+<p>To test your NFS share, use this command from Solaris or Linux, respectively (the first command is for Solaris, the second is for Linux):</p>
+<pre><code>mount -F nfs nfssrvr.example.com:/home/nfs /mnt/nfs  
+mount -t nfs nfssrvr.example.com:/home/nfs /mnt/nfs
+</code></pre>
+<p>If this mounts the NFS share without any problems, then you should be ready to roll.</p>
+<p>(Note: In case you hadn&rsquo;t already picked this up, one advantage of using a Windows NFS server is that we can also share the same folder via CIFS/SMB and create unified home directories for Solaris, Linux, and Windows.)</p>
+<p>Now, upon logging in to either Solaris or Linux (I tested this via SSH), you should get dropped into <code>/home/&lt;username&gt;</code> (assuming that&rsquo;s where you configured the automounter to mount the NFS share) automatically.</p>
+<h3 id="how-i-tested">How I Tested</h3>
+<p>I tested this procedure using Solaris 10 6/06 and CentOS 4.3. These systems were configured for Active Directory integration and native Kerberos logons via SSH. I used Windows Server 2003 R2 Standard Edition for the NFS server, and Windows Server 2003 R2 Standard Edition for the Active Directory domain controllers. All of these systems were created as virtual machines hosted on a <a href="http://www.vmware.com/products/vi/">VMware Virtual Infrastructure 3</a> server farm with servers running ESX Server 3.0.1.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/centos">CentOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/interoperability">Interoperability</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kerberos">Kerberos</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ldap">LDAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nfs">NFS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/solaris">Solaris</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ssh">SSH</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/unix">UNIX</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/11/20/virtual-consoles-inside-virtual-machines/">Virtual Consoles Inside Virtual Machines</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/11/23/vmotion-compatibility/">VMotion Compatibility</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f21%2fgreater-ad-integration-via-nfs-and-automounts%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f21%2fgreater-ad-integration-via-nfs-and-automounts%2f&text=Greater%20AD%20Integration%20via%20NFS%20and%20Automounts" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f11%2f21%2fgreater-ad-integration-via-nfs-and-automounts%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2006/08/21/native-kerberos-authentication-with-ssh/">Native Kerberos Authentication with SSH</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2006/10/27/delving-into-nfs-and-automounts/">Delving into NFS and Automounts</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

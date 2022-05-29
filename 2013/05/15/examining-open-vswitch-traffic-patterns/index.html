@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Examining Open vSwitch Traffic Patterns - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Examining Open vSwitch Traffic Patterns - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Examining Open vSwitch Traffic Patterns - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/05/15/examining-open-vswitch-traffic-patterns/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Examining Open vSwitch Traffic Patterns</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 159 May 151515 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1778 words (estimated 9 minutes to read)</span>
+  <p>In this post, I want to provide some additional insight on how the use of <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> affects&mdash;or doesn&rsquo;t affect, in some cases&mdash;how a Linux host directs traffic through physical interfaces, OVS internal interfaces, and OVS bridges. This is something that I had a hard time understanding as I started exploring more advanced OVS configurations, and hopefully the information I share here will be helpful to others.</p>
+<p>To help structure this discussion, I&rsquo;m going to walk through a few different OVS configurations and scenarios. In these scenarios, I&rsquo;ll use the following assumptions:</p>
+<ul>
+<li>
+<p>The physical host has four interfaces (eth0, eth1, eth2, and eth3)</p>
+</li>
+<li>
+<p>The host is running Linux with KVM, libvirt, and OVS installed</p>
+</li>
+</ul>
+<h2 id="scenario-1-simple-ovs-configuration">Scenario 1: Simple OVS Configuration</h2>
+<p>In this first scenario let&rsquo;s look at a relatively simple OVS configuration, and examine how Linux host and guest domain traffic moves into or out of the network.</p>
+<p>Let&rsquo;s assume that our OVS configuration looks something like this (this is the output from <code>ovs-vsctl show</code>):</p>
+<pre><code>bc6b9e64-11d6-415f-a82b-5d8a61ed3fbd
+    Bridge &quot;br0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;eth0&quot;
+            Interface &quot;eth0&quot;
+    Bridge &quot;br1&quot;
+        Port &quot;br1&quot;
+            Interface &quot;br1&quot;
+                type: internal
+        Port &quot;eth1&quot;
+            Interface &quot;eth1&quot;
+    ovs_version: &quot;1.7.1&quot;
+</code></pre>
+<p>This is a pretty simple configuration; there are two bridges, each with a single physical interface. Let&rsquo;s further assume, for the purposes of this scenario, that eth2 has an IP address and is working properly to communicate with other hosts on the network. The eth3 interface is shutdown.</p>
+<p>So, in this scenario, how does traffic move into or out of the host?</p>
+<ol>
+<li>
+<p><em>Traffic from a guest domain:</em> Traffic from a guest domain will travel through the OVS bridge to which it is attached (you&rsquo;d see an additional &ldquo;vnet0&rdquo; port and interface appear on that bridge when you start the guest domain). So, a guest domain attached to br0 would communicate via eth0, and a guest domain attached to br1 would communicate via eth1. No real surprises here.</p>
+</li>
+<li>
+<p><em>Traffic from the Linux host:</em> Traffic from the Linux host itself will <strong>not</strong> communicate over any of the configured OVS bridges, but will instead use its native TCP/IP stack and any configured interfaces. Thus, since eth2 is configured and operational, all traffic to/from the Linux host itself will travel through eth2.</p>
+</li>
+</ol>
+<p>The interesting point (to me, at least) about #2 above is that this <em>includes traffic from the OVS process itself.</em> In other words, if the OVS process(es) need to communicate across the network, they won&rsquo;t use the bridges&mdash;they&rsquo;ll use whatever interfaces the Linux host uses to communicate. This is one thing that threw me off: because OVS is itself a Linux process, when OVS needs to communicate across the network it will use the Linux network stack to do so. In this scenario, then, OVS would <strong>not</strong> communicate over any configured bridge, but instead using eth2. (This makes perfect sense now, but I recall that it didn&rsquo;t earlier. Maybe it&rsquo;s just me.)</p>
+<h2 id="scenario-2-adding-bonding">Scenario 2: Adding Bonding</h2>
+<p>In this second scenario, our OVS configuration changes only slightly:</p>
+<pre><code>bc6b9e64-11d6-415f-a82b-5d8a61ed3fbd
+    Bridge &quot;br0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;bond0&quot;
+            Interface &quot;eth0&quot;
+            Interface &quot;eth1&quot;
+    ovs_version: &quot;1.7.1&quot;
+</code></pre>
+<p>In this case, we&rsquo;re now leveraging a bond that contains two physical interfaces (eth0 and eth1). (By the way, I have a write-up on <a href="/2012/10/19/link-aggregation-and-lacp-with-open-vswitch/">configuring OVS and bonds</a>, if you need/want more information.) The eth2 interface still has an IP address assigned and is up and communicating properly. The physical eth3 interface is shutdown.</p>
+<p>How does this affect the way in which traffic is handled? <em>It doesn&rsquo;t, really.</em> Traffic from guest domains will still travel across br0 (since this is the only configured OVS bridge), and traffic from the Linux host&mdash;including traffic from OVS itself&mdash;will still use whatever interfaces are determined by the host&rsquo;s TCP/IP stack. In this case, that would be eth2.</p>
+<h2 id="scenario-3-the-isolated-bridge">Scenario 3: The Isolated Bridge</h2>
+<p>Let&rsquo;s look at another OVS configuration, the so-called &ldquo;isolated bridge&rdquo;. This is a configuration that is commonly found in implementations using NVP, OpenStack, and others, and it&rsquo;s a configuration that I recently discussed in <a href="/2013/05/07/using-gre-tunnels-with-open-vswitch/">my post on GRE tunnels and OVS</a>.</p>
+<p>Here&rsquo;s the configuration:</p>
+<pre><code>bc6b9e64-11d6-415f-a82b-5d8a61ed3fbd
+    Bridge &quot;br0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;bond0&quot;
+            Interface &quot;eth0&quot;
+            Interface &quot;eth1&quot;
+    Bridge &quot;br-int&quot;
+        Port &quot;br-int&quot;
+            Interface &quot;br-int&quot;
+                type: internal
+        Port &quot;gre0&quot;
+            Interface &quot;gre0&quot;
+                type: gre
+                options: {remote_ip=&quot;192.168.1.100&quot;}
+    ovs_version: &quot;1.7.1&quot;
+</code></pre>
+<p>As with previous configurations, we&rsquo;ll assume that eth2 is up and operational, and eth3 is shutdown. So how does traffic get directed in this configuration?</p>
+<ol>
+<li>
+<p><em>Traffic from guest domains attached to br0:</em> This is as before&mdash;traffic will go out one of the physical interfaces in the bond, according to the bonding configuration (active-standby, LACP, etc.). Nothing unusual here.</p>
+</li>
+<li>
+<p><em>Traffic from the Linux host:</em> As before, traffic from processes on the Linux host will travel out according to the host&rsquo;s TCP/IP stack. There are no changes from previous configurations.</p>
+</li>
+<li>
+<p><em>Traffic from guest domains attached to br-int:</em> Now, this is where it gets interesting. Guest domains attached to br-int (named &ldquo;br-int&rdquo; because in this configuration the isolated bridge is often called the &ldquo;integration bridge&rdquo;) don&rsquo;t have any physical interfaces they can use; they can only use the GRE tunnel. Here&rsquo;s the &ldquo;gotcha&rdquo;, so to speak: the GRE tunnel is created and maintained by the OVS process, and therefore it uses the host&rsquo;s TCP/IP stack to communicate across the network. Thus, traffic from guest domains attached to br-int would hit the GRE tunnel, which would travel through eth2.</p>
+</li>
+</ol>
+<p>I&rsquo;ll give you a second to let that sink in.</p>
+<p>Ready now? Good! The key to understanding #3 is, in my opinion, understanding that the tunnel (a GRE tunnel in this case, but the same would apply to a VXLAN or STT tunnel) is <em>created and maintained by the OVS process.</em> Thus, because it is created and maintained by a process on the Linux host (OVS itself), the traffic for the tunnel is directed according to the host&rsquo;s TCP/IP stack and IP routing table(s). In this configuration, the tunnels don&rsquo;t travel through any of the configured OVS bridges.</p>
+<h2 id="scenario-4-leveraging-an-ovs-internal-interface">Scenario 4: Leveraging an OVS Internal Interface</h2>
+<p>Let&rsquo;s keep ramping up the complexity. For this scenario, we&rsquo;ll use an OVS configuration that is the same as in the previous scenario:</p>
+<pre><code>bc6b9e64-11d6-415f-a82b-5d8a61ed3fbd
+    Bridge &quot;br0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;bond0&quot;
+            Interface &quot;eth0&quot;
+            Interface &quot;eth1&quot;
+    Bridge &quot;br-int&quot;
+        Port &quot;br-int&quot;
+            Interface &quot;br-int&quot;
+                type: internal
+        Port &quot;gre0&quot;
+            Interface &quot;gre0&quot;
+                type: gre
+                options: {remote_ip=&quot;192.168.1.100&quot;}
+    ovs_version: &quot;1.7.1&quot;
+</code></pre>
+<p>The difference, this time, is that we&rsquo;ll assume that eth2 and eth3 are both shutdown. Instead, we&rsquo;ve assigned an IP address to the br0 interface on bridge br0. OVS internal interfaces, like br0, can appear as &ldquo;physical&rdquo; interfaces to the Linux host, and therefore can be assigned IP addresses and used for communication. This is the approach I used in describing <a href="/2012/10/30/running-host-management-on-open-vswitch/">how to run host management across OVS</a>.</p>
+<p>Here&rsquo;s how this configuration affects traffic flow:</p>
+<ol>
+<li>
+<p><em>Traffic from guest domains attached to br0:</em> No change here. Traffic from guest domains attached to br0 will continue to travel across the physical interfaces in the bond (eth0 and eth1, in this case).</p>
+</li>
+<li>
+<p><em>Traffic from the Linux host:</em> This time, the only interface that the Linux host has is the br0 internal interface. The br0 internal interface is attached to br0, so all traffic from the Linux host will travel across the physical interfaces attached to the bond (again, eth0 and eth1).</p>
+</li>
+<li>
+<p><em>Traffic from guest domains attached to br-int:</em> Because Linux host traffic is directed through br0 by virtue of using the br0 internal interface, this means that tunnel traffic is also directed through br0, as dictated by the Linux host&rsquo;s TCP/IP stack and IP routing table(s).</p>
+</li>
+</ol>
+<p>As you can see, assigning an IP address to an OVS internal interface has a real impact on the way in which the Linux host directs traffic through OVS. This has both positive and negative impacts:</p>
+<ul>
+<li>
+<p>One positive impact is that it allows for Linux host traffic (such as management or tunnel traffic) to take advantage of OVS bonds, thus gaining some level of NIC redundancy.</p>
+</li>
+<li>
+<p>A negative impact is that OVS is now &ldquo;in band,&rdquo; so upgrades to OVS will be disruptive to all traffic moving through OVS&mdash;which could potentially include host management traffic.</p>
+</li>
+</ul>
+<p>Let&rsquo;s take a look at one final scenario.</p>
+<h2 id="scenario-5-using-multiple-bridges-and-internal-interfaces">Scenario 5: Using Multiple Bridges and Internal Interfaces</h2>
+<p>In this configuration, we&rsquo;ll use an OVS configuration that is very similar to the configuration I showed in my post on <a href="/2013/05/07/using-gre-tunnels-with-open-vswitch/">GRE tunnels with OVS</a>:</p>
+<pre><code>bc6b9e64-11d6-415f-a82b-5d8a61ed3fbd
+    Bridge &quot;br0&quot;
+        Port &quot;br0&quot;
+            Interface &quot;br0&quot;
+                type: internal
+        Port &quot;mgmt0&quot;
+            Interface &quot;mgmt0&quot;
+                type: internal
+        Port &quot;bond0&quot;
+            Interface &quot;eth0&quot;
+            Interface &quot;eth1&quot;
+    Bridge &quot;br1&quot;
+        Port &quot;br1&quot;
+            Interface &quot;br1&quot;
+                type: internal
+        Port &quot;tep0&quot;
+            Interface &quot;tep0&quot;
+                type: internal
+        Port &quot;bond1&quot;
+            Interface &quot;eth2&quot;
+            Interface &quot;eth3&quot;
+    Bridge &quot;br-int&quot;
+        Port &quot;br-int&quot;
+            Interface &quot;br-int&quot;
+                type: internal
+        Port &quot;gre0&quot;
+            Interface &quot;gre0&quot;
+                type: gre
+                options: {remote_ip=&quot;192.168.1.100&quot;}
+    ovs_version: &quot;1.7.1&quot;
+</code></pre>
+<p>In this configuration, we have three bridges. br0 uses a bond that contains eth0 and eth1; br1 uses a bond that contains eth2 and eth3; and br-int is an isolated bridge with no physical interfaces. We have two &ldquo;custom&rdquo; internal interfaces, mgmt0 (on br0) and tep0 (on br1), to which IP addresses have been assigned and which are successfully communicating across the network. We&rsquo;ll assume that mgmt0 and tep0 are on different subnets, and that tep0 is assigned to the 192.168.1.0/24 subnet.</p>
+<p>How does traffic flow in this scenario?</p>
+<ol>
+<li>
+<p><em>Traffic from guest domains attached to br0:</em> The behavior here is as it has been in previous configurations&mdash;guest domains attached to br0 will communicate across the physical interfaces in the bond.</p>
+</li>
+<li>
+<p><em>Traffic from the Linux host:</em> As it has been in previous scenarios, traffic from the Linux host is driven by the host&rsquo;s TCP/IP stack and IP routing table(s). Because mgmt0 and tep0 are on different subnets, traffic from the Linux host will go out either br0 (for traffic moving through mgmt0) or br1 (for traffic moving through tep0), and thus will utilize the corresponding physical interfaces in the bonds on those bridges.</p>
+</li>
+<li>
+<p><em>Traffic from guest domains attached to br-int:</em> Because the GRE tunnel is on the 192.168.1.0/24 subnet, traffic for the GRE tunnel&mdash;which is created and maintained by the OVS process on the Linux host itself&mdash;will travel through tep0, which is attached to br1. Thus, the physical interfaces eth2 and eth3 would be leveraged for the GRE tunnel traffic.</p>
+</li>
+</ol>
+<h2 id="summary">Summary</h2>
+<p>The key takeaway from this post, in my mind, is understanding where traffic originates, and separating the idea of OVS as a switching mechanism (to handle guest domain traffic) as well as a Linux host process itself (to create and maintain tunnels between hosts).</p>
+<p>Hopefully this information is helpful. I am, of course, completely open to your comments, questions, and corrections, so feel free to speak up in the comments below. Courteous comments are always welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/05/15/using-pf-on-os-x-mountain-lion/">Using pf on OS X Mountain Lion</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/05/21/learning-nvp-part-1-high-level-architecture/">Learning NVP, Part 1: High-Level Architecture</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f15%2fexamining-open-vswitch-traffic-patterns%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f15%2fexamining-open-vswitch-traffic-patterns%2f&text=Examining%20Open%20vSwitch%20Traffic%20Patterns" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f15%2fexamining-open-vswitch-traffic-patterns%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/05/07/using-gre-tunnels-with-open-vswitch/">Using GRE Tunnels with Open vSwitch</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2013/02/26/automating-open-vswitch-configuration-with-puppet/">Automating Open vSwitch Configuration with Puppet</a> <span class="post-date-list">269 May 262626</span></li><li><a href="/2013/02/07/exploring-rhel-ovs-integrations/">Exploring RHEL-OVS Integrations</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

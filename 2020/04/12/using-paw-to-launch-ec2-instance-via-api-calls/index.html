@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Paw to Launch an EC2 Instance via API Calls - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Paw to Launch an EC2 Instance via API Calls - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Paw to Launch an EC2 Instance via API Calls - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/04/12/using-paw-to-launch-ec2-instance-via-api-calls/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Paw to Launch an EC2 Instance via API Calls</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;984 words (estimated 5 minutes to read)</span>
+  <p>Last week I wrote a post on <a href="/2020/04/10/using-postman-to-launch-ec2-instance-via-api-calls/">using Postman to launch an EC2 instance via API calls</a>. <a href="https://www.postman.com/">Postman</a> is a cross-platform application, so while my post was centered around Postman on Linux (<a href="https://ubuntu.com/">Ubuntu</a>, specifically) the steps should be very similar&mdash;if not exactly the same&mdash;when using Postman on other platforms. Users of macOS, however, have another option: a macOS-specific peer to Postman named <a href="https://paw.cloud/">Paw</a>. In this post, I&rsquo;ll walk through using Paw to issue API requests to AWS to launch an EC2 instance.</p>
+<p>I&rsquo;ll structure this post as a &ldquo;diff,&rdquo; if you will, that outlines the differences of using Paw to launch an EC2 instance via API calls versus using Postman to do the same thing. Therefore, if you haven&rsquo;t already read <a href="/2020/04/10/using-postman-to-launch-ec2-instance-via-api-calls/">the Postman post from last week</a>, I <em>strongly</em> recommend reviewing it before proceeding.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>This post assumes you&rsquo;ve already installed Paw on your macOS system. It also assumes you are somewhat familiar with Paw; refer to the Paw documentation if not. Also, to support AWS authentication, please be sure to install the &ldquo;AWS Signature 4 Auth Dynamic value&rdquo; extension (see <a href="https://github.com/badslug/Paw-AWSSignature4DynamicValue">here</a> or <a href="https://paw.cloud/extensions/">here</a>). This extension is necessary in order to have the API requests sent by Paw properly authenticated to AWS.</p>
+<p>Finally, you&rsquo;ll want to ensure you have a valid access key ID and corresponding secret access key; your API requests will use these to authenticate against AWS.</p>
+<h2 id="similarities-between-paw-and-postman">Similarities Between Paw and Postman</h2>
+<p>First, let&rsquo;s look at some of the similarities between using these two tools to interact with the AWS APIs:</p>
+<ul>
+<li>Both tools support the use of environments and environment variables, and I&rsquo;d recommend using this functionality. So, if you&rsquo;re using Paw, be sure to capture your AWS access key ID, AWS secret access key, and AWS region as environment variables you can reference later.</li>
+<li>The query parameters and the API endpoint will be the same for both products (you are, after all, interacting with the same API). You can use the region environment variable in your request URL in both products, although the way in which you access it will be slightly different with Paw (more on that below).</li>
+</ul>
+<p>More important than the similarities, though, are the differences between the two products, and how that affects using these products to interact with the AWS APIs.</p>
+<h2 id="differences-between-paw-and-postman">Differences Between Paw and Postman</h2>
+<p>Having reviewed the similarities, let&rsquo;s now look at some of the differences:</p>
+<ul>
+<li>For proper authentication to the AWS APIs, you&rsquo;ll need to install a Paw extension, as outlined in the &ldquo;Prerequisites&rdquo; section.</li>
+<li>Paw doesn&rsquo;t appear to have the equivalent of a Collection object that can hold configuration settings, so you&rsquo;ll have to configure the correct headers for authentication for each request individually. See the &ldquo;Configuring Headers for the Requests&rdquo; section below for details.</li>
+<li>Paw doesn&rsquo;t have the concept of tests as in Postman, so there&rsquo;s no need to write custom JavaScript to capture values from API responses (in order to chain requests). Instead, Paw just &ldquo;automatically&rdquo; makes response values available. See the &ldquo;Referencing Response Values&rdquo; section below.</li>
+</ul>
+<p>The next couple of sections look at some of the differences in more detail.</p>
+<h3 id="configuring-headers-for-the-requests">Configuring Headers for the Requests</h3>
+<p>Authentication for API requests to the AWS APIs are handled via two headers sent with the API requests: the Authorization header, and the X-Amz-Date header. In Paw, you will need to configure these headers on each API request individually; you can&rsquo;t apply them to a Collection-type object in Paw like you can in Postman.</p>
+<p>Here&rsquo;s a screenshot of configuring the headers for the API requests:</p>
+<p><img src="/public/img/paw-headers.png" alt="Configuring headers in Paw"></p>
+<p>The Authorization header is configured to use the AWS Signature 4 Auth extension (selected by right-clicking in the Header Value field and selecting Extensions &gt; AWS Signature v4 Auth), while the X-Amz-Date is configured to use an automatic timestamp (inserted by right-clicking and going to Values &gt; Timestamp &gt; Custom Formatting). The correct timestamp format to use is what&rsquo;s shown in the screenshot (<code>%G%m%dT%H%M%SZ</code>).</p>
+<p>When you add the AWS Signature v4 Auth extension, you&rsquo;ll also need to configure it. Here&rsquo;s a screenshot of the configuration of the extension; you can see it&rsquo;s using environment variables to provide the AWS access key ID, AWS secret access key, and AWS region:</p>
+<p><img src="/public/img/paw-extension-config.png" alt="Configuring the AWS Signature v4 Auth extension"></p>
+<p>Remember that these headers need to configured for each request, or the API request won&rsquo;t authenticate properly.</p>
+<h3 id="referencing-response-values">Referencing Response Values</h3>
+<p>The other major difference between Postman and Paw is in how each program allows you to chain API requests together using values from previous API requests. In Postman, this is handled using snippets of JavaScript the user has to write. In Paw, this is handled somewhat &ldquo;automatically&rdquo;; the user only needs to insert what&rsquo;s called a &ldquo;dynamic repsonse value,&rdquo; and then reference the API request and the field/value from the response.</p>
+<p>Here&rsquo;s a screenshot of the API request to run an instance, which&mdash;as you&rsquo;ll recall from the Postman post&mdash;needs several values from earlier API requests:</p>
+<p><img src="/public/img/paw-reference-response-values.png" alt="Referencing earlier response values"></p>
+<p>These response values are inserted by right-clicking in the field where they should go and then selecting Response &gt; Filtered Response Body. This brings up a dialog box to configure it, where you&rsquo;ll select the API request, the response format (XML in this case), and then provide the XML path to the value you want. Here&rsquo;s an example screenshot:</p>
+<p><img src="/public/img/paw-config-response-value.png" alt="Configuring a response value"></p>
+<p>That&rsquo;s it&mdash;aside from these differences in having to configure headers on each API request and in referencing values from earlier responses, the process for interacting with the AWS APIs using Paw is extremely similar to using Postman. For the purposes of launching an EC2 instance via APIs, the requests and the values needed from each request remain exactly the same.</p>
+<p>I hope this brief walkthroug/comparison of using Paw to interact with the AWS APIs is useful. If you have questions, want to provide feedback, or if you&rsquo;ve found an error in my post, I&rsquo;d love to hear from you. Hit <a href="https://twitter.com/scott_lowe">me on Twitter</a>, or track down my email (it&rsquo;s not hard) and send me a message. Thanks!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/xml">XML</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/04/10/using-postman-to-launch-ec2-instance-via-api-calls/">Using Postman to Launch an EC2 Instance via API Calls</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/04/22/using-existing-aws-security-groups-with-cluster-api/">Using Existing AWS Security Groups with Cluster API</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f12%2fusing-paw-to-launch-ec2-instance-via-api-calls%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f12%2fusing-paw-to-launch-ec2-instance-via-api-calls%2f&text=Using%20Paw%20to%20Launch%20an%20EC2%20Instance%20via%20API%20Calls" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f04%2f12%2fusing-paw-to-launch-ec2-instance-via-api-calls%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/04/10/using-postman-to-launch-ec2-instance-via-api-calls/">Using Postman to Launch an EC2 Instance via API Calls</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2020/01/17/technology-short-take-123/">Technology Short Take 123</a> <span class="post-date-list">179 May 171717</span></li><li><a href="/2020/01/16/removing-unnecessary-complexity/">Removing Unnecessary Complexity</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Examining VXLAN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Examining VXLAN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Examining VXLAN - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/12/02/examining-vxlan/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Examining VXLAN</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;902 words (estimated 5 minutes to read)</span>
+  <p>It&rsquo;s taken me far too long to write this post, that&rsquo;s for sure. Since the announcement of VXLAN at VMworld earlier in the year, I&rsquo;ve been searching for additional information on these questions: &ldquo;What is VXLAN? How does it fit into the broader networking landscape? Why did we need a new standard?&rdquo; I talked to Cisco, I attended <a href="/2011/08/31/vsp2117-virtualization-aware-datacenter-networks/">a VMworld session about networking futures</a>, I talked to some of the authors of the <a href="http://tools.ietf.org/html/draft-mahalingam-dutt-dcops-vxlan-00">IETF draft on VXLAN</a>, I read (most of) the VXLAN draft, and I studied some existing protocols that one might think could have been put to use. I think I&rsquo;m finally ready to try to address these questions.</p>
+<p><strong>What is VXLAN?</strong></p>
+<p>The answer to this question is taken directly from the IETF draft (the emphasis is mine):</p>
+<blockquote>
+<p>This document describes Virtual eXtensible Local Area Network (VXLAN), which is used to <strong>address the need for overlay networks within virtualized data centers accommodating multiple tenants.</strong></p>
+</blockquote>
+<p>I think it&rsquo;s important to keep this purpose in mind. While it&rsquo;s a bit simplistic to state it this way, VXLAN is&mdash;essentially&mdash;a proposed standards-based replacement for the proprietary MAC-in-MAC encapsulation that is currently used in vCloud Director. Instead of using MAC-in-MAC encapsulation, VXLAN uses MAC-in-IP encapsulation, with multicast groups to handle MAC learning and unique UDP source ports to help with load balancing across multiple links. Yes, that&rsquo;s a bit of a simplification, but I think it gets the main point across.</p>
+<p><strong>How does VXLAN fit into the broader networking landscape?</strong></p>
+<p>Trying to answer this question is what has occupied the majority of the time it&rsquo;s taken to write this post. You can&rsquo;t explain how VXLAN fits into the broader networking landscape without having a minimal understanding, at least, of what the rest of the networking landscape looks like. I had to dig in a bit deeper to MPLS, OTV, FabricPath/TRILL, and other standards/emerging standards. I&rsquo;m sure that I&rsquo;ve still omitted some technologies that should have been included, and I know that there are still (so much) more to learn about the technologies I did include.</p>
+<p>Based on the information I was able to gather, the answer to this second question really builds on the answer to the first question. VXLAN only really addresses a few fundamental concerns:</p>
+<ul>
+<li>
+<p>A shortage of VLAN address space (the theoretical limit is 4094 VLANs, with many switches supporting fewer than that)</p>
+</li>
+<li>
+<p>An inability to support multi-tenancy (both from a scale perspective as well as a separation perspective)</p>
+</li>
+<li>
+<p>Problems with Layer 2 connectivity across disparate virtual data centers</p>
+</li>
+</ul>
+<p>VXLAN addresses these concerns in this way:</p>
+<ul>
+<li>
+<p>It adds a 24-bit VXLAN Network Identifier (VNI), expanding the realm of potentially unique identifiers to just shy of 17 million (16.7 million). This addresses any scale-based concerns of multitenancy.</p>
+</li>
+<li>
+<p>It wraps Layer 2 frames in Layer 3 packets. This addresses the other part of any multitenancy concerns (VXLAN hides duplicate MAC addresses, duplicate IP addresses, and duplicate VLAN IDs found in separate VNIs). This also addresses the Layer 2 connectivity issues between disparate virtual data centers.</p>
+</li>
+</ul>
+<p>And that&rsquo;s really about it. It doesn&rsquo;t address Layer 2 multipathing/STP, it doesn&rsquo;t address Layer 2 connectivity in the physical world (layer 2 connectivity is only preserved at the virtualization level), and it doesn&rsquo;t address Layer 3 routing issues created by stretched VLANs and VM mobility designs. Which brings us to our third question</p>
+<p><strong>Why did we need a new standard?</strong></p>
+<p>This answer builds on the previous two answers. Once you have a clear understanding of what VXLAN was designed to do, and how VXLAN fits into the rest of the networking protocols, then this answer is pretty easy:</p>
+<ul>
+<li>
+<p>If you&rsquo;ve been reading my articles, you know already that <a href="/2011/11/30/vxlan-and-layer-3-connectivity/">VXLAN doesn&rsquo;t preserve all forms of Layer 3 connectivity</a>. Because it doesn&rsquo;t, you still need protocols like OTV to address Layer 2/3 connectivity at the physical level.</p>
+</li>
+<li>
+<p>Because you still need protocols like OTV to achieve VM mobility (for the time being, at least), you&rsquo;re still going to need protocols like LISP to fix funny routing issues being caused by IP addresses from the same subnet existing in multiple locations at the same time.</p>
+</li>
+<li>
+<p>Because VXLAN doesn&rsquo;t address Layer 2 multipathing concerns, you still need protocols like TRILL and technologies like FabricPath.</p>
+</li>
+<li>
+<p>Because using MPLS&mdash;which, by the way, would also address the 3 concerns VXLAN addresses&mdash;would require MPLS-enabled/MPLS-aware equipment throughout the data center, that would make an MPLS-based solution difficult for many enterprises to adopt. Using an IP encapsulation scheme means that existing physical networking equipment doesn&rsquo;t have to change. (Although it might change&mdash;to add VXLAN support&mdash;at some point in the future.)</p>
+</li>
+</ul>
+<p>I was not a fan of VMware (apparently) driving the creation of an entirely new networking standard. However, as I dug into this, I began to see that while other solutions almost addressed these concerns, none of them were a really good fit. Yes, using MPLS probably would have worked. Using GRE might have worked (take <a href="http://tools.ietf.org/html/draft-sridharan-virtualization-nvgre-00">NVGRE</a>, for example, but that&rsquo;s also a proposed new protocol). To really address the concerns head-on, though, required a solution that was written/created expressly for that purpose, and that&rsquo;s VXLAN. It&rsquo;s just important, though, to really understand what VXLAN <em>is</em> as well as what VXLAN <em>isn&rsquo;t</em>. Otherwise, you&rsquo;ll find yourself trying to fit VXLAN to a solution for which it really wasn&rsquo;t intended&mdash;which, by the way, was why VXLAN was created in the first place.</p>
+<p>Comments, corrections, and clarifications are always welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/12/01/some-initial-mpls-reading/">Some Initial MPLS Reading</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/12/02/fixing-repeating-itunes-firewall-prompt/">Fixing Repeating iTunes Firewall Prompt</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f02%2fexamining-vxlan%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f02%2fexamining-vxlan%2f&text=Examining%20VXLAN" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f02%2fexamining-vxlan%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2011/09/12/technology-short-take-14/">Technology Short Take #14</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

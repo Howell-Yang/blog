@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IDF 2014: Bare Metal, Docker Containers, and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IDF 2014: Bare Metal, Docker Containers, and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IDF 2014: Bare Metal, Docker Containers, and Virtualization - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/09/09/idf2014-bare-metal-docker-containers-and-virtualization/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IDF 2014: Bare Metal, Docker Containers, and Virtualization</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;819 words (estimated 4 minutes to read)</span>
+  <p>This is a live blog of session DATS004, titled &ldquo;Bare-Metal, Docker Containers, and Virtualization: The Growing Choices for Cloud Applications.&rdquo; The speaker is Nicholas Weaver (yes, <strong>that</strong> Nick Weaver, who now works at Intel).</p>
+<p>Weaver starts his presentation by talking about &ldquo;how we got here&rdquo;, discussing the various technological shifts that have affected the computing landscape over the years. Weaver includes a discussion of the drivers behind virtualization as well as the pros and cons of virtualization.</p>
+<p>That, naturally, leads to a discussion of containers. Containers are not all that new&mdash;Solaris Zones is a form of containers that existed back in 2004. Naturally, the recent hype associated with Docker has, according to Weaver, rejuvenated interest in the concept of containers.</p>
+<p>Before Weaver gets too far into containers, he first provides a background of some of the core containerization pieces. This includes cgroups (the ability to control resource allocation/utilization), which is built into the Linux kernel. Namespace isolation is also important, which provides full process isolation (so that one process can&rsquo;t see processes in another namespace). Namespace isolation isn&rsquo;t just for processes; there&rsquo;s also isolation for network entities, mounts, and users. LXC is a set of user-space tools that attempted to make using these constructs easier, but it hasn&rsquo;t (until recently) been easy to really leverage these constructs.</p>
+<p>Weaver next takes this relatively abstract discussion and makes it a bit more concrete with a specific example of how a microservice architecture would look under virtualization (OS instance, microservice libraries, and microservice itself) and well as under containers (shared OS instance and shared libraries plus microservice itself). Weaver talks about the &ldquo;instant start&rdquo; attribute of a container, but puts that in the context of the lifetime of the workload that&rsquo;s running in the container. Start-up times don&rsquo;t really matter for long-lived workloads, but for temporary, ephemeral workloads start-up times do matter. The pattern of &ldquo;container on VM&rdquo; is also mentioned by Weaver as another design pattern that some people use.</p>
+<p>Next Weaver provides a quick list of pros and cons of containers:</p>
+<ul>
+<li>
+<p>Pros: faster lifecycle vs. virtual machines; containers what is running within the OS; ideal for homogenous application stacks on Linux; almost non-existent overhead</p>
+</li>
+<li>
+<p>Cons: very complex to configure (by itself, absent some sort of orchestration system or operating at scale); currently much weaker security isolation than VMs; applications must run on Linux (because Windows doesn&rsquo;t have the same container technologies)</p>
+</li>
+</ul>
+<p>Next, Weaver transitions the discussion to focus on Docker specifically. Weaver describes Docker as &ldquo;an easy button for containers,&rdquo; making the underlying containerization constructs (cgroups, namespaces, etc.) easier to use. Docker is simpler and easier than LXC (where multiple binaries were involved). Weaver believes that Docker images&mdash;which he describes as an ordered set of actions to build a container&mdash;are the real game-changer. Weaver&rsquo;s discussion of Docker images leads to a review of a Dockerfile, which is a DSL (domain specific language) for creating Docker images. Docker images are built on a series of layers; underlying layers could be &ldquo;just&rdquo; OS images (like Ubuntu or CentOS), but they could also be customized builds that contain applications and/or data.</p>
+<p>Image registries are how users can create images and share images with other users. The public Docker Hub is an example of an image registry.</p>
+<p>The discussion now transitions into a quick review of the underlying Docker architecture. There is a Docker daemon that runs on Linux; the Docker client can be run elsewhere. The Docker client communicates with the Docker daemon (although you should note that in many cases the daemon listens on a local socket, which means using a Docker client remotely over the network won&rsquo;t work).</p>
+<p>The innovations that Weaver attributes to Docker include: images (like templates for VMs, and the use of copy-on-write makes them behave like code); API and CLI tools for managing container deployments; reduced complexity around deploying and managing containers; and support for namespaces and resource limits.</p>
+<p>Weaver provides a more concrete example of how Docker can change a developer&rsquo;s process for creating code. Here Weaver&rsquo;s DevOps background really starts to show, as he discusses how Docker and containers would help streamline CI/CD operations.</p>
+<p>Next up are the gotchas with containers. Trust is one gotcha; can we trust that one container won&rsquo;t affect other containers? The answer, according to Weaver, is &ldquo;it depends.&rdquo; You still need to follow current recommended practices, such as no root access, host-level patches, auditing, and being aware of the default settings (which might be dangerous, if you aren&rsquo;t aware). One way to address some of these concerns is to use VMs to provide strong security isolation between containers that need a stronger level of isolation than the standard container mechanisms can provide.</p>
+<p>Intel, of course, is working on making containers better:</p>
+<ul>
+<li>
+<p>Security (Intel AES-NI, INtel TXT/TCP, Intel SGX)</p>
+</li>
+<li>
+<p>Performance/flexibility (Intel VT-x/VT-d/VT-c)</p>
+</li>
+</ul>
+<p>Weaver wraps up the session with a quick summary of the key points from the session and some Q&amp;A.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/idf2014">IDF2014</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/intel">Intel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/09/09/idf-2014-virtualizing-the-network-to-enable-sdi/">IDF 2014: Virtualizing the Network to Enable SDI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/09/10/idf-2014-day-1-recap/">IDF 2014 Day 1 Recap</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f09%2fidf2014-bare-metal-docker-containers-and-virtualization%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f09%2fidf2014-bare-metal-docker-containers-and-virtualization%2f&text=IDF%202014%3a%20Bare%20Metal%2c%20Docker%20Containers%2c%20and%20Virtualization" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f09%2fidf2014-bare-metal-docker-containers-and-virtualization%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/09/03/technology-short-take-44/">Technology Short Take #44</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2014/08/22/a-heat-template-for-docker-containers/">A Heat Template for Docker Containers</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2014/08/08/technology-short-take-43/">Technology Short Take #43</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

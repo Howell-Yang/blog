@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using Docker Machine with AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using Docker Machine with AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using Docker Machine with AWS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/03/22/using-docker-machine-with-aws/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using Docker Machine with AWS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 229 May 222222 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;789 words (estimated 4 minutes to read)</span>
+  <p>As part of a broader effort (see the post on <a href="/2016/01/21/looking-ahead-2016-projects/">my 2016 projects</a>) to leverage public cloud resources more than I have in the past, some <a href="https://www.docker.com/products/docker-engine">Docker Engine</a>-related testing I&rsquo;ve been conducting recently has been done using AWS EC2 instances instead of VMs in my home lab. Along the way, I&rsquo;ve found <a href="https://www.docker.com/products/docker-machine">Docker Machine</a> to be quite a handy tool, and in this post I&rsquo;ll share how to use Docker Machine with AWS.</p>
+<p>By and large, using Docker Machine with AWS is pretty straightforward. You can get an idea of what information Docker Machine needs by running <code>docker-machine create -d amazonec2 --help</code>. (You can also view <a href="https://docs.docker.com/machine/drivers/aws/">the documentation for the AWS driver</a> specifically.) The key pieces of information you need are:</p>
+<ul>
+<li><code>--amazonec2-access-key</code>: This is your AWS access key. Docker Machine can read it from the $AWS_ACCESS_KEY_ID environment variable, or&mdash;if you have the AWS CLI installed&mdash;Docker Machine can read it from there.</li>
+<li><code>--amazonec2-secret-key</code>: This is your AWS secret key. As with the AWS access key, Docker Machine can read this from an environment variable ($AWS_SECRET_ACCESS_KEY) or from the AWS CLI credentials file (by default, found in <code>~/.aws/credentials</code>).</li>
+<li><code>--amazonec2-region</code>: The AWS driver defaults to us-east-1 (N. Virginia). Note that this particular value does <em>not</em> get read from your AWS CLI configuration, so even if you have your AWS CLI configuration set to use a different region you&rsquo;ll still need to include this flag when using Docker Machine.</li>
+<li><code>--amazonec2-instance-type</code>: This specifies the instance type for the instance Docker Machine will create. In my testing (using the us-west-2 region), Docker Machine defaulted to using &ldquo;t2.micro&rdquo; instances when this value wasn&rsquo;t specified.</li>
+<li><code>--amazonec2-ami</code>: The AWS machine image that Docker Machine should use to provision the instance. If you omit this value, Docker Machine will use a daily build of <a href="http://www.ubuntu.com/">Ubuntu</a> 15.10.</li>
+<li><code>--amazonec2-ssh-user</code>: The name of the user account that Docker Machine will use to log into the system and provision the Docker Engine. If you&rsquo;re using the default AMI (see the previous bullet), then this value will default to &ldquo;ubuntu&rdquo;. If you specify a custom AMI, you&rsquo;ll need to specify the correct value for this parameter as well.</li>
+<li><code>--amazonec2-ssh-keypath</code>: This specifies the SSH key pair that should be injected into the instance. If you don&rsquo;t specify this value, Docker Machine will generate a new key for use with this instance.</li>
+</ul>
+<p>There are some additional parameters that you can use to fine-tune the behavior of Docker Machine when provisioning AWS instances (refer to <a href="https://docs.docker.com/machine/drivers/aws/">the docs</a>), but these basic options should cover the majority of the use cases out there.</p>
+<p>Putting all this together, an example command might look something like this:</p>
+<pre><code>docker-machine create -d amazonec2 \
+--amazonec2-region us-west-2 \
+--amazonec2-instance-type &quot;t2.micro&quot; \
+--amazonec2-ssh-keypath ~/.ssh/ssh_key \
+aws-test
+</code></pre>
+<p>This would create a machine named &ldquo;aws-test&rdquo;, with an instance type of t2.micro in the us-west-2 region, based on a daily Ubuntu 15.10 AMI, and using the SSH key found in the file <code>~/.ssh/ssh_key</code>. Once this instance is up and running, Docker Machine would provision and configure Docker Engine on the instance. Along the way, Docker Machine also creates a security group named &ldquo;docker-machine&rdquo; that allows the necessary Docker Engine-related traffic.</p>
+<p>If you needed to install a test build or an experimental build of Docker on the provisioned AWS instance, you can use the <code>--engine-install-url</code> parameter. (See my post on <a href="/2015/08/04/using-vagrant-docker-machine-together/">using Vagrant and Docker Machine together</a> for an example.)</p>
+<p>From there, you can use <code>eval $(docker-machine env aws-test)</code> to set this instance as the default Docker host for Docker commands you are running on your local system (a quick and easy way to use the Docker client on your Windows or OS X system with a Docker daemon on a remote Linux box).</p>
+<p>Without this turning into a full-blown tutorial on Docker Machine, there are a few other things you can do at this point:</p>
+<ul>
+<li>You can run <code>docker-machine ls</code> to see the &ldquo;machines&rdquo; (each machine corresponds to an instance) defined on your local system.</li>
+<li>You can start or stop an instance using <code>docker-machine start &lt;name&gt;</code> and <code>docker-machine stop &lt;name&gt;</code>. (Obviously, the instance must have been created first, but this allows you to start/stop instances after they&rsquo;ve been created.)</li>
+<li>You can use <code>docker-machine ssh &lt;name&gt;</code> to open an SSH session to the specified instance.</li>
+</ul>
+<p>There&rsquo;s much more, of course, but this should get you started.</p>
+<p>Once you&rsquo;re done with the instance(s), use <code>docker-machine rm &lt;name&gt;</code> to decommission the instance. This includes removing the local reference to it as well as terminating the remote EC2 instance.</p>
+<h2 id="other-resources">Other Resources</h2>
+<p>Please note that plenty of other folks have written about using Docker Machine on AWS; here are just a few resources that I used and recommend:</p>
+<p><a href="http://networkstatic.net/docker-machine-provisioning-on-aws/">Docker Machine Provisioning on AWS</a><br>
+<a href="http://www.tothenew.com/blog/using-docker-machine-with-aws/">Using Docker Machine with AWS</a><br>
+<a href="https://alexanderzeitler.com/articles/a-lap-around-aws-and-docker-machine/">A lap around AWS and docker-machine</a></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/03/21/vagrant-ubuntu-wily-networking-problem/">Vagrant, Ubuntu &#34;Wily Werewolf,&#34; and Networking</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/03/24/learning-tools-updates/">Learning Tools Updates</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f22%2fusing-docker-machine-with-aws%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f22%2fusing-docker-machine-with-aws%2f&text=Using%20Docker%20Machine%20with%20AWS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f03%2f22%2fusing-docker-machine-with-aws%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/03/21/vagrant-ubuntu-wily-networking-problem/">Vagrant, Ubuntu &#34;Wily Werewolf,&#34; and Networking</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2016/01/28/docker-macvlan-interfaces/">Using Docker with macvlan Interfaces</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2015/11/25/intro-to-terraform/">An Introduction to Terraform</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

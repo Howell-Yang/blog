@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #49 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #49 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #49 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/03/10/technology-short-take-49/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #49</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1554 words (estimated 8 minutes to read)</span>
+  <p>Welcome to Technology Short Take #49 (also known as Distraction-as-a-Service)! I have here for your reading pleasure an eclectic collection of links and articles from around the web, focusing on data center-related technologies. Here&rsquo;s hoping you find something useful. Bring on the content!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>I love this post from Matt Oswalt on <a href="http://keepingitclassless.net/2015/02/five-next-gen-net-skills/">five next-gen skills for networking pros</a>. I highly recommend you read the entire post, but in short the five skills Matt recommends are software skills (which includes configuration management and software development tools like <a href="http://www.git-scm.com/">Git</a>), Linux, deep protocol knowledge, hypervisor and container networking, and IPv6. What&rsquo;s really interesting to me is the (completely uncoordinated) alignment between Matt&rsquo;s list of skills for networking pros and the list I provided to virtualization pros in <a href="https://speakerdeck.com/slowe/closing-the-cloud-skills-gap">a series of recent VMUG presentations</a> (refer to slide 15, but the list is software development basics, Linux, automation/orchestration, and public cloud services). What does this mean? It tells me that some skills&mdash;specifically, Linux, automation/configuration management, software development concepts&mdash;are going to be <em>essential</em> for all new IT pros in the near future. If you want to stay relevant, regardless of your current &ldquo;silo,&rdquo; it&rsquo;s time to evolve.</li>
+<li>Carl Niger has a write-up on <a href="http://comeroutewithme.com/2014/10/04/1000v-bgp-vxlan-control-plane/">the introduction of the Nexus 1000v BGP control plane</a>, which uses BGP to help VXLAN figure out which MAC addresses live at which VTEPs. His article also provides a quick look at some of the configuration commands involved.</li>
+<li>I don&rsquo;t think I&rsquo;ve mentioned this before; if I have, please forgive me. Anthony Burke (disclaimer: Anthony works for VMware in the NSBU) has a post on <a href="http://networkinferno.net/bulk-creation-of-nsx-rules-with-python">how to use Python to automate the bulk creation of firewall rules</a> for use with the VMware NSX distributed firewall.</li>
+<li>You may have heard about the &ldquo;6-pack&rdquo;, Facebook&rsquo;s new open modular hardware switch introduced recently (<a href="https://code.facebook.com/posts/717010588413497/introducing-6-pack-the-first-open-hardware-modular-switch/">here&rsquo;s a post on it</a>). With the introduction of 6-pack (as with Wedge, Facebook&rsquo;s top-of-rack switch before it), many people have proclaimed that Facebook is now competing directly with Cisco. Not everyone agrees, though&mdash;here&rsquo;s <a href="http://www.sonn.com/2015/02/12/the-value-of-the-facebook-wedge-and-6-pack-switches/">Steven Noble&rsquo;s take</a> on the introduction of 6-pack and why this is pushing the networking industry forward.</li>
+<li>James (Just James), author at The Technical Blog of James, shared <a href="https://ttboj.wordpress.com/2014/11/04/the-switch-as-an-ordinary-gnulinux-server/">his thoughts</a>&mdash;both good and bad&mdash;on Cumulus Networks and treating the switch as a standard GNU/Linux server.</li>
+<li>There&rsquo;s been a lot of talk about using configuration management tools like Puppet, Chef, Salt, and Ansible to manage networking devices, but (at least as far as I can tell) there haven&rsquo;t been a lot of practical examples. That seems to be changing now&mdash;here&rsquo;s an example of <a href="https://remote-lab.net/ospf-lab-provisioning-on-ios-with-ansible/">using Ansible to set up OSPF in a test environment</a>.</li>
+<li>Dmitri Kalintsev (disclaimer: he works for the NSBU at VMware, as I do) has a write-up on the <a href="https://telecomoccasionally.wordpress.com/2015/01/11/nsx-for-vsphere-vxlan-control-plane-modes-explained/">different control plane modes for VXLAN in VMware NSX</a>. It&rsquo;s a pretty detailed article with lots of useful information.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>This news came out of Mobile World Congress (MWC) 2015: Ericsson has <a href="http://www.ericsson.com/mwc2015/launches/hyperscale-datacenter-system-ericsson-hds-8000">announced a new &ldquo;hyperscale&rdquo; hardware platform</a> based on Intel&rsquo;s Rack Scale Architecture (RSA). With all the focus on NFV, it&rsquo;s interesting to see vendors like Ericsson&mdash;whose business has been traditionally hardware-based&mdash;shift into &ldquo;new&rdquo; platforms in a bid to retain control of their customer base. I guess this underscores the difficulty for hardware-based companies to shift to a more software-based business.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>As we evolve towards more automated/orchestrated environments, it&rsquo;s important we don&rsquo;t leave security behind. Here&rsquo;s a post by Grant Orchard on <a href="http://grantorchard.com/vcac/implementation/protecting-vcac-workloads-nsx-security-groups/">using VMware NSX&rsquo;s security groups to protect workloads deployed via vCAC</a> (now vRA).</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>If you want to get a rough feel for how some of the OpenStack projects are changing from Juno to Kilo, this post on <a href="http://opensource.com/business/15/1/openstack-overviews-program-technical-leads">12 highlights from the OpenStack roadmap</a> might be a good start.</li>
+<li>Heard of Kubernetes, but not really sure what it is or what it does? Afraid to ask that question because&hellip;well, doesn&rsquo;t <em>everyone</em> know about Kubernetes? No fear, Google has a post on <a href="http://googlecloudplatform.blogspot.com/2015/01/everything-you-wanted-to-know-about-Kubernetes-but-were-afraid-to-ask.html">everything you wanted to know about Kubernetes but were afraid to ask</a>. You&rsquo;re welcome.</li>
+<li>Still trying to wrap your head around OpenStack&rsquo;s use (when using the Open vSwitch plugin) of OVS+Linux bridges+IPtables? You might find <a href="http://thenewstack.io/solving-a-common-beginners-problem-when-pinging-from-an-openstack-instance/">this article</a> by Venu Murthy helpful.</li>
+<li>Most people aren&rsquo;t really interested in the details of a given cloud management platform&rsquo;s APIs, but if you <em>are</em> interested, Matt Curry takes a walk through <a href="http://mattcurry.com/2015/02/11/spinning-up-a-server-with-the-openstack-api/">some of the OpenStack APIs by spinning up a server on Rackspace</a>. Readers seeking a bit more detail on the APIs should find this write-up useful.</li>
+<li>Based on <a href="http://www.sebastien-han.fr/blog/2015/02/09/openstack-perform-consistent-snapshots-with-qemu-guest-agent/">this article</a>, it looks like filesystem quiescing and the ability to take consistent snapshots might be coming in OpenStack Kilo.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Per <a href="/2015/01/16/looking-ahead-2015-projects/">my list of 2015 projects</a>, I&rsquo;ve been investigating other configuration management systems (I&rsquo;ve primarily focused my efforts on Puppet until now). I found <a href="http://club.black.co.at/log/posts/2014-10-13-progress-monday-2/">this post comparing Ansible and Salt</a> to be quite helpful, particularly given some of the comparisons with Puppet.</li>
+<li><a href="http://nixos.org">NixOS</a> seems to be an interesting re-think of a Linux distribution. Sure, it has atomic upgrades and rollbacks, like CoreOS, Ubuntu Snappy Core, and Project Atomic. But it also uses a completely declarative approach to the entire OS build, allowing users to define the exact NixOS build they desire in a NixOS-specific build language (somewhat of a domain-specific language, a DSL). While this offers some power for those who understand it, I wonder if this won&rsquo;t make it a bit too complicated to see broad adoption.</li>
+<li>Puppet Labs recently blogged about <a href="http://puppetlabs.com/blog/new-vmware-vrealize-orchestrator-puppet-plugin">the new VMware vRealize Orchestrator plugin for Puppet</a>. The plugin allows users to bootstrap the Puppet agent as VMs are created and provisioned. It sounds pretty handy if you&rsquo;re a combined VMware-Puppet shop.</li>
+<li>You&rsquo;re probably tired of hearing about containers, but for those that aren&rsquo;t&hellip;Michael Crosby has <a href="http://crosbymichael.com/creating-containers-part-1.html">a pretty detailed write-up on container internals</a>, complete with code examples. Nifty.</li>
+<li>Much is said about how Docker enables applications to be moved about from Linxu distribution to Linux distribution, but I don&rsquo;t think that complete kernel independence has been achieved yet. <a href="http://www.fewbytes.com/docker-selinux-and-the-myth-of-kernel-indipendence/">This blog post</a> highlights just one example.</li>
+<li>In the event you like to keep your eyes on not only where the industry is headed now but also to where the industry might be headed next, <a href="https://medium.com/@darrenrush/after-docker-unikernels-and-immutable-infrastructure-93d5a91c849e">this article</a> by Darren Rush talks about unikernels and immutable infrastructure as possible &ldquo;next steps&rdquo; in the evolution of the cloud.</li>
+<li>Having recently started exploring Ansible, I liked this article by Jason Edelman on <a href="http://www.jedelman.com/home/generating-web-docs-for-ansible-modules">how to generate Markdown documents for Ansible modules</a>. That&rsquo;s pretty handy.</li>
+<li>Brent Salisbury has a very handy write-up of some <a href="http://networkstatic.net/docker-one-liners/">Docker command-line one-liners</a>. I suspect this is an article I&rsquo;ll be referencing frequently. I&rsquo;m also looking forward to spending a bit of time working with SocketPlane in the near future.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<p>Nothing this time around, but I&rsquo;ll keep my eyes peeled for content to include in future posts!</p>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>This article&rsquo;s getting a bit old, but I thought it might be valuable to include here nevertheless. Steve Jin, who used to work at VMware and is now an independent consultant, has a write-up on <a href="http://www.doublecloud.org/2013/12/powerful-hacks-with-esxi-vim-cmd-command-together-with-shell-commands/">some powerful hacks combining vim-cmd and shell commands</a>.</li>
+<li>Kamau Wanguhu published a set of instructions for <a href="http://www.borgcube.com/blogs/2014/10/nsx-replace-manager-certificate/">replacing the NSX Manager certificate</a>.</li>
+<li>Here&rsquo;s <a href="http://blogs.vmware.com/vsphere/2015/02/vaio_filters.html">a nice dive into the vSphere APIs for IO Filtering</a> (VAIO, as the acronym-happy like to call it).</li>
+<li>Luc Dekens <a href="http://www.lucd.info/2015/01/22/drsrule-drs-rules-and-groups-module/">recently announced DRSRule</a>, a PowerCLI module for more easily managing DRS rules in VMware vSphere environments. While it&rsquo;s very cool that Luc and others wrote this module, I also find it very cool that the module is <a href="https://github.com/PowerCLIGoodies/DRSRule">hosted on GitHub</a>.</li>
+<li><a href="http://www.ntpro.nl/blog/archives/2868-VMware-vCenter-Server-6.0-Deployment-Guide.html">Via Eric Sloof</a>, here&rsquo;s a link to a white paper discussing deployment considerations around vCenter Server 6.0. Definitely worth a read for all you architects out there that are gearing up for a vSphere 6.0 upgrade in your environment.</li>
+<li>If you&rsquo;re a Hyper-V gal/guy, you should definitely be following <a href="http://blogs.msdn.com/b/virtual_pc_guy/">Ben Armstrong&rsquo;s blog</a>. He&rsquo;s publishing lots of informative articles.</li>
+<li>If you&rsquo;re thinking of expanding your VMware environment into VMware vCloud Air, Alan Renouf has a great walk-through on <a href="http://www.virtu-al.net/2015/02/20/retrieving-vm-metrics-from-vcloud-air/">using PowerCLI to retrieve VM metrics from vCloud Air</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>I saw <a href="http://www.storagebod.com/wordpress/?p=1731">this post</a> by Martin Glassborow (aka &ldquo;Storagebod&rdquo;), wherein he talks about three types of folks: the daredevils to come up with crazy new ideas, the implementers/finishers to take those crazy ideas and make them the &ldquo;new normal,&rdquo; and the folks to run the &ldquo;new normal&rdquo; now that it has become boring. This is strikingly similar to <a href="http://blog.gardeviance.org/2012/06/pioneers-settlers-and-town-planners.html">Simon Wardley&rsquo;s pioneers/settlers/town planners model</a> and Cringely&rsquo;s commandos/infantry/policy model (described <a href="http://blog.codinghorror.com/commandos-infantry-and-police/">here</a>). (I&rsquo;m personally a fan of the commandos/infantry/police model, myself.) I mentioned this here because I think it&rsquo;s important for us to understand where we fit in these models&mdash;are we commandos, or are we infantry? Are we police? There&rsquo;s no right or wrong answer; some people are better suited to certain roles. The reason it&rsquo;s important for us to know the answer, though, is that it helps us understand if we are in the right role for us. Are you unhappy in your current role? Perhaps you&rsquo;re being asked to be a police officer when what you&rsquo;re really best suited for is infantry (or even a commando). Anyway, it&rsquo;s something to think about.</li>
+</ul>
+<p>Well, this post turned out to be quite hefty (over 1600 words!) Sorry for the length; there&rsquo;s just so much good content out there that I want to share with my readers. In any case, thanks for sticking around to read the whole post.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/03/08/choosing-coreos-over-atomic/">Choosing CoreOS over Project Atomic</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/03/12/quick-update-congress/">A Quick Update on OpenStack Congress</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f10%2ftechnology-short-take-49%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f10%2ftechnology-short-take-49%2f&text=Technology%20Short%20Take%20%2349" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f03%2f10%2ftechnology-short-take-49%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/06/11/technology-short-take-42/">Technology Short Take #42</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2014/10/08/technology-short-take-45/">Technology Short Take #45</a> <span class="post-date-list">89 May 8088</span></li><li><a href="/2014/11/07/technology-short-take-46/">Technology Short Take #46</a> <span class="post-date-list">79 May 7077</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Follow-Up About Multiple VLANs, Virtual Connect, and Flex-10 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Follow-Up About Multiple VLANs, Virtual Connect, and Flex-10 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Follow-Up About Multiple VLANs, Virtual Connect, and Flex-10 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2009/07/09/follow-up-about-multiple-vlans-virtual-connect-and-flex-10/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Follow-Up About Multiple VLANs, Virtual Connect, and Flex-10</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;546 words (estimated 3 minutes to read)</span>
+  <p>I wanted to post a quick follow-up on the previous two articles that I published regarding using VLANs, Virtual Switch Tagging, HP Virtual Connect, and Flex-10:</p>
+<p><a href="/2009/07/06/using-vmware-esx-virtual-switch-tagging-with-hp-virtual-connect/">Using VMware ESX Virtual Switch Tagging with HP Virtual Connect</a></p>
+<p><a href="/2009/07/09/using-multiple-vlans-with-hp-virtual-connect-flex-10/">Using Multiple VLANs with HP Virtual Connect Flex-10</a></p>
+<p>One thing that I wanted to really clarify was that you <em>can</em> present multiple VLANs to FlexNICs on the same LOM, but you can&rsquo;t present the <em>same set of VLANs</em> to FlexNICs on the same LOM. I&rsquo;m not sure that I made that clear enough in my other post. So, if you have VLANs 100, 101, 102, 103, and 200, you can present any number or combination of those to all the FlexNICs on a single LOM&mdash;but it must be in a non-overlapping configuration, so that the same VLAN isn&rsquo;t presented to multiple FlexNICs on the same LOM. I plan on posting some sample configurations, with graphics, that should clarify things even more.</p>
+<p>The other thing I wanted to clarify was <em>why</em> I posted an article about presenting multiple VLANs to FlexNICs on the same LOM. Usually, this topic comes up in the form of a question (and I&rsquo;ve had several readers e-mail me about this) like this: &ldquo;You state that you can&rsquo;t present the same set of VLANs to multiple FlexNICs on the same LOM. Why in the world would you want to do that?&rdquo;</p>
+<p>That&rsquo;s a good question! In a Flex-10 environment, you normally <em>wouldn&rsquo;t</em> want to do that, and not just for the reason that it doesn&rsquo;t work (although having a configuration that works is usually quite beneficial). Consider the value proposition behind Flex-10: it provides four logical NICs (the FlexNICs), each of whose bandwidth can be adjusted as needed, up to 10Gbps, based on the traffic requirements. Now consider the reason why administrators normally use multiple NICs: more bandwidth. Considering that you can allocate bandwidth easily with a FlexNIC, there&rsquo;s no need to use multiple FlexNICs on the same LOM to handle the same VLANs. A single FlexNIC can handle multiple VLANs just fine because you can allocate more bandwidth to that FlexNIC easily. And since presenting multiple VLANs to FlexNICs on different LOMs works just fine, you can use one FlexNIC from each LOM to gain redundancy. All the reasons for wanting to use multiple NICs are addressed by using only two FlexNICs, one from each LOM, and presenting as many VLANs as you like to those two FlexNICs.</p>
+<p>However, having said all that, it is the default configuration in many VMware environments to present VLAN trunks to all ports on all ESX/ESXi hosts (i.e., to present the same set of VLANs to all ports). In a Flex-10 environment, you&rsquo;ll have to break out of that line of thinking. Hence, why I posted the information that I posted, so that VMware administrators would realize they can&rsquo;t follow the same configuration guidelines in the Flex-10 environment as they would follow in a more &ldquo;traditional&rdquo; networking environment. Just as virtualization with VMware requires server admins to approach things differently, the functionality offered by Virtual Connect also requires server admins to think a bit differently about how network connectivity is presented to VMware ESX/ESXi hosts.</p>
+<p>Have more questions, or need additional clarification? Speak up in the comments. Thanks for reading!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hp">HP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2009/07/09/using-multiple-vlans-with-hp-virtual-connect-flex-10/">Using Multiple VLANs with HP Virtual Connect Flex-10</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2009/07/13/vmware-releases-a-trio-of-new-products/">VMware Releases a Trio of New Products</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f09%2ffollow-up-about-multiple-vlans-virtual-connect-and-flex-10%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f09%2ffollow-up-about-multiple-vlans-virtual-connect-and-flex-10%2f&text=Follow-Up%20About%20Multiple%20VLANs%2c%20Virtual%20Connect%2c%20and%20Flex-10" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2009%2f07%2f09%2ffollow-up-about-multiple-vlans-virtual-connect-and-flex-10%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2009/07/09/using-multiple-vlans-with-hp-virtual-connect-flex-10/">Using Multiple VLANs with HP Virtual Connect Flex-10</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2009/07/06/using-vmware-esx-virtual-switch-tagging-with-hp-virtual-connect/">Using VMware ESX Virtual Switch Tagging with HP Virtual Connect</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2009/04/03/a-collection-of-viewpoints-on-cisco-ucs/">A Collection of Viewpoints on Cisco UCS</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

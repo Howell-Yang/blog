@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Automatically Connecting LXC to Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Automatically Connecting LXC to Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Automatically Connecting LXC to Open vSwitch - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/01/23/automatically-connecting-lxc-to-open-vswitch/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Automatically Connecting LXC to Open vSwitch</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;636 words (estimated 3 minutes to read)</span>
+  <p>I&rsquo;ve previously discussed using <a href="http://openvswitch.org/">Open vSwitch (OVS)</a> with <a href="http://linuxcontainers.org/">Linux Containers (LXC)</a> in a couple of previous posts (<a href="/2013/11/26/lxc-open-vswitch-and-gre-tunnels/">here</a> and <a href="/2013/12/03/connecting-lxc-to-open-vswitch-using-libvirt/">here</a>). In this post, I&rsquo;m going to show you one way to have your containers automatically connected to OVS on startup without having to use <a href="http://libvirt.org/">libvirt</a>.</p>
+<p>I tested this configuration using Ubuntu 12.04 with the Linux 3.8.0 kernel and an alpha release of LXC 1.0.0 from the <code>precise-backports</code> repository. The version of LXC in the 12.04 repositories (version 0.7.5, if I recall correctly) isn&rsquo;t new enough to support the specific feature I&rsquo;m describing here, so plan accordingly.</p>
+<p>If you aren&rsquo;t familiar with LXC, I&rsquo;d suggest you first read <a href="/2013/11/25/a-brief-introduction-to-linux-containers-with-lxc/">my LXC introductory post</a>. You&rsquo;ll probably also find the post on <a href="/2013/11/26/lxc-open-vswitch-and-gre-tunnels/">using LXC, OVS, and GRE tunnels</a> useful, as some of the information there is applicable here also.</p>
+<p>Ready? Let&rsquo;s get started.</p>
+<h2 id="configuring-the-container">Configuring the Container</h2>
+<p>You can create your container using the standard LXC tools:</p>
+<pre><code>lxc-create -n cn-01 -t ubuntu
+</code></pre>
+<p>As you may already know, this will create a container named &ldquo;cn-01&rdquo; based on the Ubuntu template. The configuration for this container will be found, by default, at <code>/var/lib/lxc/cn-01/config</code>. By default, unless you&rsquo;ve changed the configuration of your system, this container will be configured to use virtual Ethernet network interfaces and be attached to the default LXC bridge.</p>
+<p>The changes required to make the container connect to OVS are, fortunately, quite minimal. First, remove or comment out the <code>lxc.network.link</code> line. This is the configuration parameter that causes the container to attach to the default LXC bridge (normally called &ldquo;lxcbr0&rdquo;).</p>
+<p>Next, add a configuration line to run a script after creating the network interfaces. In my examples here, I&rsquo;ll assume the script is called &ldquo;ovsup&rdquo; and is stored in the <code>/etc/lxc/</code> directory. The configuration parameter should look something like this:</p>
+<pre><code>lxc.network.script.up = /etc/lxc/ovsup
+</code></pre>
+<p>(Note that there is also a corresponding <code>lxc.network.script.down</code> configuration parameter, but I won&rsquo;t be using it in this example.)</p>
+<p>Once you&rsquo;ve made these changes to the container&rsquo;s configuration, then you&rsquo;re ready to create the actual script.</p>
+<h2 id="creating-the-network-attachment-script">Creating the Network Attachment Script</h2>
+<p>Your script&mdash;the one referenced on the <code>lxc.network.script.up</code> in the container&rsquo;s configuration file&mdash;should look something like this:</p>
+<pre tabindex="0"><code>#!/bin/bash
+
+BRIDGE=&#34;br-int&#34;
+ovs-vsctl --may-exist add-br $BRIDGE
+ovs-vsctl --if-exists del-port $BRIDGE $5
+ovs-vsctl --may-exist add-port $BRIDGE $5
+</code></pre><p>(Please click <a href="https://gist.github.com/scottslowe/8569424">here</a> to see this as a GitHub Gist.)</p>
+<p>LXC passes five parameters to the script when it is called:</p>
+<ol>
+<li>
+<p>The name of the container</p>
+</li>
+<li>
+<p>The configuration section of the container&rsquo;s configuration (&ldquo;net&rdquo; in this case)</p>
+</li>
+<li>
+<p>Either &ldquo;up&rdquo; or &ldquo;down&rdquo;, depending on which configuration option is calling the script (<code>lxc.network.script.up</code> passes &ldquo;up&rdquo;, <code>lxc.network.script.down</code> passes &ldquo;down&rdquo;)</p>
+</li>
+<li>
+<p>The type of networking (&ldquo;veth&rdquo; in this case)</p>
+</li>
+<li>
+<p>The name of the interface (randomly generated unless you have included <code>lxc.network.veth.peer</code> in the container&rsquo;s configuration)</p>
+</li>
+</ol>
+<p>This simple script doesn&rsquo;t really need anything other than the interface name, so it only uses parameter 5 (the <code>$5</code> in the script). The script first ensures that the appropriate OVS bridge exists (creating it if necessary), then deletes the interface from the OVS bridge (if it exists) and adds it back to the OVS bridge.</p>
+<p>(Note: If you are using the <code>lxc.network.script.down</code> configuration parameter, you could eliminate the line to delete the port from the OVS bridge and place it in the down script instead. Or, you could write logic into the script to see if &ldquo;down&rdquo; is being called and delete the port. There are a variety of ways to approach the situation.)</p>
+<p>Using this configuration, when you start the container the host-side virtual Ethernet interface created by LXC will be automatically added to OVS, and your container will have whatever network connectivity is dictated by the OVS configuration. This could include tunneled connectivity (as described <a href="/2013/11/26/lxc-open-vswitch-and-gre-tunnels/">here</a>) or bridged connectivity.</p>
+<p>If you have any questions, feedback, or corrections, please feel free to speak up in the comments below. I encourage reader interaction!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/lxc">LXC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/01/13/running-synergy-on-os-x-mavericks/">Running Synergy on OS X Mavericks</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/02/06/technology-short-take-38/">Technology Short Take #38</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f01%2f23%2fautomatically-connecting-lxc-to-open-vswitch%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f01%2f23%2fautomatically-connecting-lxc-to-open-vswitch%2f&text=Automatically%20Connecting%20LXC%20to%20Open%20vSwitch" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f01%2f23%2fautomatically-connecting-lxc-to-open-vswitch%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/12/03/connecting-lxc-to-open-vswitch-using-libvirt/">Connecting LXC to Open vSwitch Using Libvirt</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2013/12/02/connecting-bare-metal-workloads-using-gre-tunnels-and-ovs/">Connecting Bare Metal Workloads Using GRE Tunnels and OVS</a> <span class="post-date-list">29 May 2022</span></li><li><a href="/2013/11/27/linux-containers-via-lxc-and-libvirt/">Linux Containers via LXC and Libvirt</a> <span class="post-date-list">279 May 272727</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

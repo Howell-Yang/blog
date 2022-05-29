@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Hyper-V Off to a Rocky Start - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Hyper-V Off to a Rocky Start - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Hyper-V Off to a Rocky Start - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/12/27/hyper-v-off-to-a-rocky-start/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Hyper-V Off to a Rocky Start</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 279 May 272727 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;447 words (estimated 3 minutes to read)</span>
+  <p>While VMware was busy launching VMware Infrastructure 3 version 3.5, Microsoft was giving the virtualization industry an early Christmas present in the form of the first Hyper-V (formerly &ldquo;Viridian&rdquo; and &ldquo;Windows Server Virtualization&rdquo;) beta. This beta was a bit of a surprise in that it was delivered slightly ahead of schedule; that in and of itself is a surprise given Microsoft&rsquo;s track record with delivering products on time. Can anyone say &ldquo;WinFS&rdquo; or &ldquo;Vista&rdquo;?</p>
+<p>I applaud Jeff Woolsey and the Windows Server Virtualization team (their blog is <a href="http://blogs.technet.com/virtualization/default.aspx">here</a>) for their efforts in delivering Hyper-V ahead of schedule. Well, they&rsquo;re ahead of schedule with regard to the last proposed release date, anyway. Unfortunately, it appears that Hyper-V is off to a rocky start.</p>
+<p>InfoWorld <a href="http://www.infoworld.com/article/07/12/19/51TC-microsoft-hyperv-preview_1.html">reviewed the Hyper-V beta</a> back on December 19. Here&rsquo;s a brief excerpt from the article:</p>
+<blockquote>
+<p>I wasn&rsquo;t disappointed&mdash;everything worked right out of the box. From there, I had the system ready to handle virtual machines in a matter of minutes. A few minutes later, I ran into problems.</p>
+</blockquote>
+<p>I encourage you to read the full article. While the reviewer, Paul Venezia, has both good and bad things to say about the Hyper-V beta, he does reiterate that it <em>is</em> definitely a beta product. This is important to remember when discussing Hyper-V&mdash;while we can discuss the product&rsquo;s rough edges, we also need to remember that the product isn&rsquo;t finished yet.</p>
+<p>The most telling comment about the Hyper-V beta from the InfoWorld article is this one:</p>
+<blockquote>
+<p>From what I&rsquo;ve seen, Microsofts Hyper-V is roughly analogous to VMware Server 1.0, although not as polished. It doesn&rsquo;t appear to be a significant challenge to VMware&rsquo;s Virtual Infrastructure and ESX Server products, and given the fact that VMware Server is free, runs on Linux and Windows, and is considerably more mature, its questionable how many infrastructures will benefit from using Hyper-V over VMware Server. Hyper-V is certainly behind the curve, but shows that Microsoft sees the need to be competitive in this space. Only time will tell whether Microsoft can catch up to the virtualization leaders, or be forced to settle for a secondary role.</p>
+</blockquote>
+<p>This quote <a href="http://blogs.vmware.com/vmtn/2007/12/hyper-v-like-vm.html">got picked up by John Troyer over at the VMTN Blog</a>, who again reiterates Hyper-V&rsquo;s beta status. I&rsquo;m glad to see that John, at least, isn&rsquo;t bashing Hyper-V. That&rsquo;s good, because if past performance is any indication Microsoft starts out slow but ramps up quickly. VMware will want to stay vigilant to keep ahead of the 800-pound gorilla. Bashing the competition isn&rsquo;t the best way to stay ahead of the competition.</p>
+<p>If any readers have direct experience with the Hyper-V beta, please post your knowledge and thoughts in the comments below. Thanks!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/12/20/latest-vdi-article-published/">Latest VDI Article Published</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/12/31/vmware-ha-failover-capacity-changes/">VMware HA Failover Capacity Changes</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f27%2fhyper-v-off-to-a-rocky-start%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f27%2fhyper-v-off-to-a-rocky-start%2f&text=Hyper-V%20Off%20to%20a%20Rocky%20Start" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f12%2f27%2fhyper-v-off-to-a-rocky-start%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/12/11/ok-i-had-to-comment-on-this/">OK, I Had to Comment on This</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2007/11/16/customizing-the-sysprepinf-created-by-virtualcenter/">Customizing the Sysprep.inf Created by VirtualCenter</a> <span class="post-date-list">169 May 161616</span></li><li><a href="/2007/10/21/when-an-os-is-not-an-os/">When an OS is not an OS</a> <span class="post-date-list">219 May 212121</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

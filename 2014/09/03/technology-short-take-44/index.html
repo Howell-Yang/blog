@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #44 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #44 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #44 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2014/09/03/technology-short-take-44/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #44</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 39 May 3033 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1094 words (estimated 6 minutes to read)</span>
+  <p>Welcome to Technology Short Take #44, the latest in my irregularly-published series of articles, links, ideas, and thoughts about various data center-related technologies. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>
+<p>One of the original problems with the VXLAN IETF specification was that it (deliberately) didn&rsquo;t include any control plane information; as a result, the process of mapping MAC addresses to VTEPs (VXLAN Tunnel Endpoints) wasn&rsquo;t defined, and the early implementations relied on multicast to handle this issue. To help resolve this issue, Cumulus Networks (and possibly Metacloud, I&rsquo;m not sure of their involvement yet) has release <a href="https://github.com/CumulusNetworks/vxfld">an open source project called vxfld</a>. As described in <a href="http://www.metacloud.com/opening-vxlan-openstack/">this Metacloud blog post</a>, vxfld is designed to &ldquo;handle VXLAN traffic from any operationg system or hardware platform that adheres to the IETF Internet-Draft for VXLAN&rdquo;.</p>
+</li>
+<li>
+<p>Nir Yechiel recently posted part 1 of a discussion on <a href="http://thenetworkway.wordpress.com/2014/07/01/the-need-for-network-overlays-part-i/">the need for network overlays</a>. This first post is more of a discussion of why VLANs and VLAN-based derivatives aren&rsquo;t sufficient, and why we should be looking to routing (layer 3) constructs instead. I&rsquo;m looking forward to part 2 of the series.</p>
+</li>
+<li>
+<p>One ongoing discussion in the network industry these days&mdash;or so it seems&mdash;is the discussion about the interaction between network overlays and the underlying transport network. Some argue that tight integration is required; others point to streaming video services and VoIP running across the Internet and insist that no integration or interaction is needed. In <a href="http://robhirschfeld.com/2014/07/08/sdn-blind-spots/">this post</a>, Scott Jensen argues in favor of the former&mdash;that SDN solutions shouldn&rsquo;t just manage network overlays, but should also manage the configuration of the physical transport network as well. I&rsquo;d love to hear from more networking pros (please disclose company affiliations) about their thoughts on this matter.</p>
+</li>
+<li>
+<p>I like the distinction made <a href="http://keepingitclassless.net/2014/06/network-automation-or-sdn/">here</a> between network automation and SDN.</p>
+</li>
+<li>
+<p>Need to get a better grasp on OpenFlow? Check out <a href="http://keepingitclassless.net/2014/07/sdn-protocols-1-openflow-basics/">OpenFlow basics</a> and <a href="http://keepingitclassless.net/2014/07/sdn-protocols-2-openflow-deep-dive/">OpenFlow deep-dive</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a write-up on <a href="http://blog.thestateofme.com/2014/06/08/connecting-docker-containers-between-vms-with-vxlan/">connecting Docker containers using VXLAN</a>. I think there&rsquo;s a great deal of promise for OVS in containerized environments, but what&rsquo;s needed is better/tighter integration between OVS and container solutions like Docker.</p>
+</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>
+<p>Is Intel having second thoughts about software-defined infrastructure? That&rsquo;s the core question in <a href="http://blogs.computerworlduk.com/idc-insight/2014/08/intels-role-in-the-future-of-software-defined-infrastructure/index.htm">this blog post</a>, which explores the future of Intel in a software-defined world and the increasing interest in non-x86 platforms like ARM.</p>
+</li>
+<li>
+<p>On the flip side, proponents who claim that platforms like ARM and others are <em>necessary</em> in order to move forward with SDN and NFV initiatives should probably read <a href="http://www.rcrwireless.com/20140820/telecom-software/telefonica-brocade-tout-80-gbps-nfv-speeds-in-tests-tag2">this article</a> on 80 Gbps performance from an off-the-shelf x86 server. Impressive.</p>
+</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>It&rsquo;s nice to see that work on OpenStack Barbican is progressing nicely; see <a href="http://thenewstack.io/openstack-barbican-cryptography-for-managing-secrets-in-the-cloud/">this article</a> for a quick overview of the project and an update on the status.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>
+<p>SDN Central has <a href="http://www.sdncentral.com/news/policy-open-efforts-essential-sally-johnson/2014/08/">a nice write-up</a> on the need for open efforts in the policy space, which includes the Congress project.</p>
+</li>
+<li>
+<p>The use of public cloud offerings as disaster recovery targets is on the rise; note this article from Microsoft on <a href="http://azure.microsoft.com/blog/2014/08/13/migrate-on-premise-virtualized-workloads-to-azure-using-azure-site-recovery/">how to migrate on-premises workloads to Azure using Azure Site Recovery</a>. VMware has a similar offering via the <a href="http://www.vmware.com/files/pdf/vchs/VMware-vCloud-Hybrid-Service-Disaster-Recovery-DS.pdf">VMware vCloud Hybrid Service recovery-as-a-service offering</a>.</p>
+</li>
+<li>
+<p>The folks at eNovance have a write-up on <a href="http://techs.enovance.com/7104/multi-tenant-docker-with-openstack-heat">multi-tenant Docker with OpenStack Heat</a>. It&rsquo;s an interesting write-up, but not for the faint of heart&mdash;to make their example work, you&rsquo;ll need the latest builds of Heat and the Docker plugin (it doesn&rsquo;t work with the stable branch of Heat).</p>
+</li>
+<li>
+<p>Preston Bannister took <a href="http://bannister.us/weblog/2014/08/21/cloud-application-backup-and-openstack/">a look at cloud application backup in OpenStack</a>. His observations are, I think, rational and fair, and I&rsquo;m glad to see someone paying attention to this topic (which, thus far, I think has been somewhat ignored).</p>
+</li>
+<li>
+<p>Interested in Docker and Kubernetes on Azure? See <a href="http://msopentech.com/blog/2014/08/28/docker-containers-on-microsoft-azure-with-kubernetes-visualizer/">here</a> and <a href="http://blog.azure.com/2014/08/28/hackathon-with-kubernetes-on-azure/">here</a> for more details.</p>
+</li>
+<li>
+<p>This article takes a look at Heat-Translator, an effort designed to provide some interoperability between TOSCA and OpenStack HOT documents for application deployment and orchestration. The portability of orchestration resources is one of several aspects you&rsquo;ll want to examine as you progress down the route of fully embracing a cloud computing operational model.</p>
+</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>
+<p>Looks like we have another convert to Markdown&mdash;Anthony Burke recently talked about <a href="http://networkinferno.net/using-markdown-to-improve-your-life">how he uses Markdown</a>. Regular readers of this site know that I do almost <em>all</em> of my content generation using MultiMarkdown (a variation of Markdown with some expanded syntax options). Here&rsquo;s a post I recently published on <a href="/2014/05/19/some-useful-markdown-tools-for-os-x/">some useful Markdown tools for OS X</a>.</p>
+</li>
+<li>
+<p>Good to see that Ivan Pepelnjak thinks <a href="http://blog.ipspace.net/2014/06/infrastructure-as-code-actually-makes.html">infrastructure as code makes sense</a>. I guess that means the time I&rsquo;ve spent with Puppet (you can browse Puppet-related posts <a href="/tags/puppet/">here</a>) wasn&rsquo;t a waste.</p>
+</li>
+<li>
+<p>I don&rsquo;t know if I&rsquo;ve mentioned this before (sorry if that&rsquo;s the case), but I&rsquo;m liking this &ldquo;NIX4NetEng&rdquo; series going on over at Nick Buraglio&rsquo;s site (<a href="https://www.forwardingplane.net/2014/04/nix4neteng-1-managing-dotfiles-pwn-the-unspoken-pain-of-unix-administration/">part 1</a>, <a href="http://www.forwardingplane.net/2014/06/nix4neteng-2-ipv46-address-investigation-tools-whois-dig/">part 2</a>, and <a href="http://www.forwardingplane.net/2014/07/nix4neteng-3-ip-addressing-and-subnet-tools/">part 3</a>).</p>
+</li>
+<li>
+<p>Mike Foley has a blog post on how to go from <a href="http://www.yelof.com/2014/08/04/zero-to-windows-domain-controller-in-4-reboots/">zero to Windows domain controller in only 4 reboots</a>. Handy.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>The OpenStack Manila project (for &ldquo;filesystems as a service&rdquo;) was recently promoted out of Incubation. This NetApp Community post (NetApp has been a significant backer of the Manila project) shows <a href="https://communities.netapp.com/community/netapp-blogs/the-raised-floor/blog/2014/08/22/get-openstack-manila-running-with-vagrant-and-devstack">how to get OpenStack Manila running with DevStack and Vagrant</a>.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Running Hyper-V with Linux VMs? Ben Armstrong details what versions of Linux support the various Hyper-V features in <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2014/06/16/what-version-of-linux-supports-what-in-hyper-v.aspx">this post</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a quick write-up on <a href="http://www.howtoforge.com/vboxheadless-running-virtual-machines-with-virtualbox-4.3-on-a-headless-ubuntu-14.04-lts-server">running VMs with VirtualBox 4.3 on a headless Ubuntu 14.04 LTS server</a>.</p>
+</li>
+<li>
+<p>Nested OS X guest on top of nested ESXi on top of VMware Fusion? Must be something William Lam&rsquo;s tried. Go have a look at <a href="http://www.virtuallyghetto.com/2014/08/how-to-run-nested-mac-os-x-guest-on-nested-esxi-on-top-vmware-fusion.html">his write-up</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s a quick <a href="http://blog-calfonso.rhcloud.com/?p=84">update on Nova-Docker</a>, the effort in OpenStack to allow users to deploy Docker containers via Nova. I&rsquo;m not yet convinced that treating Docker as a hypervisor in Nova is the right path, but we&rsquo;ll see how things develop.</p>
+</li>
+<li>
+<p><a href="http://blog.oddbit.com/2014/08/11/four-ways-to-connect-a-docker/">This post</a> is a nice write-up on the different ways to connect a Docker container to a local network.</p>
+</li>
+<li>
+<p>Weren&rsquo;t able to attend VMworld US in San Francisco last week? No worries. If you have access to the recorded VMworld sessions, check out Jason Boche&rsquo;s <a href="http://www.boche.net/blog/index.php/2014/08/28/vmworld-2014-top-ten/">list of the top 10 sessions</a> for a priority list of what recordings to check out. Or need a recap of the week? See <a href="http://www.vmguru.nl/2014/08/vmworld-2014-highlights/">here</a> (one of many recap posts, I&rsquo;m sure).</p>
+</li>
+</ul>
+<p>That&rsquo;s it this time around; hopefully I was able to include something useful for you. As always, all courteous comments are welcome, so feel free to speak up in the comments. In particular, if there is a technology area that I&rsquo;m not covering (or not covering well), please let me know&mdash;and suggestions for more content sources are certainly welcome!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2014/08/26/vmworld-2014-day-2-keynote/">VMworld 2014 Day 2 Keynote</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2014/09/09/idf-2014-day-1-keynote/">IDF 2014 Day 1 Keynote</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f03%2ftechnology-short-take-44%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f03%2ftechnology-short-take-44%2f&text=Technology%20Short%20Take%20%2344" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2014%2f09%2f03%2ftechnology-short-take-44%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/10/23/technology-short-take-36/">Technology Short Take #36</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2013/06/04/technology-short-take-33/">Technology Short Take #33</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2014/06/11/technology-short-take-42/">Technology Short Take #42</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

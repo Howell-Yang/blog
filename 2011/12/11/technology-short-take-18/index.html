@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #18 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #18 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #18 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/12/11/technology-short-take-18/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #18</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 119 May 111111 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;781 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #18! I hope you find something useful in this collection of networking, OS, storage, and virtualization links. Enjoy!</p>
+<h2 id="networking">Networking</h2>
+<p>The number of articles in my &ldquo;Networking&rdquo; bucket continues to overflow; I have so many articles on so many topics (soft switching, OpenFlow, Open vSwitch, MPLS) that it&rsquo;s hard to get my head wrapped around all of it. Here are a few posts that stuck out to me:</p>
+<ul>
+<li>
+<p>Ivan Pepelnjak has <a href="http://blog.ioshints.info/2011/12/decouple-virtual-networking-from.html">a very well-written post</a> explaining the various ways that virtual networking can be decoupled from the physical network.</p>
+</li>
+<li>
+<p>I stumbled across a trio of articles by Denton Gentry on hash tables (<a href="http://codingrelic.geekhold.com/2011/06/hash-tables-versus-cams.html">part 1</a>, <a href="http://codingrelic.geekhold.com/2011/06/care-and-feeding-of-hash-engines.html">part 2</a>, and <a href="http://codingrelic.geekhold.com/2011/06/ternary-hashing.html">part 3</a>). This is an interesting perspective I hadn&rsquo;t considered before; as we move more into software-defined networks (SDNs), why are we continuing to use the same mechanisms as before? Why not take advantage of more efficient mechanisms as part of this transition?</p>
+</li>
+</ul>
+<h2 id="serversoperating-systems">Servers/Operating Systems</h2>
+<ul>
+<li>
+<p>Nigel Poulton and I traded a few tweets during HP Discover Vienna about SCSI Express (or SCSI over PCIe, SoP). He wrote up his thoughts about SoP and its future in the storage industry <a href="http://blog.nigelpoulton.com/ive-seen-the-future-of-ssd-arrays/">here</a>. Further Twitter-based discussions about fabrics led him to say that <a href="http://blog.nigelpoulton.com/xsigo-would-seriously-up-hps-game/">HP buying Xsigo would bring the competition back against UCS</a>. I&rsquo;m not so sure I agree. Xsigo&rsquo;s server fabric technology/product is interesting, but it seems to me that it&rsquo;s still adding layers of abstraction that aren&rsquo;t necessary. As SR-IOV, MR-IOV, and PCIe extension matures, it seems to me that Ethernet as the fabric is going to win. If that&rsquo;s the case, and HP wants to bring the hurt against UCS, they&rsquo;re going to have to invest in Ethernet-based fabrics.</p>
+</li>
+<li>
+<p>Speaking of UCS, here&rsquo;s a &ldquo;how to&rdquo; on <a href="http://www.vspecialist.co.uk/deploying-cisco-ucs-platform-emulator-2-0-on-vsphere/">deploying the UCS Platform Emulator on vSphere</a>. You might also like <a href="http://www.vspecialist.co.uk/configuring-cisco-ucs-platform-emulator-v2-0-on-vsphere/">the UCS PE configuration follow-up post</a>.</p>
+</li>
+<li>
+<p>Here&rsquo;s what looks to be a handy Mac OS X utility to track <a href="http://yourmacguy.wordpress.com/adpassmon/">how long until your Active Directory password expires</a>. Sounds simple, yes, but useful.</p>
+</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>
+<p>Andre Leibovici bucks the &ldquo;common wisdom&rdquo; and recommends that <a href="http://myvirtualcloud.net/?p=2513">EFDs should be used for the linked clones, not the base replica</a>. I can&rsquo;t really argue with his recommendation; it&rsquo;s based on a pretty thorough analysis of I/O patterns against a VMware View environment. It&rsquo;s a great article for any  architect attempting to design a storage solution for a View environment.</p>
+</li>
+<li>
+<p>Andre also conducts a good <a href="http://myvirtualcloud.net/?p=2502">analysis of the effectiveness of FAST Cache in VDI environments</a> that&rsquo;a also worth a read.</p>
+</li>
+<li>
+<p>A &ldquo;black box&rdquo; for storage? Interesting idea&mdash;more information is available <a href="http://www.virtualpro.co.uk/2011/12/07/recoverpoint-and-axxana-async-replication-with-zero-data-loss/">here</a>.</p>
+</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>
+<p>Jason Boche, after some collaboration with <a href="http://lonesysadmin.net/">Bob Plankers</a>, wrote up a good procedure for <a href="http://www.boche.net/blog/index.php/2011/12/05/expanding-vcloud-director-transfer-server-storage/">expanding the vCloud Director Transfer Server storage space</a>. It&rsquo;s definitely worth a read if you&rsquo;re going to be working with vCloud Director.</p>
+</li>
+<li>
+<p>Microsoft has <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2011/12/02/linux-integration-services-version-v3-2-for-hyper-v-now-available.aspx">released version 3.2 of the Linux Integration Services for Hyper-V</a>. The new release adds integrated mouse support, updated network drivers, and fixes an issue with SCVMM compatibility.</p>
+</li>
+<li>
+<p>Julian Wood, who I had the opportunity to meet in Copenhagen at VMworld 2011, has published a four-part series on managing vSphere 5 certificates. Follow these links for the series: <a href="http://www.wooditwork.com/?p=2668">part 1</a>, <a href="http://www.wooditwork.com/?p=2671">part 2</a>, <a href="http://www.wooditwork.com/?p=2674">part 3</a>, and <a href="http://www.wooditwork.com/?p=2677">part 4</a>.</p>
+</li>
+<li>
+<p>Thinking of deploying Oracle on vSphere? You should probably read this three-part series from VMware&rsquo;s Business Critical Applications blog: part 1 is <a href="http://blogs.vmware.com/apps/2011/12/oracle-databases-on-vmware-vsphere.html">here</a>, part 2 is <a href="http://blogs.vmware.com/apps/2011/12/oracle-databases-on-vmware-vsphere-part2.html">here</a>, and part 3 is <a href="http://blogs.vmware.com/apps/2011/12/oracle-databases-on-vmware-vsphere-part3.html">here</a>.</p>
+</li>
+<li>
+<p>I&rsquo;m so used to dealing with VLANs in a vSphere environment, I didn&rsquo;t consider the challenges that might come up when using them with VMware Workstation. Fortunately, this author did&mdash;read his post on <a href="http://brandonjcarroll.com/using-vlans-with-vmware-workstation/">mapping VLANs to VMnets in VMware Workstation</a>.</p>
+</li>
+<li>
+<p>I thought that this article on <a href="http://blogs.vmware.com/apps/2011/11/using-virtual-disks-for-business-critical-apps-storage.html">virtual disks with business critical applications</a> would be a deep dive on which virtual disk formats (thin, lazy zeroed, eager zeroed) are best suited for various applications. While the article does discuss the different virtual disk formats, unfortunately that&rsquo;s as far as it goes.</p>
+</li>
+<li>
+<p>Fellow <em>VMware vSphere Design</em> co-author Forbes Guthrie highlights an important design concern with AutoDeploy: what about a virtual vCenter instance? Read <a href="http://www.vreference.com/2011/12/05/auto-deploy-design-concern/">his full article</a> for the in-depth discussion.</p>
+</li>
+<li>
+<p><a href="http://www.virtuallyghetto.com/2011/11/when-do-vsphere-morefs-change.html">This post</a> by William Lam gives a good overview of when vSphere MoRefs change (or don&rsquo;t change).</p>
+</li>
+<li>
+<p>Here&rsquo;s a good explanation <a href="http://blogs.vmware.com/vsphere/2011/12/nic-teaming-iscsi-binding.html">why NIC teaming can&rsquo;t be used with iSCSI binding</a>.</p>
+</li>
+<li>
+<p>Cormac Hogan also <a href="http://blogs.vmware.com/vsphere/2011/12/nice-vmkfstools-feature-for-extents.html">posted a nice overview</a> of some new <code>vmkfstools</code> enhancements in vSphere 5.</p>
+</li>
+<li>
+<p>Terence Luk posts <a href="http://terenceluk.blogspot.com/2011/12/recovery-of-vmware-srms-site-recovery.html">a detailed procedure</a> to help recover VMware Site Recovery Manager in the event of a failure of one of the SRM servers. Good information&mdash;thanks Terence!</p>
+</li>
+</ul>
+<p>And that&rsquo;s it for this time around. Feel free to add your thoughts in the comments below&mdash;all comments are welcome! <em>(Please provide full disclosure of vendor affiliations/employment where applicable. Thanks!)</em></p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vcloud">vCloud</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vdi">VDI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/12/07/revisiting-vxlan-and-layer-3-connectivity/">Revisiting VXLAN and Layer 3 Connectivity</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/12/15/uimoperations-3-0-now-ga/">UIM/Operations 3.0 Now GA</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f11%2ftechnology-short-take-18%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f11%2ftechnology-short-take-18%2f&text=Technology%20Short%20Take%20%2318" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f12%2f11%2ftechnology-short-take-18%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/11/28/technology-short-take-17/">Technology Short Take #17</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2011/11/07/technology-short-take-16/">Technology Short Take #16</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2011/08/25/technology-short-take-13/">Technology Short Take #13</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

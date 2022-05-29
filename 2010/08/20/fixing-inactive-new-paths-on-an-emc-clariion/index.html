@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Fixing Inactive New Paths on an EMC CLARiiON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Fixing Inactive New Paths on an EMC CLARiiON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Fixing Inactive New Paths on an EMC CLARiiON - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/08/20/fixing-inactive-new-paths-on-an-emc-clariion/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Fixing Inactive New Paths on an EMC CLARiiON</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 209 May 202020 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;829 words (estimated 4 minutes to read)</span>
+  <p>I ran into an issue in the lab today with some VMware ESX 4.0 hosts and some older CLARiiON CX3 arrays. I&rsquo;d been working to fix up the lab so that it more properly reflects a &ldquo;best practices&rdquo; configuration with dual SAN fabrics, dual-homed HBAs and CNAs, network connections spread across multiple physical switches, etc.&mdash;you know, all the wonderful things that we recommend to our customers.</p>
+<p>As a result of cross-connecting both the HBAs and the CLARiiON&rsquo;s storage processors to both SAN fabrics, I ended up with more paths to the LUNs than I had previously. This was, of course, fully expected. Upon browsing the properties for the datastore in the vSphere Client, however, I still saw only four paths&mdash;two target ports on each storage processor&mdash;when I expected to see more. Upon closer inspection, I determined that I wasn&rsquo;t seeing the ports on the array that I had recently connected to the second fabric.</p>
+<p>My first thought was that the SAN zoning incorrect. I went back and double-checked the SAN zoning to ensure that all the initiators were, in fact, zoned to see all the targets. OK, so the zoning is correct. Why didn&rsquo;t the extra paths show up?</p>
+<p>I double-checked the physical layer; everything was fine there.</p>
+<p>That left only the array itself. Logging into Navisphere, I saw in the Connectivity Status window that all the initiators were logged in and registered. (It turns out there is something else in the Connectivity Status window that I should have noticed, but didn&rsquo;t. Read on to find out what I missed.) Hmmm&hellip;so that&rsquo;s not it. I manually edited the initiators in the Connectivity Status window so that all the paths were linked to the same host, thinking perhaps that would resolve the problem, but it didn&rsquo;t help. So, thinking that perhaps de-registering and re-registering the initiators might help, I enabled engineering mode in Navisphere so I could do just that. After enabling engineering mode but before I de-registered the initiators, I poked around to see if anything else stuck out at me.</p>
+<p>(If you&rsquo;re not familiar with engineering mode on a CLARiiON, just look at the results from <a href="http://www.google.com/search?hl=en&amp;q=CLARiiON+engineering+mode">a Google search like this</a>. It should give you all the information you need.)</p>
+<p>While browsing through Navisphere with engineering mode enabled, I noticed something I hadn&rsquo;t noticed before: the VMware ESX host I was troubleshooting was showing up in two different storage groups. This is an error, as a host is only allowed to be in a single storage group at a time. In this case, some of the initiators were showing up in the desired storage group, but two of the initiators were showing up in the ~management storage group. Ah ha! Those initiators were my missing paths. But how to fix it?</p>
+<p>It turns out that by looking at the properties of the storage group and then looking at the Hosts tab, there is now (with engineering mode enabled) an Advanced button that allows you to select the specific paths for each host that should be enabled for that storage group. When I opened the Advanced Properties dialog box for the storage group, there&rsquo;s a separate tab for each host in the storage group that lists all the connection paths that should be included. And, sure enough, my two missing paths were there, unchecked! When I checked them and then went back to review the paths from the VMware ESX host, all six expected paths were now present and accounted for.</p>
+<p>Now, I&rsquo;m told that removing the host from the storage group and then re-adding it to the storage group would accomplish the same effect. That, however, is a disruptive process; this method is non-disruptive (as far as I can tell). I&rsquo;m also told that the Reconnect button&mdash;found in the Host Connectivity status window, accessible by right-clicking a specific host and selecting Connectivity Status&mdash;will accomplish the same result as well. I can&rsquo;t speak for either of these two options, but I do know that entering engineering mode and enabling all the paths works and works without disruption.</p>
+<p>Oh, and remember how I mentioned that there was something I overlooked in the Connectivity Status window? I learned after the fact&mdash;after I&rsquo;d already fixed the problem&mdash;that initiators that are blue in the Connectivity Status window are initiators that are not in a storage group. I don&rsquo;t think knowing that up front would have helped all that much, but it&rsquo;s still handy to know.</p>
+<p>So there you have it: if you enable new paths from a host to a storage array and the paths don&rsquo;t show up, use engineering mode to ensure that all the paths are enabled for the host in the storage group.</p>
+<p>I encourage you to speak up in the comments if you have additional information or other tips/tricks pertaining to this issue. Thanks for reading!</p>
+<p><strong>UPDATE:</strong> A reader has posted in the comments that the Reconnect option will reestablish all paths to the host without disruption. Thanks, Tim!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/clariion">CLARiiON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/emc">EMC</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fibrechannel">FibreChannel</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/08/19/vmotion-layer-2-adjacency-requirement/">vMotion Layer 2 Adjacency Requirement</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/08/20/virtual-storage-integrator-for-hyper-v/">Virtual Storage Integrator for Hyper-V</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f20%2ffixing-inactive-new-paths-on-an-emc-clariion%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f20%2ffixing-inactive-new-paths-on-an-emc-clariion%2f&text=Fixing%20Inactive%20New%20Paths%20on%20an%20EMC%20CLARiiON" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f08%2f20%2ffixing-inactive-new-paths-on-an-emc-clariion%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/04/12/changing-ip-addresses-on-an-emc-celerra-ns-960/">Changing IP Addresses on an EMC Celerra NS-960</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2010/03/05/vmware-esx-emc-clariion-arrays-and-multiple-protocols/">VMware ESX, EMC CLARiiON Arrays, and Multiple Protocols</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2010/08/03/vplex-webcast/">VPLEX Webcast</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

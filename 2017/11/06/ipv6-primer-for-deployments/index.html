@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>IPv6 Primer for Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="IPv6 Primer for Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="IPv6 Primer for Deployments - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/06/ipv6-primer-for-deployments/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">IPv6 Primer for Deployments</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1020 words (estimated 5 minutes to read)</span>
+  <p>This is a liveblog of the OpenStack Summit Sydney session titled &ldquo;IPv6 Primer for Deployments&rdquo;, led by Trent Lloyd from Canonical. IPv6 is a topic with which I know I need to get more familiar, so attending this session seemed like a reasonable approach.</p>
+<p>Lloyd starts with some history. IPv6 was released in 1980, and uses 32-bit address (with a total address space of around 4 billion). IPv4, as most people know, is still used for the majority of Internet traffic. IPv6 was released in 1998, and uses 128-bit addresses (for a theoretical total address space of 3.4 x 10 to the 38th power). IPv5 was an experimental protocol, which is why the IETF used IPv6 as the version number for the next production version of the IP protocol.</p>
+<p>Lloyd shows a graph showing the depletion of IPv4 address space, to help attendees better understand the situation with IPv4 address allocation. The next graph Lloyd shows illustrates IPv6 adoption, which&mdash;according to Google&mdash;is now running around 20% or so. (Lloyd shared that he naively estimated IPv4 would be deprecated in 2010.) In Australia it&rsquo;s still pretty difficult to get IPv6 support, according to Lloyd.</p>
+<p>Next, Lloyd reviews decimal and binary number conversion as a precursor to better understand how both IPv4 and IPv6 numbers are represented for human consumption, and how subnetting is handled by masking out some number of bits. Whereas IPv4 uses dotted decimal format, IPv6 uses hexadecimal numbering. Lloyd reminds attendees that MAC addresses also use hexadecimal, though only with 48 bits (instead of 128 bits with IPv6).</p>
+<p>Bringing up an IPv6 address, Lloyd shares a few tricks to make the address easier to handle. For example, you can remove leading zeroes. You can also use a double colon (<code>::</code>) to remove consecutive series of all zeroes (this can only be done once per address). Using a colon in the address (for example, <code>2001:db8::8a2e:0:4</code>) means we have to enclose the address in square brackets before appending a colon and a port number.</p>
+<p>Subnetting in IPv6 is handled a bit differently, naturally, given the expanded address space. Large ISPs would generally get a /32 prefix (resulting in 65,536 /48 prefixes). Large organizations would generally get a /48 prefix (resulting in 65,536 /64 prefixes, or 256 /56 prefixes). A /56 prefix is for a typical end-user site, which gives an end-user 256 /64 prefixes. And a /64 prefix is considered a single local network.</p>
+<p>IPv6 also has some special addresses. The first special address is a link local address (similar to the &ldquo;169.254&rdquo; subnet in IPv4). This link local address is derived from the MAC hardware address (using EUI-64, which pads out the 48-bit MAC address to 64 bits and flips a bit to note that it was automatically generated). The link local address is always kept, even if the interface is assigned a global address. The RFC1918 equivalent of link local in IPv6 is called ULA (Unique Local Addressing) is fd00::/8 followed by a randomly-generated section (gives about a trillion unique combinations, making address space collisions far less likely).</p>
+<p>The next topic that Lloyd addresses is Neighbour Discovery (ND), the IPv6 equivalent of ARP in IPv4. ND uses the link local address as the source, and a multicast address as the target. Address configuration&mdash;specifically, automatic address configuration&mdash;is handled via one of two methods. The first is SLAAC, which combines EUI-64 and the link prefix with a Router Advertisement (RA) to assign addresses. Early versions of SLAAC didn&rsquo;t support providing DNS server addresses, but this has been addressed in more recent versions of SLAAC. Users can also use DHCPv6, which operates much in the same way as DHCPv4. DHCPv6 has the option of including additional information that isn&rsquo;t supported when using RAs. RAs can point hosts to use DHCPv6. There&rsquo;s also a method of getting the address via SLAAC but configuration via DHCPv6. Finally, there&rsquo;s also something called DHCPv6-PD (Prefix Designation), which allows networks to request a prefix from an ISP to then handle themselves.</p>
+<p>Lloyd talked briefly about MTU, but I missed the information. NAT isn&rsquo;t generally used with IPv6, although preliminary support for it is found in very recent Linux kernels. Another consideration Lloyd mentions is single stack vs. dual stack (only IPv6 or both IPv6+IPv4); most initial deployments will use dual stack.</p>
+<p>At this point, Lloyd shifts his focus to talk specifically about IPv6 in OpenStack. Generally speaking, OpenStack has relatively strong IPv6 support throughout. The exception to this is Open vSwitch, which currently can&rsquo;t do GRE tunneling using IPv6 in the underlay. The fix for this is to replace GRE with VXLAN or Geneve, both of which can use IPv6 in the underlay. Lloyd also reminds attendees that they&rsquo;ll need to check with vendors to verify IPv6 support in their plugins or commercial solutions.</p>
+<p>With regards to IPv6 in tenant networks, tenants should use globally unique addresses. This is done via Neutron&rsquo;s address scopes. Then, out of that address scope, set up a subnet pool (this allows Neutron to hand out a smaller section of the overall address scope). Then, individual tenants can just create a subnet; that subnet can be pulled from a default subnet pool.</p>
+<p>When creating a Neutron subnet, you can specify SLAAC or DHCPv6 for address configuration.</p>
+<p>IPv6 support is weaker when it comes to DVR (Distributed Virtual Router) or L3 HA. IPv6 does work with DVR, but the traffic isn&rsquo;t fully distributed; there&rsquo;s no IPv6 support in L3 HA.</p>
+<p>When it comes to integrating Neutron IPv6 networks with external IPv6 networks, you can do static routing, use BGP, or you can use DHCPv6-PD (Neutron can act as a DHCPv6-PD client).</p>
+<p>Lloyd next discusses some concerns around cloud-init and VM metadata. I didn&rsquo;t catch all the considerations, but it sounded like the workaround was using config-drive to address the considerations.</p>
+<p>Reverse DNS is also a consideration around IPv6 and OpenStack. This is not generally a problem, though it may be a problem if you&rsquo;re sending email messages directly from instances (reverse DNS will typically be necessary in that instance).</p>
+<p>At this point, Lloyd opens the session up to questions from the audience.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/neutron">Neutron</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovs">OVS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vxlan">VXLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ipv6">IPv6</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/06/battle-scars-openstack-deployments/">Battle Scars from OpenStack Deployments</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/06/how-deploy-800-servers-8-hours/">How to Deploy 800 Servers in 8 Hours</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f06%2fipv6-primer-for-deployments%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f06%2fipv6-primer-for-deployments%2f&text=IPv6%20Primer%20for%20Deployments" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f06%2fipv6-primer-for-deployments%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2014/06/20/learning-nsx-part-14-using-logical-routing/">Learning NSX, Part 14: Using Logical Routing</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2014/03/07/technology-short-take-39/">Technology Short Take #39</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2017/10/26/posts-from-the-past-october-2017/">Posts from the Past, October 2017</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

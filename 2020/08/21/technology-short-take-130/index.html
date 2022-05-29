@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 130 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 130 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 130 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2020/08/21/technology-short-take-130/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 130</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 219 May 212121 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;688 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #130! I&rsquo;ve had this blog post sitting in my Drafts folder waiting to be published for almost a month, and I kept forgetting to actually make it live. Sorry! So, here it is&mdash;better late than never, right?</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Here&rsquo;s <a href="https://fedoramagazine.org/use-dns-over-tls/">a walkthrough on using DNS over TLS on Fedora</a>.</li>
+<li>Some Twitter followers recently pointed out <a href="https://gnmic.kmrd.dev/"><code>gnmic</code>, a gNMI CLI client</a>. gNMI, by the way, stands for gRPC Network Management Interface (more information on gNMI can be found <a href="https://github.com/openconfig/gnmi">here</a>). I haven&rsquo;t used <code>gnmic</code>, but it certainly looks like an extremely useful tool.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Everyone&rsquo;s favorite three-letter agency recently released some VPN security guidance, as reported by <a href="https://www.infosecurity-magazine.com/news/nsa-issues-vpn-security-guidance/">this InfoSecurity Magazine article</a>. The article also provides some links to said guidance, for those that are interested.</li>
+<li>Matt Hamilton takes <a href="https://www.soluble.ai/blog/harbor-ssrf-cve-2020-13788">a closer look at a recent security vulnerability in the Harbor container registry</a>. This vulnerability, known as a Server-Side Request Forgery, allowed Harbor project owners to scan the TCP ports of hosts on the Harbor server&rsquo;s internal network.</li>
+<li>Ivan Pepelnjak <a href="https://blog.ipspace.net/2020/06/smart-nic-security.html">discusses the security implications of so-called &ldquo;Smart NICs.&rdquo;</a></li>
+<li>Want to use a Yubikey to automatically lock and unlock your Linux system? See <a href="https://kliu.io/post/yubico-magic-unlock/">here</a>.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Dusty Mabe discusses K9s, a &ldquo;terminal UI to interact with your Kubernetes clusters,&rdquo; in <a href="https://dustymabe.com/2020/07/18/the-k9s-tui-for-kubernetes/">this blog post</a>.</li>
+<li>Steven Wade shares a cautionary tale about <a href="https://medium.com/@swade1987/how-sso-bought-a-cluster-to-its-knees-e0e002bff08">how SSO brought a Kubernetes cluster to its knees</a>. Fortunately, Steven also shares the mitigation steps that he and his team took, so that others might be able to avoid the same fate.</li>
+<li>Jeff Bryner shares his experience in <a href="https://blog.jeffbryner.com/2020/07/20/aws-cdk-docker-explorations.html">using the AWS CDK for deploying Docker containers</a>.</li>
+<li>Laszlo Fogas <a href="https://gimlet.io/blog/the-cluster-admin-struggle-and-ways-to-keep-kubernetes-resource-requests-and-limits-in-check/">talks a bit about Kubernetes requests and limits</a>.</li>
+<li>Mike Krieger <a href="https://medium.com/@mikekrieger/automating-daily-runs-for-rt-lives-covid-19-data-dcda26ed2e2e">shares some information</a> on how rt.live (a site sharing updates of the COVID-19 R_t_) handles their daily runs to update data.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>I recently came across the <code>jc</code> utility, which converts &ldquo;ordinary&rdquo; command-line output from a number of different utilities into structured JSON output. Read about <a href="https://blog.kellybrazil.com/2019/11/26/bringing-the-unix-philosophy-to-the-21st-century/">why the author created <code>jc</code> in this blog post</a>.</li>
+<li>If you&rsquo;re new to the GNOME desktop environment, Ori Alvarez&rsquo;s article on <a href="https://commithub.com/how-to-create-gnome-desktop-entry">how to create a GNOME desktop entry</a> may be useful.</li>
+<li><a href="https://www.theverge.com/21310611/microsoft-edge-browser-forced-update-chromium-editorial">According to The Verge</a>, Windows 10 users aren&rsquo;t very happy about Microsoft&rsquo;s forced roll-out of its Chromium-based Edge browser.</li>
+<li>Justin Garrison shared <a href="https://gitlab.com/jgarr/dotfiles/-/blob/main/zdotdir/zsh.d/aws.zsh">some shell functions</a> for making it easier to switch AWS CLI profiles, or set AWS region (for example). They&rsquo;re written for <code>zsh</code>, but should be adaptable to other shells without unreasonable effort.</li>
+<li>James Pulec <a href="https://levelup.gitconnected.com/git-worktrees-the-best-git-feature-youve-never-heard-of-9cd21df67baf">walks readers through Git Worktrees</a>, the &ldquo;best Git feature you&rsquo;ve never heard of.&rdquo; Indeed!</li>
+<li>I missed <a href="https://debian-handbook.info/2020/debian-handbook-for-debian-10-buster-now-live/">the announcement</a> about the release of the Debian 10 &ldquo;Buster&rdquo; handbook.</li>
+<li>Via Ivan Pepelnjak (who in turn got it from Julia Evans), I learned about <a href="http://eradman.com/entrproject/"><code>entr</code></a>, a Linux CLI tool to run arbitrary commands when files change. Handy.</li>
+<li><a href="https://magcius.github.io/xplain/article/">This site</a> has more details about the X11 Window system than most people care to know.</li>
+</ul>
+<h2 id="programming">Programming</h2>
+<ul>
+<li>Gergely Orosz shares <a href="https://blog.pragmaticengineer.com/data-structures-and-algorithms-i-actually-used-day-to-day/">some data structures and algorithms he actually used</a> at a few different tech companies.</li>
+<li>I also learned that the Go language server (<code>gopls</code>, used by Visual Studio Code and many other editors for Go language awareness) doesn&rsquo;t work properly when <code>go.mod</code> isn&rsquo;t in the root directory of whatever you&rsquo;ve opened (see <a href="https://github.com/golang/go/issues/32394">here</a>). The workaround is to use a &ldquo;multi-root workspace.&rdquo;</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Chris Evans <a href="https://www.architecting.it/blog/persistent-memory-data-centre/">examines how persistent memory in the data center</a> plays out with existing storage technologies.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>With the announcement of a new version of macOS come new beta builds, and articles about running those beta builds in a VM. <a href="https://jgandrews.com/posts/macos-vmware/">Here&rsquo;s the latest</a>. It&rsquo;ll be interesting to see how virtualization continues (or maybe doesn&rsquo;t) when Apple moves to its own custom ARM processors.</li>
+<li>William Lam talks about <a href="https://www.virtuallyghetto.com/2020/07/is-vsphere-with-kubernetes-available-for-evaluation.html">options for evaluating vSphere with Kubernetes</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>A co-worker (thanks Joe!) pointed out <a href="https://www.anup.io/2020/07/20/invert-always-invert/">this article on the concept of inversion</a>. I found the article quite interesting, and it has already affected my thinking and how I am approaching/will approach certain projects that I&rsquo;d like to tackle.</li>
+</ul>
+<p>And that&rsquo;s a wrap! Feel free to contact <a href="https://twitter.com/scott_lowe">me on Twitter</a> if you have any questions or comments (constructive feedback is always welcome). Thanks for reading!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vpn">VPN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/docker">Docker</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/git">Git</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2020/07/29/creating-an-aws-elb-using-pulumi-and-go/">Creating an AWS ELB using Pulumi and Go</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2020/08/31/behavior-changes-in-clusterawsadm-055/">Behavior Changes in clusterawsadm 0.5.5</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2020%2f08%2f21%2ftechnology-short-take-130%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f08%2f21%2ftechnology-short-take-130%2f&text=Technology%20Short%20Take%20130" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2020%2f08%2f21%2ftechnology-short-take-130%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2020/06/19/technology-short-take-128/">Technology Short Take 128</a> <span class="post-date-list">199 May 191919</span></li><li><a href="/2017/08/25/technology-short-take-86/">Technology Short Take 86</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2020/07/17/technology-short-take-129/">Technology Short Take 129</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

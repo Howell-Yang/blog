@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Quick Introduction to Linux Policy Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Quick Introduction to Linux Policy Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Quick Introduction to Linux Policy Routing - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/05/29/a-quick-introduction-to-linux-policy-routing/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Quick Introduction to Linux Policy Routing</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;981 words (estimated 5 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to introduce you to policy routing as implemented in recent versions of Ubuntu Linux (and possibly other Linux distributions as well, but I&rsquo;ll be using Ubuntu 12.04 LTS). Policy routing actually allows us a great deal of flexibility in how we direct traffic out of a Linux host; I&rsquo;ll discuss a rather practical application of this configuration in a future blog post. For now, though, let&rsquo;s just focus on how to configure policy routing.</p>
+<p>There are a couple parts involved in policy routing:</p>
+<ul>
+<li>
+<p><em>Policy routing tables:</em> Linux comes with three by default: local (which cannot be modified or deleted), main, and default. Somewhat unintuitively, routes added to the system without a routing table specified go to the main table, not the default table.</p>
+</li>
+<li>
+<p><em>Policy routing rules:</em> Again, Linux comes with three rules, one for each of the default routing tables.</p>
+</li>
+</ul>
+<p>In order for us to leverage policy routing for our purposes, we need to do three things:</p>
+<ol>
+<li>
+<p>We need to create a custom policy routing table.</p>
+</li>
+<li>
+<p>We need to create one or more custom policy routing rules.</p>
+</li>
+<li>
+<p>We need to populate the custom policy routing table with routes.</p>
+</li>
+</ol>
+<p>Let&rsquo;s look at each of these steps separately.</p>
+<h2 id="creating-a-custom-policy-routing-table">Creating a Custom Policy Routing Table</h2>
+<p>The first step is to create a custom policy routing table. Linux routing tables are identified by a number from 1 to 255 (there are some reserved values), or by a name taken from the file <code>/etc/iproute2/rt_tables</code>. For ease of use, I recommend adding a name and number to the <code>/etc/iproute2/rt_tables</code> like this (strictly speaking, this isn&rsquo;t required, but it does make things easier):</p>
+<pre><code>echo 200 custom &gt;&gt; /etc/iproute2/rt_tables
+</code></pre>
+<p>This creates the table with the ID 200 and the name &ldquo;custom&rdquo;. You&rsquo;ll reference this name later as you create the rules and populate the table with routes, so make note of it. Because this entry is contained in the <code>rt_tables</code> file, it will be persistent across reboots.</p>
+<h2 id="creating-policy-routing-rules">Creating Policy Routing Rules</h2>
+<p>The next step is to create the policy routing rules that will tell the system which table to use to determine the correct route. In this particular case, I&rsquo;m going to use the source address (i.e., the originating address for the traffic) as the determining factor in the rule. This is a common application of policy routing, and for that reason it&rsquo;s often referred to as <em>source routing.</em></p>
+<p>To create the policy routing rule, use this command:</p>
+<pre><code>ip rule add from &lt;source address&gt; lookup &lt;table name&gt;
+</code></pre>
+<p>Let&rsquo;s say that we wanted to create a rule that told the system to use the &ldquo;custom&rdquo; table we created earlier for all traffic originating from the source address 192.168.30.200. The command would look like this:</p>
+<pre><code>ip rule add from 192.168.30.200 lookup custom
+</code></pre>
+<p>You can see all the policy routing rules that are currently in effect using this command:</p>
+<pre><code>ip rule list
+</code></pre>
+<p>As I mentioned in the beginning of this article, there are default rules that govern the use of the local, main, and default tables (these are the built-in tables). Once you&rsquo;ve added your rule, you should see it listed there as well.</p>
+<p>There is a problem here, though: rules created this way are ephemeral and will disappear when the system is restarted (or when the networking is restarted). To make the rules persist, add a line like this to <code>/etc/network/interfaces</code>:</p>
+<pre><code>post-up ip rule add from 192.168.30.200 lookup custom
+</code></pre>
+<p>You&rsquo;d want to place this line in the configuration stanza that configures the interface with the address 192.168.30.200. With this line in place, the rule should persist across reboots or across network restarts.</p>
+<h2 id="populating-the-routing-table">Populating the Routing Table</h2>
+<p>Once we have the custom policy routing table created and a rule defined that directs the system to use it, we need to populate the table with the correct routes. The generic command to do this is the <code>ip route add</code> command, but with a specific <code>table</code> parameter added.</p>
+<p>Using our previous example, let&rsquo;s say we wanted to add a default route that was specific to traffic originating from 192.168.30.200. We&rsquo;ve already created a custom policy routing table, and we have a rule that directs the system to use that table for traffic originating from that address. To add a new default route specifically for that interface, you&rsquo;d use this command:</p>
+<pre><code>ip route add default via 192.168.30.1 dev eth1 table custom
+</code></pre>
+<p>Naturally, you&rsquo;d want to substitute the correct default gateway for 192.168.30.1 and the correct interface for eth1 in the above command, but this should give you the right idea. Of course, you don&rsquo;t have to use default routes; you could install specific routes into the custom policy routing table as well. This also works on VLAN sub-interfaces, so you could create per-VLAN routing tables:</p>
+<pre><code>ip route add default via 192.168.30.1 dev eth0.30 table vlan30
+</code></pre>
+<p>This command installs a default route for the 192.168.30.x interface on VLAN 30, using a table named &ldquo;vlan30&rdquo; (note that the table needs to created before you can add routes to it, as far as I can tell).</p>
+<p>As with the policy routing tables, routes added this way are not persistent, so you&rsquo;ll want to make them persistent by adding a line like this to your <code>/etc/network/interfaces</code> configuration file:</p>
+<pre><code>post-up ip route add default via 192.168.30.1 dev eth1 table custom
+</code></pre>
+<p>This will ensure that the appropriate routes are added to the appropriate policy routing table when the corresponding network interface is brought up.</p>
+<h2 id="additional-resources">Additional Resources</h2>
+<p>The <a href="http://www.policyrouting.org/">policyrouting.org</a> web site is a great resource; I highly recommend reviewing some of the information found there.</p>
+<h2 id="summary">Summary</h2>
+<p>There&rsquo;s a great deal more functionality possible in policy routing, but this at least gives you the basics you need to understand how it works. In a future post, I&rsquo;ll provide a specific use case where this functionality could be put to work. In the meantime, feel free to share any corrections, clarifications, questions, or thoughts by contacting <a href="https://twitter.com/scott_lowe">me on Twitter</a>.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/05/28/vlan-trunking-to-guest-domains-with-open-vswitch/">VLAN Trunking to Guest Domains with Open vSwitch</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/05/30/a-use-case-for-policy-routing-with-kvm-and-open-vswitch/">A Use Case for Policy Routing with KVM and Open vSwitch</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f29%2fa-quick-introduction-to-linux-policy-routing%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f29%2fa-quick-introduction-to-linux-policy-routing%2f&text=A%20Quick%20Introduction%20to%20Linux%20Policy%20Routing" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f05%2f29%2fa-quick-introduction-to-linux-policy-routing%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/05/28/vlan-trunking-to-guest-domains-with-open-vswitch/">VLAN Trunking to Guest Domains with Open vSwitch</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2013/05/07/using-gre-tunnels-with-open-vswitch/">Using GRE Tunnels with Open vSwitch</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VMworld 2007 Top Support Issues Session - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VMworld 2007 Top Support Issues Session - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VMworld 2007 Top Support Issues Session - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/09/13/vmworld-2007-top-support-issues-session/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VMworld 2007 Top Support Issues Session</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 139 May 131313 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;758 words (estimated 4 minutes to read)</span>
+  <p>My last session of Day 3, and of the entire conference, was a super-session on the top support issues and how to resolve them. For someone who wasn&rsquo;t already familiar with some of the Service Console command-line utilities (such as <code>esxcfg-vswitch</code>, <code>esxcfg-vmknic</code>, <code>esxcfg-vswif</code>, etc.), this was a great session. For someone already pretty comfortable with these tools, the session was less helpful.</p>
+<p>The session centered around six or seven top support issues:</p>
+<ol>
+<li>Unable to connect to the Service Console</li>
+<li>NICs in a bond are not in the same broadcast domain</li>
+<li>Expanding a VMDK when there is an existing snapshot</li>
+<li>Corrupt snapshot (.VMSD) file</li>
+<li>Corrupt snapshot</li>
+<li>Adding extents to VMFS volumes</li>
+<li>Recovering a VMFS partition</li>
+</ol>
+<p>Possible causes of problem #1 include deleting the vSwitch that houses the vswif. To fix the problem, you can probably just switch out NICs (and use <code>esxcfg-nics</code> to unassign and reassign NICs to the appropriate vSwitch), adjust VLAN properties (using the <code>esxcfg-vswitch</code> command to modify the port group), or recreate the vswif interface (using the <code>esxcfg-vswif</code> command). In some cases, it may be necessary to completely recreate the networking configuration. The process for completely rebuilding the networking configuration looks like this:</p>
+<ol>
+<li>Use <code>esxcfg-vswitch</code> to delete all vSwitches</li>
+<li>Create a new vSwitch using <code>esxcfg-vswitch</code></li>
+<li>Create a new port group for the Service Console (again, using <code>esxcfg-vswitch</code>)</li>
+<li>Link a physical NIC to the vSwitch</li>
+<li>Create a vswif interface (using <code>esxcfg-vswif</code>) and configure it with the correct IP address, subnet mask, and default gateway</li>
+</ol>
+<p>Many Service Console issues relate to changing the Service Console configuration. It&rsquo;s recommended to create a &ldquo;backup&rdquo; Service Console connection before modifying the primary connection, in case something doesn&rsquo;t work as expected.</p>
+<p>Problem #2 I wasn&rsquo;t so clear on. I know what a broadcast domain is, but my experience with the &ldquo;network hints&rdquo; that are displayed in VirtualCenter and with <code>esxcfg-info</code> have been less than accurate. I guess the key take-away here is to make sure that NIC members in a bond are on the same VLAN or subnet, and that the network hints might help you determine if they are not.</p>
+<p>Problem #3, expanding a .VMDK with an existing snapshot, is a bit more interesting. In this case, it&rsquo;s necessary to parse the delta disk (look for the line starting &ldquo;RW&rdquo;), take that value, and replace the value in the base disk&rsquo;s matching &ldquo;RW&rdquo; line with the value taken from the delta disk. It&rsquo;s then necessary to commit the snapshot using <code>vmware-cmd</code>.</p>
+<p>With problem #4, the .VMSD file that tracks snapshots and snapshot relationships has become corrupt. Fortunately, it&rsquo;s reasonably easy to correct: delete the .VMSD, create another snapshot (which then recreates the .VMSD), and then commit all snapshots. As part of this process, you lose the ability to selectively rollback to a specific snapshot, but there is no data loss.</p>
+<p>Problem #5 is similar, but the actual snapshot&mdash;the delta disk&mdash;is now the one that is corrupt. This typically occurs when the VMFS partition gets full (remember that a snapshot involves the use of a delta or &ldquo;differencing&rdquo; disk that stores all the changes to the base disk, and this can fill up a SAN LUN over time). In this case, there will be data loss. To fix the problem, we move the last delta file (or delete it) and edit the .VMX file to point back to the last intact snapshot. All changes since that last intact snapshot will be lost. It&rsquo;s recommended that all snapshots should then be committed using <code>vmware-cmd</code>.</p>
+<p>With regards to VMFS volumes and adding extents, it&rsquo;s very important to perform a rescan (using <code>esxcfg-rescan</code> or VirtualCenter) on all ESX hosts after adding an extent. This is because when an extent is added its added on that host only, and if you then add an extent to that same VMFS partition from a different host, the VMFS partition will get corrupted.</p>
+<p>Finally, the presenter went into some detail on recovering lost VMFS partitions. If it&rsquo;s only the partition information that&rsquo;s missing, that can be recovered using <code>fdisk</code>. If the partition was formatted&hellip;.well, that&rsquo;s a much different story. Backups are the best response there.</p>
+<p>We wrapped up the session with some support &ldquo;best practices&rdquo;:</p>
+<ul>
+<li>Backups!</li>
+<li>Run <code>vm-support</code> (or gather diagnostics logs via VirtualCenter VI Client) periodically</li>
+<li>Implement change control in your environment</li>
+<li>Record the date and time when something happens, as this will help when trying to correlate log data</li>
+</ul>
+<p>And with that, the session ended, and so did VMworld 2007. I was both thankful it was over, and yet disappointed that it had to end so soon.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/esx">ESX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2007">VMworld2007</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/09/13/vmworld-2007-ip-based-storage-sessions/">VMworld 2007 IP-Based Storage Sessions</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/09/15/finally-home-from-vmworld-2007/">Finally Home from VMworld 2007</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-top-support-issues-session%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-top-support-issues-session%2f&text=VMworld%202007%20Top%20Support%20Issues%20Session" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f09%2f13%2fvmworld-2007-top-support-issues-session%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2007/09/13/vmworld-2007-ip-based-storage-sessions/">VMworld 2007 IP-Based Storage Sessions</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2007/09/12/a-collection-of-vmworld-2007-links/">A Collection of VMworld 2007 Links</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2007/09/12/vmworld-2007-session-on-advanced-diagnostics-log-analysis/">VMworld 2007 Session on Advanced Diagnostics Log Analysis</a> <span class="post-date-list">129 May 121212</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

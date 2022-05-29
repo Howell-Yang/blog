@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>UAC and ktpass.exe - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="UAC and ktpass.exe - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="UAC and ktpass.exe - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2007/07/09/uac-and-ktpassexe/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">UAC and ktpass.exe</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 99 May 9099 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;320 words (estimated 2 minutes to read)</span>
+  <p>User Account Control (UAC) is a feature new to <a href="http://www.microsoft.com/windowsvista/">Windows Vista</a> and <a href="http://www.microsoft.com/windowsserver2008/default.mspx">Windows Server 2008</a> that is designed to help protect Windows-based systems against processes running with administrative permissions. It&rsquo;s a great idea, but the implementation is, in my humble opinion, a bit flawed.</p>
+<p>Here&rsquo;s a great example. In working on interoperability and integration documentation for Windows Server 2008, I came across a problem that prevents you from using <a href="http://www.samba.org/">Samba</a> to join Linux or UNIX systems to Active Directory for the purpose of centralizing authentication to those systems (more information available in <a href="/2007/07/09/samba-and-windows-server-2008-interoperability/">this article</a>). OK, no big deal; we&rsquo;ve done it before with ktpass.exe, right? We&rsquo;ll just drop back to using ktpass.exe and do it &ldquo;old school&rdquo;.</p>
+<p>Here&rsquo;s the output from ktpass.exe when running on a Windows Server 2008-based server with UAC enabled:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>ktpass.exe -princ HOST/vsxsoltest01.vmwarelab.net@ADNG.VMWARELAB.NET 
+</span></span><span style="display:flex;"><span>-mapuser ADNG\VSXSOLTEST01$ -crypto all -pass Password123 
+</span></span><span style="display:flex;"><span>-ptype KRB5_NT_PRINCIPAL -out c:\vsxsoltest01.keytab  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Targeting domain controller: vswdcng02.adng.vmwarelab.net  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Using legacy password setting method  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Failed to set property &#34;servicePrincipalName&#34; to 
+</span></span><span style="display:flex;"><span>&#34;HOST/vsxsoltest01.vmwarelab.net&#34; on Dn 
+</span></span><span style="display:flex;"><span>&#34;CN=VSXSOLTEST01,CN=Computers,DC=adng,DC=vmwarelab,DC=net&#34;: 0x32.  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>WARNING: Unable to set SPN mapping data.  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>If VSXSOLTEST01$ already has an SPN mapping installed for 
+</span></span><span style="display:flex;"><span>HOST/vsxsoltest01.vmwarelab.net, this is no cause for concern.  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>WARNING: Account VSXSOLTEST01$ is not a user account (uacflags=0x1021).  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>WARNING: Resetting VSXSOLTEST01$&#39;s password may cause 
+</span></span><span style="display:flex;"><span> authentication problems if VSXSOLTEST01$ is being used as a server.  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Reset VSXSOLTEST01$&#39;s password [y/n]?  y  
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Aborted.
+</span></span></code></pre></div><p>This is running as an account that is not the built-in Administrator account, but is a member of Domain Admins, Schema Admins, Enterprise Admins, and the built-in Administrators group.</p>
+<p>Take that same command and run it on the same server after disabling UAC, and it runs just fine. No errors, no warnings, no problems. Clearly, UAC is interfering with ktpass.exe.</p>
+<p>If you have a need to integrate Linux and/or UNIX systems into Active Directory for authentication, keep this in mind: you&rsquo;ll need to disable UAC (and reboot the server) before you can use ktpass.exe to map service principals onto accounts.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2007/07/09/linux-ad-integration-with-windows-server-2008/">Linux-AD Integration with Windows Server 2008</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2007/07/10/esx-server-ad-integration/">ESX Server-AD Integration</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f09%2fuac-and-ktpassexe%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f09%2fuac-and-ktpassexe%2f&text=UAC%20and%20ktpass.exe" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2007%2f07%2f09%2fuac-and-ktpassexe%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/11/15/report-of-logons-from-security-logs/">Report of Logons from Security Logs</a> <span class="post-date-list">159 May 151515</span></li><li><a href="/2006/10/23/event-logging-in-ad-integration-scenarios/">Event Logging in AD Integration Scenarios</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2005/08/16/funky-active-directory-issue/">Funky Active Directory Issue</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

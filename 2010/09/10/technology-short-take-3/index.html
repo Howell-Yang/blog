@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #3 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2010/09/10/technology-short-take-3/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #3</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;787 words (estimated 4 minutes to read)</span>
+  <p>Welcome to Technology Short Take #3, a collection of links about key data center technologies like virtualization, networking, and storage. I&rsquo;m still striving to broaden the scope of these posts to include even more storage and networking posts, so I&rsquo;d love to hear feedback from readers on how well I&rsquo;m doing and what other sources I should consider for inclusion here.</p>
+<p>But enough of that for now; on with the content!</p>
+<ul>
+<li>
+<p>Priority Flow Control (PFC) is an as-yet-unratified IEEE standard (IEEE 802.1Qbb) that is often linked closely to Fibre Channel over Ethernet (FCoE). If you&rsquo;re interested in getting a bit more information on PFC and you&rsquo;re not (yet) a networking expert, this <a href="http://blog.ioshints.info/2010/09/introduction-to-8021qbb-priority-flow.html">introduction to 802.1Qbb</a> is pretty handy.</p>
+</li>
+<li>
+<p>Didier Pironet recently documented some of <a href="http://deinoscloud.wordpress.com/2010/08/19/vsphere-4-1-iscsi-advanced-settings-and-their-meanings/">vSphere 4.1&rsquo;s advanced iSCSI settings</a>. Good information, although what would be <em>really</em> handy was any recommendations around whether changing any of these settings should be considered and in what environments a change might be recommended. A future post, Didier?</p>
+</li>
+<li>
+<p>Ben Armstrong (aka &ldquo;The Virtual PC Guy&rdquo;) has posted two articles so far dealing with how to script Hyper-V&rsquo;s dynamic memory. Part 1 shows <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/09/07/scripting-dynamic-memory-part-1-reading-the-configuration.aspx">how to read the dynamic memory configuration</a>; part 2 shows <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/09/08/scripting-dynamic-memory-part-2-displaying-current-usage-information.aspx">how to display the current usage information</a>. Ben also recently published an article on <a href="http://blogs.msdn.com/b/virtual_pc_guy/archive/2010/09/03/parent-memory-reserve-with-dynamic-memory.aspx">parent memory reserve</a>, which is how Hyper-V reserves money for the parent partition running Windows Server 2008.</p>
+</li>
+<li>
+<p>This SearchTelecom.com article on <a href="http://searchtelecom.techtarget.com/tip/0,289483,sid103_gci1518999,00.html">Locator/ID Separation Protocol (LISP)</a> gave me just the introduction I needed to LISP. After you read that article, you can continue your LISP education by visiting <a href="http://blog.ioshints.info/2010/09/introduction-to-lisp.html">this brief blog post</a> and checking out some of the other linked resources.</p>
+</li>
+<li>
+<p>I&rsquo;ve written before about multi-hop FCoE (<a href="/2009/08/11/why-no-multi-hop-fcoe/">here</a> and <a href="/2010/04/21/thinking-out-loud-what-is-multi-hop-fcoe/">here</a>, for example), but this post on <a href="http://blog.ioshints.info/2010/08/multihop-fcoe-101.html">multi-hop FCoE 101</a> is a great read and highlights some of the differences in vendor implementations. Based on the article, it&rsquo;s these differences in vendor implementations that often lead to disagreements between the vendors with regard to what&rsquo;s required or not required. (It seems like I&rsquo;m really digging some of Ivan&rsquo;s stuff recently. I&rsquo;m going to have to add him to my list of networking RSS feeds!)</p>
+</li>
+<li>
+<p>Tried SLES 11 SP1 for VMware yet? Jase McCarty recently took it for a quick spin. Here are <a href="http://www.jasemccarty.com/blog/?p=1037">his thoughts</a>.</p>
+</li>
+<li>
+<p>Jason Boche recently <a href="http://www.boche.net/blog/index.php/2010/09/05/unable-to-retrieve-health-data/">posted a fix</a> for an error with vCenter Service Status in vCenter Server 4.1.</p>
+</li>
+<li>
+<p>For those readers who haven&rsquo;t had the opportunity to work with Cisco&rsquo;s Unified Compute System (UCS), there are lots of great bloggers out there writing about it&mdash;too many to name, in fact. Kevin Goodman captured a few of them in <a href="http://blog.colovirt.com/2010/08/20/cisco-ucs-people-and-blogs/">this list of Cisco UCS people and blogs</a>. While you&rsquo;re coming up to speed, though, this page from Cisco on <a href="http://www.cisco.com/en/US/products/ps10280/products_configuration_example09186a0080af4547.shtml">upgrading the BIOS on a Cisco UCS server blade</a> gives you an idea of how the system uses service profiles as the vehicle for almost everything. This similar post on Cisco&rsquo;s web site breaks down the process of <a href="http://www.cisco.com/en/US/products/ps10280/products_configuration_example09186a0080af4547.shtml">creating a service profile in UCS</a>, a topic that I&rsquo;ve tackled myself (with a four-part series that starts <a href="/2010/05/05/creating-ucs-service-profiles-part-1-networking-elements/">here</a>).</p>
+</li>
+<li>
+<p>This page <a href="http://www.cisco.com/en/US/prod/ps10265/ps10280/cna_models_comparison.html">listing the Cisco UCS B-series network adapters</a> shows some &ldquo;Gen 2&rdquo;-type cards, such as the M72KR-E Emulex CNA. Did I miss an announcement? Unlike the &ldquo;Gen 1&rdquo; cards, the &ldquo;Gen 2&rdquo; cards aren&rsquo;t hyperlinked for more information.</p>
+</li>
+<li>
+<p>William Lam (<a href="http://twitter.com/lamw">@lamw</a> on Twitter and elsewhere), whom I had the great pleasure of meeting personally last week while at VMworld 2010, has published what is likely to be the definitive primer on vsish, a largely undocumented utility. Check out the <a href="http://www.virtuallyghetto.com/2010/08/what-is-vmware-vsish.html">vsish write-up</a> on William&rsquo;s site. I also recently found an older article that William wrote on <a href="http://www.virtuallyghetto.com/2010/06/how-to-remove-stale-targets-from-vma.html">how to remove stale targets from vMA</a>. vMA-related articles are almost like gold these days since all the geeks are needing a new command-line fix for ESXi.</p>
+</li>
+<li>
+<p>Working on a VDI environment and want to disable some of the welcome stuff that Windows throws your way? <a href="http://www.winhelponline.com/blog/disable-ie8-tour-welcome-screen-runonce-all-users/">Check this out</a>.</p>
+</li>
+</ul>
+<p>There were a few other links that I collected as well but didn&rsquo;t really have anything to say about them; still, in the event they might prove useful, here they are:</p>
+<p><a href="http://gregmul.blogspot.com/2010/08/what-esx-admins-group-tale-of-rtsm-and.html">Krystaltek: What ESX Admins Group?  A Tale of RTSM and AD</a></p>
+<p><a href="http://itzikr.wordpress.com/2010/08/05/vcenter-srm-automatic-and-your-failback-options-using-emc-storage/">vCenter SRM Automatic Failback Options Using EMC Storage</a></p>
+<p><a href="http://blogs.vmware.com/kb/2010/06/vmware-snapshots.html">Support Insider: VMware Snapshots</a></p>
+<p><a href="http://www.ntpro.nl/blog/archives/1558-Running-the-VMware-vSphere-Hypervisor-stateless.html">Running the VMware vSphere Hypervisor stateless</a></p>
+<p><a href="http://communities.vmware.com/docs/DOC-10990">Best practice in LUN design (VMware Communities)</a></p>
+<p><a href="http://kb.vmware.com/selfservice/microsites/search.do?cmd=displayKC&amp;externalId=1246">VMware KB: Using a VNC Client to Connect to Virtual Machines</a></p>
+<p><a href="http://kb.vmware.com/selfservice/microsites/search.do?language=en_US&amp;cmd=displayKC&amp;externalId=1017652">VMware KB: Do I choose the PVSCSI or LSI Logic virtual adapter on ESX 4.0 for non-IO intensive workloads?</a></p>
+<p><a href="http://www.claudiokuenzler.com/ithowtos/vmware_esxi_4.1_disk_not_full_used.php">VMware ESXi 4.1 does not use whole disk capacity for VMFS3</a></p>
+<p>That should do it this time around. Thanks for reading, and feel free to suggest additional articles or links that you think other readers would find useful.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fcoe">FCoE</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hyperv">HyperV</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ucs">UCS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2010/09/09/keep-your-eyes-on-hytrust/">Keep Your Eyes on HyTrust</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2010/09/13/reverting-project-behavior-in-omnifocus/">Reverting Project Behavior in OmniFocus</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f10%2ftechnology-short-take-3%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f10%2ftechnology-short-take-3%2f&text=Technology%20Short%20Take%20%233" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2010%2f09%2f10%2ftechnology-short-take-3%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2010/08/28/technology-short-take-2/">Technology Short Take #2</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2010/03/24/virtualization-short-take-37/">Virtualization Short Take #37</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2009/11/03/a-few-quick-thoughts-on-the-vce-coalition-announcement/">A Few Quick Thoughts on the VCE Coalition Announcement</a> <span class="post-date-list">39 May 3033</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

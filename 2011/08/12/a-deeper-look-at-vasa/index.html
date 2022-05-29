@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>A Deeper Look at VASA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="A Deeper Look at VASA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="A Deeper Look at VASA - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2011/08/12/a-deeper-look-at-vasa/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">A Deeper Look at VASA</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/education">Education</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;559 words (estimated 3 minutes to read)</span>
+  <p>Much has been said and written about VASA (the vSphere APIs for Storage Awareness), a key part of vSphere 5 and the &ldquo;magic&rdquo; behind the new profile-driven storage functionality. I recently had the opportunity to dive a bit deeper into VASA, and discovered some information that I felt was important to share with the virtualization community. This post probably won&rsquo;t earn me any brownie points at VMware, but at least we&rsquo;ll all have a better idea of what VASA can and cannot do.</p>
+<p>The basic premise of VASA is that something called the VASA provider (also referred to as a storage provider in the vSphere Client UI) supplies something called <em>capabilities</em> about datastores. It is widely believed that for each datastore the VASA provider will pass up multiple capabilities like deduplication, replication, snapshot status, RAID level, drive type, or performance (IOps/MBps) capacities. vSphere administrators could then use some arbitrary combination of these capabilities to create a VM storage profile. VM storage profiles can then help determine which datastores are compatible (support the necessary capabilities) or incompatible (don&rsquo;t support the required capabilities) when creating new VMDKs, performing Storage vMotion operations, cloning a VM, or deploying a VM from a template.</p>
+<p>This sounds pretty cool, right? Unfortunately, <strong><em>that&rsquo;s not how VASA works.</em></strong></p>
+<p>The VASA protocol actually limits the storage provider to supplying (or assigning) only one capability to each datastore. That&rsquo;s right&mdash;each datastore can have only one capability provided by the VASA provider (a capability assigned by the storage provider is also referred to as a system-provided capability). So instead of VASA providing up individual attributes like RAID level, drive type, etc., and allowing vSphere administrators to build VM storage profiles from these attributes, the VASA provider must supply a single &ldquo;meta-attribute&rdquo; that is a sum of the various configuration options. This means you&rsquo;ll see system-provided capabilities like:</p>
+<ul>
+<li>
+<p>A concatenation of various attributes lumped together in a single label, like &ldquo;RAID 5;Thin;Deduplicated;SAS/FC Drives&rdquo;</p>
+</li>
+<li>
+<p>A generic but descriptive label, like &ldquo;High Performance&rdquo;</p>
+</li>
+<li>
+<p>A fully generic label such as &ldquo;Gold&rdquo; or &ldquo;Silver&rdquo;</p>
+</li>
+</ul>
+<p>&lt;aside&gt;At this point it should be fairly obvious that the use of the word &ldquo;capability&rdquo; in the manner that VASA and profile-driven storage use it is horribly misleading. &ldquo;Label,&rdquo; as I&rsquo;ve used above, is far more accurate.&lt;/aside&gt;</p>
+<p>The VASA provider will then assign <strong>one</strong> of these system-provided capabilities to the datastore. vSphere administrators have the option of applying <strong>one</strong> user-defined capability to a datastore as well. This means that, at most, any given datastore may have a maximum of two capabilities: one system-provided and one user-defined.</p>
+<p>Because your datastores may have no more than two capabilities assigned, your VM storage profiles can also have no more than two capabilities selected. Think about it&mdash;if you select three capabilities (which the UI will let you do), all datastores will be found incompatible because none of them have all three capabilities.</p>
+<p>This behavior is a far cry from what many people expected and believed VASA would do, myself included. I expected VASA to be far more powerful and far more flexible than it is, and I would imagine that a fairly significant number of readers were under the same impression.</p>
+<p>I&rsquo;d love to hear from the readers. What were your impressions of what VASA would deliver, and how do they compare to the reality? Feel free to share your thoughts in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2011/08/08/thinking-out-loud-what-if-vsphere-supported-fabricpath/">Thinking Out Loud: What if vSphere Supported FabricPath?</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2011/08/15/thinking-out-loud-logical-link-multiplexing-sort-of/">Thinking Out Loud: Logical Link Multiplexing (Sort Of)</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f12%2fa-deeper-look-at-vasa%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f12%2fa-deeper-look-at-vasa%2f&text=A%20Deeper%20Look%20at%20VASA" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2011%2f08%2f12%2fa-deeper-look-at-vasa%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2011/07/18/video-of-stretched-cluster-presentation/">Video of Stretched Cluster Presentation</a> <span class="post-date-list">189 May 181818</span></li><li><a href="/2011/07/12/vmwares-launch-event/">VMware&#39;s Launch Event</a> <span class="post-date-list">129 May 121212</span></li><li><a href="/2011/06/16/using-vaai-to-maintain-control/">Using VAAI to Maintain Control?</a> <span class="post-date-list">169 May 161616</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

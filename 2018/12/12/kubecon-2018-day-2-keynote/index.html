@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>KubeCon 2018 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="KubeCon 2018 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="KubeCon 2018 Day 2 Keynote - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/12/12/kubecon-2018-day-2-keynote/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">KubeCon 2018 Day 2 Keynote</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 129 May 121212 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1132 words (estimated 6 minutes to read)</span>
+  <p>This is a liveblog of the day 2 (Wednesday) keynotes at KubeCon/CloudNativeCon 2018 in Seattle, WA. For additional KubeCon 2018 coverage, check out other articles tagged <a href="/tags/kubecon2018/">KubeCon2018</a>.</p>
+<p>Kicking off the day 2 keynotes, Liz Rice takes the stage at 9:02am (same time as yesterday, making me wonder if my clock is off by 2 minutes). Rice immediately brings out Janet Kuo, Software Engineer at Google and co-chair with Rice of the KubeCon/CloudNativeCon event program. Kuo will be delivering a Kubernetes project update.</p>
+<p>Kuo starts off by reiterating the announcement of the Kubernetes 1.13 release, and looking back on her very first commit to Kubernetes in 2015 (just prior to the 1.0 release and the formation of the CNCF). Kuo talks about how Kubernetes, as a software cycle, has matured through the cycle of first focusing on innovation, then expanding to include scale, and finally expanding again to include stability (critical for enterprise adopters).</p>
+<p>Reviewing usage details, Kuo states that she believes Kubernetes has moved&mdash;in the context of the technology adoption curve&mdash;from early adopters to early majority, the first phase in the mainstream market (and, for those who think in these terms, has crossed the chasm). However, this also means that Kubernetes has gotten <em>boring</em>.</p>
+<p>In looking at Kubernetes, Kuo draws out two key facets of Kubernetes: open standards and extensibility. Open standards includes, according to Kuo, built-in APIs and conformance; these provide consistent behavior around expectations for developers deploying applications or developing applications to be deployed onto Kubernetes. Extensibility has two parts: infrastructure extensibility, and API extensibility.</p>
+<p>Infrastructure extensibility is all about how Kubernetes consumes the underlying infrastructure; this would include, for example, cloud provider integrations, storage plugins (CSI), networking plugins (CNI), and the container runtime (CRI). API extensibility is mostly encompassed by Custom Resource Definitions (CRDs) and controllers (automation engines). Kuo uses Istio as an example of using API extensibility to create Istio-specific resources. This allows you to, according to Kuo, build &ldquo;everything the Kubernetes way.&rdquo;</p>
+<p>Recapping her presentation, Kuo reminds attendees that boring is essential for building a platform upon which other solutions can be built.</p>
+<p>At this point, Rice returns to the stage to introduce Jason McGee, who is CTO for IBM Cloud and an IBM Fellow. McGee emphasizes that good application design is always a tradeoff of attributes; it&rsquo;s not just about stateless applications. McGee states that the cloud-native efforts have, thus far, focused only on 12-factor applications, functions, and serverless. However, applications are more than just these areas. This leads McGee to review developments in the Cloud Foundry space and the landscape around functions. The functions landscape, McGee stresses, is terribly fragmented and is holding the entire industry and community from moving forward. What&rsquo;s the answer? McGee moves into a discussion of Knative, and how Knative provides a single, unified platform that supports both containers, functions, and applications&mdash;all on top of Kubernetes.</p>
+<p>McGee shifts into a product pitch talking about IBM Cloud and its use of Kubernetes before he wraps up his portion of this morning&rsquo;s keynotes.</p>
+<p>Rice returns to the stage again, this time not to introduce someone else but to provide her own keynote focused&mdash;naturally, given her role at Aqua Security&mdash;Kubernetes security. Asking the question, &ldquo;Don&rsquo;t we have security people for that?&rdquo;, Rice says she believes that <em>everyone</em> can do something to help improve security; it&rsquo;s not just for security-dedicated people. Reiterating that every system has vulnerability, Rice reminds attendees that they should not be surprised or afraid that Kubernetes will have vulnerabilities discovered from time to time. (And she reminds everyone to update their clusters.) So what can attendees do to help improve security?</p>
+<p>This leads Rice into a discussion of other security weak points that might exist in a Kubernetes deployment. She shows the example of just copying some YAML and pasting it into a <code>kubectl</code> command without any knowledge of what that YAML <em>actually</em> does. She expands that example into showing how a single compromised Pod in turn exposes the Kubernetes API (via the default service account) and thus the entire cluster. Naturally, the answer here is to not just blindly apply YAML to our clusters. Rice next shows how she wrote a Validating Admission Webhook and associated controller/service that checks for and blocks the creation of service accounts.</p>
+<p>This leads Rice to a discussion of Open Policy Agent (OPA), a CNCF Sandbox project that can act as the controller/service behind a Validating Admission Webhook to perform the same types of functions that Rice just showed (like blocking the creation of service accounts). This can enable users to load rulesets for OPA in as ConfigMaps to enforce policy decisions like blocking the creation of service accounts. Rice reminds attendees that OPA is still a relatively young project, but says she believes it&rsquo;s pretty important to watch.</p>
+<p>So what sorts of things could users do with OPA to help improve Kubernetes security?</p>
+<ul>
+<li>Ensuring that only allowed registries are leveraged</li>
+<li>Checking to ensure that only scanned (and safe) images can be deployed</li>
+<li>Verifying software provenance to ensure that images are actually the images you want/expect</li>
+</ul>
+<p>However, trusted code can still be bad, Rice reminds the audience. Open source libraries may change governance and &ldquo;bad&rdquo; code may be introduced (Rice uses the example of an NPM library compromised to include crypto-mining code). This underscores the importance of open source governance and the role of foundations such as the Linux Foundation and the CNCF in that governance.</p>
+<p>As she wraps up her portion of the keynotes, Rice drops in a quick plug for the security book she recently wrote with Michael Hausenblas.</p>
+<p>Rice now brings out Melanie Cebula from AirBnB to talk about AirBnB&rsquo;s use of Kubernetes (which now hosts about 40% of all of AirBnB&rsquo;s services). Cebula reviews how AirBnB has been moving away from a monolithic architecture to Kubernetes, and how the AirBnB team is now handling 125,000 deployments annually. More helpfully&mdash;in my opinion&mdash;is the portion of Cebula&rsquo;s presentation on addressing key challenges with Kubernetes. For example, AirBnB leveraged Go templating to make it easier to reduce YAML boilerplate. (Other examples in this space include Helm, kustomize, and kapitan.) Cebula also reviews how AirBnB generates boilerplate for new services, and how she used that to help enforce/encourage the use of documentation, testing, CI/CD, etc. Finally, Cebula talks about how AirBnb wrapped the use of <code>kubectl</code> to make it easier for developers and standardizes (again) things like namespaces and environments. Cebula does something lots of presenters often fail to do, and that&rsquo;s clearly summarize the recommendations out of the various portions of her presentation. All in all, this was an excellent presentation, full of very practical information learned from real-world use of Kubernetes.</p>
+<p>Rice returns to the stage to wrap up the keynotes and remind folks of the evening events, and then closes the keynotes.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubecon2018">KubeCon2018</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/12/11/liveblog-hardening-kubernetes-setups/">Liveblog: Hardening Kubernetes Setups</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/12/19/running-fedora-on-my-mac-pro/">Running Fedora on my Mac Pro</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f12%2fkubecon-2018-day-2-keynote%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f12%2fkubecon-2018-day-2-keynote%2f&text=KubeCon%202018%20Day%202%20Keynote" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f12%2fkubecon-2018-day-2-keynote%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/12/11/liveblog-hardening-kubernetes-setups/">Liveblog: Hardening Kubernetes Setups</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2018/12/11/kubecon-2018-day-1-keynote/">KubeCon 2018 Day 1 Keynote</a> <span class="post-date-list">119 May 111111</span></li><li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

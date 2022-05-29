@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>The Linux Migration: December 2018 Progress Report - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="The Linux Migration: December 2018 Progress Report - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="The Linux Migration: December 2018 Progress Report - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/12/31/linux-migration-december-2018-progress-report/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">The Linux Migration: December 2018 Progress Report</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 319 May 313131 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1108 words (estimated 6 minutes to read)</span>
+  <p>In December 2016, I kicked off a migration from macOS to Linux as my primary laptop OS. Throughout 2017, I chronicled my progress and challenges along the way; links to all those posts are found <a href="/2018/12/23/the-linux-migration-series/">here</a>. Although I stopped the migration in August 2017, I restarted it in April 2018 when I left VMware to join Heptio. In this post, I&rsquo;d like to recap where things stand as of December 2018, after 8 months of full-time use of Linux as my primary laptop OS.</p>
+<p>I&rsquo;ll structure this post roughly as a blend of the formats I used in my <a href="/2017/04/12/linux-migration-april-2017-progress-report/">April 2017</a> and <a href="/2017/07/10/linux-migration-july-2017-progress-report/">July 2017</a> progress reports.</p>
+<h2 id="hardware">Hardware</h2>
+<p>Readers may recall that I was using a Dell Latitude E7370 (see <a href="/2017/01/30/review-dell-latitude-e7370/">my E7370 hardware review</a>) up until August 2017, when I put the Linux migration on hold indefinitely due to productivity concerns. Upon moving to Heptio, I switched to a Lenovo ThinkPad X1 Carbon (see <a href="/2018/04/13/review-lenovo-thinkpad-x1-carbon/">here</a> for my review of the X1 Carbon&mdash;the &ldquo;TL;DR&rdquo; is that I <em>love</em> it). In my home office, the X1 Carbon connects to a USB-C expansion hub that provides connectivity to a 34&quot; 21:9 ultrawide curved monitor, external HD webcam, and a USB headset for Zoom meetings. I also recently converted my Mac Pro to Linux as well (see <a href="/2018/12/19/running-fedora-on-my-mac-pro/">this post</a> for details); that&rsquo;s a workstation with dual quad-core Xeon CPUs, 24GB of RAM, a 512GB SSD, a 1TB hard drive, and a 700GB PCIe SSD from Micron, also connected to a 34&quot; 21:9 ultrawide curved monitor.</p>
+<h2 id="linux-distribution">Linux Distribution</h2>
+<p>Early (very early) in the migration I thought I would end up using Ubuntu 16.04, but I switched to <a href="https://getfedora.org">Fedora</a> and haven&rsquo;t looked back. I started with Fedora 25 on the E7370, switching to Fedora 27 on the X1 Carbon and later upgrading to Fedora 28. The Mac Pro started out with Fedora 27 (<a href="/2018/12/19/running-fedora-on-my-mac-pro/">this post</a> outlines the reasons why) and was upgraded to Fedora 28.</p>
+<h2 id="applications">Applications</h2>
+<p>By and large, application usage remains mostly unchanged from earlier:</p>
+<ul>
+<li><em>Markdown:</em> I switched from <a href="http://www.sublimetext.com/">Sublime Text</a> to <a href="https://code.visualstudio.com/">Visual Studio Code</a>, but otherwise my Markdown workflows remain largely the same. I still use Markdown for the vast majority of my content creation.</li>
+<li><em>Browsing:</em> While I have <a href="https://www.google.com/chrome/">Google Chrome</a> installed, I use <a href="https://www.mozilla.org/en-US/firefox/">Firefox</a> for the vast majority of my browsing (I don&rsquo;t care for the changes Chrome made with regard to signing you into the browser when you sign into Google). I make regular use of the Firefox Multi-Account Containers add-on to streamline some browser-based workflows while also protecting my privacy.</li>
+<li><em>Chat/Instant messaging:</em> I continue to use <a href="https://slack.com/downloads/linux">the Slack Linux client</a> and <a href="https://pidgin.im/">Pidgin</a>. For IRC&mdash;though I rarely use it these days&mdash;I have <a href="https://hexchat.github.io/">HexChat</a>, as before.</li>
+<li><em>Cloud storage/sync:</em> GNOME offers built-in integration for Google Drive, and I&rsquo;m still using <a href="https://www.dropbox.com/">Dropbox</a> for non-confidential information. I&rsquo;ll probably have to start using <a href="https://www.odrive.com/">ODrive</a> again for access to OneDrive.</li>
+<li><em>Basic office productivity:</em> I&rsquo;m still using <a href="https://www.libreoffice.org/">LibreOffice</a>, though it&rsquo;s a newer version.</li>
+<li><em>Graphics:</em> No changes here, except some occasional use of LibreOffice Draw.</li>
+<li><em>Mind mapping:</em> I&rsquo;m still using <a href="http://www.xmind.net/">XMind</a>, and still evaluating whether a Pro license is needed or not. I haven&rsquo;t had a strong need for the extra features yet.</li>
+<li><em>E-mail:</em> I continue to use <a href="https://www.mozilla.org/en-US/thunderbird/">Thunderbird</a>, and I resolved the nagging performance concerns that I noted during the July 2017 progress report (these appear to have been caused by some TCP timeouts related to the NAT configuration on my ASA 5505). I&rsquo;ve settled on IMAP/SMTP for all e-mail access. Having recently re-joined VMware via the Heptio acquisition, I&rsquo;m currently using <a href="https://github.com/jobisoft/TbSync">TbSync</a> with the Active Sync add-on for calendar and contacts access (it also provides access to the Global Address List). The TbSync CalDAV/CardDAV provider enables access to the existing CalDAV- and CardDAV-based sync service I&rsquo;m using on my mobile devices, providing a smoother user experience.</li>
+<li><em>Task management:</em> Aside from switching from Sublime Text to Visual Studio Code, this solution remains the same (plain text-based files on Dropbox, changes reconciled via a graphical diff program).</li>
+<li><em>Calendaring/time management:</em> I gave up on GNOME Calendar and settled for leveraging Lightning inside Thunderbird. Via the TbSync add-on, I have access to corporate and personal calendars. Access to Google Calendar (which is what we were using at Heptio) was and is problematic; I managed to get read-only access from Thunderbird, but read/write access was only through the web interface.</li>
+<li><em>Password management:</em> I switched back to <a href="https://1password.com/">1Password</a>, leveraging the 1Password X add-on for Firefox for access from my Linux systems.</li>
+<li><em>Corporate connectivity:</em> This wasn&rsquo;t needed at Heptio, but now that I&rsquo;m back at VMware I&rsquo;m back to using the Linux client for VMware Horizon and <code>vpnc</code> (with integration into GNOME) for VPN connectivity.</li>
+<li><em>Social media:</em> I&rsquo;m just using the Twitter web site; with the API changes, there aren&rsquo;t really any other options on Linux.</li>
+</ul>
+<p>So what&rsquo;s working well with this configuration?</p>
+<ul>
+<li>Calendar access via TbSync seems to work really well; I&rsquo;m really pleased that the CalDAV/CardDAV provider for TbSync works as seamlessly as it does.</li>
+<li>As I mentioned above, the performance issues I was seeing with e-mail seem to have been resolved. I&rsquo;m not seeing the same lockups and delays that I was seeing in 2017.</li>
+<li>Switching to the <a href="https://github.com/nana-4/materia-theme">Materia theme</a> for GNOME/GTK has relieved the eyestrain issues I reported in <a href="/2017/07/10/linux-migration-july-2017-progress-report/">my July 2017 update</a>.</li>
+</ul>
+<p>What&rsquo;s not working well?</p>
+<ul>
+<li>Now that I&rsquo;m back at VMware via the Heptio acquisition, I&rsquo;m moving back into a Microsoft-heavy environment. I anticipate I&rsquo;ll run into compatibility issues between LibreOffice and Office 365, as I did before, though there is a chance that the newer version of LibreOffice will work better. It&rsquo;s still too early to tell yet.</li>
+</ul>
+<h2 id="where-i-still-use-macos">Where I Still Use macOS</h2>
+<p>With <a href="/2018/12/19/running-fedora-on-my-mac-pro/">the migration of my Mac Pro to Fedora 28</a>, that leaves my 2017 MacBook Pro as the only remaining macOS-based system. I will still use it for podcast recording, viewing archived e-mail, and viewing documents in formats that I couldn&rsquo;t/didn&rsquo;t translate to a Linux equivalent (OmniGraffle, OmniOutliner, and MindNode, primarily). I&rsquo;ll also use it to transcode media into industry-standard formats (MP3 and MP4/H.264) that my Linux systems can use. Aside from that, it sees very little regular use.</p>
+<h2 id="summary">Summary</h2>
+<p>Through a combination of technology-related improvements in various applications plus personal growth on my part, I&rsquo;ve been able to make Linux my full-time primary laptop OS since April 2018. Hopefully, moving back to VMware and its Microsoft-centric environment won&rsquo;t present the same kind of insurmountable hurdles I saw last time. Time will tell whether my hopes are valid, but I do want to do a better job of keeping readers informed about how things are going overall. As always, if you have questions, comments, or suggestions, I encourage you to <a href="https://twitter.com/scott_lowe">contact me on Twitter</a>.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/fedora">Fedora</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/productivity">Productivity</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/messaging">Messaging</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/12/28/looking-back-2018-project-report-card/">Looking Back: 2018 Project Report Card</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/12/31/on-thinking-about-infrastructure-as-code/">On Thinking About Infrastructure as Code</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f31%2flinux-migration-december-2018-progress-report%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f31%2flinux-migration-december-2018-progress-report%2f&text=The%20Linux%20Migration%3a%20December%202018%20Progress%20Report" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f12%2f31%2flinux-migration-december-2018-progress-report%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/04/03/linux-migration-corp-collab-pt3/">The Linux Migration: Corporate Collaboration, Part 3</a> <span class="post-date-list">39 May 3033</span></li><li><a href="/2017/03/21/linux-migration-corp-collab-pt1/">The Linux Migration: Corporate Collaboration, Part 1</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2016/04/04/technology-short-take-64/">Technology Short Take #64</a> <span class="post-date-list">49 May 4044</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

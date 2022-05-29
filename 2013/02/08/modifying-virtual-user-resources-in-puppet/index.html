@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Modifying Virtual User Resources in Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Modifying Virtual User Resources in Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Modifying Virtual User Resources in Puppet - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/02/08/modifying-virtual-user-resources-in-puppet/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Modifying Virtual User Resources in Puppet</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 89 May 8088 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;400 words (estimated 2 minutes to read)</span>
+  <p>In an earlier post on <a href="/2012/11/25/using-puppet-for-account-management/">using Puppet to manage user accounts</a>, I showed how I was using virtual user resources to manage user accounts on Puppet-managed nodes. Today, I ran into a situation where I wanted one of these virtual user resources to have a different group membership on one class of nodes than on another class of nodes. In this post, I&rsquo;ll show you how I managed to modify the group membership of a realized virtual user resource.</p>
+<p>(Disclaimer: There are probably better, more elegant ways of solving this problem. The purpose of this post is to help stimulate discussion and encourage learning, not to say this is the only way to do something. Keep that in mind as you read.)</p>
+<p>To refresh your memory, this is how the virtual user resources were being realized on individual nodes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#66d9ef">node</span> <span style="color:#66d9ef">default</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span><span style="color:#66d9ef">node</span> <span style="color:#e6db74">&#39;server.domain.net&#39;</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">include</span> <span style="color:#a6e22e">accounts</span><span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#66d9ef">realize</span> (<span style="color:#a6e22e">Accounts</span>::<span style="color:#a6e22e">Virtual</span>[<span style="color:#e6db74">&#39;johndoe&#39;</span>])<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>Note the use of capitalized &ldquo;Account::Virtual&rdquo;, which means we are referring to a specific, defined (virtually defined, at least) resource.</p>
+<p>My first attempt was to try overriding, where I refer back to the realized user resource using a similar syntax, then specify a particular attribute (the <code>groups</code> attribute, in this case). I&rsquo;d used this technique in the past with non-virtual resources (example <a href="/2012/07/05/using-puppet-with-multiple-operating-systems/">here</a>), but&mdash;unfortunately&mdash;it didn&rsquo;t seem to work with virtual resources.</p>
+<p>A web search took me to <a href="https://groups.google.com/forum/?fromgroups=#!topic/puppet-users/e9b53Eyq2Fw">this Google Groups thread</a>, where I found two critical pieces of information:</p>
+<ol>
+<li>
+<p>Realizing apparently doesn&rsquo;t allow overrides.</p>
+</li>
+<li>
+<p>You can use the collection function to modify realized resources.</p>
+</li>
+</ol>
+<p>Armed with that information, I added this code to the <code>nodes.pp</code> manifest to modify the group membership for a realized virtual resource on specific nodes:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-puppet" data-lang="puppet"><span style="display:flex;"><span><span style="color:#66d9ef">User</span> <span style="color:#f92672">&lt;|</span> <span style="color:#a6e22e">title</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;johndoe&#39;</span> <span style="color:#f92672">|&gt;</span> {<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>  <span style="color:#a6e22e">groups</span>              <span style="color:#f92672">=&gt;</span>  <span style="color:#e6db74">&#39;othergroup&#39;</span>,<span style="color:#960050;background-color:#1e0010">
+</span></span></span><span style="display:flex;"><span><span style="color:#960050;background-color:#1e0010"></span>}<span style="color:#960050;background-color:#1e0010">
+</span></span></span></code></pre></div><p>That worked! On the nodes where this code was added, the account named &ldquo;johndoe&rdquo; was added to the group &ldquo;othergroup&rdquo; successfully.</p>
+<p>Great, so this solution works, but really the bigger questions are these:</p>
+<ul>
+<li>
+<p>Are there better, more elegant ways of solving this particular problem?</p>
+</li>
+<li>
+<p>What drawbacks are there to this solution?</p>
+</li>
+</ul>
+<p>Yes, I could modify the <code>accounts::virtual</code> class to include supplementary group memberships, and that&rsquo;s probably a better long-term solution. However, that requires more testing, since you&rsquo;re modifying code that affects user accounts across a number of systems. This solution, on the other hand, is pretty quick and relatively safe.</p>
+<p>Thoughts? Ideas? I&rsquo;d love to hear your feedback, so speak up in the comments below.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/puppet">Puppet</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/02/07/exploring-rhel-ovs-integrations/">Exploring RHEL-OVS Integrations</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/02/25/life-at-vmware-two-weeks-in/">Life at VMware, Two Weeks In</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f08%2fmodifying-virtual-user-resources-in-puppet%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f08%2fmodifying-virtual-user-resources-in-puppet%2f&text=Modifying%20Virtual%20User%20Resources%20in%20Puppet" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f02%2f08%2fmodifying-virtual-user-resources-in-puppet%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/02/07/looking-ahead-my-2013-projects/">Looking Ahead: My 2013 Projects</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2013/02/04/technology-short-take-29/">Technology Short Take #29</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2013/01/29/puppet-user-accounts-and-configuration-files/">Puppet, User Accounts, and Configuration Files</a> <span class="post-date-list">299 May 292929</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

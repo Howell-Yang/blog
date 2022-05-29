@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Viscosity, a Mac OpenVPN Client - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Viscosity, a Mac OpenVPN Client - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Viscosity, a Mac OpenVPN Client - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/11/19/viscosity-a-mac-openvpn-client/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Viscosity, a Mac OpenVPN Client</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 199 May 191919 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;391 words (estimated 2 minutes to read)</span>
+  <p>So, I&rsquo;ve been searching for a good way to establish connectivity to the lab at my office for a while. My first attempt was to work with one of our CCIEs at the office to establish an IPSec-based VPN against a Cisco router at the edge of the lab network, but despite our best efforts we couldn&rsquo;t get the IPSec VPN client I was using, <a href="http://www.lobotomo.com/products/IPSecuritas/">IPSecuritas</a>, to connect and authenticate. No amount of fiddling would make it work.</p>
+<p>We finally gave up on that and instead I went with an <a href="http://www.openbsd.org/">OpenBSD</a> box to which I could establish an SSH session and then tunnel traffic from there. That worked reasonably well, especially after I discovered the <a href="http://www.gnu.org/software/screen/">GNU Screen</a> utility. Talk about a handy little tool! Anyway, I continued using the SSH gateway for quite some time and I had resigned myself to living with the limitations.</p>
+<p>Then a co-worker from the office casually mentions that he&rsquo;s set up a Linux-based <a href="http://openvpn.net/">OpenVPN</a> server on another subnet in the lab (we have a range of different subnets for different engineers in the lab). He, too, is a Mac user, but still running Mac OS X 10.4 on an older 13&quot; PowerBook G4 and using the <a href="http://code.google.com/p/tunnelblick/">Tunnelblick</a> OpenVPN client. I thought to myself, &ldquo;Hey, this might actually work!&rdquo;</p>
+<p>Alas, some additional research indicated that Tunnelblick had some stability problems under Leopard, which I&rsquo;m running on my MacBook Pro. Bummer! I continued to research the issue but didn&rsquo;t bother trying to use the OpenVPN server until just a couple of weeks ago when I uncovered <a href="http://www.viscosityvpn.com/index.html">Viscosity</a>.</p>
+<p>Viscosity is a shareware, Leopard-only OpenVPN client. It supports <a href="http://growl.info/">Growl</a> notifications (which I very much like) and operates as a simple menu icon that easily allows you to connect or disconnect individual connections. Owing partially to how OpenVPN works, Viscosity uses (and includes) a TUN/TAP driver for OS X and creates a new TUN/TAP interface for every connection. This makes routing much easier and much more logical, in my opinion.</p>
+<p>I&rsquo;m so pleased with OpenVPN thus far, in fact, that I&rsquo;m going to be setting up my own OpenVPN server here at the house.</p>
+<p>My experience thus far has been quite positive. If you are looking for a good OpenVPN client for your Mac, Viscosity would be an excellent choice. At only $9 for a license, it&rsquo;s well worth it.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/bsd">BSD</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ipsec">IPSec</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/macos">macOS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/11/19/virtualization-short-take-23/">Virtualization Short Take #23</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/11/20/omnigraffle-and-omnifocus-updates/">OmniGraffle and OmniFocus Updates</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fviscosity-a-mac-openvpn-client%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fviscosity-a-mac-openvpn-client%2f&text=Viscosity%2c%20a%20Mac%20OpenVPN%20Client" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f11%2f19%2fviscosity-a-mac-openvpn-client%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2005/12/13/application-specific-vpns/">Application-Specific VPNs</a> <span class="post-date-list">139 May 131313</span></li><li><a href="/2005/12/23/centos-ntpd-problem-mostly-resolved/">CentOS NTPd Problem (Mostly) Resolved</a> <span class="post-date-list">239 May 232323</span></li><li><a href="/2007/01/15/active-directory-integration-index/">Active Directory Integration Index</a> <span class="post-date-list">159 May 151515</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

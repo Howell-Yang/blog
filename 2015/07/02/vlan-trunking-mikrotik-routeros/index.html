@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>VLAN Trunking with Mikrotik RouterOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="VLAN Trunking with Mikrotik RouterOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="VLAN Trunking with Mikrotik RouterOS - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/07/02/vlan-trunking-mikrotik-routeros/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">VLAN Trunking with Mikrotik RouterOS</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 29 May 2022 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1354 words (estimated 7 minutes to read)</span>
+  <p>In this post, I&rsquo;m going to show you how to configure VLAN trunking with Mikrotik RouterOS, and along the way provide a brief introduction to this software and some of the functionality it offers. While it is Linux-based, RouterOS operates quite a bit differently than a lot of the other network operating systems with which I&rsquo;ve worked, and so I hope that this post will help ease the learning curve a bit for others who decide to take the same path.</p>
+<h2 id="background">Background</h2>
+<p>First, let me provide a quick bit of background. I found myself in need of a switch that was both Layer 2/3 capable with both 10/100/1000Mbps ports as well as 10Gbps SFP+ ports. Of course, this was for my home lab, so budget is a concern. I cast out a quick call on Twitter, asking for some recommendations, and a few folks recommended I have a look at RouterBoard/Mikrotik; specifically, the CRS-24G-2S+IN (see <a href="http://routerboard.com/CRS226-24G-2SplusIN">here</a> for more details). The specs looked good, the price was reasonable, and several folks expressed their satisfaction with the product, so I bought one.</p>
+<p>Upon receiving it, I found myself trying to unravel RouterOS (their Linux-based operating system). Their <a href="http://wiki.mikrotik.com/wiki/Main_Page">wiki</a> is fairly helpful, but I found <a href="http://wiki.mikrotik.com/wiki/Manual:CRS_examples">the CRS examples page</a> to be the most helpful in my particular situation. The information I&rsquo;m going to share here is based on the information in the wiki.</p>
+<h2 id="cli-concepts">CLI Concepts</h2>
+<p>Like some other environments, the RouterOS CLI is based on the idea of <em>contexts.</em> In that respect, you can draw some similarities with the EMC VPLEX CLI (see my <a href="/2010/12/22/an-introduction-to-the-vplex-cli/">introductory post on the VPLEX CLI</a>) or the Cisco UCS CLI. So, for example, there is an <code>interface</code> context, a <code>user</code> context, etc. Each context contains a set of context-specific commands. When you&rsquo;re in a particular context (sort of like being in a particular directory), the prompt will reflect that, and you can type commands from that context directly. If, however, you need a command from a different context, then you have to preface the command with the full path. If I was in the <code>user</code> context and wanted to run a command in the <code>interface</code> context, I&rsquo;d have to type <code>/interface &lt;command&gt; &lt;command&gt;</code>. Again, it&rsquo;s a bit like working with a directory structure.</p>
+<p>Another thing to note about the RouterOS CLI is the way it handles data structures. To see a list of VLANs in the switch, you&rsquo;d use the <code>print</code> command in the appropriate context. Specifically, in this case, you run this command (I&rsquo;m including the full path/context just for the sake of completeness):</p>
+<pre><code>/interface ethernet switch vlan print
+</code></pre>
+<p>This would print a tabular list of entries, each with an ID (a unique identifier), the assigned VLAN ID, the ports associated with that VLAN, and various other settings. To edit any of these values, you would use the <code>edit</code> command. As an example, let&rsquo;s say you wanted to edit the list of ports associated with a particular VLAN. Once you&rsquo;d determined the ID of the VLAN (using the output of the <code>print</code> command shown previously), you&rsquo;d use the <code>edit</code> command like this:</p>
+<pre><code>/interface ethernet switch vlan edit 1 ports
+</code></pre>
+<p>This would edit the &ldquo;ports&rdquo; value of the VLAN whose ID in the list (<strong>not</strong> the VLAN ID) is 1. The generic form of the command is this:</p>
+<pre><code>/interface ethernet switch vlan edit &lt;ID&gt; &lt;value&gt;
+</code></pre>
+<p>I&rsquo;ll try to show some examples of this later in the post, but you&rsquo;ll use this type of command (in different contexts) to modify lots of settings throughout different contexts in RouterOS.</p>
+<p>OK, that&rsquo;s enough for some of the CLI concepts; let&rsquo;s look specifically at setting up VLAN trunking with RouterOS.</p>
+<h2 id="configuring-vlan-trunking">Configuring VLAN Trunking</h2>
+<p>Just so we&rsquo;re all on the same page with regard to terminology, a <em>VLAN trunk</em> is a port that carries multiple VLANs tagged with the assigned VLAN IDs. If you need a port that will carry more than one VLAN, you need a VLAN trunk.</p>
+<p>In order to set up a VLAN trunk in RouterOS, you must explicitly tell the switch to tag the appropriate VLANs on that particular port. This is done with the <code>/interface ethernet switch egress-vlan-tag</code> command. So, for example, if you wanted to tag VLANs 100, 200, and 300 on port ether20, you&rsquo;d use this command (I&rsquo;ve line-wrapped them with backslashes here, but you would enter them all on a single line):</p>
+<pre><code>/interface ethernet switch egress-vlan-tag add \
+tagged-ports=ether20 vlan-id=100
+/interface ethernet switch egress-vlan-tag add \
+tagged-ports=ether20 vlan-id=200
+/interface ethernet switch egress-vlan-tag add \
+tagged-ports=ether20 vlan-id=300
+</code></pre>
+<p>This command works fine if you haven&rsquo;t already created an egress VLAN tag entry for the VLAN ID specified in the command. If, however, you already have an egress VLAN tag entry&mdash;perhaps because you&rsquo;re now adding a port to an existing entry&mdash;this command will report an error. This is one of those cases where you need to use the <code>edit</code> command, as I described above.</p>
+<p>So, you&rsquo;d do this:</p>
+<ol>
+<li>
+<p>You&rsquo;d use the <code>/interface ethernet switch egress-vlan-tag print</code> command (or just the <code>print</code> command if you are already in the <code>/interface ethernet switch egress-vlan-tag</code> context) to list all the egress VLAN tag entries.</p>
+</li>
+<li>
+<p>From the list, determine the ID (again, <strong>not</strong> the VLAN ID&mdash;this is a separate value) of the entry you need to change.</p>
+</li>
+<li>
+<p>Use the <code>edit</code> command, like this (you can omit the full context if you&rsquo;re already in that context):</p>
+<pre><code> /interface ethernet switch egress-vlan-tag edit &lt;ID&gt; tagged-ports
+</code></pre>
+<p>If the ID of the entry is 5 (i.e., it&rsquo;s the fifth entry in the list), you&rsquo;d run:</p>
+<pre><code> /interface ethernet switch egress-vlan-tag edit 5 tagged-ports
+</code></pre>
+</li>
+<li>
+<p>In the full-screen text editor, simply add the port names to the comma-delimited list on the screen. Press Ctrl-O to save and quit when you&rsquo;re done (or Ctrl-C if you want to exit without saving any changes).</p>
+</li>
+</ol>
+<p>Using these four steps will allow you to edit the egress VLAN tag entry for a particular VLAN ID, where you can add ports (thus telling RouterOS to tag that VLAN when traffic leaves the switch on that port) or remove ports (thus telling RouterOS to stop tagging traffic with that VLAN ID when it leaves the switch on that port).</p>
+<p>To filter (or prune) VLANs&mdash;in other words, to specify that a VLAN trunk will only tag a subset of the VLAN IDs defined on the switch&mdash;simply don&rsquo;t add an egress VLAN tag entry for that VLAN ID for that port. The example I showed above where I tagged VLANs 100, 200, and 300 on port ether20 is a great example; those are the VLANs tagged on that port, but the switch might also have VLANs 150, 250, and 350 defined. Those VLANs <em>won&rsquo;t</em> be tagged on ether20, and therefore are effectively pruned (or filtered) from that port.</p>
+<h2 id="configuring-access-ports">Configuring Access Ports</h2>
+<p>Since we&rsquo;re already knee-deep in VLAN concepts with RouterOS, let&rsquo;s just go ahead and talk about VLAN access ports as well. An <em>access port</em> is a port where all traffic is considered to be part of a particular VLAN. The incoming traffic isn&rsquo;t tagged, though, so you have to tell RouterOS how to handle the traffic.</p>
+<p>In this case, you have to tell RouterOS to explicitly tag incoming traffic with the appropriate VLAN ID. To do this, you&rsquo;ll use the <code>/interface ethernet switch ingress-vlan-translation</code> command. This command essentially re-writes the VLAN ID on the incoming traffic. Since incoming traffic isn&rsquo;t tagged, the existing VLAN ID on incoming traffic is 0.</p>
+<p>Let&rsquo;s say you wanted a particular port to be an access port on VLAN 200. You&rsquo;d use this command (it&rsquo;s line-wrapped here, but you&rsquo;ll want to enter it all on a single line):</p>
+<pre><code>/interface ethernet switch ingress-vlan-translation \
+add ports=ether20 customer-vid=0 new-customer-vid=200 sa-learning=yes
+</code></pre>
+<p>This command tells RouterOS to translate a VLAN ID of 0 on port ether20 to a VLAN ID of 200. The effective result is a port where all traffic is assigned to a particular VLAN&mdash;an access port.</p>
+<p>Hopefully this information is helpful to someone else out there. RouterOS is actually quite powerful, and exposes a lot of features and functions&mdash;although accessing and configuring those features and functions is sometimes more difficult or unintuitive than perhaps it should be.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vlan">VLAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/06/30/fix-for-ubuntu-caching-network-configuration/">A Fix for Ubuntu Apparently Caching Network Configuration</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/07/14/technology-short-take-52/">Technology Short Take #52</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f07%2f02%2fvlan-trunking-mikrotik-routeros%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f07%2f02%2fvlan-trunking-mikrotik-routeros%2f&text=VLAN%20Trunking%20with%20Mikrotik%20RouterOS" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f07%2f02%2fvlan-trunking-mikrotik-routeros%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/06/25/vlan-trunking-cumulus-linux/">VLAN Trunking with Cumulus Linux</a> <span class="post-date-list">259 May 252525</span></li><li><a href="/2015/06/30/fix-for-ubuntu-caching-network-configuration/">A Fix for Ubuntu Apparently Caching Network Configuration</a> <span class="post-date-list">309 May 303030</span></li><li><a href="/2015/06/01/cumulus-networking-concepts/">Some Cumulus Linux Networking Concepts</a> <span class="post-date-list">19 May 1011</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>APP-CAP2956: Inside the Hadoop Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="APP-CAP2956: Inside the Hadoop Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="APP-CAP2956: Inside the Hadoop Machine - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2012/08/30/app-cap2956-inside-the-hadoop-machine/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">APP-CAP2956: Inside the Hadoop Machine</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 309 May 303030 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1017 words (estimated 5 minutes to read)</span>
+  <p>This is a session blog for APP-CAP2956, Inside The Hadoop Machine. Presenting are Jeff Buell (VMware), Richard McDougall (VMware), and Sanjay Radia (Hortonworks).</p>
+<p>Some use cases for Hadoop include log processing, click stream analysis, machine learning, web crawling, and image/XML processing. But what is Hadoop? Hadoop is a programming framework for enabling parallel processing; this enables distributed processing of large data sets across clusters of computers. Hadoop also incorporates that machines will fail, and is tolerant of those failures. Hadoop works by taking an input file, breaking it up into pieces (the size of those pieces is driven by the HDFS block size), and giving those pieces out to the systems in the Hadoop cluster. The first phase is the map phase; then comes the reduce phase, where the results are sorted and merged, then given the output file. (Hence the name MapReduce.)</p>
+<p>Hadoop consists of two pieces: MapReduce, which is the programming framework for parallel processing; and the Hadoop Distributed File System (HDFS), which provides distributed data storage for the MapReduce jobs. HDFS is not POSIX-compliant; it behaves more like Amazon S3 or EBS.</p>
+<p>HDFS has two components: a name node and a data node. The name node is responsible for the directory hierarchy and the namespace. HDFS 1 only has a single name node; this represents a single point of failure for the filesystem. Data nodes store the actual data blocks, and provide replication for the blocks as well in the event of failure (typically 3 copies are made, and the third copy will be in a separate rack/fault domain).</p>
+<p>Hadoop is topology-aware, meaning that it knows how to distribute jobs and tasks across nodes and across racks and data centers. That&rsquo;s fine for physical environments, but doesnt necessarily translate well to a virtualized environment.</p>
+<p>Some challenges with enterprise deployments of Hadoop include:</p>
+<ul>
+<li>
+<p>Slow to provision, complex to keep running</p>
+</li>
+<li>
+<p>Single points of failure with name node and job tracker</p>
+</li>
+<li>
+<p>No HA for Hadoop Framework Components (such as Hive, HCatalog, etc.)</p>
+</li>
+<li>
+<p>No easy way to share resources between Hadoop and non-Hadoop workloads</p>
+</li>
+<li>
+<p>Lack of resource containment</p>
+</li>
+<li>
+<p>No multi-tenancy or security/performance isolation functionality</p>
+</li>
+<li>
+<p>Lack of configuration isolation (can&rsquo;t run multiple versions on the cluster)</p>
+</li>
+</ul>
+<p>Virtualization presents itself as a potential solution to help address these enterprise Hadoop challenges.</p>
+<p>This leads to a discussion of Project Serengeti, which (in its first release) helps automate the process of provisioning a virtual Hadoop cluster in just a matter of minutes. Serengeti deploys as a single vApp. After logging into the vApp (the CLI is similar to Hadoop), issue the &ldquo;cluster create&rdquo; command, and Serengeti will go deploy a fully-functional 3 node Hadoop cluster. Serengeti is driven by a JSON file that specifies the distribution of Hadoop, the cluster size, the type of storage (shared or local), etc. Serengeti supports a number of commercial and open source projects around Hadoop.</p>
+<p>Hadoop relies heavily on the storage subsystem. Although local storage is extraordinarily cheap and unreliable, but when used in conjunction with something like HDFS it does look quite attractive. In vSphere environments, though, the most common form of storage is SAN/NAS. How does this work when you bring Hadoop into the mix? Using a hybrid model that leverages both shared and local storage. Hadoop seems to generate the majority of the disk I/O for temporary storage; you can use the hybrid model to store reliable data on SAN/NAS but the working temporary data on local storage. Recall that HDFS protects the data by creating multiple copies of the data, so failure of a local host (and it&rsquo;s associated storage) isn&rsquo;t that big of a deal.</p>
+<p>Four common performance concerns that come up with running Hadoop on vSphere:</p>
+<ol>
+<li>
+<p>How well does Hadoop run virtualized?</p>
+</li>
+<li>
+<p>Performance implications of running Hadoop on shared storage?</p>
+</li>
+<li>
+<p>What&rsquo;s the effect of protecting Hadoop master daemons using FT?</p>
+</li>
+<li>
+<p>Should we rent (public) or build (private) for running Hadoop?</p>
+</li>
+</ol>
+<p>Quick comparisons of Hadoop on native hardware versus Hadoop virtualized shows a small decrease in performance with only a single VM, but when the workload is divided into 2 or 4 VMs then performance returns closer to native performance. This was especially true with the TeraSort workload VMware used in their testing. With regard to storage, local storage was faster in all instances, with the exception of the TeraValidate workload working against a JBOD configuration on the SAN. There were significant performance impacts when SAN RAID overhead was introduced. This was especially true for the TeraGen workload, which was a write-heavy workload.</p>
+<p>For FT usage (question #3 above), the testing showed a 2-4% slowdown for TeraSort when FT was enabled for the name node and job tracker nodes.</p>
+<p>The cost comparison showed a vSphere implementation that was significantly smaller in size, but only 5x more time required to run TeraSort, and able to do it at 1/3 the cost.</p>
+<p>The presentation now shifts to a discussion of some joint development work between VMware and Hortonworks, specifically around efforts to provide HA (high availability) for Hadoop components. If the name node fails, the entire job fails and has to be restarted; thus, the name node is typically protected with great effort. Would vSphere HA be enough to protect the name node? Normally jobs would fail. What VMware and Hortonworks have done is add some Hadoop-specific awareness (a JVM monitor to serve as a watchdog for the name node services) as well as add some pause/retry functionality for Hadoop-enabled applications. The Hortonworks HDP 1.0 release has these patches and the patches have been pushed upstream (to Apache, I believe). This means that name nodes (or job trackers) that you want to protect with HA need to be on shared storage, but worker nodes (which can be physical or virtual) will use local storage.</p>
+<p>The third and final topic for Hadoop on vSphere involves elastic scaling. The solution that VMware came upon was to separate the job node and the data node into separate VMs; this enabled multi-tenancy as well as fixing some of the &ldquo;content isolation&rdquo; and &ldquo;configuration isolation&rdquo; issues mentioned earlier as well.</p>
+<p>At this point, the session wrapped up.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/oss">OSS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmworld2012">VMworld2012</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2012/08/28/inf-bco2655-ft-for-smp-vms-tech-preview/">INF-BCO2655: FT for SMP VMs Tech Preview</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2012/09/06/installing-kvm-on-centos-6-3/">Installing KVM on CentOS 6.3</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f30%2fapp-cap2956-inside-the-hadoop-machine%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f30%2fapp-cap2956-inside-the-hadoop-machine%2f&text=APP-CAP2956%3a%20Inside%20the%20Hadoop%20Machine" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2012%2f08%2f30%2fapp-cap2956-inside-the-hadoop-machine%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2012/08/28/inf-bco2655-ft-for-smp-vms-tech-preview/">INF-BCO2655: FT for SMP VMs Tech Preview</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2012/08/28/app-cap2165-operating-cloud-foundry/">APP-CAP2165: Operating Cloud Foundry</a> <span class="post-date-list">289 May 282828</span></li><li><a href="/2012/08/28/vmworld-2012-keynote-day-2/">VMworld 2012 Keynote, Day 2</a> <span class="post-date-list">289 May 282828</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

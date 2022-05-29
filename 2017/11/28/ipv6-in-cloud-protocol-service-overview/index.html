@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: IPv6 in the Cloud - Protocol and Service Overview - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: IPv6 in the Cloud - Protocol and Service Overview - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: IPv6 in the Cloud - Protocol and Service Overview - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/28/ipv6-in-cloud-protocol-service-overview/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: IPv6 in the Cloud - Protocol and Service Overview</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1156 words (estimated 6 minutes to read)</span>
+  <p>This is a liveblog of an AWS re:Invent 2017 breakout session titled &ldquo;IPv6 in the Cloud: Protocol and Service Overview.&rdquo; The presenter&rsquo;s name is Alan Halachmi, who is a Senior Manager of Solutions Architecture at AWS. As with so many of the other breakout sessions and workshops here at re:Invent this year, the queues to get into the session are long and it&rsquo;s expected that the session will be completely full.</p>
+<p>Halachmi starts the session promptly at 11:30am (the scheduled start time) by reviewing the current state of IP4 exhaustion, then quickly moves to a &ldquo;state of the state&rdquo; regarding IPv6 adoption on the Internet. Global IPv6 adoption is currently around 22%, and is expected to hit 25% by the end of the year. Mobile and Internet of Things (IoT) are driving most of the growth, according to Halachmi. T-Mobile, for example, now has 89% of their infrastructure running on IPv6.</p>
+<p>Transitioning again rather quickly, Halachmi moves into an overview of the IPv6 protocol itself. IPv4 uses a 32-bit address space; IPv6 uses a 128-bit address space (29 orders of magnitude larger than IPv4). IPv4 uses dotted decimal with CIDR (Classless Interdomain Routing) notation; IPv6 uses colon-separated hextet notation with CIDR. To help keep IPv6 addresses more human-readable, we can omit leading zeroes. You can also use the double-colon notation to represent any contiguous group of zeroes.</p>
+<p>IPv6 also doesn&rsquo;t use broadcast addresses, instead using multicast (focusing on the ff00::/8 range). IPv6 also has some special unicast addresses:</p>
+<ul>
+<li>The unspecified address (all zeroes) indicates the absence of an address; this is primarily used in Duplicate Address Detection (DAD)</li>
+<li>The loopback address is used to communicate with itself (the IPv6 address is ::1, equivalent to IPv4 127.0.0.1)</li>
+<li>The link local address (LLA), which is scoped to a specific link (they&rsquo;re only usable on the local link; equivalent to IPv4 169.254.0.0/16 range). In IPv4, the link local address is typically ephemeral; in IPv6, it&rsquo;s required. The typical LLA prefix is Fe80::/64, and the Interface Identifier (IID) is generated either a) manually; b) systematically using modified EUI-64; or c) derived randomly. DAD is used in almost all cases.</li>
+<li>The unique local address (ULA) can be roughly compared to RFC 1918 in the IPv4 world. However, the ULA is designed to be globally unique, and comes out of the <code>fc00::/7</code> range. Halachmi is not a fan of the ULA, and doesn&rsquo;t go into any additional detail.</li>
+<li>The Global Unicast Address (GUA), is a globally-unique address that allows IPv6-equipped workloads to communicate end-to-end without any network address translation (NAT). GUAs have both a prefix (64-bit) and an IID (also 64 bits; EUI-64 has fallen out of favor for generating the IID portion of the GUA). There are several ways to assign GUAs: manually, systematically (via Router Advertisements [RAs] and SLAAC [Stateless Address Autoconfiguration]), dynamically via DHCPv6 (materially different than DHCPv4), or randomly. DAD is almost always used to prevent duplicate addresses.</li>
+</ul>
+<p>EUI-64 takes a MAC (Media Access Control) address, which is 48-bits long, and converts it to a 64-bit address. First, invert the 7th most significant bit; then insert <code>ff:fe</code> into the middle of the address (after the first 24 bits and before the second 24 bits).</p>
+<p>So how do IPv6 nodes communicate across the network? Halachmi quickly reviews IPv4 and ARP, then moves into the equivalent in IPv6. IPv6 doesn&rsquo;t use ARP; it uses solicited-mode multicast, using ff02::1:ff00:0/104 and adding the least significant 24 bits from the target IPv6 node address. At layer 2, this translates into an Ethernet address in the 33:33:00:00:00:00 range (again using some of the least significant bits from the target node&rsquo;s IPv6 address).</p>
+<p>Halachmi now moves on to discussing how to access resources on an IPv6 network. The first example is using either dual-stack configurations (both IPv4 and IPv6 addresses on a node) and relying on DNS A (IPv4) or DNS AAAA (IPv6) address resolution.</p>
+<p>A few other notable differences about IPv6:</p>
+<ul>
+<li>End-to-end philosophy (no NAT, privacy is not equal to security, public IP is not equal to reachability)</li>
+<li>Intermediate nodes may not fragment packets (path MTU discovery using ICMPv6)</li>
+<li>Maximum payload per packet jumps to about 4GB</li>
+<li>Options extensibility with extension header chaining</li>
+</ul>
+<p>Having now covered the IPv6 protocol, Halachmi moves on to discussing IPv6 at AWS. The first IPv6-enabled service at AWS was the IoT service. The IoT data plane is IPv4 and IPv6; the control plane is IPv4 only. S3 is also IPv6- and IPv4-enabled; just add <code>.dualstack</code> in the fully-qualified domain name (same goes for S3 Transfer Acceleration). CloudFront supports IPv6; just enable it in the distribution. (Halachmi does point out a couple considerations regarding the use of cookies to limit access, and points attendees to the documentation for CloudFront.)</p>
+<p>Continuing, Halachmi points out that CloudFront will support IPv6 from clients, but talks IPv4 to the origin. This can help with transitions from IPv4 to IPv6.</p>
+<p>WAF also supports IPv6 (has supported it since launch). Route 53 supports quad-A records (for returning an IPv6 address), and for the last year or so has also supported DNS queries over IPv6.</p>
+<p>Coming to VPCs, Halachmi points out that VPC does support IPv6, and takes some time to drill down into a few details/tenets of the implementation. These tenets include end-to-end connectivity to deliver on the IPv6 promise, offering a dual-stack solution, and a couple others I couldn&rsquo;t capture. IPv6 in VPCs doesn&rsquo;t support ULAs. GUAs come from a fixed /56 block, and subnets are of a fixed /64 size. IPv6 in VPCs don&rsquo;t support privacy/temporary addresses.</p>
+<p>What about assignment of addresses? Halachmi points out that you <em>can</em> do manual/static assignment, but it isn&rsquo;t recommended. SLAAC was investigated, but this didn&rsquo;t work well for the AWS VPC use case. Instead, AWS uses DHCPv6 (the actual implementation is stateless and derived from the topology database).</p>
+<p>Regarding security considerations, IPv6 is not on by default and must be enabled per interface. Even if the OS in an instance is IPv6-enabled and ends up with a LLA, the VPC won&rsquo;t pass IPv6 traffic until you assign a GUA (i.e., link-local connectivity doesn&rsquo;t work without a GUA). Route tables are not auto-updated except the GUA CIDR. AWS won&rsquo;t modify security groups or NACLs to allow IPv6 traffic unless the security group/NACL is unmodified/left at default settings.</p>
+<p>To provide a semantically-similar NAT mechanism for IPv6, AWS introduced the EIGW (Egress-only Internet Gateway).</p>
+<p>Direct Connect also supports IPv6, as do Virtual Private Gateways. Direct Connect Gateway supports IPv6 as well.</p>
+<p>Amazon WorkSpaces supports IPv6-based communications, as does AppStream 2.0. The AWS Application Load Balancer (ALB) supports IPv6, but this must be enabled at the time of creation. ALB can also be helpful in IPv4-to-IPv6 transitions, like CloudFront.</p>
+<p>Halachmi points out that there is still lots of work to do, and welcomes feedback from customers on how AWS should prioritize the implementation of IPv6 across their APIs and services.</p>
+<p>At this point, Halachmi ends the session and opens up for questions.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2017">reInvent2017</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/27/sample-makefile-creating-blog-articles/">A Sample Makefile for Creating Blog Articles</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/28/deep-dive-amazon-elastic-file-system/">Liveblog: Deep Dive on Amazon Elastic File System</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fipv6-in-cloud-protocol-service-overview%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fipv6-in-cloud-protocol-service-overview%2f&text=Liveblog%3a%20IPv6%20in%20the%20Cloud%20-%20Protocol%20and%20Service%20Overview" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f28%2fipv6-in-cloud-protocol-service-overview%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/11/10/technology-short-take-90/">Technology Short Take 90</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2017/10/27/technology-short-take-89/">Technology Short Take 89</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2017/10/26/posts-from-the-past-october-2017/">Posts from the Past, October 2017</a> <span class="post-date-list">269 May 262626</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

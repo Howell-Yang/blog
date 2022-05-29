@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take 90 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take 90 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take 90 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2017/11/10/technology-short-take-90/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take 90</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 109 May 101010 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;569 words (estimated 3 minutes to read)</span>
+  <p>Welcome to Technology Short Take 90! This post is a bit shorter than most, as I&rsquo;ve been on the road quite a bit recently. Nevertheless, there&rsquo;s hopefully something here you&rsquo;ll find useful.</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>VMware recently released an updated to PowerCLI (version 6.5.3), and with it comes a set of cmdlets that provide low-level access to the NSX-T REST API. Romain Decker <a href="http://cloudmaniac.net/powercli-nsx-t-module/">provides a walkthrough</a>. Have fun automating!</li>
+<li>Looking for some &ldquo;MPLS 101&rdquo;-type material? Jon Langemak <a href="http://www.dasblinkenlichten.com/mpls-101-the-basics/">has you covered</a>.</li>
+<li>I really enjoyed David Gee&rsquo;s series on the network automation engineer persona (<a href="http://ipengineer.net/2017/10/network-automation-engineer-persona-part-one/">part 1</a>, <a href="http://ipengineer.net/2017/10/network-automation-engineer-persona-part-two/">part 2</a>, <a href="http://ipengineer.net/2017/10/network-automation-engineer-persona-part-three/">part 3</a>, and <a href="http://ipengineer.net/2017/10/network-automation-engineer-persona-part-four/">part 4</a>). David really unpacks the changes that are happening in the networking space and describes the key skills the &ldquo;next-generation network engineer&rdquo; will have. Good stuff!</li>
+<li>This post by Patrick Ogenstad on <a href="https://networklore.com/extending-ansible-action-plugins/">Ansible action plugins for Cisco IOS</a> is just outside my comfort zone with regards to Python knowledge and skill, but it&rsquo;s only by pushing the boundaries that we learn, right?</li>
+<li>Romain Decker discusses <a href="http://cloudmaniac.net/nsx-t-things-to-know/">the ten things you should know before starting with NSX-T</a>.</li>
+<li>Mark Betz digs into <a href="https://medium.com/google-cloud/understanding-kubernetes-networking-pods-7117dd28727">some Kubernetes networking concepts</a> in detail.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Tony Reeves shares a procedure for <a href="http://www.digitalvspace.com/2017/10/setting-up-vsan-encryption-in-66.html">setting up encryption in vSAN 6.6</a>.</li>
+<li>Major Hayden <a href="https://major.io/2017/06/27/old-role-new-name-ansible-hardening/">talks about ansible-hardening</a>, a new role that grew out of an OpenStack-related security role. However, as Major points out in his article, the role works anywhere, OpenStack cloud or not.</li>
+<li>Here&rsquo;s a quick note <a href="http://www.bardev.com/2017/10/22/aws-security-group-stop-traffic-flow/">about AWS security groups and traffic flows</a>. Definitely worth reading.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Google is rolling out Kubernetes 1.8 to Google Container Engine; <a href="https://cloudplatform.googleblog.com/2017/09/google-container-engine-kubernetes-18.html">this blog post</a> talks about some of the new features and functionality.</li>
+<li>Lior Kamrat has a multi-part series on an architecture that blends Mesosphere DC/OS, Azure, Docker, and VMware vSphere. Check out the beginning of the series <a href="https://azure.microsoft.com/en-us/blog/mesosphere-dcos-azure-docker-vmware-and-everything-between-architecture-and-ci-cd-flow/">here</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Kevin Lynch of the Squarespace Engineering team has <a href="https://engineering.squarespace.com/blog/2017/understanding-linux-container-scheduling">a great write-up on Linux container scheduling</a>; this post provides some in-depth information on the various components and considerations involved.</li>
+<li>After a recent complaint by yours truly on Twitter regarding notifications on Windows 10, I was directed to <a href="https://blogs.technet.microsoft.com/platforms_lync_cloud/2017/05/05/disabling-windows-10-action-center-notifications/">this article</a>. I haven&rsquo;t tested it yet, but it does look promising.</li>
+<li>VMware <a href="https://blogs.vmware.com/cloudnative/2017/11/01/version-2-0-project-photon-os/">recently released version 2.0 of Photon OS</a>. Unfortunately, Photon OS 2.0 has some issues running on VMware platforms, so visit William Lam&rsquo;s site for <a href="https://www.virtuallyghetto.com/2017/11/workarounds-for-deploying-photonos-2-0-on-vsphere-fusion-workstation.html">the workarounds</a>.</li>
+<li>This article by Christian Posta <a href="http://blog.christianposta.com/microservices/when-not-to-do-microservices/">on when not to do microservices</a> is, in my opinion, a well-balanced view on when microservices offer versus when they don&rsquo;t.</li>
+<li>Larry Smith Jr. shows <a href="https://everythingshouldbevirtual.com/automation/ansible-parsing-csv-list-hosts-ip-hostnames-mac/">how to take data in CSV and convert it to YAML</a> for consumption by Ansible.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>I&rsquo;m clearly behind the times in some of my reading, as <a href="https://jmetz.com/2016/07/storage-forces/">this great article</a> by J Metz was just brought to my attention recently. J does a good job of laying out the various competing forces that drive product/technology evolution and selection in the storage space, though one might argue these same forces are at work in other areas besides just storage.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>Frank Denneman&rsquo;s enormously useful and very successful <em>vSphere 6.5 Host Resources Deep Dive</em> book is now available as a free e-book, courtesy of Rubrik. <a href="http://frankdenneman.nl/2017/11/07/free-vsphere-6-5-host-resources-deep-dive-ebook/">Check out Frank&rsquo;s blog for more details.</a></li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>You&rsquo;ve heard me talk about Spousetivities many times; here are <a href="http://nigelhickey.com/vmworld-2017-spouses-perspective/">some thoughts from a Spousetivities participant</a>.</li>
+</ul>
+<p>Thanks for reading! Feel free to <a href="https://twitter.com/scott_lowe">hit me up on Twitter</a> if you have feedback or would like to share a link I should include in a future Technology Short Take.</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/automation">Automation</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cisco">Cisco</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/azure">Azure</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/photon">Photon</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/encryption">Encryption</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2017/11/08/how-tag-docker-images-git-commit-information/">How to Tag Docker Images with Git Commit Information</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2017/11/13/making-aws-reinvent-more-family-friendly/">Making AWS re:Invent More Family-Friendly</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f10%2ftechnology-short-take-90%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f10%2ftechnology-short-take-90%2f&text=Technology%20Short%20Take%2090" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2017%2f11%2f10%2ftechnology-short-take-90%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2017/03/24/technology-short-take-80/">Technology Short Take 80</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2017/10/14/technology-short-take-88/">Technology Short Take 88</a> <span class="post-date-list">149 May 141414</span></li><li><a href="/2017/08/11/technology-short-take-85/">Technology Short Take 85</a> <span class="post-date-list">119 May 111111</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

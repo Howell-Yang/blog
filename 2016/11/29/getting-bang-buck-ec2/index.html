@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Liveblog: Getting the Most Bang for Your Buck with EC2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Liveblog: Getting the Most Bang for Your Buck with EC2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Liveblog: Getting the Most Bang for Your Buck with EC2 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/11/29/getting-bang-buck-ec2/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Liveblog: Getting the Most Bang for Your Buck with EC2</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 299 May 292929 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/liveblog">Liveblog</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1129 words (estimated 6 minutes to read)</span>
+  <p>This is a liveblog of the AWS re:Invent session titled &ldquo;Getting the Most Bang for Your Buck With #EC2 #Winning&rdquo; (CMP202). The speaker for the session is Joshua Burgin, General Manager, EC2 Spot Business. According to the abstract, this session is supposed to focus on effectively using on-demand instances versus spot instances and reserved instances.</p>
+<p>As a matter of quick introduction, there are three purchasing options for EC2:</p>
+<ul>
+<li>On-demand: &ldquo;pay as you go&rdquo;; no long-term commitments</li>
+<li>Reserved: good for steady-state workloads, used with 1 yr or 3 yr commitment</li>
+<li>Spot: pay market price for unused compute capacity</li>
+</ul>
+<p>How do you choose which one to use? Burgin shares the &ldquo;four pillars of performance and cost optimization&rdquo;:</p>
+<ol>
+<li><em>Right-sizing:</em> choosing the cheapest instance available while meeting performance requirements</li>
+<li><em>Purchasing options:</em> Burgin will discuss this in more detail; this is the primary focus of the discussion</li>
+<li><em>Increase elasticity:</em> turning off (&ldquo;scaling down&rdquo;) instances that don&rsquo;t need to be running (example: turn off development workloads when the developers aren&rsquo;t working)</li>
+<li><em>Measure, monitor, and improve:</em> tagging resources; identitying always-on instances; identifying instances that can be downsized; recommending Reserved Instances (RIs) where it makes sense; dashboards and reports</li>
+</ol>
+<p>Burgin points out the key AWS pricing principles (no up-front investment; pay as you go; pay less when you reserve; pay less when AWS grows), and how that means that you aren&rsquo;t &ldquo;locked in&rdquo; based on decisions you make. (When I say &ldquo;locked in&rdquo;, I mean that decisions can be changed/undone relatively easily; I&rsquo;m not referring to vendor/techology lock-in.)</p>
+<p>With correct optimization, costs can be dramatically reduced compared to building on-premises solutions. Burgin shares an example in which a customer saves $40 million by not having to build a large dedicated on-premises infrastructure. Burgin does admit that this solution isn&rsquo;t necessarily applicable to all instances, but is a great example.</p>
+<p>Burgin now shifts back to a discussion of purchasing options, the main focus on this session. The first purchasing option he discusses is on-demand pricing. It&rsquo;s low cost and flexible, and is well-suited for short-term spiky workloads.</p>
+<p>The second purchasing model is Reserved Instances (RIs). They are ideally suited for steady-state workloads, and offer a significant discount compared to on-demand. Cost reductions are up to 75% compared to on-demand. Recently AWS introduced the ability to convert RIs from one instance family to another instance family; this allows customers to take advantage of new instance families/types over the course of the commitment of the RI. Convertible RIs require a 3 year commitment but also offer a lower savings compared to &ldquo;traditional&rdquo; RIs.</p>
+<p>The third purchasing option is spot instances. They are ideal for time- or instance-flexible workloads. Spot instances can offer up to 90% savings compared to on-demand instances. There&rsquo;s no commitment level, and AWS offers tool like Spot Fleet to help manage your spot instances.</p>
+<p>Spot instances are, essentially, unused on-demand instances. There are two prices involved: the <em>market price</em> and the <em>bid price</em>. The market price is what you&rsquo;ll pay. The bid price will determine how much/how often your spot instances will be reclaimed by AWS (when the instances are reclaimed by AWS your workloads will be interrupted). This model offers some pretty amazing savings, but requires a great deal more work (more management, more application awareness, more coordination, etc.).</p>
+<p>Next, Burgin asks: which purchasing option is right for me?</p>
+<p>The answer: <em>It depends.</em> (Of course!) Burgin says there are use cases that make sense for on-demand, reserved, and spot instances, and I totally agree.</p>
+<p>Before he goes further in showing examples, Burgin takes a quick sidetour into tagging. Tagging, according to Burgin, is critical for understanding cost and being able to optimize cost when running EC2 instances.</p>
+<p>Moving back to an example of how to optimize cost, Burgin talks about how to optimize cost for a stateless web application. You&rsquo;d start with a &ldquo;base layer&rdquo; of RIs to handle the steady state of the web site. As load increases but has not yet reached critical load levels, you can leverage spot instances. At higher peak usage levels, on-demand instances handle the final load levels.</p>
+<p>At the application tier, you would again have a base layer of RIs, but would supplement the RIs with on-demand instances. If you have details about periodic peaks, you can leverage spot instances (specifically, spot blocks) to help address those peaks.</p>
+<p>Finally, at the database tier, you&rsquo;d leverage RIs. There may be use cases for on-demand or spot instances for things like running reports or something like that, but generally RIs are the right fit for the database tier.</p>
+<p>Burgin next mentions additional services like SQS, Lambda, etc., as opportunities to further eliminate servers (instances).</p>
+<p>After a somewhat detailed discussion of on-premises purchasing provisioning patterns&mdash;somewhat focused on grid computing use cases&mdash;Burgin shares another example how combining RIs, on-demand, and spot instances to address the &ldquo;conflicting needs&rdquo; of IT versus the business. IT gets effective/efficient usage of resources, while the business gets access to computing resources when they need them.</p>
+<p>Next, Burgin shares some common purchasing patterns across various industries:</p>
+<ul>
+<li>Web scale companies typically use quite a bit of on-demand but a ton of spot instances</li>
+<li>Enterprise SaaS companies generally use RIs, with only minimal supplementing that capacity with on-demand instances and spot instances</li>
+<li>An &ldquo;onboarding enterprise&rdquo; (an enterprise moving to the cloud) will use RIs in a &ldquo;step function&rdquo; where the amount of RIs will increase at certain periods; generally these RI increases will happen in response to generally increasing on-demand instance usage</li>
+<li>Gaming companies would typically have a strong base layer of RIs, and would use a heavy number of on-demand instances during a game launch, a promotion, or similar</li>
+<li>Scientific research companies have a small number of RIs, a slightly larger number of on-demand instances, but will have giant leaps of huge numbers of spot instances for a very short period of time. These short spikes represent some &ldquo;crazy idea&rdquo; involving computational research or similar.</li>
+<li>A generic &ldquo;technology company&rdquo; will have a blend of reserved instances, on-demand instances, and spot instances, each tailored to particular to particular use cases. (Burgin at this point mentions a Jenkins plug-in to help leverage spot instances.)</li>
+</ul>
+<p>Burgin next shares how the typical usage patterns he shared across industries can also be generalized in some cases to represent different functions within a single large company (internal IT, new application development, test/dev, etc.).</p>
+<p>At this point, Burgin recaps the key points from the presentation:</p>
+<ul>
+<li>Remember the pillars of optimization (right-sizing, increasing elasticity, measuring/monitoring/improving, and reviewing purchasing options)</li>
+<li>Use tags to understand your services (very important!)</li>
+<li>Have a &ldquo;balanced meal&rdquo; across the 3 purchasing options&mdash;use the right purchasing option for the right workload</li>
+<li>Architect your workloads with performance and cost in mind (move from monolithic to microservices architectures, etc.)</li>
+</ul>
+<p>At this point, Burgin wraps up the session.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/reinvent2016">reInvent2016</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/11/29/hybrid-bridging-gap-to-cloud/">Liveblog: Hybrid Architectures, Bridging the Gap to the Cloud</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/11/29/thoughts-aws-reinvent-day-1/">Thoughts on AWS re:Invent Day 1</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fgetting-bang-buck-ec2%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fgetting-bang-buck-ec2%2f&text=Liveblog%3a%20Getting%20the%20Most%20Bang%20for%20Your%20Buck%20with%20EC2" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f29%2fgetting-bang-buck-ec2%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/11/29/hybrid-bridging-gap-to-cloud/">Liveblog: Hybrid Architectures, Bridging the Gap to the Cloud</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2016/11/29/scaling-first-10mil-users/">Liveblog: Scaling to Your First 10 Million Users</a> <span class="post-date-list">299 May 292929</span></li><li><a href="/2016/11/20/spousetivities-at-reinvent/">Spousetivities at AWS re:Invent</a> <span class="post-date-list">209 May 202020</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

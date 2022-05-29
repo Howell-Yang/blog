@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Bootstrapping Cloud Instances into Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Bootstrapping Cloud Instances into Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Bootstrapping Cloud Instances into Ansible - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2015/11/23/bootstrapping-cloud-instances-ansible/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Bootstrapping Cloud Instances into Ansible</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 239 May 232323 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;470 words (estimated 3 minutes to read)</span>
+  <p>A while ago, I wrote an article about <a href="/2015/05/26/bootstrap-servers-ansible/">bootstrapping servers into Ansible</a>&mdash;in other words, how to prepare servers to be managed via <a href="http://www.ansible.com/">Ansible</a>. In order for a server to be managed via Ansible, you usually must first create a user account for Ansible, populate the appropriate SSH keys, and grant the new Ansible user sudo permissions. The process I described in my earlier blog post works great for manually-built servers (physical or virtual), but I recently needed to revisit this process for cloud instances. Was it possible to use the process I&rsquo;d found to bootstrap cloud instances into Ansible?</p>
+<p>Cloud instances are a slightly different beast than manually-built servers primarily because password authentication isn&rsquo;t an option&mdash;generally speaking, you&rsquo;re required to use SSH keys when working with cloud instances. Ansible is SSH-based, as you probably already know, so this <em>shouldn&rsquo;t</em> be an issue, but it was still something I hadn&rsquo;t tested or verified. After a bit of testing, I found the bootstrap process I described in my earlier post can be easily adapted for cloud instances.</p>
+<p>For reference, here&rsquo;s the command I use when bootstrapping manually-built servers into Ansible:</p>
+<pre><code>ansible-playbook bootstrap.yml -k -K --extra-vars \
+&quot;hosts=newhost.domain.com user=admin&quot;
+</code></pre>
+<p>The <code>bootstrap.yml</code> playbook simply creates an Ansible user, populates the appropriate SSH keys, and sets <code>sudo</code> permissions. The playbook relies upon the variables passed on the command-line, which tell it what hosts should be affected and what user account (and password, via the <code>-k</code> and <code>-K</code> parameters) to use to modify the remote server.</p>
+<p>With a cloud instance, this needed to change. First, you don&rsquo;t know the password; you&rsquo;re required to use an SSH key for authentication. You generally <em>do</em> know the user account, but not the password. After a short bit of trial and error, I found the following command-line worked with a freshly-booted cloud instance:</p>
+<pre><code>ansible-playbook bootstrap.yml --extra-vars \
+&quot;hosts=172.16.6.7 user=ubuntu&quot; --private-key=~/.ssh/cloudkey.pem
+</code></pre>
+<p>The command is largely the same, with two major changes:</p>
+<ul>
+<li>The <code>-k</code> and <code>-K</code> parameters are gone. The password is unknown, so there&rsquo;s no point in telling Ansible to prompt for any passwords.</li>
+<li>The <code>--private-key</code> parameter supplies the path and name of the SSH keypair (obtained from your cloud platform) that allow initial authentication to the new cloud instance.</li>
+<li>You&rsquo;ll note I omitted the <code>-i</code> parameter to specify an inventory file; this is because I created an <code>ansible.cfg</code> in this directory and specified the inventory file there. (It makes the command-line easier and simpler.)</li>
+</ul>
+<p>As before, I use the <code>--extra-vars</code> parameter to supply the specific host being bootstrapped into Ansible as well as the name of the initial user account (in this case, I&rsquo;m bootstrapping an Ubuntu cloud image, so the initial user is &ldquo;ubuntu&rdquo;). Once the initial bootstrap process completes successsfully, I can then run subsequent playbooks against this cloud instance with no further configuration or command-line parameters required.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/linux">Linux</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cli">CLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ubuntu">Ubuntu</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2015/11/21/using-ssh-bastion-host/">Using an SSH Bastion Host</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2015/11/25/intro-to-terraform/">An Introduction to Terraform</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f23%2fbootstrapping-cloud-instances-ansible%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f23%2fbootstrapping-cloud-instances-ansible%2f&text=Bootstrapping%20Cloud%20Instances%20into%20Ansible" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2015%2f11%2f23%2fbootstrapping-cloud-instances-ansible%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2015/10/21/add-interface-instance-after-creation/">Adding an Interface to an OpenStack Instance After Creation</a> <span class="post-date-list">219 May 212121</span></li><li><a href="/2015/09/24/using-docker-machine-with-openstack/">Using Docker Machine with OpenStack</a> <span class="post-date-list">249 May 242424</span></li><li><a href="/2015/08/25/technology-short-take-53/">Technology Short Take #53</a> <span class="post-date-list">259 May 252525</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

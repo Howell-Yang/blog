@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Using NetApp Deduplication with Block Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Using NetApp Deduplication with Block Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Using NetApp Deduplication with Block Storage - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2008/04/24/using-netapp-deduplication-with-block-storage/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Using NetApp Deduplication with Block Storage</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 249 May 242424 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/explanation">Explanation</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;596 words (estimated 3 minutes to read)</span>
+  <p>Building on my earlier article on <a href="/2008/03/31/quick-guide-to-setting-up-netapp-deduplication/">setting up NetApp deduplication</a>, I wanted to follow up with some information on using NetApp deduplication with block storage (LUNs presented via Fibre Channel or iSCSI).</p>
+<p>For the most part, using NetApp deduplication with block storage is a lot like I described earlier:</p>
+<ul>
+<li>
+<p>You (obviously) still need the NearStore and deduplication (A-SIS) licenses installed on the controller(s).</p>
+</li>
+<li>
+<p>You will still turn deduplication on using the <code>sis on</code> command for the FlexVol containing the LUNs.</p>
+</li>
+<li>
+<p>Limitations on the size of the FlexVol still apply.</p>
+</li>
+<li>
+<p>You use the <code>sis status</code> command to check on the status of deduplication, and the <code>sis config</code> command to see the deduplication schedule.</p>
+</li>
+</ul>
+<p>OK, so what&rsquo;s different? Well, it has to do with how LUNs are provisioned on a NetApp storage system. I&rsquo;ve blogged before about <a href="/2007/12/05/managing-lun-space-requirements-with-netapp-storage/">managing LUN space requirements on a NetApp</a>, and about <a href="/2007/05/21/lun-clones-vs-flexclones/">using LUN clones vs. FlexClones</a>. That second article, in particular, really goes into detail on how LUNs are implemented on top of NetApp&rsquo;s file system, WAFL. Since LUNs are represented by WAFL as a single file, they are also normally &ldquo;space reserved,&rdquo; meaning that the maximum size of the LUN is allocated at the time of creation. If you create a 50GB LUN, then Data ONTAP creates a 50GB file right away. (For readers out there who are well-versed in NetApp storage, I know that&rsquo;s a bit of a simplification, but bear with me.)</p>
+<p>What does this have to do with deduplication? Great question. If the LUN is space reserved&mdash;meaning that the maximum size of the LUN is allocated up front and remains allocated to the LUN&mdash;then the file that represents the LUN won&rsquo;t ever decrease in size to reflect deduplication savings, and deduplication therefore does you <em>absolutely no good whatsoever</em>. This is not to say that deduplication doesn&rsquo;t work, just that it won&rsquo;t help you at all.</p>
+<p>Fortunately, there&rsquo;s an easy fix for this. When creating the LUN, simply uncheck the box marked &ldquo;Space Reserved&rdquo; and allow Data ONTAP to allocate space to the LUN out of the containing FlexVol on an as-needed basis. Because the file that represents the LUN can grow in size, it can also shrink in size, and deduplication will cause the file that represents the LUN to decrease in size. This then allows you to provision additional LUNs from the same FlexVol to take advantage of the space savings resulting from deduplication.</p>
+<p>I know that seems a bit confusing; I&rsquo;ll probably post another article with some more in-depth discussions of the details. (Either that, or I&rsquo;ll encourage my NetApp readers to chime in below in the comments.)</p>
+<p>So, in summary, when using NetApp deduplication with block storage:</p>
+<ul>
+<li>
+<p>you&rsquo;ll setup and configure deduplication on the FlexVol containing your LUN(s) just like described in my earlier article;</p>
+</li>
+<li>
+<p>you&rsquo;ll uncheck the &ldquo;Space Reserved&rdquo; checkbox when creating the LUNs to be deduplicated;</p>
+</li>
+<li>
+<p>you won&rsquo;t see the space savings from the host&rsquo;s perspective and therefore can&rsquo;t store more data in that LUN than the size of the LUN; but</p>
+</li>
+<li>
+<p>you will be able to provision additional LUNs in that same FlexVol that can be presented back to host for additional storage.</p>
+</li>
+</ul>
+<p>I hope this helps clarify some of the questions or issues surrounding the use of NetApp deduplication with block storage. Feel free to add information, experiences with deduplication and block storage, or ask additional questions in the comments below.</p>
+<p><strong>UPDATE:</strong> There are some additional considerations about how to provision LUNs along with NetApp deduplication that warrant a more in-depth discussion. Look for a follow-up post within the next few days.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/iscsi">iSCSI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/netapp">NetApp</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ontap">ONTAP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/san">SAN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2008/04/23/replacing-office-2008-icons/">Replacing Office 2008 Icons</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2008/04/24/vmware-fusion-112-now-available/">VMware Fusion 1.1.2 Now Available</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fusing-netapp-deduplication-with-block-storage%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fusing-netapp-deduplication-with-block-storage%2f&text=Using%20NetApp%20Deduplication%20with%20Block%20Storage" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2008%2f04%2f24%2fusing-netapp-deduplication-with-block-storage%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2008/04/20/netapp-blog-aggregator/">NetApp Blog Aggregator?</a> <span class="post-date-list">209 May 202020</span></li><li><a href="/2007/12/05/managing-lun-space-requirements-with-netapp-storage/">Managing LUN Space Requirements with NetApp Storage</a> <span class="post-date-list">59 May 5055</span></li><li><a href="/2007/10/08/full-vm-recovery-with-netapp-snapshots/">Full VM Recovery with NetApp Snapshots</a> <span class="post-date-list">89 May 8088</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

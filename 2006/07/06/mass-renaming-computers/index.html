@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Mass Renaming Computers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Mass Renaming Computers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Mass Renaming Computers - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2006/07/06/mass-renaming-computers/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Mass Renaming Computers</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 69 May 6066 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;533 words (estimated 3 minutes to read)</span>
+  <p>I hate to continue beating the <code>for /f</code> stick, but it sure is a handy command. This time we&rsquo;re going to use it to rename large numbers of computers at a time, such as when your company changes the standard naming convention and then asks you to go back and rename all the computers that don&rsquo;t match the new convention. This is a big deal because not only must the computers be renamed, but the matching computer accounts in Active Directory must also be renamed at the same time. Renaming the computer manually (from the Network Identification tab of the properties of My Computer) renames the Active Directory account, but who wants to do it all by hand?</p>
+<p>First, you&rsquo;ll need to prepare a comma-separated list of the old computer name (the current computer name) and the matching new computer name. We&rsquo;re using CSV (comma separated values) here because a number of the directory service command-line utilities, as well as other tools, produce CSV in their output. Building our solution here to accept CSV means that you can later chain pieces together for an even more automated solution.</p>
+<p>Once the CSV file is in place, the command looks something like this:</p>
+<pre><code>for /f &quot;tokens=1,2 delims=,&quot; %1 in (file.csv) do 
+@echo %1 &gt;&gt; results.txt &amp;&amp;
+@netdom renamecomputer %1 /newname:%2 /ud:DomainAdmin /pd:AdminPass 
+/uo:LocalAdmin /po:AdminPass /force /reboot &gt;&gt; results.txt
+</code></pre>
+<p>Please note that you can run this command across domains with a trust relationship in place; the &ldquo;/ud&rdquo; switch assumes the computer&rsquo;s current domain unless told otherwise, and the &ldquo;/uo&rdquo; parameter assumes a local account unless specified otherwise.</p>
+<p>You&rsquo;ll note we&rsquo;re doing a couple of new things here. First, we&rsquo;re echoing the old name of the computer to a text file; this is for troubleshooting purposes. Then, we run the <code>netdom</code> command, substituting the appropriate parameters from the text file, and redirecting its output to the same text file as well. The two commands are concatenated together on the same line using the double ampersands.</p>
+<p>The resulting output (results.txt in the example above) looks like this:</p>
+<pre><code>pcname1
+The command completed successfully.
+
+pcname2
+The command completed successfully.
+</code></pre>
+<p>This makes it very easy to go back and double-check to see which computers were successfully renamed and which computers had problems.</p>
+<p>There are a couple of important caveats to this solution, however:</p>
+<ol>
+<li>
+<p>You must either embed the passwords for the domain administrator and local administrator accounts in the command line, or you must enter the passwords for each computer to be renamed. When renaming hundreds of computers, typing in the passwords is obviously not an option.</p>
+</li>
+<li>
+<p>Every computer must have the same local account and password as specified in the command line. One could work around this by embedding the local username and password into the source text file, but this would most likely be more complicated than just standardizing usernames and passwords across workstations.</p>
+</li>
+<li>
+<p>This command is not intelligent enough to stop trying if the remote computer is unavailable, so lengthy delays will be introduced for those remote computers that are, for whatever reason, unreachable.</p>
+</li>
+</ol>
+<p>Even with these limitations and drawbacks, however, the process can be very useful when there are significant numbers of computers that must be renamed.</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/activedirectory">ActiveDirectory</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/microsoft">Microsoft</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/windows">Windows</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2006/07/05/its-a-matter-of-privacy-not-security/">It&#39;s a Matter of Privacy, Not Security</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2006/07/06/remotely-setting-the-dns-suffix-search-order/">Remotely Setting the DNS Suffix Search Order</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f06%2fmass-renaming-computers%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f06%2fmass-renaming-computers%2f&text=Mass%20Renaming%20Computers" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2006%2f07%2f06%2fmass-renaming-computers%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2006/04/27/linux-ad-integration-with-windows-server-2003-r2/">Linux-AD Integration With Windows Server 2003 R2</a> <span class="post-date-list">279 May 272727</span></li><li><a href="/2006/01/04/mac-os-x-and-local-domains/">Mac OS X and .local Domains</a> <span class="post-date-list">49 May 4044</span></li><li><a href="/2005/07/22/linux-ad-integration-wrap-up/">Linux-AD Integration Wrap-Up</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

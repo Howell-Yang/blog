@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Setting up the Kubernetes AWS Cloud Provider - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Setting up the Kubernetes AWS Cloud Provider - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Setting up the Kubernetes AWS Cloud Provider - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2018/09/28/setting-up-the-kubernetes-aws-cloud-provider/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Setting up the Kubernetes AWS Cloud Provider</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1298 words (estimated 7 minutes to read)</span>
+  <p>The AWS cloud provider for <a href="https://kubernetes.io">Kubernetes</a> enables a couple of key integration points for Kubernetes running on AWS; namely, dynamic provisioning of Elastic Block Store (EBS) volumes and dynamic provisioning/configuration of Elastic Load Balancers (ELBs) for exposing Kubernetes Service objects. Unfortunately, the documentation surrounding how to set up the AWS cloud provider with Kubernetes is woefully inadequate. This article is an attempt to help address that shortcoming.</p>
+<p>More details are provided below, but at a high-level here&rsquo;s what you&rsquo;ll need to make the AWS cloud provider in Kubernetes work:</p>
+<ul>
+<li>The hostname of each node must match EC2&rsquo;s private DNS entry for that node</li>
+<li>An IAM role and policy that EC2 instances can assume as an instance profile</li>
+<li>Kubernetes-specific tags applied to the AWS resources used by the cluster</li>
+<li>Particular command-line flags added to the Kubernetes API server, Kubernetes controller manager, and the Kubelet</li>
+</ul>
+<p>Let&rsquo;s dig into these requirements in a bit more detail.</p>
+<h2 id="node-hostname">Node Hostname</h2>
+<p>It&rsquo;s important that the name of the Node object in Kubernetes matches the private DNS entry for the instance in EC2. You can use <code>hostnamectl</code> or a confiugration management tool (take your pick) to set the instance&rsquo;s hostname to the FQDN that matches the EC2 private DNS entry. This typically looks something like <code>ip-10-15-30-45.us-west-1.compute.internal</code>, where <code>10-15-30-45</code> is the private IP address and <code>us-west-1</code> is the region where the instance was launched.</p>
+<p>If you&rsquo;re unsure what it is, or if you&rsquo;re looking for a programmatic way to retrieve the FQDN, just <code>curl</code> the AWS metadata server:</p>
+<pre><code>curl http://169.254.169.254/latest/meta-data/local-hostname
+</code></pre>
+<p>Make sure you set the hostname before attempting to bootstrap the Kubernetes cluster, or you&rsquo;ll end up with nodes whose name in Kubernetes doesn&rsquo;t match up, and you&rsquo;ll see various &ldquo;permission denied&rdquo;/&ldquo;unable to enumerate&rdquo; errors in the logs. For what it&rsquo;s worth, preliminary testing indicates that this step&mdash;setting the hostname to the FQDN&mdash;is necessary for Ubuntu but may not be needed for CentOS/RHEL.</p>
+<h2 id="iam-role-and-policy">IAM Role and Policy</h2>
+<p>Because the AWS cloud provider performs some tasks on behalf of the operator&mdash;like creating an ELB or an EBS volume&mdash;the instances need IAM permissions to perform these tasks. Thus, you need to have an IAM instance profile assigned to the instances that gives them permissions.</p>
+<p>The <em>exact</em> permissions that are needed haven&rsquo;t been documented anywhere that I&rsquo;ve found (please contact me if you have more information), but here&rsquo;s a summary of permissions for control plane nodes that works:</p>
+<ul>
+<li>Allow permissions on <code>ec2:*</code></li>
+<li>Allow permissions on <code>elasticloadbalancing:*</code></li>
+<li>Allow permissions on <code>ecr:GetAuthorizationToken</code>, <code>ecr:BatchCheckLayerAvailability</code>, <code>ecr:GetDownloadUrlForLayer</code>, <code>ecr:GetRepositoryPolicy</code>, <code>ecr:DescribeRepositories</code>, <code>ecr:ListImages</code>, and <code>ecr:BatchGetImage</code></li>
+<li>Allow permissions on <code>autoscaling:DescribeAutoScalingGroup</code> and <code>autoscaling:UpdateAutoScalingGroup</code></li>
+</ul>
+<p>It&rsquo;s probably possible to whittle down the <code>ec2:*</code> permission for control plane nodes. Some preliminary thoughts that my colleague Joe Beda shared with me indicates that the following permissions may be enough: <code>ec2:DescribeInstances</code>, <code>ec2:DescribeSecurityGroups</code>, <code>ec2:AttachVolume</code>, <code>ec2:DetachVolume</code>, <code>ec2:DescribeVolumes</code>, <code>ec2:CreateVolume</code>, <code>ec2:DeleteVolume</code>, <code>ec2:DescribeSubnets</code>, <code>ec2:CreateSecurityGroup</code>, <code>ec2:DeleteSecurityGroup</code>, <code>ec2:AuthorizeSecurityGroupIngress</code>, <code>ec2:RevokeSecurityGroupIngress</code>, <code>ec2:CreateTags</code>, <code>ec2:DescribeRouteTables</code>, <code>ec2:CreateRoute</code>, <code>ec2:DeleteRoute</code>, and <code>ec2:ModifyInstanceAttribute</code>. Note, however, that this list has <strong>not</strong> been tested or validated.</p>
+<p>For worker nodes, the permissions are not as far-reaching:</p>
+<ul>
+<li>Allow permission on <code>ec2:Describe*</code></li>
+<li>Allow permissions on <code>ecr:GetAuthorizationToken</code>, <code>ecr:BatchCheckLayerAvailability</code>, <code>ecr:GetDownloadUrlForLayer</code>, <code>ecr:GetRepositoryPolicy</code>, <code>ecr:DescribeRepositories</code>, <code>ecr:ListImages</code>, and <code>ecr:BatchGetImage</code></li>
+</ul>
+<p>You&rsquo;ll want to capture these permissions in a policy statement, associate that policy statement with a role, and then associate that role with an IAM instance profile. You&rsquo;ll end up with two IAM instance profiles: one for the control plane nodes with a broader set of permissions, and one for the worker nodes with a more restrictive set of permissions.</p>
+<p>(UPDATE: Reader Matt Roux pointed out that <a href="https://github.com/kubernetes/cloud-provider-aws">the <code>cloud-provider-aws</code> GitHub repository</a>&mdash;which represents the future of the AWS cloud provider&mdash;contains a proper IAM policy for control plane nodes and worker nodes. Thanks Matt!)</p>
+<h2 id="aws-tags">AWS Tags</h2>
+<p>The AWS cloud provider needs a specific tag to be present on almost all the AWS resources that a Kubernetes cluster needs. The tag key is <code>kubernetes.io/cluster/&lt;cluster-name&gt;</code>; the value of the tag is immaterial (this tag replaces an older <code>KubernetesCluster</code> tag). Note that Kubernetes itself will also use this tag on things that it creates, and it will use a value of &ldquo;owned&rdquo;. This value does <em>not</em> need to be used on resources that Kubernetes itself did not create. Most of the documentation I&rsquo;ve seen indicates that the tag is needed on all instances and on exactly one security group (this is the security group that will be modified to allow ELBs to access the nodes, so the worker nodes should be a part of this security group). However, I&rsquo;ve also found it necessary to make sure the <code>kubernetes.io/cluster/&lt;cluster-name&gt;</code> tag is present on subnets and route tables in order for the integration to work as expected.</p>
+<h2 id="kubernetes-configuration">Kubernetes Configuration</h2>
+<p>On the Kubernetes side of the house, you&rsquo;ll need to make sure that the <code>--cloud-provider=aws</code> command-line flag is present for the API server, controller manager, and every Kubelet in the cluster.</p>
+<p>If you&rsquo;re using <code>kubeadm</code> to set up your cluster, you can have <code>kubeadm</code> add the flags to the API server and controller manager by using the &ldquo;apiServerExtraArgs&rdquo; and &ldquo;controllerManagerExtraArgs&rdquo; sections in a configuration file, like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">apiServerExtraArgs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">controllerManagerExtraArgs</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>Likewise, you can use the &ldquo;nodeRegistration&rdquo; section of a <code>kubeadm</code> configuration file to pass extra arguments to the Kubelet, like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>I&rsquo;d probably also recommend setting the name of the Kubelet to the node&rsquo;s private DNS entry in EC2 (this ensures it matches the hostname, as described earlier in this article). Thus, the full &ldquo;nodeRegistration&rdquo; section might look like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-yaml" data-lang="yaml"><span style="display:flex;"><span><span style="color:#f92672">nodeRegistration</span>:
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">name</span>: <span style="color:#ae81ff">ip-10-15-30-45.us-west-1.compute.internal</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">kubeletExtraArgs</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">cloud-provider</span>: <span style="color:#ae81ff">aws</span>
+</span></span></code></pre></div><p>You would need to substitute the correct fully-qualified domain name for each instance, of course.</p>
+<p>Finally, for dynamic provisioning of Persistent Volumes you&rsquo;ll need to create a default Storage Class. The AWS cloud provider has one, but it doesn&rsquo;t get created automatically. Use this command to define the default Storage Class:</p>
+<pre><code>kubectl apply -f https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/addons/storage-class/aws/default.yaml
+</code></pre>
+<p>This will create a Storage Class named &ldquo;gp2&rdquo; that has the necessary annotation to make it the default Storage Class (see <a href="https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/">here</a>). Once this Storage Class is defined, dynamic provisioning of Persistent Volumes should work as expected.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Troubleshooting is notoriously difficult, as most errors seem to be &ldquo;transparently swallowed&rdquo; instead of exposed to the user/operator. Here are a few notes that may be helpful:</p>
+<ul>
+<li>You <em>must</em> have the <code>--cloud-provider=aws</code> flag added to the Kubelet <strong>before</strong> adding the node to the cluster. Key to the AWS integration is a particular field on the Node object&mdash;the <code>.spec.providerID</code> field&mdash;and that field will <em>only</em> get populated if the flag is present when the node is added to the cluster. If you add a node to the cluster and then add the command-line flag afterward, this field/value won&rsquo;t get populated and the integration won&rsquo;t work as expected. No error is surfaced in this situation (at least, not that I&rsquo;ve been able to find).</li>
+<li>If you do find yourself with a missing <code>.spec.providerID</code> field on the Node object, you can add it with a <code>kubectl edit node</code> command. The format of the value for this field is <code>aws:///&lt;az-of-instance&gt;/&lt;instance-id&gt;</code>.</li>
+<li>Missing AWS tags on resources will cause odd behaviors, like failing to create an ELB for a LoadBalancer-type Service. I haven&rsquo;t had time to test all the different failure scenarios, but if the cloud provider integration isn&rsquo;t working as expected I&rsquo;d double-check that the Kubernetes-specific tags are present on all the AWS resources.</li>
+</ul>
+<p>Hopefully the information in this article helps remove some of the confusion and lack of clarity around getting the AWS cloud provider working with your Kubernetes cluster. I intend to keep this document updated as I discover additional failure scenarios or find more detailed documentation. If you have questions, feel free to <a href="https://twitter.com/scott_lowe">hit me on Twitter</a> or find me in <a href="https://kubernetes.slack.com">the Kubernetes Slack community</a>. (If you&rsquo;re an expert in the AWS cloud provider code and can help flesh out the details of this post, please contact me as well!) Have fun out there, fellow Kubernauts!</p>
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/kubernetes">Kubernetes</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2018/09/27/a-markdown-to-pdf-workflow-on-linux/">A Markdown-to-PDF Workflow on Linux</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2018/10/01/vmworld-emea-2018-and-spousetivities/">VMworld EMEA 2018 and Spousetivities</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f28%2fsetting-up-the-kubernetes-aws-cloud-provider%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f28%2fsetting-up-the-kubernetes-aws-cloud-provider%2f&text=Setting%20up%20the%20Kubernetes%20AWS%20Cloud%20Provider" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2018%2f09%2f28%2fsetting-up-the-kubernetes-aws-cloud-provider%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2018/02/09/technology-short-take-94/">Technology Short Take 94</a> <span class="post-date-list">99 May 9099</span></li><li><a href="/2018/09/07/technology-short-take-104/">Technology Short Take 104</a> <span class="post-date-list">79 May 7077</span></li><li><a href="/2018/08/17/technology-short-take-103/">Technology Short Take 103</a> <span class="post-date-list">179 May 171717</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

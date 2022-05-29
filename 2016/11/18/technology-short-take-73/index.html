@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Technology Short Take #73 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Technology Short Take #73 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Technology Short Take #73 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2016/11/18/technology-short-take-73/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Technology Short Take #73</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 189 May 181818 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/information">Information</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;939 words (estimated 5 minutes to read)</span>
+  <p>Welcome to Technology Short Take #73. Sorry for the long delay since the last Technology Short Take; personal matters have been taking quite the toll (if you follow me on Twitter, you&rsquo;ll know to what personal matters I&rsquo;m referring). In any case, enough of that&mdash;here&rsquo;s some data center-related content that I hope you find useful!</p>
+<h2 id="networking">Networking</h2>
+<ul>
+<li>Ansible has made some good progress in supporting network automation in the latest release (2.2), according to <a href="https://www.ansible.com/blog/ansible-network-updates">this blog post</a>. This is an area where I hope to spend more time in the coming weeks before years&rsquo; end.</li>
+<li>Tomas Fojta shows how to use a PowerShell script to <a href="https://fojta.wordpress.com/2015/03/02/how-to-monitor-health-of-nsx-edge-gateways/">monitor the health of NSX Edge gateways</a>.</li>
+<li>Jeremy Stretch mulls over the (perceived) problem of <a href="http://packetlife.net/blog/2016/sep/30/overlay-problem-getting-in-out/">getting traffic into and out of overlay networks</a>. I recommend reading this article, as well as reading the comments. Many commenters suggest just using L3 and having the hosts participate in a routing protocol like BGP, but as Jeremy points out many switches don&rsquo;t have the capacity to handle that many routes. (Or, if they do, they&rsquo;re quite expensive.) Seems like there&rsquo;s this company in Palo Alto making a product that handles this issue pretty decently&hellip;(<a href="http://www.vmware.com/products/nsx.html">hint</a>).</li>
+<li>Cumulus Networks recently <a href="https://cumulusnetworks.com/blog/cumulus-linux-network-command-line-utlility/">introduced the Cumulus Linux Network Command Line Utility (NCLU)</a>, which provides a more unified front-end to configuring switches running Cumulus Linux. I could see where some might say that the introduction of the NCLU proves that mainstream Linux on network switches isn&rsquo;t a viable model; personally, I don&rsquo;t see that to be the case. (I&rsquo;m admittedly a Cumulus Networks fan.) I&rsquo;m curious to know what others think.</li>
+<li>Russell Bryant has a <em>really</em> great post on <a href="https://blog.russellbryant.net/2016/11/11/ovn-logical-flows-and-ovn-trace/">OVN logical flows and the new <code>ovn-trace</code> command</a>. Russell&rsquo;s post not only provides a great explanation of OVN logical flows, but also does a good job of giving someone the basics of OpenFlow as well.</li>
+<li>If you&rsquo;re not familiar with OVN, Dustin Spinhirne has a good <a href="http://blog.spinhirne.com/2016/09/a-primer-on-ovn.html">primer on OVN</a>.</li>
+</ul>
+<h2 id="servershardware">Servers/Hardware</h2>
+<ul>
+<li>Kevin Houston <a href="http://bladesmadesimple.com/2016/10/workload-acceleration-options-for-blade-servers/">discusses</a> workload acceleration options&mdash;specifically, storage acceleration via NVMe or PCIe SSDs&mdash;for blade servers. He also has a good article outlining some <a href="http://bladesmadesimple.com/2016/11/storage-options-for-blade-servers/">storage options for various blade server platforms</a> that might be helpful as well.</li>
+</ul>
+<h2 id="security">Security</h2>
+<ul>
+<li>Marcos Hernandez has a pair of great articles on integrating next-generation security services into OpenStack by leveraging NSX (see <a href="http://blogs.vmware.com/openstack/next-generation-security-services-openstack/">part 1</a> and <a href="http://blogs.vmware.com/openstack/next-generation-security-services-openstack-part-2/">part 2</a>). Marcos also has a post on <a href="http://blogs.vmware.com/openstack/advanced-security-services-neutron-nsx-palo-alto-next-generation-firewall/">integrating Palo Alto into OpenStack</a> using NSX and the NetX APIs.</li>
+</ul>
+<h2 id="cloud-computingcloud-management">Cloud Computing/Cloud Management</h2>
+<ul>
+<li>Viktor van den Berg has a good article on <a href="https://www.viktorious.nl/2016/10/12/automated-dns-registration-with-vra/">using vRA and vRO to automate DNS registrations</a>.</li>
+</ul>
+<h2 id="operating-systemsapplications">Operating Systems/Applications</h2>
+<ul>
+<li>Jeff Geerling walks you through <a href="http://www.jeffgeerling.com/blog/2016/using-ansible-through-windows-10s-subsystem-linux">how to use Ansible via Windows 10&rsquo;s Subsystem for Linux</a>. Based on Jeff&rsquo;s description, it sounds like the Subsystem for Linux is essentially nothing more than an Ubuntu VM running on Windows 10.</li>
+<li>There&rsquo;s the beginnings of a Photon OS Administration Guide <a href="https://github.com/vmware/photon/blob/master/docs/photon-admin-guide.md">available on GitHub</a>. While it looks reasonably comprehensive and complete, I do have to question how current it is given that there are still references to AppCatalyst (which was discontinued by VMware quite a while ago). Still, there&rsquo;s some good information in there if you&rsquo;re using/experimenting with Photon OS.</li>
+<li>I&rsquo;ve mentioned both <a href="https://paw.cloud">Paw</a> (OS X API tool I discussed <a href="/2015/11/14/handy-gui-tool-working-apis/">here</a>) and <a href="https://stedolan.github.io/jq/"><code>jq</code></a> (command-line tool for manipulating JSON, found in <a href="/2015/11/11/handy-cli-tool-json/">my post here</a>) before, but now you can have <a href="https://paw.cloud/docs/dynamic-values/jq-processor">both of them together</a>. Nifty.</li>
+<li>On the topic of Ansible again, here&rsquo;s an article by Scott Harney on <a href="https://www.scottharney.com/using-ansible-to-bootstap-my-work-environment-part-4/">using Ansible to bootstrap an EC2 instance</a> configured just the way he wants it. You may also find some of the other articles in that series useful as well; I encourage you to have a look at them.</li>
+<li>Matt Oswalt has a <em>great</em> article on <a href="https://keepingitclassless.net/2016/10/principles-of-automation/">the principles of automation</a>. Read it, study it, breath it, live it. Seriously.</li>
+<li>PowerCLI Core, which enables cross-platform support for PowerCLI, is  <a href="http://blogs.vmware.com/PowerCLI/2016/10/powercli-core-fling-available.html">available as a fling</a>. Cool.</li>
+<li>Chris Evans <a href="https://blog.architecting.it/2016/11/02/aws-getting-serious-about-enterprise-on-prem-with-dockerised-linux-ami/">speculates</a> that the release of Amazon Linux as a Docker container for use w/ on-premises workloads signals a shift for AWS.</li>
+</ul>
+<h2 id="storage">Storage</h2>
+<ul>
+<li>Robin Harris <a href="http://storagemojo.com/2016/10/06/is-3d-xpoint-in-trouble/">tackles some concerns over 3D XPoint</a>; specifically, concerns over original performance claims (which focuses on raw chip-level performance) and tested performance numbers (which were based on complete systems).</li>
+<li>Chris Evans <a href="https://blog.architecting.it/2016/10/17/snia-has-high-hopes-for-swordfish/">talks a bit about Swordfish</a>, the extension to the Redfish server hardware management API that focuses specifically on block storage.</li>
+</ul>
+<h2 id="virtualization">Virtualization</h2>
+<ul>
+<li>If you <a href="https://twitter.com/scott_lowe">follow me on Twitter</a>, you may have seen me mention that I was experimenting with <a href="https://github.com/vagrant-libvirt/vagrant-libvirt">the Libvirt provider for Vagrant</a>. While this provider looks promising, my experience is that it&rsquo;s still &ldquo;bleeding edge&rdquo;&mdash;expect some minor cuts if you decide to use it.</li>
+<li>William Lam describes some anticipated <a href="http://www.virtuallyghetto.com/2016/10/nested-esxi-enhancements-in-vsphere-6-5.html">enhancements for nested ESXi in vSphere 6.5</a>. William also discusses <a href="http://www.virtuallyghetto.com/2016/11/usb-3-0-ethernet-adapter-nic-driver-for-esxi-6-5.html">a new USB 3.0 Ethernet adapter driver</a> for vSphere 6.5.</li>
+<li>Frank Denneman&mdash;now back at VMware (welcome back, Frank!)&mdash;has <a href="http://frankdenneman.nl/2016/10/13/vmware-cloud-aws-closer-look/">a closer look at VMware Cloud on AWS</a>.</li>
+</ul>
+<h2 id="careersoft-skills">Career/Soft Skills</h2>
+<ul>
+<li>Tom Hollingsworth <a href="https://networkingnerd.net/2016/10/27/designer-or-architect-its-a-matter-of-choice/">article on designer vs. architect</a> is one that has interesting implications for IT professionals. It sounds like what Tom is saying is that we need to cultivate a broader skill set with the ability to find a solution to a problem (instead of finding a problem for the solution&mdash;think about that, you&rsquo;ll get it after a while).</li>
+<li>Want to &ldquo;level up&rdquo; on your distributed systems skills? Then I suggest reading first <a href="https://dahliamalkhi.wordpress.com/2016/08/26/flexible-paxos-a-new-breed-of-scalable-resilient-and-performant-consensus-algorithms-is-made-possible/">this introductory post on Flexible Paxos</a>, then going for a deeper dive into <a href="http://hh360.user.srcf.net/blog/2016/08/majority-agreement-is-not-necessary/">the details</a> and <a href="http://ssougou.blogspot.com/2016/08/a-more-flexible-paxos.html">more details</a>.</li>
+</ul>
+<p>I&rsquo;ll cut it off there before it gets any longer. Still so much content, but so little room to share it all! I suppose I&rsquo;ll save it for the next Technology Short Take, and give you a reason to return here. Until then, best of luck!</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/hardware">Hardware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/security">Security</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/storage">Storage</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ansible">Ansible</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nsx">NSX</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/cumulus">Cumulus</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/ovn">OVN</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openflow">OpenFlow</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/openstack">OpenStack</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/photon">Photon</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/json">JSON</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/aws">AWS</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/powercli">PowerCLI</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/libvirt">Libvirt</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vagrant">Vagrant</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vsphere">vSphere</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2016/11/10/intro-to-vbox-cli/">An Introduction to the VirtualBox CLI</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2016/11/20/spousetivities-at-reinvent/">Spousetivities at AWS re:Invent</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f18%2ftechnology-short-take-73%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f18%2ftechnology-short-take-73%2f&text=Technology%20Short%20Take%20%2373" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2016%2f11%2f18%2ftechnology-short-take-73%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2016/07/22/technology-short-take-69/">Technology Short Take #69</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2016/10/10/technology-short-take-72/">Technology Short Take #72</a> <span class="post-date-list">109 May 101010</span></li><li><a href="/2016/04/22/technology-short-take-65/">Technology Short Take #65</a> <span class="post-date-list">229 May 222222</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>

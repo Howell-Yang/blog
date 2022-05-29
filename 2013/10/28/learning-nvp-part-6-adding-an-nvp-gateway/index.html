@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <title>Learning NVP, Part 6: Adding an NVP Gateway - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
+
+  
+  <meta name="author" content="Howell Yang">
+  <meta property="og:site_name" content="Scott&#39;s Weblog">
+  
+  <meta property="og:description" content="Learning NVP, Part 6: Adding an NVP Gateway - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  <meta property="og:title" content="Learning NVP, Part 6: Adding an NVP Gateway - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
+  
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+
+  
+  <link rel="stylesheet" href="/css/poole.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/lanyon.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+
+  
+  <link rel="canonical" href="https://www.howellyang.com/2013/10/28/learning-nvp-part-6-adding-an-nvp-gateway/">
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/assets/favicon.ico">
+
+  
+  </head>
+<body class="theme-base-0d">
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-item">
+    <p><img src="/public/img/orbits-thumb.gif" alt="Orbits" width="128" height="128" /></p>
+    <p>Original, technical content centered around cloud computing, Kubernetes, Linux, and networking</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="sidebar-nav-item " href="/">Home</a>
+    <a class="sidebar-nav-item" href="/about/">About</a>
+    <a class="sidebar-nav-item" href="/archives/">Site Archives</a>
+    <a class="sidebar-nav-item" href="/categories/">Post Categories</a>
+    <a class="sidebar-nav-item" href="/tags/">Content Tags</a>
+  </nav>
+
+  <div class="sidebar-item">
+    <p>
+      <a href="https://github.com/howellyang"><i class="fa fa-github fa-3x"></i></a>
+      <a href="https://twitter.com/None"><i class="fa fa-twitter fa-3x"></i></a>
+      <a href="https://www.linkedin.com/in/None"><i class="fa fa-linkedin-square fa-3x"></i></a>
+      <a href="http://feeds.scottlowe.org/slowe/content/feed/"><i class="fa fa-rss fa-3x"></i></a>
+    </p>
+  </div>
+
+  <div class="sidebar-item">
+    <p>&copy; 2005-2022. All rights reserved.</p>
+  </div>
+</div>
+
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <a href="/" title="Home">Howell Yang&#39;s Weblog</a>
+            <small>我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</small>
+          </h3>
+        </div>
+      </div>
+
+      <div class="container content">
+<div class="post">
+  <h1 class="post-title">Learning NVP, Part 6: Adding an NVP Gateway</h1>
+  <span class="post-date"><i class="fa fa-calendar" aria-hidden="true"></i>&#160;Published on 289 May 282828 &middot;
+    <i class="fa fa-folder-open-o" aria-hidden="true"></i>&#160;Filed in <a href="/categories/tutorial">Tutorial</a> &middot;
+    <i class="fa fa-pencil" aria-hidden="true"></i>&#160;1395 words (estimated 7 minutes to read)</span>
+  <p>Welcome to part 6 of the Learning NVP blog series. In this part, I&rsquo;m going to show you how to add an NVP gateway appliance to your NVP environment. In future posts, you&rsquo;ll use this NVP gateway to host either L2 or L3 gateway services (more on those in a moment). First, though, let&rsquo;s take a quick recap of what&rsquo;s transpired so far:</p>
+<ul>
+<li>
+<p>In part 1, I provided a <a href="/2013/05/21/learning-nvp-part-1-high-level-architecture/">high-level overview of NVP</a> and its core components.</p>
+</li>
+<li>
+<p>In part 2, I showed you how to <a href="/2013/08/16/learning-nvp-part-2-nvp-controllers/">build NVP controllers and configure them into a controller cluster</a>.</p>
+</li>
+<li>
+<p>In part 3, you saw how to <a href="/2013/08/19/learning-nvp-part-3-nvp-manager/">install and configure NVP Manager</a>, a web-based GUI that you can use to configure certain aspects of NVP.</p>
+</li>
+<li>
+<p>In part 4, I walked you through the process of <a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">adding hypervisors to NVP</a>.</p>
+</li>
+<li>
+<p>In part 5, I showed you how to <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">create a logical network</a> that could be used to connect VMs to each other independent of the underlying physical network topology.</p>
+</li>
+</ul>
+<p>In this part, I&rsquo;m going to walk you through setting up an NVP gateway appliance. If you&rsquo;ll recall from our <a href="/2013/05/21/learning-nvp-part-1-high-level-architecture/">introductory high-level architecture overview</a>, the role of the gateway is to provide L2 (switched/bridged) and L3 (routed) connectivity between logical networks and physical networks. So, adding a gateway would then enable you to extend the <a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">logical network you created in part 5</a> to include either L2 or L3 connectivity to the outside world.</p>
+<p>&lt;aside&gt;Many of you have probably seen some of the announcements from VMworld about NSX integrations from various networking suppliers (Arista, Brocade, Dell, and Juniper, for example). These announcements will allow NSX&mdash;which I&rsquo;ve said before will leverage a great deal of NVP&rsquo;s architecture&mdash;to use these hardware devices as L2 gateways, providing bridged/switched connectivity between logical networks and physical networks.&lt;/aside&gt;</p>
+<p>This post will focus only on getting the gateway appliance set up; in future posts, I&rsquo;ll show you how to actually add the L2 or L3 connectivity to your logical network.</p>
+<h2 id="building-the-nvp-gateway">Building the NVP Gateway</h2>
+<p>The NVP gateway software is distributed as an ISO, like the NVP controller software. You&rsquo;d typically install this software on a bare metal server, though with recent releases of NVP it is supported to install the gateway into a VM (refer to the latest NVP release notes for more details). As with the NVP controllers and NVP Manager, the gateway is built on Ubuntu 12.04, and the installer process is completely automated. Once you boot from the ISO, the installation will proceed automatically; when completed, you&rsquo;ll be left at the login prompt.</p>
+<h2 id="configuring-the-nvp-gateway">Configuring the NVP Gateway</h2>
+<p>Once the NVP gateway software is installed, configuring the gateway is really straightforward. In fact, it feels a lot like configuring NVP controllers (I suspect this is by design). Here are the steps:</p>
+<ol>
+<li>
+<p>Set the password for the admin user (optional, but highly recommended).</p>
+</li>
+<li>
+<p>Set the hostname for the gateway appliance (also optional, but strongly recommended).</p>
+</li>
+<li>
+<p>Configure the network interfaces; you&rsquo;ll need management, transport, and external connectivity. (I&rsquo;ll explain those in more detail later.)</p>
+</li>
+<li>
+<p>Configure DNS and NTP settings.</p>
+</li>
+</ol>
+<p>Let&rsquo;s take a closer look at these steps. The first step is to set the password for the admin user, which you can accomplish with this command:</p>
+<pre><code>set user admin password
+</code></pre>
+<p>From here, you can proceed with setting the hostname for the gateway:</p>
+<pre><code>set hostname &lt;hostname&gt;
+</code></pre>
+<p>(So far, these commands should be pretty familiar. They are the same commands used when you set up the NVP controllers and NVP Manager.)</p>
+<p>The next step is configure network connectivity; you&rsquo;ll start by listing the available network interfaces with this command:</p>
+<pre><code>show network interfaces
+</code></pre>
+<p>As you&rsquo;ve seen with the other NVP appliances, the NVP gateway software builds an Open vSwitch (OVS) bridge for each physical interface. In the case of a gateway, you&rsquo;ll need at least three interfaces&mdash;a management interface, a transport network interface, and an external network interface. The diagram below provides a bit more context around how these interfaces are used:</p>
+<p><img src="/public/img/nvp-gw-interfaces.png" alt="NVP gateway appliance interfaces"></p>
+<p>Since these interfaces have very different responsibilities, it&rsquo;s important that you properly configure them. Otherwise, things won&rsquo;t work as expected. Take the time to identify which interface listed in the <code>show network interfaces</code> output corrsponds to each function. You&rsquo;ll first want to establish management connectivity, so that should be the first interface to configure. Assuming that <code>breth0</code> (the bridge matching the physical <code>eth0</code> interface) is your management interface, you&rsquo;ll configure it using this command:</p>
+<pre><code>set network interface breth0 ip config static 192.168.1.12 255.255.255.0
+</code></pre>
+<p>You&rsquo;ll want to repeat this command for the other interfaces in the gateway, assigning appropriate IP addresses to each of them.</p>
+<p>You may also need to configure the routing for the gateway. Check the routing table(s) with this command:</p>
+<pre><code>show network routes
+</code></pre>
+<p>If there is no default route, you can set one using this command:</p>
+<pre><code>add network route 0.0.0.0 0.0.0.0 &lt;Default gateway IP address&gt;
+</code></pre>
+<p>Once the appropriate network connectivity has been established, then you can proceed with the next step: adding DNS and NTP servers. Here are the commands for this step:</p>
+<pre><code>add network dns-server &lt;DNS server IP address&gt;  
+add network ntp-server &lt;NTP server IP address&gt;
+</code></pre>
+<p>If you accidentally fat-finger an IP address or hostname along the way, use the <code>remove network dns-server</code> or <code>remove network ntp-server</code> command to remove the incorrect entry, then re-add it correctly with the commands above.</p>
+<p>Congrats! The NVP gateway appliance is now up and running. You&rsquo;re ready to add it to NVP. Once it&rsquo;s added to NVP, you&rsquo;ll be able to use the gateway appliance to add <em>gateway services</em> to your logical networks.</p>
+<h2 id="adding-the-gateway-to-nvp">Adding the Gateway to NVP</h2>
+<p>To add the new gateway appliance to NVP, you&rsquo;ll use NVP Manager (I showed you how to set up NVP Manager in <a href="/2013/08/19/learning-nvp-part-3-nvp-manager/">part 3</a> of the series). Once you&rsquo;ve opened a web browser, navigated to the NVP Manager web UI, and logged in, then you can start the process of adding the gateway to NVP.</p>
+<ol>
+<li>
+<p>Once you&rsquo;re logged into NVP Manager, click on the Dashboard link across the top. (If you&rsquo;re already at the Dashboard, you can skip this step.)</p>
+</li>
+<li>
+<p>In the Summary of Transport Components box, click the Connect &amp; Add Transport Node button. This will open the Connect to Transport Node dialog box.</p>
+</li>
+<li>
+<p>Supply the management IP address of the gateway appliance, along with the appropriate username and password, then click Connect.</p>
+</li>
+<li>
+<p>After a moment, the Connect to Transport Node dialog box will show details of the gateway appliance, such as the interfaces, the bridges, the NIC bonds (if any), and the gateway&rsquo;s SSL certificate. Click Configure at the bottom of the dialog box to continue.</p>
+</li>
+<li>
+<p>Supply a display name (something like nvp-gw-01) and, optionally, one or more tags. Click Next.</p>
+</li>
+<li>
+<p>Unless you know you need to select any of the options on the next screen (I&rsquo;ll try to cover them in a later blog post), just click Next.</p>
+</li>
+<li>
+<p>On the final screen, you&rsquo;ll need to establish connectivity to a transport zone. You&rsquo;ll want to select the appropriate interface (in my example environment, it was <code>breth2</code>) and the appropriate encapsulation protocol (STT is generally recommended for connectivity back to hypervisors). Then select the appropriate transport zone from the drop-down list. In the end, you&rsquo;ll have a screen that looks something like this (note that your interfaces, IP addresses, and transport zone information will likely be different):</p>
+<p><a href="/public/img/add-nvp-gateway-fullsize.png"><img src="/public/img/add-nvp-gateway-small.png" alt="Adding a gateway to NVP"></a></p>
+</li>
+<li>
+<p>Click Save to finish the process. The number of gateways listed in the Summary of Transport Components box should increment by 1 in the Registered column. However, the Active column will remain unchanged&mdash;that&rsquo;s because there&rsquo;s one more step needed.</p>
+</li>
+<li>
+<p>Back on the gateway appliance itself, run the command <code>set switch manager-cluster &lt;NVP controller IP address&gt;</code> (you can use the IP address of any controller in the NVP controller cluster).</p>
+</li>
+<li>
+<p>Back in NVP Manager, refresh the Summary of Transport Components box (there&rsquo;s a small refresh icon in the corner), and you&rsquo;ll see the Active column update to show the gateway appliance is now registered <em>and</em> active in NVP.</p>
+</li>
+</ol>
+<p>That&rsquo;s it&mdash;you&rsquo;re all done adding a gateway appliance to NVP. In future posts, you&rsquo;ll leverage the gateway appliance to add L2 (bridged) and L3 (routed) connectivity in and out of logical networks. First, though, I&rsquo;ll need to address the transition from NVP to NSX, so look for that coming soon. In the meantime, feel free to post any questions, thoughts, or suggestions in the comments below. I welcome all courteous comments (even if you disagree with something I&rsquo;ve said!).</p>
+
+
+  <h3>Metadata and Navigation</h3>
+  <span class="post-meta">
+  <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/networking">Networking</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nicira">Nicira</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/nvp">NVP</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/virtualization">Virtualization</a> <i class="fa fa-tag" aria-hidden="true"></i>&#160;<a href="/tags/vmware">VMware</a> 
+
+  <br />
+  <i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Previous Post: <a href="https://www.howellyang.com/2013/10/23/technology-short-take-36/">Technology Short Take #36</a>
+  
+  <br />
+   <i class="fa fa-arrow-circle-right" aria-hidden="true"></i> Next Post: <a href="https://www.howellyang.com/2013/10/30/some-recent-oss-related-announcements/">Some Recent OSS-Related Announcements</a>
+  </span>
+
+  <span class="post-sharing">
+  <p>Be social and share this post!<br />
+
+  <a href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.howellyang.com%2f2013%2f10%2f28%2flearning-nvp-part-6-adding-an-nvp-gateway%2f" title="Share on Facebook"><i class="fa fa-facebook-square fa-2x"></i></a>
+  <a href="https://twitter.com/intent/tweet?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f10%2f28%2flearning-nvp-part-6-adding-an-nvp-gateway%2f&text=Learning%20NVP%2c%20Part%206%3a%20Adding%20an%20NVP%20Gateway" title="Share on Twitter"><i class="fa fa-twitter-square fa-2x"></i></a>
+  <a href="https://plus.google.com/share?url=https%3a%2f%2fwww.howellyang.com%2f2013%2f10%2f28%2flearning-nvp-part-6-adding-an-nvp-gateway%2f" title="Share on Google Plus"><i class="fa fa-google-plus-square fa-2x"></i></a></p>
+  </span>
+</div>
+
+<div class="related">
+  <h3>Related Posts</h3>
+  <ul class="related-posts">
+  <li><a href="/2013/09/06/learning-nvp-part-5-creating-a-logical-network/">Learning NVP, Part 5: Creating a Logical Network</a> <span class="post-date-list">69 May 6066</span></li><li><a href="/2013/08/22/learning-nvp-part-4-adding-hypervisors-to-nvp/">Learning NVP, Part 4: Adding Hypervisors to NVP</a> <span class="post-date-list">229 May 222222</span></li><li><a href="/2013/08/19/learning-nvp-part-3-nvp-manager/">Learning NVP, Part 3: NVP Manager</a> <span class="post-date-list">199 May 191919</span></li>
+  </ul>
+</div>      </div>
+    </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
+  </body>
+</html>
