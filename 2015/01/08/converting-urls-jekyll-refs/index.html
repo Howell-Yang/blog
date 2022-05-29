@@ -87,13 +87,13 @@
 <p>&lt;aside&gt;Converting hard-coded URLs for other blog posts to Jekyll references with <code>post_url</code> is one of the things that took so much time during the migration.&lt;/aside&gt;</p>
 <p>To help simplify this process, I wrote a regex that I used in conjunction with TextSoap that converts a URL pointing to a post on my site into a Jekyll reference.</p>
 <p>Here&rsquo;s the regex that matches against URLs to posts on my own site:</p>
-<pre><code>(\(?)http://blog.scottlowe.org/(2[0-9]{3})/([0-9]{2})/([0-9]{2})/(.*)/(\)?)
+<pre><code>(\(?)http://www.howellyang.com/(2[0-9]{3})/([0-9]{2})/([0-9]{2})/(.*)/(\)?)
 </code></pre>
 <p>Using backreferences, the matching text is replaced with this:</p>
 <pre><code>{% post_url $2-$3-$4-$5 %}
 </code></pre>
 <p>This takes a URL like this (this is the URL for the very first post on my site):</p>
-<pre><code>http://blog.scottlowe.org/2005/05/11/welcome/
+<pre><code>http://www.howellyang.com/2005/05/11/welcome/
 </code></pre>
 <p>And turns it into this:</p>
 <pre><code>{% post_url 2005-05-11-welcome %}
