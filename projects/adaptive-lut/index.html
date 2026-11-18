@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Adaptive lookup tables for non-linear operators · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="Adaptive lookup tables for non-linear operators · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/adaptive-lut/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/adaptive-lut/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/adaptive-lut/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/adaptive-lut/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/adaptive-lut/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">Adaptive lookup tables for non-linear operators</h1>
+    <p class="pp-summary">An error-driven segmentation algorithm for fixed-point lookup tables. It refines segments only where the real fixed-point error is high, guaranteeing a 2 LSB worst-case error with 12–30 tables per operator instead of a uniform 126.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Algorithm design, evaluation and integration into the conversion flow</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">0.217 LSB</span><span class="metric-label">weighted mean error over 600 LUT modules</span></div>
+      <div class="pp-metric"><span class="metric-value">2 LSB</span><span class="metric-label">guaranteed worst-case error (uniform 126 tables: 11,381 LSB)</span></div>
+      <div class="pp-metric"><span class="metric-value">−85%</span><span class="metric-label">tables vs. uniform 126-table design (avg 18.6)</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Fixed-point arithmetic</li><li>Lookup tables</li><li>rsqrt</li><li>Softmax</li><li>Horizon J6M</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-problem">The problem</a></li>
+<li><a href="#measuring-error-the-way-the-chip-sees-it">Measuring error the way the chip sees it</a></li>
+<li><a href="#three-strategies-compared">Three strategies compared</a></li>
+<li><a href="#the-adaptive-algorithm">The adaptive algorithm</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#lessons">Lessons</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="the-problem">The problem</h2>
+<p>On automotive NPUs, non-linear operators such as <code>rsqrt</code>, <code>reciprocal</code>, the <code>exp</code> inside Softmax and <code>sigmoid</code> run as fixed-point lookup tables, not floating-point math. A bad table can break a model that looks fine everywhere else. In one production model, the root cause of an accuracy gap was a single table's segment boundary in an <code>rsqrt</code> inside a normalization layer (see <a href="/projects/numerical-consistency/">Layered numerical consistency</a>).</p>
+<p>The hardware's segmented lookup table is not a global nearest-neighbor lookup:</p>
+<ol>
+<li><strong>Dividing points</strong> pick a segment for the input.</li>
+<li><strong>Inside a segment</strong>, a fixed-point table is read and interpolated.</li>
+<li><strong>Outside the valid range</strong>, linear fits on the left and right take over.</li>
+</ol>
+<p>So the error comes from four things: the valid input domain, where the dividing points sit, how densely each segment is sampled, and how the left and right linear regions are handled.</p>
+<h2 id="measuring-error-the-way-the-chip-sees-it">Measuring error the way the chip sees it</h2>
+<p>The reference is the IR's fake-quant output: the quantized value the model was trained and validated against. The candidate is the converter's real fixed-point lookup-table output code. For every valid integer input code <em>x<sub>i</sub></em>:</p>
+<pre><code class="language-text">e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          error in output LSB
+E_mean  = Σ_i e(x_i) / N                            weighted by sample count
+E_max   = max_i e(x_i)                              over all operators and codes
+</code></pre>
+<ul>
+<li><strong>Mean LSB</strong> is weighted over every valid input code of every table, not a simple average of per-operator averages.</li>
+<li><strong>Max LSB</strong> exposes rare but potentially fatal local distortions, the kind that slip through aggregate metrics.</li>
+<li><strong>Valid domains</strong> come from calibration: <code>rsqrt</code> and <code>reciprocal</code> use the IR's calibrated range; the Softmax <code>exp</code> input is never positive after the max-subtraction, so it defaults to [−12, 0] when no range is recorded.</li>
+</ul>
+<h2 id="three-strategies-compared">Three strategies compared</h2>
+<aside class="callout"><p>More tables lower the <strong>average</strong> error, but they do not bound the <strong>worst-case</strong> error. If dividing points are not placed according to the function's shape and the true fixed-point error, high-curvature regions and linear-region boundaries can still be badly wrong.</p></aside>
+
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Dividing points</th>
+<th>Left/right linear regions</th>
+<th>Tables per op</th>
+<th>Guarantee</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. Original 6-table</td>
+<td>Native per op: mostly curvature-based, some evenly spaced</td>
+<td>Original linear fits</td>
+<td>6</td>
+<td>Baseline only; no max-error target</td>
+</tr>
+<tr>
+<td>B. Uniform 126-table</td>
+<td>Valid range split into 126 equal-width segments</td>
+<td>Not optimized</td>
+<td>126</td>
+<td>Table count only</td>
+</tr>
+<tr>
+<td>C. Adaptive (this work)</td>
+<td>Keep the 6-table boundaries, then recursively bisect</td>
+<td>Upgraded only when the measured gain justifies it</td>
+<td>12–30, chosen per op</td>
+<td>Boundaries kept, never worse than baseline, max 2 LSB</td>
+</tr>
+</tbody>
+</table>
+<p>Curvature-based placement (A) puts more boundaries where the function bends, which beats equal spacing, but six tables are too few for near-singular functions. Uniform 126 tables (B) is simple and lowers the mean, but it ignores curvature, output scale and the real fixed-point error. On <code>rsqrt</code> it wastes tables on flat regions and still leaves huge errors near extreme input codes.</p>
+<h2 id="the-adaptive-algorithm">The adaptive algorithm</h2>
+<p>The original 6-table layout is the floor: the algorithm only adds boundaries, never moves or removes them. The feedback signal is the real fixed-point output error, not a floating-point approximation.</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">6-table baseline</span><span class="pipe-note">keep all boundaries</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Measure real error</span><span class="pipe-note">every input code</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Bisect worst segment</span><span class="pipe-note">midpoint</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Check linear regions</span><span class="pipe-note">upgrade if it pays</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Max ≤ 2 LSB?</span><span class="pipe-note">else repeat</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Round up to ×6</span><span class="pipe-note">hardware export</span></div>
+</div>
+
+<pre><code class="language-text">for each LUT operator f with valid domain D:
+    S ← segments from the original 6-table layout          # never removed
+    loop:
+        E ← real fixed-point error of f over every code in D, per segment
+        if max(E) ≤ 2 LSB: break
+        s* ← segment with the largest error
+        split s* at its midpoint                            # nested refinement
+        if a left/right linear region dominates the error:
+            upgrade that region only if the measured gain justifies it
+        if table budget exhausted and max(E) &gt; 2 LSB:
+            fail hard and report the operator               # never ship silently
+    round the table count up to a multiple of 6             # export constraint
+</code></pre>
+<p>Because new boundaries are midpoints of existing segments, the refinement is nested. Every original boundary survives, so the result can never be worse than the baseline on any segment. Most operators settle at 12, 18, 24 or 30 tables.</p>
+<h2 id="results">Results</h2>
+<p>Evaluated on four production graphs of a temporal tracking model, each with 150 lookup-table modules (600 in total):</p>
+<table>
+<thead>
+<tr>
+<th>Strategy</th>
+<th>Weighted mean error</th>
+<th>Worst-case error</th>
+<th>Tables per operator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uniform 126-table</td>
+<td>0.270 LSB</td>
+<td>11,381 LSB</td>
+<td>126</td>
+</tr>
+<tr>
+<td>Adaptive</td>
+<td><strong>0.217 LSB</strong></td>
+<td><strong>2 LSB</strong></td>
+<td>12–30 (avg 18.6)</td>
+</tr>
+</tbody>
+</table>
+<aside class="callout callout-result"><p>The adaptive scheme beats uniform 126 tables on <strong>both</strong> mean and worst-case error while using about 85% fewer tables. End-to-end regression metrics moved by about 0.001 or less. The value is in removing rare local distortions, not in raising averages.</p></aside>
+
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>Measure what the hardware computes.</strong> Floating-point approximations of a table hide exactly the errors that matter.</li>
+<li><strong>Bound the worst case, not just the mean.</strong> One bad input code can decide a corner case on the road.</li>
+<li><strong>Refine where the error is.</strong> A budget spent by curvature and measured error beats a bigger uniform budget.</li>
+<li><strong>Fail loudly.</strong> An operator that cannot meet the bound should stop the export, not ship.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/float-consistent-quantization/">&larr; From PTQ to QAD: quantization that matches the float model</a><a href="/projects/numerical-consistency/">Layered numerical consistency and release gates &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

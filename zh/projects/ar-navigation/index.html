@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>AR 导航感知 SDK · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="AR 导航感知 SDK · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/ar-navigation/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/ar-navigation/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/ar-navigation/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/ar-navigation/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/ar-navigation/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">AR 导航感知 SDK</h1>
+    <p class="pp-summary">面向手机和车机的 AR 导航感知 SDK：多流程并行框架加自动 profile。四个月完成 12 项功能，CPU 占用低于 70%，在江铃 CX743 量产车型上线。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 腾讯地图</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2021 – 2022</span><span><i class="fa fa-user-o" aria-hidden="true"></i> SDK 设计与端侧模型部署</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">12</span><span class="metric-label">项感知功能，四个月完成</span></div>
+      <div class="pp-metric"><span class="metric-value">&lt; 70%</span><span class="metric-label">车机 CPU 占用</span></div>
+      <div class="pp-metric"><span class="metric-value">1</span><span class="metric-label">款量产车型上线（江铃 CX743）</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>手机 / 车机 SDK</li><li>并行流水线</li><li>Profiling</li><li>端侧部署</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">设计</a></li>
+<li><a href="#_3">结果</a></li>
+<li><a href="#sdk">视觉定位 SDK</a></li>
+<li><a href="#_4">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>AR 导航把引导信息叠加在实时相机画面上，所以感知必须在硬件上实时运行，而同一硬件还在运行导航、地图和车辆自身的软件。手机或车机的 CPU 余量很小。准确但延迟高的功能没有用，挤占系统其他部分资源的 SDK 也不可能上线。</p>
+<h2 id="_2">设计</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">相机帧</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">并行感知流程</span><span class="pipe-note">道路、车位……</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">结果送导航</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">AR 引导</span></div>
+</div>
+
+<ul>
+<li><strong>多流程并行框架。</strong> 各感知任务作为并行的流程运行，慢任务不会拖住其他任务，新增任务也不需要重写流水线。</li>
+<li><strong>内置自动 profile。</strong> 每个流程持续上报耗时和 CPU 开销，性能回退在开发阶段就能发现，而不是等到上车。</li>
+<li><strong>端侧模型</strong>针对目标硬件部署和调优。</li>
+</ul>
+<h2 id="_3">结果</h2>
+<div class="media-grid">
+<figure><video src="/public/img/nano_det.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>道路场景感知</figcaption></figure>
+<figure><video src="/public/img/parkingSlotDetection.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>车位检测</figcaption></figure>
+<figure><video src="/public/img/AR_Navi_Map.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>AR 导航</figcaption></figure>
+</div>
+
+<aside class="callout callout-result"><p>四个月完成 12 项感知功能，CPU 占用控制在 70% 以下。系统在江铃 CX743 量产车型上线，回传的数据帮助腾讯地图保持更新。</p></aside>
+
+<h2 id="sdk">视觉定位 SDK</h2>
+<p>我的工作还包括与 AR 导航配套使用的视觉定位系统 SDK。</p>
+<figure><img src="/public/img/vps_sdk_design.png" alt="视觉定位 SDK 架构" loading="lazy"><figcaption>视觉定位 SDK 设计</figcaption></figure>
+
+<h2 id="_4">经验</h2>
+<ul>
+<li><strong>先定 CPU 预算，再定功能。</strong> 在共享硬件上做实时，既是模型问题，也是调度问题。</li>
+<li><strong>让性能始终可见。</strong> 内置 profile 让性能回退在集成之前很久就被发现。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/tensorrt-int8/">&larr; 云端 GPU 模型的 TensorRT INT8 与 onnx2trt</a><a href="/zh/projects/nbt-evaluation/">NBT 评测平台 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

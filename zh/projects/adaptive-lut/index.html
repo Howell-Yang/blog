@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>非线性算子的自适应查表 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="非线性算子的自适应查表 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/adaptive-lut/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/adaptive-lut/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/adaptive-lut/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/adaptive-lut/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/adaptive-lut/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">非线性算子的自适应查表</h1>
+    <p class="pp-summary">一种由误差驱动的定点查表分段算法。它只在真实定点误差高的地方细分，每个算子用 12–30 张表即可保证最大误差不超过 2 LSB，而不是统一的 126 张表。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 算法设计、评测及接入转换流程</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">0.217 LSB</span><span class="metric-label">600 个查表模块的加权平均误差</span></div>
+      <div class="pp-metric"><span class="metric-value">2 LSB</span><span class="metric-label">保证的最大误差（均匀 126 表：11,381 LSB）</span></div>
+      <div class="pp-metric"><span class="metric-value">−85%</span><span class="metric-label">表数量，相比均匀 126 表方案（平均 18.6 张）</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>定点运算</li><li>查表算子</li><li>rsqrt</li><li>Softmax</li><li>地平线 J6M</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">按芯片的实际计算来衡量误差</a></li>
+<li><a href="#_3">三种策略对比</a></li>
+<li><a href="#_4">自适应算法</a></li>
+<li><a href="#_5">结果</a></li>
+<li><a href="#_6">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>在车载 NPU 上，<code>rsqrt</code>、<code>reciprocal</code>、Softmax 中的 <code>exp</code>、<code>sigmoid</code> 等非线性算子是用定点查表实现的，而不是浮点运算。一张不好的表，就能让一个其他地方都正常的模型出问题。在一个量产模型中，精度差距的根因就是归一化层里一个 <code>rsqrt</code> 查表的分段点（见<a href="/zh/projects/numerical-consistency/">分层数值一致性</a>）。</p>
+<p>硬件的分段查表并不是全局最近邻查表：</p>
+<ol>
+<li><strong>分段点（dividing points）</strong>决定输入落在哪一段。</li>
+<li><strong>段内</strong>读取定点表并插值。</li>
+<li><strong>有效区间之外</strong>由左右两侧的线性拟合接管。</li>
+</ol>
+<p>所以误差由四部分共同决定：输入有效域、分段点位置、段内采样密度，以及左右线性区的处理。</p>
+<h2 id="_2">按芯片的实际计算来衡量误差</h2>
+<p>参考值是 IR 的 fake quant 输出，也就是模型训练和验证时所对齐的量化值；候选值是转换器实际生成的定点查表输出码。对每个有效整数输入码 <em>x<sub>i</sub></em>：</p>
+<pre><code class="language-text">e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          以输出 LSB 计的误差
+E_mean  = Σ_i e(x_i) / N                            按样本数加权
+E_max   = max_i e(x_i)                              所有算子、所有输入码中的最大值
+</code></pre>
+<ul>
+<li><strong>平均 LSB</strong> 按所有表的所有有效输入码加权，而不是对每个算子的平均误差再简单平均。</li>
+<li><strong>最大 LSB</strong> 用来暴露少量但可能致命的局部失真，这类问题在整体指标里看不出来。</li>
+<li><strong>有效域</strong>来自校准：<code>rsqrt</code> 和 <code>reciprocal</code> 使用 IR 的校准范围；Softmax 的 <code>exp</code> 在减去最大值后输入不会为正，没有记录范围时默认取 [−12, 0]。</li>
+</ul>
+<h2 id="_3">三种策略对比</h2>
+<aside class="callout"><p>表更多能降低<strong>平均</strong>误差，但不能约束<strong>最坏</strong>误差。如果分段点不按函数形状和真实定点误差来分配，高曲率区域和线性区边界仍可能出现很大的误差。</p></aside>
+
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>分段点</th>
+<th>左右线性区</th>
+<th>每个算子的表数</th>
+<th>保证</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A. 原始 6 表</td>
+<td>各算子原生策略：大多按曲率，少数等距</td>
+<td>原始线性拟合</td>
+<td>6</td>
+<td>仅为基线，没有最大误差目标</td>
+</tr>
+<tr>
+<td>B. 均匀 126 表</td>
+<td>有效区间等宽切成 126 段</td>
+<td>不优化</td>
+<td>126</td>
+<td>只保证表数</td>
+</tr>
+<tr>
+<td>C. 自适应（本工作）</td>
+<td>保留 6 表边界，再递归二分</td>
+<td>只有实测收益足够时才提升</td>
+<td>每个算子 12–30 张</td>
+<td>边界保留、不回退、最大 2 LSB</td>
+</tr>
+</tbody>
+</table>
+<p>按曲率放置（A）会在函数弯曲处放更多分段点，比等距好，但对近奇异函数来说 6 张表太少。均匀 126 表（B）实现简单、平均误差低，但它不感知曲率、输出 scale 和真实定点误差。对 <code>rsqrt</code>，它把大量表浪费在平坦区域，同时在极端输入码附近留下很大的误差。</p>
+<h2 id="_4">自适应算法</h2>
+<p>原始 6 表布局是下限：算法只增加分段点，从不移动或删除。反馈信号是真实的定点输出误差，而不是浮点近似。</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">6 表基线</span><span class="pipe-note">保留全部边界</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">实测误差</span><span class="pipe-note">每个输入码</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">二分最差的段</span><span class="pipe-note">取中点</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">检查线性区</span><span class="pipe-note">值得才提升</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">最大误差 ≤ 2 LSB？</span><span class="pipe-note">否则继续</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">向上取整为 6 的倍数</span><span class="pipe-note">硬件导出</span></div>
+</div>
+
+<pre><code class="language-text">对每个查表算子 f 及其有效域 D：
+    S ← 原始 6 表布局的分段                                  # 从不删除
+    循环：
+        E ← f 在 D 内每个输入码上的真实定点误差，按段统计
+        若 max(E) ≤ 2 LSB：结束
+        s* ← 误差最大的段
+        在 s* 的中点切分                                     # 嵌套细分
+        若左/右线性区主导了误差：
+            仅当实测收益足够时才提升该区域
+        若表数预算用尽且 max(E) &gt; 2 LSB：
+            硬失败并报告该算子                               # 绝不静默发布
+    把表数向上取整为 6 的倍数                                # 导出约束
+</code></pre>
+<p>由于新增分段点都是已有段的中点，细分是嵌套的。所有原始边界都保留下来，所以结果在任何一段上都不会比基线差。多数算子最终使用 12、18、24 或 30 张表。</p>
+<h2 id="_5">结果</h2>
+<p>在一个时序跟踪模型的 4 个量产计算图上评测，每个图有 150 个查表模块（共 600 个）：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>加权平均误差</th>
+<th>最大误差</th>
+<th>每个算子的表数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>均匀 126 表</td>
+<td>0.270 LSB</td>
+<td>11,381 LSB</td>
+<td>126</td>
+</tr>
+<tr>
+<td>自适应</td>
+<td><strong>0.217 LSB</strong></td>
+<td><strong>2 LSB</strong></td>
+<td>12–30（平均 18.6）</td>
+</tr>
+</tbody>
+</table>
+<aside class="callout callout-result"><p>自适应方案在平均误差和最大误差上<strong>都</strong>优于均匀 126 表，同时表数量减少约 85%。端到端回归指标的变化在 0.001 左右或更小：它的价值在于消除少见的局部失真，而不是提高平均值。</p></aside>
+
+<h2 id="_6">经验</h2>
+<ul>
+<li><strong>按硬件实际计算的方式测量。</strong> 浮点近似恰恰会掩盖最关键的误差。</li>
+<li><strong>约束最坏情况，而不只是平均值。</strong> 一个坏的输入码就可能决定路上的一个极端场景。</li>
+<li><strong>在误差所在之处细分。</strong> 按曲率和实测误差分配预算，胜过更大的均匀预算。</li>
+<li><strong>失败要大声。</strong> 无法满足误差上限的算子应该阻止导出，而不是悄悄发布。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/float-consistent-quantization/">&larr; 从 PTQ 到 QAD：与浮点模型一致的量化</a><a href="/zh/projects/numerical-consistency/">分层数值一致性与发版门禁 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

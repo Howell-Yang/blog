@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>新芯片上的城市 NOA（爱芯 M95） · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="新芯片上的城市 NOA（爱芯 M95） · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/axera-m95/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/axera-m95/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/axera-m95/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/axera-m95/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/axera-m95/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">新芯片上的城市 NOA（爱芯 M95）</h1>
+    <p class="pp-summary">担任把轻舟城市 NOA 方案迁移到新芯片平台的技术负责人：从 700 TOPS 开发板到 350 TOPS 的 M95 分阶段适配，负责模型适配与量化和路测问题聚类。v4 方案已在测试车上运行。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 技术负责人（2026 年 6 月起）</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">350 TOPS</span><span class="metric-label">目标芯片，对标 J6M</span></div>
+      <div class="pp-metric"><span class="metric-value">v4</span><span class="metric-label">方案已在测试车上运行</span></div>
+      <div class="pp-metric"><span class="metric-value">0</span><span class="metric-label">路测中关键模型的掉帧次数</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>爱芯 M95 / M97</li><li>城市 NOA</li><li>芯片适配</li><li>量化</li><li>项目管理</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">为什么是这款芯片，为什么要早</a></li>
+<li><a href="#_2">计划</a></li>
+<li><a href="#_3">结果</a></li>
+<li><a href="#_4">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">为什么是这款芯片，为什么要早</h2>
+<p>我们的方案原本运行在地平线芯片上。地平线开始自己做智驾方案之后，依赖单一芯片厂商就成了商业风险。爱芯 M 系列的算力性价比有竞争力：M95（350 TOPS）对标地平线 J6M 级别，而当时 100 TOPS 以上的可选芯片很少。</p>
+<p>J6M 和高通的经验表明：<strong>适配的价值逐月递减</strong>。最早在新芯片上跑通方案的团队，才能拿到客户的对话机会。所以项目在 M95 就绪之前就启动了，先在 M97（700 TOPS）开发板上进行。</p>
+<h2 id="_2">计划</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">M97 开发板</span><span class="pipe-note">验证方案</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">模型适配</span><span class="pipe-note">算子、量化</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">M95 适配</span><span class="pipe-note">耗时 + 精度</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">实车测试</span><span class="pipe-note">v4 方案</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">问题聚类</span><span class="pipe-note">反馈给负责人</span></div>
+</div>
+
+<ol>
+<li><strong>先在开发板上验证方案，耗时放在第二位。</strong> 在 700 TOPS 的开发板上，优先保证行为正确：先行车，再泊车；耗时可以后面再优化。</li>
+<li><strong>适配模型。</strong> 为新工具链适配并量化每个模型，用同样的<a href="/zh/projects/numerical-consistency/">分阶段方法</a>检查数值一致性。</li>
+<li><strong>在 M95 上适配</strong>，并优化耗时，直到行车模型在帧预算内留有余量。</li>
+<li><strong>实车测试</strong> v4 方案，并做开发测试分析。</li>
+<li><strong>对路测问题聚类</strong>，让每个问题带着证据交给对应负责人，而不是一份零散的问题清单。</li>
+</ol>
+<h2 id="_3">结果</h2>
+<aside class="callout callout-result"><p>城市 NOA v4 方案已在 M95 测试车上运行。路测中关键模型没有掉帧，耗时优化还在继续增加余量。</p></aside>
+
+<p>路测发现的问题按主题分组，每组都有负责人：</p>
+<ul>
+<li><strong>变道安全：</strong> 部分变道离侧方车辆过近，或在后方有来车时仍选择变道。</li>
+<li><strong>速度表现：</strong> 部分空旷道路上过于保守；礼让行人等弱势道路使用者后提速偏慢。</li>
+<li><strong>导航选道：</strong> 部分场景下选错车道。</li>
+</ul>
+<p>这些主要是模型行为问题，模型团队在持续改进。把“迁移有问题”和“模型需要改进”分开，能让适配工作持续推进。</p>
+<p>把芯片相关代码合回主分支时也暴露了一些集成问题，都已修复，避免迁移变成长期维护的分叉。</p>
+<h2 id="_4">经验</h2>
+<ul>
+<li><strong>按价值排序。</strong> 先在宽松的开发板上保证行为正确，再在目标芯片上优化性能。</li>
+<li><strong>复用方法，而不只是代码。</strong> 为地平线芯片建立的一致性检查直接迁移了过来。</li>
+<li><strong>分诊是管理工作。</strong> 带着证据和负责人去聚类问题，才能让多团队协作持续向前。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/qnn-web/">&larr; QNN Web：面向所有芯片的一键模型转换</a><a href="/zh/projects/tensorrt-int8/">云端 GPU 模型的 TensorRT INT8 与 onnx2trt &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

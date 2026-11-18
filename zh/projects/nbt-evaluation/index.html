@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>NBT 评测平台 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="NBT 评测平台 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/nbt-evaluation/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/nbt-evaluation/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/nbt-evaluation/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/nbt-evaluation/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/nbt-evaluation/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">NBT 评测平台</h1>
+    <p class="pp-summary">内部评测网站：模型与数据管理、算法评测、结果管理和数据共享，并预留 badcase 分析、回流数据管理和建图结果展示接口。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 腾讯地图</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2021 – 2022</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 设计与开发</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">1</span><span class="metric-label">个平台统一管理模型、数据、评测和结果</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>评测</li><li>Web 开发</li><li>MLOps</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">设计</a></li>
+<li><a href="#_3">产品</a></li>
+<li><a href="#_4">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>团队需要一个共享的地方来管理模型和数据、运行算法评测、保存结果和共享数据，而不是每个人各自记录。</p>
+<h2 id="_2">设计</h2>
+<p>平台把模型、数据、评测任务和结果统一放在一个 Web 界面之后，并提供 API 供其他工具接入。</p>
+<figure><img src="/public/img/nbt_eval_design.png" alt="评测平台架构" loading="lazy"><figcaption>平台架构</figcaption></figure>
+
+<ul>
+<li><strong>模型与数据管理</strong>集中在一处。</li>
+<li><strong>算法评测</strong>通过平台运行，结果以同样的方式产生。</li>
+<li><strong>结果管理与数据共享</strong>面向整个团队。</li>
+<li><strong>预留接口</strong>用于 badcase 分析、回流数据管理和建图结果展示。</li>
+</ul>
+<figure><img src="/public/img/nbt_eval_design0.png" alt="评测平台界面设计" loading="lazy"><figcaption>界面设计</figcaption></figure>
+
+<h2 id="_3">产品</h2>
+<div class="media-grid">
+<figure><img src="/public/img/nbt_eval_v1.png" alt="评测平台第一版" loading="lazy"><figcaption>第一版</figcaption></figure>
+<figure><img src="/public/img/nbt_eval_v2.png" alt="评测平台第二版" loading="lazy"><figcaption>第二版</figcaption></figure>
+</div>
+
+<h2 id="_4">经验</h2>
+<ul>
+<li><strong>可比性本身就是产品功能。</strong> 统一的评测路径比任何单个指标都重要。</li>
+<li><strong>先设计接口，再设计功能。</strong> 为 badcase 分析和数据回流预留位置，平台才能持续扩展。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/ar-navigation/">&larr; AR 导航感知 SDK</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

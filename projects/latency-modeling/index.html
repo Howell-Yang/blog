@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Predicting on-board latency before writing code · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="Predicting on-board latency before writing code · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/latency-modeling/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/latency-modeling/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/latency-modeling/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/latency-modeling/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/latency-modeling/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">Predicting on-board latency before writing code</h1>
+    <p class="pp-summary">A block-level latency model, calibrated on the board, that predicted an enlarged occupancy model within 0.7%. It ranked six deployment options before any code was written and led to a backbone shared by five perception models.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2025 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Latency modeling, deployment planning and the OneModel phase-2 design</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">0.7%</span><span class="metric-label">error, 19.38 ms predicted vs 19.25 ms measured</span></div>
+      <div class="pp-metric"><span class="metric-value">6</span><span class="metric-label">deployment options ranked by frame-budget share</span></div>
+      <div class="pp-metric"><span class="metric-value">5–9 ms</span><span class="metric-label">estimated saving from a shared backbone</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Latency modeling</li><li>Profiling</li><li>BEV occupancy</li><li>Multi-task backbone</li><li>Deployment planning</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-question">The question</a></li>
+<li><a href="#step-1-profile-by-block-on-the-board">Step 1: profile by block, on the board</a></li>
+<li><a href="#step-2-decide-how-each-block-scales">Step 2: decide how each block scales</a></li>
+<li><a href="#step-3-rank-the-deployment-options">Step 3: rank the deployment options</a></li>
+<li><a href="#step-4-onemodel-one-backbone-for-five-perception-models">Step 4: OneModel, one backbone for five perception models</a></li>
+<li><a href="#lessons">Lessons</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="the-question">The question</h2>
+<p>Product asked for two upgrades to the occupancy network at once: a much larger output range (from 28.8 m × 86.4 m to about 48 m × 136 m) and a frame rate doubled from 5 Hz to 10 Hz. Either one alone roughly doubles the occupancy model's cost. The chip also runs detection/tracking and map models, so the real question was:</p>
+<blockquote>
+<p>Can both upgrades ship together? If not, what has to change elsewhere to make room?</p>
+</blockquote>
+<p>Answering by implementing and measuring each variant would take weeks. I answered it with a model instead.</p>
+<h2 id="step-1-profile-by-block-on-the-board">Step 1: profile by block, on the board</h2>
+<p>The network was split into blocks, and each block's latency was measured on the board, not only read from the compiler's estimate. Board timings differed from the compiler profile (about 8.8 ms profiled vs 10.0 ms measured for the whole model), and the gap was not uniform across blocks.</p>
+<h2 id="step-2-decide-how-each-block-scales">Step 2: decide how each block scales</h2>
+<p>Keeping the 0.3 m output resolution, the output grid grows from 96 × 288 to 160 × 448 cells, about <strong>2.6×</strong>. Each block was then classified by how its cost depends on that grid:</p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Depends on output grid?</th>
+<th>Board measurement</th>
+<th>Estimate for larger range</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image backbone + neck (5 cameras)</td>
+<td>No: works in image space</td>
+<td>3.92 ms</td>
+<td>3.92 ms</td>
+</tr>
+<tr>
+<td>View transform (image → BEV)</td>
+<td>Yes, proportional</td>
+<td>0.92 ms</td>
+<td>2.39 ms</td>
+</tr>
+<tr>
+<td>Point-cloud branch</td>
+<td>Partly (neck scales)</td>
+<td>0.48 ms</td>
+<td>1.33 ms</td>
+</tr>
+<tr>
+<td>Temporal fusion</td>
+<td>Yes</td>
+<td>0.69 ms</td>
+<td>1.79 ms</td>
+</tr>
+<tr>
+<td>BEV encoder (backbone + neck)</td>
+<td>Yes</td>
+<td>1.88 ms</td>
+<td>4.90 ms</td>
+</tr>
+<tr>
+<td>Near-field high-resolution head</td>
+<td>No: fixed region</td>
+<td>0.45 ms</td>
+<td>0.45 ms</td>
+</tr>
+<tr>
+<td>Main occupancy head</td>
+<td>Yes</td>
+<td>1.77 ms</td>
+<td>4.61 ms</td>
+</tr>
+<tr>
+<td><strong>Whole model</strong></td>
+<td></td>
+<td><strong>≈ 10.0 ms</strong></td>
+<td><strong>19.38 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<aside class="callout callout-result"><p><strong>Measured after implementation: 19.25 ms</strong>, against 19.38 ms predicted, a 0.7% error. The image encoder is the only large block unaffected by the range change, which made it the obvious thing to share.</p></aside>
+
+<aside class="callout callout-caveat"><p>The 0.7% holds for this model. A similar estimate for a different view-transform design missed by more. The value is the loop of predict, measure and correct, not one number.</p></aside>
+
+<h2 id="step-3-rank-the-deployment-options">Step 3: rank the deployment options</h2>
+<p>With per-block costs known, combinations of models, frame rates and sharing could be priced as frame-budget share (at 10 Hz) without building any of them:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Change</th>
+<th>Share of 10 Hz budget</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Today: three models deployed separately</td>
+<td>40.1%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>+ larger occupancy range</td>
+<td>44.8%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>+ occupancy at 10 Hz</td>
+<td>54.5%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>+ occupancy reuses the image backbone and neck</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>+ map model reuses them too</td>
+<td>46.2%</td>
+</tr>
+<tr>
+<td>6</td>
+<td>+ map model at 3.3 Hz</td>
+<td>42.3%</td>
+</tr>
+</tbody>
+</table>
+<p>The conclusion was clear before any code: <strong>a larger range plus 10 Hz only fits if the image backbone and neck are shared</strong>. Deployment becomes two-stage. One backbone model produces feature maps, and the detection, map and occupancy heads consume them. Lowering the map model's frame rate gives further headroom if needed.</p>
+<h2 id="step-4-onemodel-one-backbone-for-five-perception-models">Step 4: OneModel, one backbone for five perception models</h2>
+<p>This led to the OneModel phase-2 plan I wrote: a single image backbone and neck shared by five perception models across 9 cameras at 512 × 1024. The goal was to buy latency now and capacity later.</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">9 cameras</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Shared backbone + neck</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Detection &amp; tracking</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Map</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Occupancy</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Front-view perception</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Traffic lights</span></div>
+</div>
+
+<ul>
+<li><strong>Latency budget.</strong> Sharing saves an estimated 5–9 ms per frame. That saving is the budget for a larger backbone, so the plan first evaluated a backbone of about twice the capacity.</li>
+<li><strong>Sizing the backbone from existing models.</strong> Features from each task's released float checkpoint were extracted, and PCA measured how redundant each stage's channels were. Redundant dimensions could shrink; information-dense ones had to stay.</li>
+<li><strong>Initial weights without retraining from scratch.</strong> Channels were aligned across the existing checkpoints, PCA selected the dimensions to keep, and closed-form linear solves produced the neck and per-task projections. Reconstruction error was checked on held-out clips.</li>
+<li><strong>Training.</strong> Each step trains on one task's data across all GPUs, rotating through the tasks by planned exposure. This reuses each task's data loaders and keeps distributed training consistent.</li>
+<li><strong>Rollout.</strong> First adapt each model to the shared architecture and release it on its own. Then merge pairs, starting with tracking + occupancy. Then merge all five. A merge ships only if no task regresses.</li>
+</ul>
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>Model before you build.</strong> A block-level model answered a question that would otherwise have taken weeks of implementation.</li>
+<li><strong>Measure on the device.</strong> Compiler profiles and board timings disagree in exactly the places that matter.</li>
+<li><strong>Find the invariant.</strong> The part whose cost does not change with the requirement (the image encoder) was the part worth sharing.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/numerical-consistency/">&larr; Layered numerical consistency and release gates</a><a href="/projects/qnn-web/">QNN Web, one-click model conversion for every chip &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

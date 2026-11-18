@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>AR navigation perception SDK · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="AR navigation perception SDK · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/ar-navigation/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/ar-navigation/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/ar-navigation/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/ar-navigation/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/ar-navigation/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">AR navigation perception SDK</h1>
+    <p class="pp-summary">A perception SDK for AR navigation on phones and car head units: a multi-stream parallel framework with automatic profiling. 12 features delivered in four months with CPU usage under 70%, shipped on the JMC CX743 production vehicle.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> Tencent Maps</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2021 – 2022</span><span><i class="fa fa-user-o" aria-hidden="true"></i> SDK design and on-device model deployment</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">12</span><span class="metric-label">perception features in four months</span></div>
+      <div class="pp-metric"><span class="metric-value">&lt; 70%</span><span class="metric-label">CPU usage on the head unit</span></div>
+      <div class="pp-metric"><span class="metric-value">1</span><span class="metric-label">production vehicle launch (JMC CX743)</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Mobile / in-car SDK</li><li>Parallel pipelines</li><li>Profiling</li><li>On-device deployment</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-problem">The problem</a></li>
+<li><a href="#design">Design</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#visual-positioning-sdk">Visual positioning SDK</a></li>
+<li><a href="#lessons">Lessons</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="the-problem">The problem</h2>
+<p>AR navigation overlays guidance on the live camera view, so perception has to run in real time on hardware that is also running navigation, maps and the car's own software. A phone or head-unit CPU has little headroom. A feature that is accurate but late is useless, and an SDK that starves the rest of the system will not ship.</p>
+<h2 id="design">Design</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Camera frames</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Parallel perception streams</span><span class="pipe-note">road, parking slots, …</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Results to navigation</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">AR guidance</span></div>
+</div>
+
+<ul>
+<li><strong>Multi-stream parallel framework.</strong> Perception tasks run as parallel streams, so a slow task does not hold up the others and new tasks can be added without rewriting the pipeline.</li>
+<li><strong>Automatic profiling built in.</strong> Every stream reports its timing and CPU cost continuously, so performance regressions show up during development, not in the car.</li>
+<li><strong>On-device models</strong> deployed and tuned for the target hardware.</li>
+</ul>
+<h2 id="results">Results</h2>
+<div class="media-grid">
+<figure><video src="/public/img/nano_det.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>Road-scene perception</figcaption></figure>
+<figure><video src="/public/img/parkingSlotDetection.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>Parking-slot detection</figcaption></figure>
+<figure><video src="/public/img/AR_Navi_Map.mp4" muted autoplay loop playsinline preload="metadata"></video><figcaption>AR navigation</figcaption></figure>
+</div>
+
+<aside class="callout callout-result"><p>Twelve perception features delivered in four months, with CPU usage held under 70%. The system launched on the JMC CX743 production vehicle. Its returned data now helps keep Tencent Maps up to date.</p></aside>
+
+<h2 id="visual-positioning-sdk">Visual positioning SDK</h2>
+<p>My work also included the SDK for the visual positioning system used alongside AR navigation.</p>
+<figure><img src="/public/img/vps_sdk_design.png" alt="Visual positioning SDK architecture" loading="lazy"><figcaption>Visual positioning SDK design</figcaption></figure>
+
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>Budget the CPU first, then the features.</strong> Real-time on shared hardware is a scheduling problem as much as a model problem.</li>
+<li><strong>Make performance visible all the time.</strong> Built-in profiling caught regressions long before integration.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/tensorrt-int8/">&larr; TensorRT INT8 for cloud GPU models, and onnx2trt</a><a href="/projects/nbt-evaluation/">NBT evaluation platform &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

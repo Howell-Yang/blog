@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>QNN Web, one-click model conversion for every chip · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="QNN Web, one-click model conversion for every chip · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/qnn-web/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/qnn-web/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/qnn-web/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/qnn-web/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/qnn-web/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">QNN Web, one-click model conversion for every chip</h1>
+    <p class="pp-summary">An internal service that turns one uploaded model into engines for every target chip. Built in 2022–2023 to remove manual, error-prone conversions; rebuilt in 2026 for reliability and given an MCP interface so AI agents can drive it.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2022 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Designer and main developer (v1); architecture lead (v2 and MCP layer)</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">4,273</span><span class="metric-label">production model conversions</span></div>
+      <div class="pp-metric"><span class="metric-value">30–60 → 5 min</span><span class="metric-label">build time with timing cache</span></div>
+      <div class="pp-metric"><span class="metric-value">≈ −80%</span><span class="metric-label">manual effort per conversion</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>TensorRT</li><li>Horizon J5 / J6</li><li>NVIDIA Orin</li><li>Qualcomm</li><li>gRPC</li><li>MCP</li><li>Internal tooling</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-problem">The problem</a></li>
+<li><a href="#version-1-one-upload-every-target">Version 1: one upload, every target</a></li>
+<li><a href="#version-2-rebuilt-for-reliability-2026">Version 2: rebuilt for reliability (2026)</a></li>
+<li><a href="#an-mcp-layer-for-ai-agents">An MCP layer for AI agents</a></li>
+<li><a href="#lessons">Lessons</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="the-problem">The problem</h2>
+<p>Driving programs ship to chips at several price points, and every model must be compiled separately for each one. Before QNN Web, an engineer would:</p>
+<ol>
+<li>log in to each hardware box;</li>
+<li>hand-write a JSON config for the converter (one typo meant re-uploading and resubmitting);</li>
+<li>wait 30–60 minutes for each TensorRT engine build.</li>
+</ol>
+<p>That was during production releases roughly every two weeks, across many models.</p>
+<h2 id="version-1-one-upload-every-target">Version 1: one upload, every target</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Web front end</span><span class="pipe-note">upload ONNX / IR</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Config generator</span><span class="pipe-note">from the graph</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">gRPC dispatch</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Conversion servers</span><span class="pipe-note">Orin · J5 · J6</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Engines + logs</span><span class="pipe-note">download</span></div>
+</div>
+
+<ul>
+<li><strong>Front and back end separated, talking over gRPC</strong>, including file transfer. A user uploads once and gets engines for every target.</li>
+<li><strong>Configs generated from the ONNX graph</strong>: input names, shapes and types are read from the model, so nothing is typed by hand.</li>
+<li><strong>TensorRT timing cache</strong>: kernel-selection results are reused across builds of similar models, cutting a typical build from 30–60 minutes to about 5.</li>
+<li><strong>New hardware at almost no cost</strong>: adding Orin and later J6 targets meant adding a conversion server, not changing every user's workflow.</li>
+</ul>
+<aside class="callout callout-result"><p>4,273 production conversions across several automaker programs, with about 80% less manual effort per conversion. Model owners could convert their own models during fast production iteration.</p></aside>
+
+<h2 id="version-2-rebuilt-for-reliability-2026">Version 2: rebuilt for reliability (2026)</h2>
+<p>As production work grew, three problems appeared: conversions failed intermittently, users could not tell what state a job was in, and submitting several jobs at once blocked the service.</p>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unknown job state</td>
+<td>Every job's state is stored in a database and updated as it moves, including a new "transferring" state. The page shows a status column and a restart button.</td>
+</tr>
+<tr>
+<td>Chatty front end</td>
+<td>The page queries status only when it is refreshed, instead of polling constantly.</td>
+</tr>
+<tr>
+<td>Blocking on concurrent submissions</td>
+<td>A task queue; a job already queued or already converted is not submitted again.</td>
+</tr>
+<tr>
+<td>Wasted conversions</td>
+<td>LibTorch conversions are split by type, so only the requested variants are built.</td>
+</tr>
+<tr>
+<td>Disk filling up</td>
+<td>Artifacts stay on the conversion machines, not the front end. Periodic cleanup backs up IR files first and marks cleaned jobs as such. The database stores paths, not model files.</td>
+</tr>
+<tr>
+<td>Fragile front/back-end communication</td>
+<td>The front end hands each request to a conversion server and returns that server's address. Each server keeps its own record of finished work. Heartbeat, status and file-transfer services were added.</td>
+</tr>
+</tbody>
+</table>
+<p>Qualcomm and Orin conversion paths were added in the same rebuild.</p>
+<h2 id="an-mcp-layer-for-ai-agents">An MCP layer for AI agents</h2>
+<p>In 2026 I wrapped the service in a Model Context Protocol (MCP) server, so coding agents such as Cursor can drive conversions as tools instead of through a web page.</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor or script</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">MCP server</span><span class="pipe-note">protocol only</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Task scheduler</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Conversion server</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Result</span><span class="pipe-note">direct link or stream</span></div>
+</div>
+
+<p>The MCP layer does <strong>no conversion work itself</strong>. It exposes four tools:</p>
+<ol>
+<li><strong>Upload IR</strong>: validate and upload a local model file.</li>
+<li><strong>Submit task</strong>: choose the target type and precision.</li>
+<li><strong>Query status</strong>: poll a job's state.</li>
+<li><strong>Get result</strong>: return a download link, or stream the file.</li>
+</ol>
+<p>The real work stays in the existing scheduler and conversion servers, so the agent path and the web path share one implementation. An engineer can now ask an agent to convert a file to a given target and return the local path of the result, or call the same tools from a Python client inside a pipeline.</p>
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>Remove the step, not just the typo.</strong> Generating configs from the graph beat validating hand-written configs.</li>
+<li><strong>State belongs in a database.</strong> Most reliability problems came from job state that lived only in memory or in a browser tab.</li>
+<li><strong>Keep protocol layers thin.</strong> The MCP server only translates; one conversion path means one place to fix bugs.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/latency-modeling/">&larr; Predicting on-board latency before writing code</a><a href="/projects/axera-m95/">Urban NOA on a new chip (AXERA M95) &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

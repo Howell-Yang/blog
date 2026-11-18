@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>From PTQ to QAD: quantization that matches the float model · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="From PTQ to QAD: quantization that matches the float model · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/float-consistent-quantization/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/float-consistent-quantization/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/float-consistent-quantization/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/float-consistent-quantization/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/float-consistent-quantization/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">From PTQ to QAD: quantization that matches the float model</h1>
+    <p class="pp-summary">How the quantization method for production driving models evolved over four generations, and why mass production needs case-level consistency with the float model rather than a good average metric.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2023 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Quantization lead; algorithm design and rollout across the team</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">2 → 0.5</span><span class="metric-label">points of quantization loss, PTQ → QAT, on five perception models</span></div>
+      <div class="pp-metric"><span class="metric-value">4</span><span class="metric-label">method generations, each driven by a new model family</span></div>
+      <div class="pp-metric"><span class="metric-value">25 / 388</span><span class="metric-label">key metrics / shared scalars tracked per end-to-end candidate</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>PTQ</li><li>QAT</li><li>QAD</li><li>LSQ</li><li>Distillation</li><li>Sensitivity analysis</li><li>Horizon J6M</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#the-problem">The problem</a></li>
+<li><a href="#the-workflow">The workflow</a></li>
+<li><a href="#generation-1-scale-search-ptq-2023">Generation 1: scale-search PTQ (2023)</a></li>
+<li><a href="#generation-2-lsq-based-autoquant-2024">Generation 2: LSQ-based AutoQuant (2024)</a></li>
+<li><a href="#generation-3-distillation-based-qat-2025">Generation 3: distillation-based QAT (2025)</a></li>
+<li><a href="#generation-4-quantization-aware-distillation-qad-for-end-to-end-models-2026">Generation 4: quantization-aware distillation (QAD) for end-to-end models (2026)</a></li>
+<li><a href="#lessons">Lessons</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="the-problem">The problem</h2>
+<p>Driving models at QCraft are released roughly every two weeks, and quantization is the last step before the chip. Early in a program, quantization was judged by one number: the drop in offline metrics had to stay within a threshold. Late in mass production that is no longer enough. Downstream teams tolerate almost no regression, so quantization also answers for scenario regression tests and for issues found on the vehicle.</p>
+<p>Two facts made this hard:</p>
+<ul>
+<li><strong>Stability is not free.</strong> Model owners expect quantization to be stable when the architecture does not change. In practice, any shift in the distribution of weights or activations (new data, a longer training run) changes the quantized result.</li>
+<li><strong>Averages hide cases.</strong> An automatic emergency braking (AEB) target detected even one frame later than in the float model is a failure. A bug fixed in the float model must also be fixed in the INT8 model. A good average metric guarantees neither.</li>
+</ul>
+<p>So the requirement became: <strong>a quantized model that behaves like the float model, case by case, and is stable enough to run with one command and no tuning.</strong></p>
+<h2 id="the-workflow">The workflow</h2>
+<p>Every model goes through the same staged procedure. Each stage has an exit test, and a model only moves to the more expensive stage when the cheaper one fails.</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Float model</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Adapt to framework</span><span class="pipe-note">verify zero loss</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">PTQ</span><span class="pipe-note">calibrate</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Sensitivity analysis</span><span class="pipe-note">per layer</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT / QAD</span><span class="pipe-note">task + distillation</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Export IR</span><span class="pipe-note">compile for chip</span></div>
+</div>
+
+<ol>
+<li><strong>Adapt the float model to the quantization framework</strong>, then confirm the adaptation itself costs nothing. Operator substitutions, conv–BN fusion and the chip's input path (YUV instead of RGB) all change numerics before any quantization happens.</li>
+<li><strong>Calibrate with selected data.</strong> The calibration set must cover the widest practical range of scenarios, and it includes cases that caused quantization issues in earlier releases.</li>
+<li><strong>Evaluate PTQ.</strong> If it meets the target, export. PTQ is cheap and, because it does not change the weights, stays closest to the float model.</li>
+<li><strong>Find the sensitive layers.</strong> Two tools: cumulative error (how far each layer's output has drifted from float, end to end) and single-layer error (quantize one layer at a time). For a sharper ranking, start from an all-INT16 (W16A16) model and lower one layer at a time to INT8. Sensitive layers stay at INT16.</li>
+<li><strong>Train if needed: QAT or QAD</strong>, with a task loss and a distillation loss against the float model, iterating until the target is met. Then export to the intermediate representation (IR) and compile for the chip.</li>
+</ol>
+<h2 id="generation-1-scale-search-ptq-2023">Generation 1: scale-search PTQ (2023)</h2>
+<p>The first production models (BEV detection, mono 3D, multi-task perception) were quantized with PTQ. Hand-tuning PTQ was slow and fragile: every model update meant re-tuning clipping ranges, and min/max or percentile statistics often picked poor scales for long-tailed activations.</p>
+<p>I built an <strong>automatic quantization-parameter search</strong>. It searches for a good set of quantization parameters on calibration data, instead of deriving them from activation statistics and hand-tuning. It removed most of the manual work from routine releases, and a patent application was filed for it.</p>
+<p>The limit was accuracy: PTQ on complex multi-task models still lost around 2 points.</p>
+<h2 id="generation-2-lsq-based-autoquant-2024">Generation 2: LSQ-based AutoQuant (2024)</h2>
+<p>Map and temporal tracking models combine convolutions with transformer blocks. Transformer activations have strong outliers, which uniform statistics-based PTQ handles badly. Full QAT recovers accuracy but rewrites the weights, so the model drifts from float on rare inputs.</p>
+<p>AutoQuant sits between the two. Its design goals were:</p>
+<ul>
+<li>improve task accuracy over PTQ;</li>
+<li>keep intermediate features close to the float model, not just the outputs;</li>
+<li>change the weights as little as possible;</li>
+<li>learn the quantization parameters (scales) directly;</li>
+<li>work on hybrid CNN + transformer graphs.</li>
+</ul>
+<p>The method learns step sizes with LSQ (learned step-size quantization) on a small unlabeled set. Weight changes are bounded, for example AdaRound-style rounding choices instead of free updates, and intermediate features are supervised against the float model. An alternative I evaluated was QAT restricted to the most sensitive layers. It is cheaper, but only as good as the sensitivity ranking.</p>
+<p>Graph-level rewrites help before any training. <strong>Cross-layer equalization</strong> balances weight ranges between adjacent linear layers. <strong>LayerNorm–Linear fusion</strong> removes one quantized tensor: on the chip, LayerNorm is decomposed, and its last step (a per-channel scale and offset) folds into the next linear layer.</p>
+<pre><code class="language-text">LayerNorm:   y1 = (x − mean(x)) / std(x)
+             y2 = γ ⊙ y1 + β
+Linear:      y3 = W·y2 + b
+Fused:       y3 = (W·diag(γ))·y1 + (W·β + b)
+</code></pre>
+<h2 id="generation-3-distillation-based-qat-2025">Generation 3: distillation-based QAT (2025)</h2>
+<p>On five production perception models, QAT brought the quantization loss from about 2 points (PTQ) to about 0.5. But QAT with only a task loss has a structural problem:</p>
+<aside class="callout callout-caveat"><p><strong>QAT changes the operating point.</strong> Training on the task loss lets the quantized model pick a new precision/recall trade-off. It may remove some false positives and add some false negatives, fix a float bug or introduce a new one. The quantization team then delivers a retrained model, not a low-precision version of the float model, and nobody can tell whether a vehicle issue belongs to the model team or the quantization team.</p></aside>
+
+<p>Distillation-based QAT keeps the task loss but adds the float model as a teacher. Training starts from the PTQ model, and intermediate features are pulled toward the float model's features on the same input. Improvements made to the float model then carry over to the vehicle.</p>
+<p>The engineering around it mattered as much as the loss:</p>
+<ul>
+<li><strong>Reproducibility:</strong> remove avoidable randomness, so two QAT runs are comparable.</li>
+<li><strong>Data management:</strong> dedicated calibration and QAT datasets. When float training data is added or removed, the QAT set changes in the same proportions.</li>
+<li><strong>Code promotion path:</strong> float main branch → quantization main branch → isolated experiment branch → quantization main branch → master.</li>
+<li><strong>Cost awareness:</strong> a QAT run takes tens of GPUs for 12–24 hours per model, so the cheaper stages come first.</li>
+</ul>
+<h2 id="generation-4-quantization-aware-distillation-qad-for-end-to-end-models-2026">Generation 4: quantization-aware distillation (QAD) for end-to-end models (2026)</h2>
+<p>Planning and end-to-end driving models output trajectories, where small numerical differences compound over time. We ran QAT and AutoQuant/distillation side by side on a planning model and an end-to-end model, with the same data. Both reached high aggregate metrics, but the distillation-based method was clearly better on consistency and on long-tail cases.</p>
+<p>QAD makes distillation the primary objective and scales the data. Two changes go with it:</p>
+<ul>
+<li><strong>Data:</strong> training clips are selected to be diverse rather than numerous, and clips for specific known issues are collected and added.</li>
+<li><strong>Controlled experiments:</strong> for the World2Action end-to-end model, each candidate changes one factor at a time, grouped into families. Every candidate reports the same 25 key metrics and 388 shared scalars, and failed candidates are kept as evidence.</li>
+</ul>
+<p>What those experiments established:</p>
+<table>
+<thead>
+<tr>
+<th>Factor varied</th>
+<th>Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Distillation type (none, feature, full, QAD only)</td>
+<td>Task loss alone or feature distillation alone is not enough; task supervision cannot be removed.</td>
+</tr>
+<tr>
+<td>Temporal state (scene reset, independent teacher history)</td>
+<td>Resetting state at scene boundaries and giving the teacher its own history are prerequisites.</td>
+</tr>
+<tr>
+<td>Late-training weight drift</td>
+<td>Anchoring weights late in training stops a numerical divergence seen in one candidate.</td>
+</tr>
+<tr>
+<td>Horizon balancing, route gating, curricula</td>
+<td>Some gave local gains offline but not consistent vehicle improvements, so they were not promoted.</td>
+</tr>
+</tbody>
+</table>
+<p>Promoted candidates went to on-vehicle testing. Anything not yet tested on the vehicle stays labeled an offline candidate.</p>
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>PTQ is closer to float; QAT scores higher.</strong> Production needs both properties, which is what QAD is for.</li>
+<li><strong>The float model is the specification.</strong> Measure quantization by how closely it reproduces float behavior, case by case.</li>
+<li><strong>Escalate cost only when needed.</strong> Adapt, calibrate and analyze sensitivity before spending GPU-days on training.</li>
+<li><strong>Keep the negative results.</strong> They define where each method works and stop the same experiment from being run twice.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><span></span><a href="/projects/adaptive-lut/">Adaptive lookup tables for non-linear operators &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

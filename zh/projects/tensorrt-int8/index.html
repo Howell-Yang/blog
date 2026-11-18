@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>云端 GPU 模型的 TensorRT INT8 与 onnx2trt · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="云端 GPU 模型的 TensorRT INT8 与 onnx2trt · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/tensorrt-int8/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/tensorrt-int8/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/tensorrt-int8/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/tensorrt-int8/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/tensorrt-int8/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">云端 GPU 模型的 TensorRT INT8 与 onnx2trt</h1>
+    <p class="pp-summary">为腾讯地图云端 GPU 模型搭建的 INT8 量化部署流程：与浮点 cosine 相似度高于 0.999，耗时降低 20%，GPU 占用和显存各降低 10%，节省约 300 万元算力成本。其中的校准工具开源为 onnx2trt。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 腾讯地图</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2021 – 2022</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 负责云端模型的量化、部署与测试</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">&gt; 0.999</span><span class="metric-label">INT8 与浮点输出的 cosine 相似度</span></div>
+      <div class="pp-metric"><span class="metric-value">−20%</span><span class="metric-label">推理耗时</span></div>
+      <div class="pp-metric"><span class="metric-value">≈ 300 万元</span><span class="metric-label">节省的算力成本</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>TensorRT</li><li>ONNX</li><li>INT8 校准</li><li>云端 GPU</li><li>开源</li>
+    </ul>
+    <p class="pp-links"><a href="https://github.com/Howell-Yang/onnx2trt">GitHub 上的 onnx2trt <i class="fa fa-external-link" aria-hidden="true"></i></a>
+    </p>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">流程</a></li>
+<li><a href="#_3">结果</a></li>
+<li><a href="#onnx2trt">onnx2trt</a></li>
+<li><a href="#_4">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>腾讯地图的云端模型消耗的 GPU 资源超出了预算。INT8 推理是显而易见的手段，难点在精度：量化模型会掉精度，而每个模型都手工转换、手工测试，没法规模化。</p>
+<h2 id="_2">流程</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">PyTorch 模型</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">导出 ONNX</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">校准</span><span class="pipe-note">多种算法</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">精度检查</span><span class="pipe-note">与浮点比 cosine</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">TensorRT INT8 engine</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">部署 + 测试</span></div>
+</div>
+
+<ol>
+<li><strong>导出 ONNX</strong>，作为统一的输入格式。</li>
+<li><strong>多种算法校准</strong>：在同一接口下集成 ONNX Runtime 的量化校准和 TensorRT 自带的校准算法。</li>
+<li><strong>用输出相似度评估。</strong> 用 cosine 相似度比较量化模型和浮点模型的输出。另外增加了一种直接优化这一相似度的校准方法，与标准方法并列使用。</li>
+<li><strong>自动编译并测试 engine</strong>：耗时、GPU 占用、显存和精度，每个模型都经过同一道关卡。</li>
+</ol>
+<h2 id="_3">结果</h2>
+<aside class="callout callout-result"><p>量化后的输出与浮点模型的 cosine 相似度保持在 0.999 以上。推理耗时降低约 20%，GPU 占用和显存各降低约 10%，节省约 300 万元算力成本。</p></aside>
+
+<h2 id="onnx2trt">onnx2trt</h2>
+<p>我把校准工具开源为 <a href="https://github.com/Howell-Yang/onnx2trt">onnx2trt</a>，一个用于 ONNX → TensorRT INT8 量化的开源工具：</p>
+<ul>
+<li>集成 ONNX 量化与 TensorRT 自带的校准算法；</li>
+<li>开放自定义校准算法的接口；</li>
+<li>包含基于 cosine 相似度的校准方法。</li>
+</ul>
+<h2 id="_4">经验</h2>
+<ul>
+<li><strong>用与浮点模型的输出相似度来评判量化</strong>，而不是校准器自己的统计量。</li>
+<li><strong>自动化测试，而不只是自动化转换。</strong> 测量方式不统一的转换结果没法相互比较。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/axera-m95/">&larr; 新芯片上的城市 NOA（爱芯 M95）</a><a href="/zh/projects/ar-navigation/">AR 导航感知 SDK &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

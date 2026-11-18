@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Urban NOA on a new chip (AXERA M95) · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="Urban NOA on a new chip (AXERA M95) · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/axera-m95/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/axera-m95/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/axera-m95/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/axera-m95/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/axera-m95/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">Urban NOA on a new chip (AXERA M95)</h1>
+    <p class="pp-summary">Technical lead for porting QCraft&#39;s urban navigate-on-autopilot stack to a new chip family: a staged bring-up from a 700-TOPS demo board to the 350-TOPS M95, model adaptation and quantization, and road-test issue clustering. The v4 stack runs on test vehicles.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Technical lead (since June 2026)</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">350 TOPS</span><span class="metric-label">target chip, J6M class</span></div>
+      <div class="pp-metric"><span class="metric-value">v4</span><span class="metric-label">stack running on test vehicles</span></div>
+      <div class="pp-metric"><span class="metric-value">0</span><span class="metric-label">frame drops on key models in road tests</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>AXERA M95 / M97</li><li>Urban NOA</li><li>Bring-up</li><li>Quantization</li><li>Program leadership</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#why-this-chip-and-why-early">Why this chip, and why early</a></li>
+<li><a href="#plan">Plan</a></li>
+<li><a href="#results">Results</a></li>
+<li><a href="#what-this-taught-me">What this taught me</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="why-this-chip-and-why-early">Why this chip, and why early</h2>
+<p>Our stack ran on Horizon chips. Once Horizon started selling its own driving stack, depending on one chip vendor became a commercial risk. AXERA's M-series offered competitive compute per cost: the M95 (350 TOPS) is comparable to Horizon's J6M class, and few chips above 100 TOPS were available at the time.</p>
+<p>Experience with J6M and Qualcomm showed that <strong>the value of an adaptation falls month by month</strong>. The first teams with a working stack on a new chip get the customer conversations. So the program started before the M95 was ready, on an M97 (700 TOPS) demo board.</p>
+<h2 id="plan">Plan</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">M97 demo board</span><span class="pipe-note">prove the stack</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Model adaptation</span><span class="pipe-note">operators, quantization</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">M95 bring-up</span><span class="pipe-note">timing + accuracy</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle tests</span><span class="pipe-note">v4 stack</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Issue clustering</span><span class="pipe-note">feed back to owners</span></div>
+</div>
+
+<ol>
+<li><strong>Prove the stack on the demo board, timing second.</strong> On the 700-TOPS board, the priority was correct behavior: driving first, then parking. Latency could wait.</li>
+<li><strong>Adapt the models.</strong> Adapt and quantize each model for the new toolchain, and check numerical consistency with the same <a href="/projects/numerical-consistency/">stage-by-stage method</a>.</li>
+<li><strong>Bring up on the M95</strong> and tune latency until the driving models fit the frame budget with headroom.</li>
+<li><strong>Test on vehicles</strong> with the v4 stack, and run development test analysis.</li>
+<li><strong>Cluster road-test issues</strong> so each goes to the right owner with evidence attached, instead of a list of anecdotes.</li>
+</ol>
+<h2 id="results">Results</h2>
+<aside class="callout callout-result"><p>The v4 urban NOA stack runs on test vehicles on the M95. Key models showed no dropped frames in road tests, and latency work continues to add headroom.</p></aside>
+
+<p>Road-test findings were grouped into themes, each with its owner:</p>
+<ul>
+<li><strong>Lane-change safety:</strong> some lane changes came too close to vehicles alongside, or were taken despite traffic approaching from behind.</li>
+<li><strong>Speed behavior:</strong> too conservative on some open roads, and slow to accelerate after yielding to vulnerable road users.</li>
+<li><strong>Navigation lane choice:</strong> wrong lane selection in some scenarios.</li>
+</ul>
+<p>These are mostly model-behavior issues, which the model teams continue to improve. Separating "the port is wrong" from "the model needs work" keeps a bring-up moving.</p>
+<p>Merging the chip-specific code back into the main branch also exposed integration bugs, which were fixed so the port did not become a long-lived fork.</p>
+<h2 id="what-this-taught-me">What this taught me</h2>
+<ul>
+<li><strong>Sequence by value.</strong> Correct behavior on a forgiving board first, then performance on the target.</li>
+<li><strong>Reuse the method, not just the code.</strong> The consistency checks built for Horizon chips transferred directly.</li>
+<li><strong>Triage is leadership work.</strong> Clustering issues with evidence and owners kept a multi-team effort moving.</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/qnn-web/">&larr; QNN Web, one-click model conversion for every chip</a><a href="/projects/tensorrt-int8/">TensorRT INT8 for cloud GPU models, and onnx2trt &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

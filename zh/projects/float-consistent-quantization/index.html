@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>从 PTQ 到 QAD：与浮点模型一致的量化 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="从 PTQ 到 QAD：与浮点模型一致的量化 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/float-consistent-quantization/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/float-consistent-quantization/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/float-consistent-quantization/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/float-consistent-quantization/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/float-consistent-quantization/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">从 PTQ 到 QAD：与浮点模型一致的量化</h1>
+    <p class="pp-summary">量产驾驶模型的量化方案如何经历四代演进，以及为什么量产需要的是逐 case 与浮点模型一致，而不是一个好看的平均指标。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2023 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 量化方向负责人；算法设计与团队推广</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">2 → 0.5</span><span class="metric-label">个点的量化掉点（PTQ → QAT，5 个感知模型）</span></div>
+      <div class="pp-metric"><span class="metric-value">4</span><span class="metric-label">代量化方案，每一代由新的模型类型驱动</span></div>
+      <div class="pp-metric"><span class="metric-value">25 / 388</span><span class="metric-label">每个端到端候选方案跟踪的关键指标 / 公共标量</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>PTQ</li><li>QAT</li><li>QAD</li><li>LSQ</li><li>蒸馏</li><li>敏感度分析</li><li>地平线 J6M</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">整体流程</a></li>
+<li><a href="#scale-search-ptq2023">第一代：scale search PTQ（2023）</a></li>
+<li><a href="#lsq-autoquant2024">第二代：基于 LSQ 的 AutoQuant（2024）</a></li>
+<li><a href="#qat2025">第三代：带蒸馏的 QAT（2025）</a></li>
+<li><a href="#qad2026">第四代：面向端到端模型的量化感知蒸馏 QAD（2026）</a></li>
+<li><a href="#_3">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>轻舟的驾驶模型大约每两周发一次版，量化是上芯片前的最后一步。项目早期，量化只看一个数字：离线指标掉点不超过某个阈值。到了量产后期，这已经不够了。下游对回退几乎零容忍，量化不仅要对离线指标负责，还要对场景回归测试和实车问题负责。</p>
+<p>难点有两个：</p>
+<ul>
+<li><strong>稳定不是免费的。</strong> 模型侧认为只要结构不变，量化就应该稳定。实际上，权重或激活分布的任何变化（新数据、训练更久）都会改变量化结果。</li>
+<li><strong>平均值会掩盖单个 case。</strong> 自动紧急制动（AEB）目标哪怕比浮点模型晚一帧检出，也是失败；浮点模型修好的问题，INT8 模型也必须修好。平均指标好，这两点都保证不了。</li>
+</ul>
+<p>所以需求变成了：<strong>量化模型要逐 case 地表现得和浮点模型一样，并且稳定到一键执行、无需调参。</strong></p>
+<h2 id="_2">整体流程</h2>
+<p>每个模型都走同一套分阶段流程。每个阶段都有退出条件，只有便宜的阶段不达标，才进入更贵的阶段。</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">浮点模型</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">适配量化框架</span><span class="pipe-note">确认零损失</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">PTQ</span><span class="pipe-note">校准</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">敏感度分析</span><span class="pipe-note">逐层</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT / QAD</span><span class="pipe-note">任务 + 蒸馏</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">导出 IR</span><span class="pipe-note">编译上芯片</span></div>
+</div>
+
+<ol>
+<li><strong>把浮点模型适配到量化框架</strong>，并确认适配本身不掉点。算子替换、conv–BN 融合、芯片的输入通路（YUV 而不是 RGB），都会在量化之前就改变数值。</li>
+<li><strong>用挑选过的数据校准。</strong> 校准集要尽可能覆盖各类场景，并加入历史版本中出过量化问题的 case。</li>
+<li><strong>评估 PTQ。</strong> 达标就直接导出。PTQ 成本低，而且不改权重，与浮点模型最接近。</li>
+<li><strong>找出敏感层。</strong> 两种工具：累积误差（每层输出相对浮点端到端偏离了多少）和单层误差（一次只量化一层）。要更精确的排序，可以从全 INT16（W16A16）模型出发，逐层降到 INT8。敏感层保留 INT16。</li>
+<li><strong>需要时再训练：QAT 或 QAD</strong>，同时使用任务损失和对浮点模型的蒸馏损失，迭代到达标，然后导出中间表示（IR）并为芯片编译。</li>
+</ol>
+<h2 id="scale-search-ptq2023">第一代：scale search PTQ（2023）</h2>
+<p>最早的量产模型（BEV 检测、单目 3D、多任务感知）用 PTQ 量化。手工调 PTQ 慢且脆弱：每次模型更新都要重新调截断范围，而基于 min/max 或百分位的统计对长尾激活常常选出不好的 scale。</p>
+<p>我开发了<strong>自动量化参数搜索</strong>：在校准数据上自动搜索一组好的量化参数，而不是由激活统计推导再手工调整。它去掉了常规发版中的大部分手工工作，并已申请专利。</p>
+<p>它的局限在精度：复杂多任务模型上 PTQ 仍然会掉约 2 个点。</p>
+<h2 id="lsq-autoquant2024">第二代：基于 LSQ 的 AutoQuant（2024）</h2>
+<p>地图模型和时序跟踪模型同时包含卷积和 Transformer 模块。Transformer 激活有明显的离群值，基于统计的均匀 PTQ 处理不好；完整 QAT 能恢复精度，但会改写权重，模型在罕见输入上会偏离浮点。</p>
+<p>AutoQuant 介于两者之间。设计目标是：</p>
+<ul>
+<li>任务精度优于 PTQ；</li>
+<li>中间特征（而不只是输出）与浮点模型保持接近；</li>
+<li>尽量少改权重；</li>
+<li>直接学习量化参数（scale）；</li>
+<li>适用于 CNN + Transformer 的混合结构。</li>
+</ul>
+<p>方法是在少量无标注数据上用 LSQ（learned step-size quantization）学习步长，同时限制权重变化（例如用 AdaRound 式的取整选择代替自由更新），并用浮点模型的中间特征做监督。我也评估过另一种方案：只对最敏感的层做 QAT。成本更低，但效果完全取决于敏感层识别是否准确。</p>
+<p>训练之前，图层面的改写也有帮助。<strong>跨层均衡（Cross-Layer Equalization）</strong>平衡相邻线性层的权重范围。<strong>LayerNorm–Linear 融合</strong>能少一个量化张量：在芯片上 LayerNorm 被拆成多个算子，最后一步（逐通道的缩放和偏移）可以合并进下一个线性层。</p>
+<pre><code class="language-text">LayerNorm:   y1 = (x − mean(x)) / std(x)
+             y2 = γ ⊙ y1 + β
+Linear:      y3 = W·y2 + b
+融合后:      y3 = (W·diag(γ))·y1 + (W·β + b)
+</code></pre>
+<h2 id="qat2025">第三代：带蒸馏的 QAT（2025）</h2>
+<p>在 5 个量产感知模型上，QAT 把量化掉点从约 2 个点（PTQ）降到约 0.5 个点。但只用任务损失的 QAT 有一个结构性问题：</p>
+<aside class="callout callout-caveat"><p><strong>QAT 会改变工作点。</strong> 用任务损失训练，量化模型会重新选择 precision/recall 的平衡：可能减少一些误检、增加一些漏检，可能修掉浮点上的 bug，也可能引入新的 bug。于是量化团队交付的是一个重新训练过的模型，而不是浮点模型的低精度版本；实车出了问题，也说不清该由模型团队还是量化团队负责。</p></aside>
+
+<p>带蒸馏的 QAT 保留任务损失，同时把浮点模型作为教师。训练从 PTQ 模型开始，在相同输入下把中间特征拉向浮点模型的特征。这样，对浮点模型的改进就能传递到实车。</p>
+<p>围绕它的工程工作和损失函数同样重要：</p>
+<ul>
+<li><strong>可复现：</strong> 去掉可避免的随机性，让两次 QAT 结果可以比较。</li>
+<li><strong>数据管理：</strong> 专用的校准集和 QAT 数据集。浮点训练数据增删时，QAT 数据按相同比例增删。</li>
+<li><strong>代码流转路径：</strong> 浮点主分支 → 量化主分支 → 独立量化实验分支 → 量化主分支 → master。</li>
+<li><strong>成本意识：</strong> 一次 QAT 需要几十张 GPU 训练 12–24 小时，所以先走便宜的阶段。</li>
+</ul>
+<h2 id="qad2026">第四代：面向端到端模型的量化感知蒸馏 QAD（2026）</h2>
+<p>规划和端到端驾驶模型输出轨迹，微小的数值差异会随时间累积。我们在一个规划模型和一个端到端模型上，用相同数据对比了 QAT 和 AutoQuant/蒸馏方案。两者的整体指标都很高，但蒸馏方案在一致性和长尾 case 上明显更好。</p>
+<p>QAD 把蒸馏作为主要目标，并扩大数据规模。配套有两项改变：</p>
+<ul>
+<li><strong>数据：</strong> 训练片段追求多样性而不是数量，并收集、加入针对已知问题的片段。</li>
+<li><strong>对照实验：</strong> 对 World2Action 端到端模型，每个候选方案只改一个因素，并按方案族分组。每个候选都报告同样的 25 项关键指标和 388 个公共标量，失败的候选也保留作为证据。</li>
+</ul>
+<p>这些实验得出的结论：</p>
+<table>
+<thead>
+<tr>
+<th>改变的因素</th>
+<th>结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>蒸馏方式（无、特征、完整、仅 QAD）</td>
+<td>只用任务损失或只用特征蒸馏都不够；任务监督不能去掉。</td>
+</tr>
+<tr>
+<td>时序状态（场景重置、独立的教师历史）</td>
+<td>在场景边界重置状态、给教师模型独立的历史，是必要前提。</td>
+</tr>
+<tr>
+<td>训练后期权重漂移</td>
+<td>在训练后期锚定权重，解决了某个候选中出现的数值发散。</td>
+</tr>
+<tr>
+<td>horizon 平衡、路线门控、课程学习</td>
+<td>部分方案离线有局部收益，但没有带来稳定的实车改善，因此没有晋级。</td>
+</tr>
+</tbody>
+</table>
+<p>晋级的候选进入了实车测试；尚未实车验证的，一律标注为离线候选。</p>
+<h2 id="_3">经验</h2>
+<ul>
+<li><strong>PTQ 更接近浮点，QAT 分数更高。</strong> 量产两者都要，这正是 QAD 的价值。</li>
+<li><strong>浮点模型就是规格说明。</strong> 用逐 case 复现浮点行为的程度来衡量量化。</li>
+<li><strong>按需升级成本。</strong> 先适配、校准、做敏感度分析，再投入 GPU 天去训练。</li>
+<li><strong>保留负面结果。</strong> 它们界定了每种方法的适用范围，也避免同一个实验做两遍。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><span></span><a href="/zh/projects/adaptive-lut/">非线性算子的自适应查表 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

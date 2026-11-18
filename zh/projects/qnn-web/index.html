@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>QNN Web：面向所有芯片的一键模型转换 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="QNN Web：面向所有芯片的一键模型转换 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/qnn-web/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/qnn-web/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/qnn-web/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/qnn-web/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/qnn-web/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">QNN Web：面向所有芯片的一键模型转换</h1>
+    <p class="pp-summary">一个内部服务：上传一个模型，就得到所有目标芯片的 engine。2022–2023 年为消除手工、易错的转换而开发；2026 年为可靠性重构，并增加 MCP 接口，让 AI Agent 也能使用。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2022 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 设计者和主要开发者（v1）；架构负责人（v2 与 MCP 层）</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">4,273</span><span class="metric-label">次量产模型转换</span></div>
+      <div class="pp-metric"><span class="metric-value">30–60 → 5 分钟</span><span class="metric-label">使用 timing cache 后的编译时间</span></div>
+      <div class="pp-metric"><span class="metric-value">≈ −80%</span><span class="metric-label">每次转换的人工耗时</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>TensorRT</li><li>地平线 J5 / J6</li><li>英伟达 Orin</li><li>高通</li><li>gRPC</li><li>MCP</li><li>内部工具</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">第一版：上传一次，覆盖所有平台</a></li>
+<li><a href="#2026">第二版：为可靠性重构（2026）</a></li>
+<li><a href="#ai-agent-mcp">面向 AI Agent 的 MCP 层</a></li>
+<li><a href="#_3">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>智驾项目覆盖多个价位的芯片，每个模型都要为每个芯片单独编译。有 QNN Web 之前，工程师需要：</p>
+<ol>
+<li>逐台登录硬件；</li>
+<li>手写转换器的 JSON 配置（一个笔误就要重新上传、重新提交）；</li>
+<li>每个 TensorRT engine 等 30–60 分钟编译。</li>
+</ol>
+<p>而量产发版大约两周一次，涉及很多模型。</p>
+<h2 id="_2">第一版：上传一次，覆盖所有平台</h2>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Web 前端</span><span class="pipe-note">上传 ONNX / IR</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">配置生成器</span><span class="pipe-note">根据计算图</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">gRPC 分发</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">转换服务器</span><span class="pipe-note">Orin · J5 · J6</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Engine + 日志</span><span class="pipe-note">下载</span></div>
+</div>
+
+<ul>
+<li><strong>前后端分离，通过 gRPC 通信</strong>，包括文件传输。用户上传一次，就能得到所有目标平台的 engine。</li>
+<li><strong>根据 ONNX 计算图生成配置</strong>：输入名称、形状和类型直接从模型读取，不再手工填写。</li>
+<li><strong>TensorRT timing cache</strong>：在相似模型的编译之间复用 kernel 选择结果，把典型编译时间从 30–60 分钟降到约 5 分钟。</li>
+<li><strong>接入新硬件几乎零成本</strong>：后来接入 Orin 和 J6，只需增加一台转换服务器，不需要改变每个用户的使用方式。</li>
+</ul>
+<aside class="callout callout-result"><p>在多个车企项目中累计完成 4,273 次量产转换，每次转换的人工耗时减少约 80%。在量产快速迭代期间，模型 owner 可以自己完成模型转换。</p></aside>
+
+<h2 id="2026">第二版：为可靠性重构（2026）</h2>
+<p>随着量产工作增加，出现了三个问题：转换偶发失败；用户不知道任务处于什么状态；同时提交多个任务会阻塞服务。</p>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>改动</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务状态未知</td>
+<td>每个任务的状态都记录在数据库中并随进度更新，包括新增的“传输中”状态。页面显示状态栏和重新启动按钮。</td>
+</tr>
+<tr>
+<td>前端频繁请求</td>
+<td>只在刷新页面时查询状态，而不是持续轮询。</td>
+</tr>
+<tr>
+<td>并发提交会阻塞</td>
+<td>增加任务队列；已在队列中或已完成转换的任务不再重复提交。</td>
+</tr>
+<tr>
+<td>重复转换浪费</td>
+<td>LibTorch 转换按类型拆分，只编译请求的类型。</td>
+</tr>
+<tr>
+<td>磁盘被占满</td>
+<td>产物保存在转换机器上，不放前端机器。定期清理前先备份 IR 文件，并把已清理的任务标记出来。数据库只保存路径，不保存模型文件。</td>
+</tr>
+<tr>
+<td>前后端通信脆弱</td>
+<td>前端把请求交给某台转换服务器，并返回该服务器的地址；每台服务器独立记录已完成的任务。增加了心跳、状态查询和文件传输服务。</td>
+</tr>
+</tbody>
+</table>
+<p>这次重构同时增加了高通和 Orin 的转换通路。</p>
+<h2 id="ai-agent-mcp">面向 AI Agent 的 MCP 层</h2>
+<p>2026 年，我为服务封装了一个 Model Context Protocol（MCP）服务器，让 Cursor 等编程 Agent 能以工具的方式执行转换，而不必通过网页。</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor 或脚本</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">MCP 服务器</span><span class="pipe-note">只做协议层</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">任务调度器</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">转换服务器</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">结果</span><span class="pipe-note">直链或数据流</span></div>
+</div>
+
+<p>MCP 层<strong>本身不做任何转换计算</strong>，只提供四个工具：</p>
+<ol>
+<li><strong>上传 IR</strong>：校验并上传本地模型文件。</li>
+<li><strong>提交任务</strong>：选择目标类型和精度。</li>
+<li><strong>查询状态</strong>：查询任务进度。</li>
+<li><strong>获取结果</strong>：返回下载链接，或以数据流返回文件。</li>
+</ol>
+<p>真正的工作仍由原有的调度器和转换服务器完成，所以 Agent 和网页走的是同一套实现。工程师现在可以让 Agent 把某个文件转换为指定目标，并返回结果的本地路径；也可以在流水线中用 Python 客户端调用同样的工具。</p>
+<h2 id="_3">经验</h2>
+<ul>
+<li><strong>去掉步骤，而不只是防止笔误。</strong> 根据计算图生成配置，好过校验手写的配置。</li>
+<li><strong>状态应该放在数据库里。</strong> 大多数可靠性问题，都来自只存在于内存或浏览器标签页里的任务状态。</li>
+<li><strong>协议层要薄。</strong> MCP 服务器只做转换翻译；只有一条转换通路，修 bug 也只需修一处。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/latency-modeling/">&larr; 写代码之前，先预测板端耗时</a><a href="/zh/projects/axera-m95/">新芯片上的城市 NOA（爱芯 M95） &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

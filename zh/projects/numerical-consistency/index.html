@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>分层数值一致性与发版门禁 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="分层数值一致性与发版门禁 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/numerical-consistency/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/numerical-consistency/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/numerical-consistency/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/numerical-consistency/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/numerical-consistency/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">分层数值一致性与发版门禁</h1>
+    <p class="pp-summary">从实车数据到板端后处理，把部署链路的每个阶段都与前一阶段在相同输入下比对，让每个不一致只可能来自一个地方；再配合分级发版门禁，把未经验证的结果挡在车外。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2024 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 方法设计、工具方向与在各模型团队推广</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">12</span><span class="metric-label">个阶段间检查点，从相机数据到板端输出</span></div>
+      <div class="pp-metric"><span class="metric-value">5</span><span class="metric-label">级证据等级，从源码到实车</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>数值对齐</li><li>LibTorch</li><li>地平线 HBIR / HBM</li><li>HIL / SIL</li><li>发版工程</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#_2">方法：比较相邻阶段，而不是两端</a></li>
+<li><a href="#_3">各检查点的误差来源</a></li>
+<li><a href="#_4">案例</a></li>
+<li><a href="#_5">发版门禁：结论被验证到了哪一级？</a></li>
+<li><a href="#_6">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>“板端结果和浮点模型不一样”是模型部署中最常见、也最没用的问题描述。从 PyTorch 里的模型到车上运行的同一个模型，中间有十几次变换：数据采集、预处理、导出、fake quant、中间表示、两套运行时、编译器、整数 kernel 和后处理。每一步都可能引入误差，误差还会叠加。没有方法，排查就只能靠猜。</p>
+<h2 id="_2">方法：比较相邻阶段，而不是两端</h2>
+<p>每个阶段只和它的前一个阶段比较，并且使用<strong>完全相同的输入</strong>和<strong>完全相同的后处理</strong>。这样，每次比较只有一个阶段可能是原因。</p>
+<p>数据侧：</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">实车数据</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">HIL</span><span class="pipe-note">硬件在环</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">SIL</span><span class="pipe-note">软件在环</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">离线格式</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">离线预处理</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">板端预处理</span></div>
+</div>
+
+<p>模型侧：</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Float</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">面向芯片的导出</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT（关闭 fake quant）</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">IR → 重建 QAT</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">LibTorch</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT HBIR</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">量化 HBIR</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">HBM</span><span class="pipe-note">芯片上</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">板端后处理</span></div>
+</div>
+
+<h2 id="_3">各检查点的误差来源</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>比较</th>
+<th>典型误差来源</th>
+<th>检查方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>实车数据 vs HIL vs SIL</td>
+<td>NV12 直出 vs 经 RGB 中转</td>
+<td>把 SIL 输入 dump 成离线格式后比对</td>
+</tr>
+<tr>
+<td>2</td>
+<td>离线预处理 vs 数据转换</td>
+<td>RGB 与 NV12 两条通路；upsample–downsample 往返</td>
+<td>同一帧上比对张量</td>
+</tr>
+<tr>
+<td>3</td>
+<td>离线预处理 vs 板端预处理</td>
+<td>同一变换的不同实现</td>
+<td>同一帧上比对张量</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Float vs 面向芯片的导出</td>
+<td>输入改为 YUV444；upsample 被替换</td>
+<td>中间特征和输出比对</td>
+</tr>
+<tr>
+<td>5</td>
+<td>导出 vs 关闭 fake quant 的 QAT</td>
+<td>conv–BN 融合；plugin 中无法关闭 fake quant 的算子</td>
+<td>输出比对，必要时逐层</td>
+</tr>
+<tr>
+<td>6</td>
+<td>QAT vs Float</td>
+<td>量化误差本身</td>
+<td>任务指标加逐层误差</td>
+</tr>
+<tr>
+<td>7</td>
+<td>QAT → IR → 重建 QAT</td>
+<td>序列化与重建差异</td>
+<td>逐 bit 输出比对</td>
+</tr>
+<tr>
+<td>8</td>
+<td>QAT 模型 vs LibTorch（Python vs C++）</td>
+<td>GPU 型号、CUDA 版本、个别 run 的异常</td>
+<td>offboard 与 onboard 一致性验证</td>
+</tr>
+<tr>
+<td>9</td>
+<td>LibTorch vs QAT HBIR</td>
+<td>查表转换在这一步完成</td>
+<td>逐算子比对，查表误差检查</td>
+</tr>
+<tr>
+<td>10</td>
+<td>QAT HBIR vs 量化 HBIR</td>
+<td>fake quant 替换为真正的整数运算</td>
+<td>量化 scale 检查</td>
+</tr>
+<tr>
+<td>11</td>
+<td>量化 HBIR vs HBM</td>
+<td>编译器</td>
+<td>厂商提供的校验工具</td>
+</tr>
+<tr>
+<td>12</td>
+<td>offboard vs onboard 后处理，以及实车 vs 离线全链路</td>
+<td>实现差异；帧同步</td>
+<td>板端同步测试</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_4">案例</h2>
+<p><strong><code>rsqrt</code> 中的一个查表分段点。</strong> 某个量产模型在 LibTorch 和芯片之间存在差异。我们在离线复现：对比普通 LibTorch 和使用芯片查表的 LibTorch，再逐层二分。误差来自归一化层中一个 <code>rsqrt</code> 查表的分段点。修复本身是局部的；更长远的改变是把查表误差检查提前到转换流程中，这后来发展成了<a href="/zh/projects/adaptive-lut/">自适应查表算法</a>。</p>
+<p><strong>地图模型的坐标误差。</strong> 对一个矢量地图模型，分阶段隔离找出了三个独立的问题：不同后端之间 upsample 的 <code>align_corners</code> 不一致、一个位姿增量张量精度不足，以及一个求逆运算在计算图中的执行位置不对。</p>
+<p><strong>时序模型。</strong> 跟踪模型在帧之间传递状态，一帧中极小的数值差异会传播到后面很多帧。所以这类模型的检查必须覆盖完整序列，而不是单帧。</p>
+<h2 id="_5">发版门禁：结论被验证到了哪一级？</h2>
+<p>一致性工具告诉你误差在哪里，发版门禁决定什么可以发布。关于量化模型的每个结论，都标注它已通过的最高级别：</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">源码</span><span class="pipe-note">代码已评审</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">编译</span><span class="pipe-note">产物可编译</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">仿真</span><span class="pipe-note">离线指标</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">板端</span><span class="pipe-note">在芯片上运行</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">实车</span><span class="pipe-note">路测</span></div>
+</div>
+
+<ul>
+<li>上传了 IR 不等于芯片上能跑，离线指标好也不等于板端结果好。状态汇报要写清楚结论到了哪一级。</li>
+<li><strong>新的模型特性合入时默认关闭 feature flag</strong>，只有通过离线、回归测试和发版验证后才打开。</li>
+<li><strong>历史量化问题回归集</strong>在每次发版前运行，修好的问题不会悄悄复发。</li>
+<li><strong>量化改动写进发版文档</strong>，下游可以把行为变化和原因对应起来。</li>
+</ul>
+<aside class="callout callout-result"><p>这套方法把“结果对不上”变成了一个可复现、位置明确的 bug。回归集在三个量产项目中把量化问题拦截在了发版之前。</p></aside>
+
+<h2 id="_6">经验</h2>
+<ul>
+<li><strong>先隔离，再修复。</strong> 在相同输入下比较相邻阶段，不要直接比一条 12 段链路的两端。</li>
+<li><strong>数据和后处理也是模型的一部分。</strong> 好几个“量化 bug”其实是预处理差异。</li>
+<li><strong>说清楚证据等级。</strong> 一旦大家对结论被验证到哪一级达成一致，大多数发版争论就消失了。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/adaptive-lut/">&larr; 非线性算子的自适应查表</a><a href="/zh/projects/latency-modeling/">写代码之前，先预测板端耗时 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+

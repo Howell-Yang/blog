@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>写代码之前，先预测板端耗时 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="写代码之前，先预测板端耗时 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/latency-modeling/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/latency-modeling/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/latency-modeling/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/latency-modeling/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/latency-modeling/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">写代码之前，先预测板端耗时</h1>
+    <p class="pp-summary">一个用板端数据校准的分模块耗时模型，对扩大后的 Occupancy 模型预测误差仅 0.7%。它在写代码之前就对六种部署方案排了序，并促成五个感知模型共享 backbone。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2025 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 耗时建模、部署规划与 OneModel 二期方案设计</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">0.7%</span><span class="metric-label">误差，预测 19.38 ms，实测 19.25 ms</span></div>
+      <div class="pp-metric"><span class="metric-value">6</span><span class="metric-label">种部署方案，按帧预算占比排序</span></div>
+      <div class="pp-metric"><span class="metric-value">5–9 ms</span><span class="metric-label">共享 backbone 预计节省的耗时</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>耗时建模</li><li>Profiling</li><li>BEV Occupancy</li><li>多任务 backbone</li><li>部署规划</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+<ul>
+<li><a href="#_1">问题</a></li>
+<li><a href="#profile">第一步：在板端分模块 profile</a></li>
+<li><a href="#_2">第二步：判断每个模块如何缩放</a></li>
+<li><a href="#_3">第三步：给部署方案排序</a></li>
+<li><a href="#onemodel-backbone">第四步：OneModel，五个感知模型共用一个 backbone</a></li>
+<li><a href="#_4">经验</a></li>
+</ul>
+</nav>
+
+  </details>
+
+  <div class="pp-content">
+    <h2 id="_1">问题</h2>
+<p>产品同时提出了 Occupancy 网络的两项升级：大幅扩大输出范围（从 28.8 m × 86.4 m 扩大到约 48 m × 136 m），以及帧率从 5 Hz 提升到 10 Hz。任何一项单独上线，Occupancy 模型的开销都大约翻倍。芯片上同时还跑着检测跟踪和地图模型，所以真正的问题是：</p>
+<blockquote>
+<p>两项升级能一起上线吗？如果不能，其他地方要做什么改变来腾出空间？</p>
+</blockquote>
+<p>把每个方案都实现一遍再测，需要几周。我用一个模型来回答这个问题。</p>
+<h2 id="profile">第一步：在板端分模块 profile</h2>
+<p>把网络拆成若干模块，每个模块的耗时都在板端实测，而不只是读编译器给出的估计。板端耗时和编译器 profile 并不一致（整模型约 8.8 ms profile 对 10.0 ms 实测），而且各模块的差异也不均匀。</p>
+<h2 id="_2">第二步：判断每个模块如何缩放</h2>
+<p>保持 0.3 m 的输出分辨率，输出网格从 96 × 288 增大到 160 × 448，约 <strong>2.6 倍</strong>。再按开销是否依赖这个网格，对每个模块分类：</p>
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>是否依赖输出网格？</th>
+<th>板端实测</th>
+<th>扩大范围后的估计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>图像 backbone + neck（5 路相机）</td>
+<td>否：在图像空间计算</td>
+<td>3.92 ms</td>
+<td>3.92 ms</td>
+</tr>
+<tr>
+<td>View transform（图像 → BEV）</td>
+<td>是，按比例</td>
+<td>0.92 ms</td>
+<td>2.39 ms</td>
+</tr>
+<tr>
+<td>点云分支</td>
+<td>部分（neck 会缩放）</td>
+<td>0.48 ms</td>
+<td>1.33 ms</td>
+</tr>
+<tr>
+<td>时序融合</td>
+<td>是</td>
+<td>0.69 ms</td>
+<td>1.79 ms</td>
+</tr>
+<tr>
+<td>BEV encoder（backbone + neck）</td>
+<td>是</td>
+<td>1.88 ms</td>
+<td>4.90 ms</td>
+</tr>
+<tr>
+<td>近处高分辨率 head</td>
+<td>否：区域固定</td>
+<td>0.45 ms</td>
+<td>0.45 ms</td>
+</tr>
+<tr>
+<td>主 Occupancy head</td>
+<td>是</td>
+<td>1.77 ms</td>
+<td>4.61 ms</td>
+</tr>
+<tr>
+<td><strong>整模型</strong></td>
+<td></td>
+<td><strong>≈ 10.0 ms</strong></td>
+<td><strong>19.38 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<aside class="callout callout-result"><p><strong>实现后实测：19.25 ms</strong>，预测为 19.38 ms，误差 0.7%。图像编码器是唯一不受范围变化影响的大模块，因此它显然就是应该共享的部分。</p></aside>
+
+<aside class="callout callout-caveat"><p>0.7% 只针对这个模型。对另一种 view transform 结构做的类似估计，误差更大。价值在于“预测、测量、修正”的闭环，而不是某一个数字。</p></aside>
+
+<h2 id="_3">第三步：给部署方案排序</h2>
+<p>有了各模块的开销，不需要实现任何方案，就能把模型、帧率和共享方式的组合换算成 10 Hz 下的帧预算占比：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>变化</th>
+<th>占 10 Hz 帧预算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>现状：三个模型分别部署</td>
+<td>40.1%</td>
+</tr>
+<tr>
+<td>2</td>
+<td>+ Occupancy 扩大范围</td>
+<td>44.8%</td>
+</tr>
+<tr>
+<td>3</td>
+<td>+ Occupancy 提升到 10 Hz</td>
+<td>54.5%</td>
+</tr>
+<tr>
+<td>4</td>
+<td>+ Occupancy 复用图像 backbone 和 neck</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>5</td>
+<td>+ 地图模型也复用</td>
+<td>46.2%</td>
+</tr>
+<tr>
+<td>6</td>
+<td>+ 地图模型降到 3.3 Hz</td>
+<td>42.3%</td>
+</tr>
+</tbody>
+</table>
+<p>结论在写代码之前就很清楚：<strong>扩大范围加 10 Hz，只有在共享图像 backbone 和 neck 时才放得下</strong>。部署改为两阶段：一个 backbone 模型输出特征图，检测、地图和 Occupancy 的 head 读取这些特征。如有需要，降低地图模型帧率还能再腾出空间。</p>
+<h2 id="onemodel-backbone">第四步：OneModel，五个感知模型共用一个 backbone</h2>
+<p>由此我写了 OneModel 二期方案：五个感知模型、9 路 512 × 1024 相机共享一个图像 backbone 和 neck。目标是现在省出耗时，以后换来容量。</p>
+<div class="pipeline" role="list">
+<div class="pipe-stage" role="listitem"><span class="pipe-name">9 路相机</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">共享 backbone + neck</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">检测与跟踪</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">地图</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">Occupancy</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">前视感知</span></div>
+<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+<div class="pipe-stage" role="listitem"><span class="pipe-name">红绿灯</span></div>
+</div>
+
+<ul>
+<li><strong>耗时预算。</strong> 共享预计每帧节省 5–9 ms。这部分节省就是更大 backbone 的预算，所以方案先评估了容量约为两倍的 backbone。</li>
+<li><strong>用已有模型确定 backbone 规模。</strong> 用各任务已发版的浮点 checkpoint 提取特征，用 PCA 衡量每个阶段通道的冗余度：冗余的维度可以缩减，信息密集的维度必须保留。</li>
+<li><strong>不从零训练也能得到初始权重。</strong> 先对齐各 checkpoint 的通道，再用 PCA 选出保留的维度，用闭式线性求解得到 neck 和各任务的投影层，并在独立片段上检查重建误差。</li>
+<li><strong>训练方式。</strong> 每个 step 所有 GPU 都训练同一个任务的数据，按计划的训练曝光量在任务间轮转。这样可以复用各任务的数据加载，也让分布式训练保持一致。</li>
+<li><strong>上线路径。</strong> 先把每个模型改成共享架构并单独发版；再两两合并，从跟踪 + Occupancy 开始；最后五个一起合并。只有所有任务都不回退，合并才能发版。</li>
+</ul>
+<h2 id="_4">经验</h2>
+<ul>
+<li><strong>先建模，再动手。</strong> 一个分模块的耗时模型，回答了一个原本需要几周实现才能回答的问题。</li>
+<li><strong>在设备上测量。</strong> 编译器 profile 和板端耗时恰恰在关键的地方不一致。</li>
+<li><strong>找到不变的部分。</strong> 开销不随需求变化的部分（图像编码器），正是值得共享的部分。</li>
+</ul>
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/numerical-consistency/">&larr; 分层数值一致性与发版门禁</a><a href="/zh/projects/qnn-web/">QNN Web：面向所有芯片的一键模型转换 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+</body>
+</html>
+
