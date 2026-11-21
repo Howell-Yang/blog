@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>CodeEditor: a collaborative pad for coding interviews · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="CodeEditor: a collaborative pad for coding interviews · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/codeeditor/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/codeeditor/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/codeeditor/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/codeeditor/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/codeeditor/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">CodeEditor: a collaborative pad for coding interviews</h1>
+    <p class="pp-summary">A website for coding interviews, built and run as a side project: interviewer and candidate edit the same code in real time, see each other's cursors, and run it on the server. It also has a problem bank with an automatic judge. The source is public.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> Side project</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2024 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Design, development and operations</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">137</span><span class="metric-label">automated tests</span></div>
+      <div class="pp-metric"><span class="metric-value">29</span><span class="metric-label">built-in problems with generated tests</span></div>
+      <div class="pp-metric"><span class="metric-value">4</span><span class="metric-label">languages run in the sandbox</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Django</li><li>Channels / WebSocket</li><li>Operational transformation</li><li>Sandboxing</li><li>Online judge</li><li>Open source</li>
+    </ul>
+    <p class="pp-links"><a href="https://codeeditor.cn">Live site: codeeditor.cn <i class="fa fa-external-link" aria-hidden="true"></i></a><a href="https://github.com/Howell-Yang/codeeditor">Source on GitHub <i class="fa fa-external-link" aria-hidden="true"></i></a>
+    </p>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-it-is">What it is</a></li>
+    <li><a href="#sync">Keeping two editors in sync</a></li>
+    <li><a href="#sandbox">Running other people's code</a></li>
+    <li><a href="#judge">Problem bank and judge</a></li>
+    <li><a href="#verification">How it is verified</a></li>
+    <li><a href="#notes">Design notes</a></li>
+  </ul>
+</nav>
+  </details>
+
+  <div class="pp-content">
+    <h2 id="what-it-is">What it is</h2>
+<p>A remote coding interview needs three things in one place: a shared editor, a way to run the code, and the problem statement. CodeEditor puts them on one page. Creating a room takes one click; whoever has the link is in. There is nothing to install and no account is needed.</p>
+<figure>
+  <img src="/public/img/codeeditor-room.jpg" alt="An interview room: the problem on the left, the shared code on the right, input and output below" loading="lazy">
+  <figcaption>An interview room. The highlighted selection and the name tag belong to the other participant.</figcaption>
+</figure>
+<ul>
+<li><strong>Shared editor</strong> with remote carets and selections, and an undo that only undoes your own edits.</li>
+<li><strong>Run</strong>: the server compiles and runs the code and sends the output, CPU time and peak memory to everyone in the room.</li>
+<li><strong>Problem panel</strong> in Markdown. A problem can be sent to the room from the built-in bank or from the interviewer's own saved problems.</li>
+<li><strong>Shared timer</strong>, light and dark themes, and a layout for phones.</li>
+</ul>
+<h2 id="sync">Keeping two editors in sync</h2>
+<p>The first version sent the whole text on every keystroke. That is simple, and it is wrong whenever two people type at once: the later message overwrites the earlier one, and the other person's cursor jumps. The current version uses operational transformation (OT).</p>
+<div class="pipeline" role="list">
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Keystroke</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Operation</span><span class="pipe-note">keep / insert / delete, against revision n</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Server transforms</span><span class="pipe-note">over everything accepted since n</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Broadcast &#43; acknowledge</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Other editors apply it</span><span class="pipe-note">carets stay put</span></div>
+</div>
+
+<ul>
+<li><strong>One operation in flight.</strong> The browser waits for the acknowledgement of one operation and merges further edits into a buffer. Operations from the server are transformed over both before they touch the editor.</li>
+<li><strong>Undo is transformed too.</strong> The undo stack holds inverse operations, and every remote operation is transformed into them, so Ctrl+Z never removes the other person's text.</li>
+<li><strong>Reconnecting.</strong> The server keeps recent history, so a client that comes back only receives what it missed. If the server was restarted in between, the client merges three ways, with the last confirmed text as the common ancestor.</li>
+<li><strong>Two implementations, one behaviour.</strong> The server side is Python and the browser side is JavaScript. Both count lengths in UTF-16 code units, so an emoji does not shift positions.</li>
+</ul>
+<h2 id="sandbox">Running other people's code</h2>
+<p>The site runs whatever a visitor types. Each run goes through a small stand-alone launcher process:</p>
+<ul>
+<li>its own throw-away directory and a clean environment;</li>
+<li>limits on CPU time, address space, file size and open files, plus a wall-clock timeout that kills the whole process group;</li>
+<li>output written to size-capped files, so a flood can neither block nor fill the server process;</li>
+<li>when the service runs as root: a separate unprivileged user for each concurrent run, a limit on the number of processes, and an empty network namespace.</li>
+</ul>
+<aside class="callout callout-caveat">This is hardening, not a container: a program can still read files that are world-readable on the host. The README says so, and a management command shows which protections are active on a given machine by actually running an endless loop, a memory bomb, a fork bomb and a network probe.</aside>
+
+<h2 id="judge">Problem bank and judge</h2>
+<p>29 built-in problems, each with a statement, samples, hidden tests and a reference solution. The expected outputs are produced by running the reference solution when the problems are loaded, so statement, tests and solution cannot drift apart. A submission is compiled once and run against every test; the page shows a verdict per test, with input and output for the sample cases only.</p>
+<figure>
+  <img src="/public/img/codeeditor-problem.jpg" alt="A problem page: statement on the left, editor and console on the right" loading="lazy">
+  <figcaption>A problem page: statement, editor, and a console for custom input and judge results.</figcaption>
+</figure>
+<h2 id="verification">How it is verified</h2>
+<ul>
+<li><strong>Cross-checked OT.</strong> The Python and JavaScript implementations get the same random operations and must produce identical results.</li>
+<li><strong>A simulator for the client.</strong> Several simulated browsers edit at random, messages arrive in random order, connections drop and come back, users undo. At the end every client must hold exactly the server's text. Deliberately broken variants of the code are caught by it.</li>
+<li><strong>Every reference solution is judged for real</strong> as part of the test-suite.</li>
+<li><strong>The root code path of the sandbox</strong> (user switch, network cut-off, clean-up) is run as root in a throw-away container.</li>
+</ul>
+<h2 id="notes">Design notes</h2>
+<ul>
+<li><strong>Send what changed, not the document.</strong> Whole-document sync does not survive two people typing; small operations that can be transformed do.</li>
+<li><strong>Measure the child, not the server.</strong> A forked child starts with a copy of its parent's pages, so memory read from the web process describes the web process. The launcher forks once more and reports the usage of exactly the program.</li>
+<li><strong>Test the clean-up as hard as the run.</strong> A program that creates thousands of nested directories must not be able to block later runs; there is a test for it.</li>
+</ul>
+<p>The 2026 rewrite (collaboration protocol, sandbox, problem bank, interface) was developed with an AI coding assistant.</p>
+
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/tensorrt-int8/">&larr; TensorRT INT8 for cloud GPU models, and onnx2trt</a><a href="/projects/ar-navigation/">AR navigation perception SDK &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
+

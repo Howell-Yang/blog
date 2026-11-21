@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>CodeEditor：在线代码面试工具 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="CodeEditor：在线代码面试工具 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/codeeditor/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/codeeditor/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/codeeditor/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/codeeditor/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/codeeditor/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">CodeEditor：在线代码面试工具</h1>
+    <p class="pp-summary">一个用于代码面试的网站，作为个人项目开发和运营：面试官和候选人在同一个编辑器里实时写代码，看得到彼此的光标，点一下就在服务器上运行；还带一个可以自动判题的题库。代码已开源。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 个人项目</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2024 – 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 设计、开发与运维</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">137</span><span class="metric-label">项自动化测试</span></div>
+      <div class="pp-metric"><span class="metric-value">29</span><span class="metric-label">道内置题目，测试数据自动生成</span></div>
+      <div class="pp-metric"><span class="metric-value">4</span><span class="metric-label">种语言在沙箱中运行</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Django</li><li>Channels / WebSocket</li><li>操作变换（OT）</li><li>沙箱</li><li>在线判题</li><li>开源</li>
+    </ul>
+    <p class="pp-links"><a href="https://codeeditor.cn">线上地址：codeeditor.cn <i class="fa fa-external-link" aria-hidden="true"></i></a><a href="https://github.com/Howell-Yang/codeeditor">GitHub 上的源码 <i class="fa fa-external-link" aria-hidden="true"></i></a>
+    </p>
+  </header>
+  <details class="toc" open>
+    <summary>本页内容</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#what-it-is">它是什么</a></li>
+    <li><a href="#sync">让两个编辑器保持一致</a></li>
+    <li><a href="#sandbox">运行别人写的代码</a></li>
+    <li><a href="#judge">题库与判题</a></li>
+    <li><a href="#verification">怎么验证它是对的</a></li>
+    <li><a href="#notes">设计笔记</a></li>
+  </ul>
+</nav>
+  </details>
+
+  <div class="pp-content">
+    <h2 id="what-it-is">它是什么</h2>
+<p>远程代码面试需要把三样东西放在一起：共享的编辑器、能运行代码的地方、题目。CodeEditor 把它们放在同一个页面里。点一下就创建一个房间，拿到链接的人都能进来；不用安装任何东西，也不需要注册。</p>
+<figure>
+  <img src="/public/img/codeeditor-room.jpg" alt="面试房间：左边是题目，右边是共享的代码，下方是输入和输出" loading="lazy">
+  <figcaption>面试房间。高亮的选区和名字标签属于房间里的另一个人。</figcaption>
+</figure>
+<ul>
+<li><strong>共享编辑器</strong>：能看到对方的光标和选区；撤销只撤销自己的修改。</li>
+<li><strong>运行</strong>：服务器编译并运行代码，把输出、CPU 时间和内存峰值发给房间里的所有人。</li>
+<li><strong>题目面板</strong>支持 Markdown，可以从内置题库或面试官自己保存的题目里选一道发到房间。</li>
+<li><strong>共享计时器</strong>、深浅两套主题，以及手机上的布局。</li>
+</ul>
+<h2 id="sync">让两个编辑器保持一致</h2>
+<p>最初的版本每敲一个键就把整份文本发出去。这样做很简单，但只要两个人同时打字就会出错：后到的消息覆盖先到的，对方的光标也会跳走。现在的版本用的是操作变换（OT）。</p>
+<div class="pipeline" role="list">
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">按键</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">操作</span><span class="pipe-note">保留 / 插入 / 删除，基于修订 n</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">服务器变换</span><span class="pipe-note">把 n 之后已接受的操作考虑进去</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">广播 &#43; 确认</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">其他编辑器应用</span><span class="pipe-note">光标位置不变</span></div>
+</div>
+
+<ul>
+<li><strong>同一时刻只有一个操作在途。</strong>浏览器等待一个操作的确认，其间的修改合并进缓冲；服务器发来的操作先对这两者做变换，再作用到编辑器上。</li>
+<li><strong>撤销也要变换。</strong>撤销栈里存的是逆操作，别人的每个操作都会变换进去，所以 Ctrl+Z 不会删掉对方写的内容。</li>
+<li><strong>断线重连。</strong>服务器保留最近的修订历史，重连的客户端只收到自己错过的部分。如果服务器在此期间重启过，客户端以最后一次确认的文本为共同祖先做三方合并。</li>
+<li><strong>两份实现，一种行为。</strong>服务端是 Python，浏览器端是 JavaScript。两边都按 UTF-16 码元计数，所以 emoji 不会让位置错位。</li>
+</ul>
+<h2 id="sandbox">运行别人写的代码</h2>
+<p>访客输入什么，网站就运行什么。每次运行都经过一个独立的小启动器进程：</p>
+<ul>
+<li>独立的、用完即删的目录，干净的环境变量；</li>
+<li>限制 CPU 时间、地址空间、文件大小和打开文件数，外加墙上时钟超时，超时后杀掉整个进程组；</li>
+<li>输出写到有大小上限的文件里，输出洪水既不会拖住也不会撑爆服务进程；</li>
+<li>服务以 root 运行时：每个并发的运行使用各自的非特权用户，限制进程数，并进入一个空的网络命名空间。</li>
+</ul>
+<aside class="callout callout-caveat">这是加固，不是容器：程序仍然可以读取主机上所有用户可读的文件。README 里写明了这一点；另有一个管理命令会实际运行死循环、内存炸弹、fork 炸弹和联网探针，显示当前机器上哪些保护真正生效。</aside>
+
+<h2 id="judge">题库与判题</h2>
+<p>内置 29 道题，每道题有题面、示例、隐藏测试和参考解。期望输出是在导入题目时运行参考解得到的，所以题面、测试和解答不会互相走样。提交的代码只编译一次，然后逐个用例运行；页面给出每个用例的结果，只有示例用例会显示输入和输出。</p>
+<figure>
+  <img src="/public/img/codeeditor-problem.jpg" alt="做题页：左边是题面，右边是编辑器和控制台" loading="lazy">
+  <figcaption>做题页：题面、编辑器，以及用于自测输入和判题结果的控制台。</figcaption>
+</figure>
+<h2 id="verification">怎么验证它是对的</h2>
+<ul>
+<li><strong>交叉校验 OT。</strong>Python 和 JavaScript 两份实现拿到同一批随机操作，结果必须完全一致。</li>
+<li><strong>客户端模拟器。</strong>多个模拟的浏览器随机编辑，消息乱序到达，连接随机断开又恢复，用户随机撤销；最后每个客户端的文本必须和服务器完全一致。故意改坏的代码变体会被它抓住。</li>
+<li><strong>每道题的参考解都真的被判一遍</strong>，这是测试的一部分。</li>
+<li><strong>沙箱的 root 路径</strong>（切换用户、断网、清理）在一次性容器里以 root 身份实际运行。</li>
+</ul>
+<h2 id="notes">设计笔记</h2>
+<ul>
+<li><strong>发送变化，而不是整份文档。</strong>整份同步经不起两个人同时打字；可以互相变换的小操作可以。</li>
+<li><strong>要测的是子进程，不是服务进程。</strong>fork 出来的子进程一开始带着父进程全部页面的副本，从 Web 进程这一侧读到的内存其实是 Web 进程自己的。启动器会再 fork 一次，只报告那个程序本身的用量。</li>
+<li><strong>清理和运行一样需要测试。</strong>一个创建上千层嵌套目录的程序不应该能让后面的运行全部卡住；这有专门的测试。</li>
+</ul>
+<p>2026 年的这次重写（协同协议、沙箱、题库和界面）是在 AI 编程助手的协助下完成的。</p>
+
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/tensorrt-int8/">&larr; 云端 GPU 模型的 TensorRT INT8 与 onnx2trt</a><a href="/zh/projects/ar-navigation/">AR 导航感知 SDK &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
+
