@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>Urban NOA on a new chip (AXERA M95) · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -57,7 +58,7 @@
 
   <header class="pp-header">
     <h1 class="pp-title">Urban NOA on a new chip (AXERA M95)</h1>
-    <p class="pp-summary">Technical lead for porting QCraft&#39;s urban navigate-on-autopilot stack to a new chip family: a staged bring-up from a 700-TOPS demo board to the 350-TOPS M95, model adaptation and quantization, and road-test issue clustering. The v4 stack runs on test vehicles.</p>
+    <p class="pp-summary">Technical lead for porting QCraft's urban navigate-on-autopilot stack to a new chip family: a staged bring-up from a 700-TOPS demo board to the 350-TOPS M95, model adaptation and quantization, and road-test issue clustering. The v4 stack runs on test vehicles.</p>
     <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Technical lead (since June 2026)</span>
     </p>
     <div class="pp-metrics">
@@ -71,14 +72,13 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#why-this-chip-and-why-early">Why this chip, and why early</a></li>
-<li><a href="#plan">Plan</a></li>
-<li><a href="#results">Results</a></li>
-<li><a href="#what-this-taught-me">What this taught me</a></li>
-</ul>
+  <ul>
+    <li><a href="#why-this-chip-and-why-early">Why this chip, and why early</a></li>
+    <li><a href="#plan">Plan</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#what-this-taught-me">What this taught me</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
@@ -86,17 +86,9 @@
 <p>Our stack ran on Horizon chips. Once Horizon started selling its own driving stack, depending on one chip vendor became a commercial risk. AXERA's M-series offered competitive compute per cost: the M95 (350 TOPS) is comparable to Horizon's J6M class, and few chips above 100 TOPS were available at the time.</p>
 <p>Experience with J6M and Qualcomm showed that <strong>the value of an adaptation falls month by month</strong>. The first teams with a working stack on a new chip get the customer conversations. So the program started before the M95 was ready, on an M97 (700 TOPS) demo board.</p>
 <h2 id="plan">Plan</h2>
-<div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">M97 demo board</span><span class="pipe-note">prove the stack</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Model adaptation</span><span class="pipe-note">operators, quantization</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">M95 bring-up</span><span class="pipe-note">timing + accuracy</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle tests</span><span class="pipe-note">v4 stack</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Issue clustering</span><span class="pipe-note">feed back to owners</span></div>
-</div>
+<figure class="figure" data-fig="m95">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 412" class="fig fig-m95" role="img" aria-label="bringing the urban NOA stack to a new chip"><title>bringing the urban NOA stack to a new chip</title><defs><marker id="m95-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">GET BEHAVIOR RIGHT ON THE ROOMY DEV BOARD FIRST, THEN OPTIMIZE ON THE TARGET CHIP</text><g class="mstage" data-i="0"><rect x="30.0" y="62.0" width="213.6" height="176.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="62.0" width="213.6" height="76.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="30.0" y="116.0" width="213.6" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="54.0" cy="88.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="54.0" y="93.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="76.0" y="95.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">M97 dev board</text><text x="46.0" y="123.0" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">700 TOPS</text><text x="46.0" y="166.0" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">validate the stack: driving</text><text x="46.0" y="186.3" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">first, then parking;</text><text x="46.0" y="206.6" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">correctness before</text><text x="46.0" y="226.9" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">latency</text></g><path d="M245.6,100.0 L259.6,100.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m95-ah-faint)"/><g class="mstage" data-i="1"><rect x="261.6" y="62.0" width="213.6" height="176.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="261.6" y="62.0" width="213.6" height="76.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="261.6" y="116.0" width="213.6" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="285.6" cy="88.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="285.6" y="93.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="307.6" y="95.0" font-size="17.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Model adaptation</text><text x="277.6" y="123.0" font-size="13.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">operators · quantization</text><text x="277.6" y="166.0" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">adapt and quantize every</text><text x="277.6" y="186.3" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">model for the new</text><text x="277.6" y="206.6" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">toolchain, reusing the</text><text x="277.6" y="226.9" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">stage-by-stage checks</text></g><path d="M477.2,100.0 L491.2,100.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m95-ah-faint)"/><g class="mstage" data-i="2"><rect x="493.2" y="62.0" width="213.6" height="176.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="493.2" y="62.0" width="213.6" height="76.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="493.2" y="116.0" width="213.6" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="517.2" cy="88.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="517.2" y="93.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="539.2" y="95.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Target chip M95</text><text x="509.2" y="123.0" font-size="14" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">350 TOPS</text><text x="509.2" y="166.0" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">port and tune latency until</text><text x="509.2" y="186.3" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">driving models have</text><text x="509.2" y="206.6" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">headroom in the frame</text><text x="509.2" y="226.9" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">budget</text></g><path d="M708.8,100.0 L722.8,100.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m95-ah-faint)"/><g class="mstage" data-i="3"><rect x="724.8" y="62.0" width="213.6" height="176.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="724.8" y="62.0" width="213.6" height="76.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="724.8" y="116.0" width="213.6" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="748.8" cy="88.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="748.8" y="93.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="770.8" y="95.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Vehicle tests</text><text x="740.8" y="123.0" font-size="14" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">urban NOA v4</text><text x="740.8" y="166.0" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">the v4 stack on test</text><text x="740.8" y="186.3" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">vehicles, with dev-test</text><text x="740.8" y="206.6" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">analysis</text></g><path d="M940.4,100.0 L954.4,100.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#m95-ah-faint)"/><g class="mstage" data-i="4"><rect x="956.4" y="62.0" width="213.6" height="176.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="956.4" y="62.0" width="213.6" height="76.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="956.4" y="116.0" width="213.6" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="980.4" cy="88.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="980.4" y="93.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="1002.4" y="95.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Issue triage</text><text x="972.4" y="123.0" font-size="14" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">with evidence</text><text x="972.4" y="166.0" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">road-test issues grouped</text><text x="972.4" y="186.3" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">by theme, each handed to</text><text x="972.4" y="206.6" font-size="14" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">its owner with evidence</text></g><rect x="30.0" y="264.0" width="1140.0" height="122.0" rx="14" fill="var(--f-soft,#f3f6fa)"/><text x="54.0" y="300.0" font-size="14" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">Result</text><text x="54.0" y="336.0" font-size="16.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">The urban NOA v4 stack runs on test vehicles with no frame drops on key models</text><text x="54.0" y="366.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">Road-test findings tracked by theme, kept apart from porting issues:</text><rect x="506.0" y="348.0" width="159.1" height="26.0" rx="13.0" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="585.6" y="365.9" font-size="13.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">lane-change safety</text><rect x="673.1" y="348.0" width="130.7" height="26.0" rx="13.0" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="738.5" y="365.9" font-size="13.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">speed behavior</text><rect x="811.9" y="348.0" width="182.5" height="26.0" rx="13.0" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="903.1" y="365.9" font-size="13.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">navigation lane choice</text></svg></div>
+</figure>
 
 <ol>
 <li><strong>Prove the stack on the demo board, timing second.</strong> On the 700-TOPS board, the priority was correct behavior: driving first, then parking. Latency could wait.</li>
@@ -106,7 +98,7 @@
 <li><strong>Cluster road-test issues</strong> so each goes to the right owner with evidence attached, instead of a list of anecdotes.</li>
 </ol>
 <h2 id="results">Results</h2>
-<aside class="callout callout-result"><p>The v4 urban NOA stack runs on test vehicles on the M95. Key models showed no dropped frames in road tests, and latency work continues to add headroom.</p></aside>
+<aside class="callout callout-result">The v4 urban NOA stack runs on test vehicles on the M95. Key models showed no dropped frames in road tests, and latency work continues to add headroom.</aside>
 
 <p>Road-test findings were grouped into themes, each with its owner:</p>
 <ul>
@@ -114,7 +106,7 @@
 <li><strong>Speed behavior:</strong> too conservative on some open roads, and slow to accelerate after yielding to vulnerable road users.</li>
 <li><strong>Navigation lane choice:</strong> wrong lane selection in some scenarios.</li>
 </ul>
-<p>These are mostly model-behavior issues, which the model teams continue to improve. Separating "the port is wrong" from "the model needs work" keeps a bring-up moving.</p>
+<p>These are mostly model-behavior issues, which the model teams continue to improve. Separating &quot;the port is wrong&quot; from &quot;the model needs work&quot; keeps a bring-up moving.</p>
 <p>Merging the chip-specific code back into the main branch also exposed integration bugs, which were fixed so the port did not become a long-lived fork.</p>
 <h2 id="what-this-taught-me">What this taught me</h2>
 <ul>
@@ -122,6 +114,7 @@
 <li><strong>Reuse the method, not just the code.</strong> The consistency checks built for Horizon chips transferred directly.</li>
 <li><strong>Triage is leadership work.</strong> Clustering issues with evidence and owners kept a multi-team effort moving.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
@@ -141,6 +134,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>OneModel: five perception tasks on one shared vision encoder · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="OneModel: five perception tasks on one shared vision encoder · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/projects/onemodel/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/projects/onemodel/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/onemodel/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/onemodel/">
+  <meta property="og:locale" content="en_US">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/projects/onemodel/" lang="zh" title="中文版">中文</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/">CV</a><span aria-hidden="true">/</span><a href="/projects/">Projects</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">OneModel: five perception tasks on one shared vision encoder</h1>
+    <p class="pp-summary">Merging the image backbone and neck of five perception models into one: how the latency budget works out, how the new backbone was sized, how its pretraining weights were synthesized from released models, and the end-to-end design that follows. Work in progress.</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> QCraft</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Plan and training-framework design</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">5 → 1</span><span class="metric-label">image encoders (backbone &#43; neck)</span></div>
+      <div class="pp-metric"><span class="metric-value">5–9 ms</span><span class="metric-label">estimated saving per frame, rate-weighted</span></div>
+      <div class="pp-metric"><span class="metric-value">9</span><span class="metric-label">cameras unified at 512 × 1024</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>Multi-task learning</li><li>Shared backbone</li><li>PCA</li><li>Model architecture</li><li>End-to-end driving</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>On this page</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#the-problem">The problem</a></li>
+    <li><a href="#structure">Structure</a></li>
+    <li><a href="#sizing-the-backbone-from-released-models">Sizing the backbone from released models</a></li>
+    <li><a href="#two-quantization-friendly-fixes">Two quantization-friendly fixes</a></li>
+    <li><a href="#how-multi-task-training-is-organized">How multi-task training is organized</a></li>
+    <li><a href="#path-to-release">Path to release</a></li>
+    <li><a href="#one-step-further-an-end-to-end-driving-model-design">One step further: an end-to-end driving model design</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
+</nav>
+  </details>
+
+  <div class="pp-content">
+    <aside class="callout callout-caveat"><strong>Work in progress.</strong> Joint training runs on a small dataset and the losses converge, but the data and the iteration count are still small, and the metrics are below the released single-task models. The latency saving is an estimate.</aside>
+
+<h2 id="the-problem">The problem</h2>
+<p>On-board latency limits model capacity and frame rate. The <a href="/projects/latency-modeling/">latency model</a> showed that the image encoder is the one large module whose cost does not grow with perception range, so it is the part to share.</p>
+<p>Phase 1 reused the detection model's backbone directly. The other tasks lost accuracy to varying degrees, occupancy most of all. Phase 2 exists to fix “metrics fall short after merging”.</p>
+<h2 id="structure">Structure</h2>
+<figure class="figure" data-fig="onemodel">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-onemodel" role="img" aria-label="OneModel: one shared image encoder for five perception tasks"><title>OneModel: one shared image encoder for five perception tasks</title><defs><marker id="onemodel-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker><marker id="onemodel-ah-blue" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-blue,#2a78d6)"/></marker></defs><rect x="749.8" y="17.5" width="420.2" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="959.9" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">in progress: joint training runs, metrics still below release</text><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">FIVE PERCEPTION TASKS AND 9 CAMERAS SHARE ONE IMAGE BACKBONE AND NECK</text><text x="30.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Today: every task encodes on its own</text><rect x="30.0" y="98.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="119.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,114.0 L206.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Detection + tracking</text><rect x="30.0" y="138.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="159.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,154.0 L206.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Vector map</text><rect x="30.0" y="178.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="199.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,194.0 L206.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><rect x="30.0" y="218.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="239.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,234.0 L206.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Front-view perception</text><rect x="30.0" y="258.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="279.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,274.0 L206.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Traffic lights</text><text x="470.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">OneModel: shared up to the neck, task heads read from it</text><rect x="470.0" y="98.0" width="90.0" height="192.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="515.0" y="189.2" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 cameras</text><text x="515.0" y="208.8" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">512×1024</text><path d="M562.0,194.0 L586.0,194.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-blue)"/><rect x="590.0" y="98.0" width="150.0" height="192.0" rx="10" fill="var(--f-orange,#eb6834)"/><text x="665.0" y="177.2" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">shared</text><text x="665.0" y="200.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">backbone</text><text x="665.0" y="223.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">+ neck</text><path d="M742.0,194.0 L770.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Detection + tracking</text><path d="M742.0,194.0 L770.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Vector map</text><path d="M742.0,194.0 L770.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><path d="M742.0,194.0 L770.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Front-view perception</text><path d="M742.0,194.0 L770.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Traffic lights</text><rect x="1000.0" y="98.0" width="170.0" height="192.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="1085.0" y="160.0" font-size="30" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">5–9 ms</text><text x="1085.0" y="208.3" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">estimated saving per</text><text x="1085.0" y="226.8" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">frame</text><text x="1085.0" y="245.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">(rate-weighted)</text><text x="30.0" y="330.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">NOT FROM SCRATCH: RELEASED MODELS SIZE THE BACKBONE AND SEED ITS WEIGHTS</text><rect x="30.0" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="52.0" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="52.0" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="72.0" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Extract</text><text x="44.0" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">features from the five tasks'</text><text x="44.0" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">float checkpoints, stage by</text><text x="44.0" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">stage</text><path d="M246.2,408.0 L260.2,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="261.2" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="283.2" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="283.2" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="303.2" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">PCA redundancy</text><text x="275.2" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">shrink redundant</text><text x="275.2" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">dimensions, keep the</text><text x="275.2" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">information-dense ones</text><path d="M477.4,408.0 L491.4,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="492.4" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="514.4" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="514.4" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="534.4" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Align channels</text><text x="506.4" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">align each checkpoint's</text><text x="506.4" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">channels to a common basis</text><path d="M708.6,408.0 L722.6,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="723.6" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="745.6" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="745.6" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="765.6" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Closed-form solve</text><text x="737.6" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">a linear solve yields the</text><text x="737.6" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">neck and per-task</text><text x="737.6" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">projections</text><path d="M939.8,408.0 L953.8,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="954.8" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="976.8" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="976.8" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="996.8" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Check error</text><text x="968.8" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">verify reconstruction error</text><text x="968.8" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">on held-out clips</text><text x="30.0" y="496.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">Two quantization-friendly fixes ride along: ReLU6 with a surrogate gradient (ReLU6 forward, a smooth surrogate's derivative backward) and a corrected</text><text x="30.0" y="516.3" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">receptive-field center offset.</text></svg></div>
+</figure>
+
+<ul>
+<li><strong>Shared up to the image neck, not into BEV space for now.</strong> The tasks use different BEV ranges and resolutions. Sharing BEV features would mean unifying both, and compute would multiply.</li>
+<li><strong>Nine cameras at 512 × 1024</strong>, with no split between a main and an auxiliary backbone. Fisheye cameras and two rear cameras stay separate for now.</li>
+<li><strong>The latency budget is rate-weighted.</strong> Taking one 10 Hz frame as the unit, a 5 Hz task counts half. Sharing the backbone alone saves about 5 ms per frame; sharing every neck as well saves about 9 ms. Whether the two front-view tasks share a neck accounts for about 4 ms of that. This saving is the budget for a larger backbone.</li>
+</ul>
+<h2 id="sizing-the-backbone-from-released-models">Sizing the backbone from released models</h2>
+<p>The width of the new backbone was not chosen by feel.</p>
+<ol>
+<li>Extract features stage by stage with the released float checkpoints of the five tasks.</li>
+<li>Run PCA on the features to measure how redundant each stage's channels are. Redundant dimensions can shrink; information-dense ones must stay.</li>
+<li>Align the channels of the checkpoints, then use PCA to select the dimensions to keep.</li>
+<li>Solve for the neck and the per-task projection layers in closed form, which yields a set of pretraining weights.</li>
+<li>Check the reconstruction error on held-out clips.</li>
+</ol>
+<p>The resulting initial weights already carry most of what the five tasks learned, so joint training does not start from zero.</p>
+<h2 id="two-quantization-friendly-fixes">Two quantization-friendly fixes</h2>
+<ul>
+<li><strong>ReLU6 with a surrogate gradient.</strong> From a quantization point of view the activation should be ReLU6, but swapping it in directly hurts training smoothness. The forward pass uses a plain ReLU6. The backward pass replaces its zero derivative in the saturated regions with the derivative of a smooth surrogate.</li>
+<li><strong>Receptive-field center offset.</strong> The original downsampling shifted the center of the receptive field. It is replaced with the common stride-2 plus 2 × 2 convolution, the FPN is kept from adding to the shift, and the sampling grid in the view transform gets the same correction.</li>
+</ul>
+<h2 id="how-multi-task-training-is-organized">How multi-task training is organized</h2>
+<p>The five tasks do not share data sources, and their labels are not on the same frames. I compared four ways to organize training:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Organization</th>
+					<th>Data and gradient behavior</th>
+					<th>Verdict</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Rotate tasks per batch, all GPUs on the same task</td>
+					<td>At each step every GPU draws data for the same task; the shared encoder and that task's head back-propagate</td>
+					<td><strong>Used first.</strong> Reuses each task's loader and sampler; tasks are mixed by planned training exposure</td>
+			</tr>
+			<tr>
+					<td>Same-source samples, multi-task supervision</td>
+					<td>When one set of cameras has labels for several tasks, shared features run once and the losses are summed</td>
+					<td>An enhancement; requires labels aligned to the same frame, coordinates and augmentation</td>
+			</tr>
+			<tr>
+					<td>Mixed tasks within a batch</td>
+					<td>Each sample carries task-validity bits and selects its losses</td>
+					<td>Later; needs changes to task enabling and cross-GPU normalization, a mask alone is not support</td>
+			</tr>
+			<tr>
+					<td>Fixed task per GPU</td>
+					<td>Tasks occupy fixed GPU groups; shared parameters sync across groups</td>
+					<td>Not the main line; communication, optimizer and resume are all more complex</td>
+			</tr>
+	</tbody>
+</table>
+<p>One rule runs through all of it: <strong>a missing label is never a negative.</strong> A task mask only says whether supervision is valid.</p>
+<h2 id="path-to-release">Path to release</h2>
+<ol>
+<li><strong>Single-task restructuring.</strong> Each task first moves to the structure it will have in joint training and ships on its own.</li>
+<li><strong>Partial merges.</strong> Tracking with occupancy; front-view perception with traffic lights (both are image-level features with no BEV transform, so they are easier to merge).</li>
+<li><strong>Five-task merge.</strong> The backbone is trained jointly and each task ships on the frozen shared encoder. If shared parameters, normalization statistics or quantization boundaries change, a new shared version is cut and every consumer is regression-tested.</li>
+<li><strong>Joint perception and planning training.</strong></li>
+</ol>
+<p>The main risk is at release: production tolerates very little regression. If a partial merge reaches 90 and the five-task merge only 85, the release stalls. So every step merges only when no task regresses.</p>
+<h2 id="one-step-further-an-end-to-end-driving-model-design">One step further: an end-to-end driving model design</h2>
+<aside class="callout callout-caveat"><strong>This is a design proposal and has not been trained.</strong> The numbers in the figure and the text are design values, not measurements.</aside>
+
+<figure class="figure" data-fig="e2e-arch">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" class="fig fig-e2e-arch" role="img" aria-label="end-to-end driving model: design proposal"><title>end-to-end driving model: design proposal</title><defs><marker id="e2e-arch-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><rect x="683.3" y="17.5" width="486.7" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="926.7" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">design proposal · not yet trained · ≈140M parameters (estimate)</text><text x="30.0" y="24.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">END-TO-END DRIVING MODEL DESIGN: ONE DIFFERENTIABLE PATH FROM</text><text x="30.0" y="42.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">PIXELS TO PLAN</text><rect x="30.0" y="78.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="118.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 cameras</text><text x="105.0" y="142.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">512×1024</text><rect x="30.0" y="198.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="238.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Kinematics</text><text x="105.0" y="262.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">1 s window</text><rect x="30.0" y="318.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="358.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Navigation</text><text x="105.0" y="382.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">SD map + route</text><rect x="214.0" y="78.0" width="150.0" height="90.0" rx="10" fill="var(--f-plane,#eef1f5)"/><text x="289.0" y="111.7" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">Shared image</text><text x="289.0" y="131.2" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">encoder</text><text x="289.0" y="152.0" font-size="12.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">reused as is</text><path d="M182.0,123.0 L210.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="398.0" y="78.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="118.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">Scene tokens</text><text x="483.0" y="142.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">rays + camera ID · 672</text><rect x="398.0" y="198.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="238.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">Kinematic tokens</text><text x="483.0" y="262.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">8</text><rect x="398.0" y="318.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="358.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">Navigation prefix</text><text x="483.0" y="382.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">64 · cacheable</text><path d="M366.0,123.0 L394.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M182.0,243.0 L394.0,243.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M182.0,363.0 L394.0,363.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="606.0" y="78.0" width="230.0" height="330.0" rx="14" fill="var(--f-navy,#0f1b2d)"/><text x="721.0" y="122.0" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">Streaming transformer</text><text x="721.0" y="148.0" font-size="14" font-weight="400" fill="#c9d6e6" text-anchor="middle">12 layers · d = 768</text><rect x="626.0" y="176.0" width="190.0" height="96.0" rx="10" fill="#1d3352"/><text x="721.0" y="208.0" font-size="15.5" font-weight="700" fill="#ffffff" text-anchor="middle">Pose-aware memory</text><text x="721.0" y="237.9" font-size="13" font-weight="400" fill="#c9d6e6" text-anchor="middle">8 slots × 48 tokens ≈ 3.2</text><text x="721.0" y="255.5" font-size="13" font-weight="400" fill="#c9d6e6" text-anchor="middle">s</text><text x="721.0" y="311.7" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">each tick attends to cached</text><text x="721.0" y="329.6" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">memory; keys modulated by</text><text x="721.0" y="347.5" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">relative pose and age, no</text><text x="721.0" y="365.4" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">feature warping</text><path d="M570.0,123.0 L602.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M570.0,243.0 L602.0,243.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M570.0,363.0 L602.0,363.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="874.0" y="78.0" width="296.0" height="140.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><text x="894.0" y="110.0" font-size="18" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">Plan head</text><text x="894.0" y="136.0" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">16 whole-plan modes; path as curvature</text><text x="894.0" y="154.2" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">knots over arc length, speed as</text><text x="894.0" y="172.4" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">acceleration knots over time, rolled out</text><text x="894.0" y="190.6" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">differentiably to 8 s</text><rect x="874.0" y="230.0" width="296.0" height="178.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="894.0" y="260.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Auxiliary heads</text><rect x="894.0" y="275.5" width="144.0" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="966.0" y="292.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">occupancy + future</text><rect x="894.0" y="305.5" width="133.4" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="960.7" y="322.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">agents + forecast</text><rect x="1033.4" y="305.5" width="86.4" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1076.5" y="322.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">lane graph</text><rect x="894.0" y="335.5" width="99.2" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="943.6" y="352.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">traffic lights</text><rect x="999.2" y="335.5" width="137.9" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1068.2" y="352.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">depth · train only</text><rect x="894.0" y="365.5" width="183.0" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="985.5" y="382.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">world model · train only</text><path d="M838.0,148.0 L870.0,148.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M838.0,319.0 L870.0,319.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><text x="30.0" y="440.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">THE PATH TO THE VEHICLE IS DESIGNED IN FROM THE START</text><rect x="30.0" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="119.2" y="481.2" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">perception</text><text x="119.2" y="498.6" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">pretraining</text><path d="M209.3,485.0 L221.3,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="222.3" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="311.5" y="481.2" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">temporal + future</text><text x="311.5" y="498.6" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">prediction</text><path d="M401.7,485.0 L413.7,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="414.7" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="503.8" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">imitation</text><path d="M594.0,485.0 L606.0,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="607.0" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="696.2" y="481.2" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">closed-loop</text><text x="696.2" y="498.6" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">evaluation</text><path d="M786.3,485.0 L798.3,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="799.3" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-orange-soft,#fdebe2)"/><text x="888.5" y="481.2" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">distill to the vehicle</text><text x="888.5" y="498.6" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">model</text><path d="M978.7,485.0 L990.7,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="991.7" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-orange-soft,#fdebe2)"/><text x="1080.8" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">INT8 QAT and export</text></svg></div>
+  <figcaption>One differentiable path from pixels to plan; the shared image encoder is reused as is.</figcaption>
+</figure>
+
+<p>On top of the shared encoder I wrote an architecture design for an end-to-end driving model. The main choices:</p>
+<ul>
+<li><strong>The shared encoder is reused unchanged.</strong> Its weights, export flow and measured latency stay valid.</li>
+<li><strong>Tokens on the main path, not a BEV grid.</strong> This removes each task's private view transform and gives every loss, planning included, a path back into the encoder.</li>
+<li><strong>Vision-only input.</strong> LiDAR is used to build labels and supervise depth, never as a model input.</li>
+<li><strong>The plan head outputs control quantities.</strong> The path is curvature knots over arc length and speed is acceleration knots over time. Both are rolled out differentiably into a trajectory, so position losses train the knots directly.</li>
+<li><strong>Navigation enters as tokens</strong> built from the SD road network and the route, never from the future ego trajectory, which would leak the label.</li>
+<li><strong>Deployment is designed in from the start.</strong> A fixed-shape graph; distillation to the vehicle model, then INT8 quantization-aware training; and closed-loop metrics, not only open-loop loss, decide whether the quantized model is accepted.</li>
+</ul>
+<h2 id="lessons">Lessons</h2>
+<ul>
+<li><strong>Share the part that does not change.</strong> A module is worth sharing when its cost does not move with the requirement.</li>
+<li><strong>Let existing models answer questions about the new one.</strong> The released checkpoints already hold the answer to how wide each stage should be.</li>
+<li><strong>Merge only without regression.</strong> A multi-task average means nothing; every task has to hold its own metric.</li>
+</ul>
+
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/latency-modeling/">&larr; Predicting on-board latency before writing code</a><a href="/projects/qnn-web/">QNN Web, one-click model conversion for every chip &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
+

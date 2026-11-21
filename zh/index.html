@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>杨豪 · 模型量化与部署负责人</title>
   <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
@@ -69,14 +70,46 @@
 </section>
 
 <section class="bio" aria-label="About">
-  <p>我专注于把深度学习模型从训练落地到量产车规芯片。在<a href="https://www.qcraft.ai/">轻舟智航</a>，我负责约 19 个量产行车、泊车模型的量化与端侧部署，覆盖 BEV 感知、Occupancy、矢量地图、时序跟踪和端到端规划，运行平台包括地平线 J5/J6M、英伟达 Orin、高通和爱芯。</p>
-  <p>我的工作涵盖量化算法（PTQ、QAT、量化感知蒸馏）、跨工具链的逐 bit 数值一致性、耗时建模，以及让这些工作可复制的平台与发版门禁。我带领 6 人团队，并担任城市 NOA 方案迁移到新芯片的技术负责人。此前就职于腾讯地图和依图科技，硕士毕业于北京航空航天大学模式识别专业。</p>
-  <ul class="tags" aria-label="Interests">
-    <li>模型量化（PTQ / QAT / QAD）</li>
-    <li>高效端侧推理</li>
-    <li>端到端自动驾驶</li>
-    <li>机器学习基础设施与工具链</li>
-  </ul>
+  <div class="bio-text">
+    <p>我专注于把深度学习模型从训练落地到量产车规芯片。在<a href="https://www.qcraft.ai/">轻舟智航</a>，我负责约 19 个量产行车、泊车模型的量化与端侧部署，覆盖 BEV 感知、Occupancy、矢量地图、时序跟踪和端到端规划，运行平台包括地平线 J5/J6M、英伟达 Orin、高通和爱芯。</p>
+    <p>我的工作涵盖量化算法（PTQ、QAT、量化感知蒸馏）、跨工具链的逐 bit 数值一致性、耗时建模，以及让这些工作可复制的平台与发版门禁。我带领 6 人团队，并担任城市 NOA 方案迁移到新芯片的技术负责人。此前就职于腾讯地图和依图科技，硕士毕业于北京航空航天大学模式识别专业。</p>
+    <ul class="tags" aria-label="Interests">
+      <li>模型量化（PTQ / QAT / QAD）</li>
+      <li>高效端侧推理</li>
+      <li>端到端自动驾驶</li>
+      <li>机器学习基础设施与工具链</li>
+    </ul>
+  </div>
+  <div class="demo quant-demo no-print" data-readout="{b} 位 · {n} 个量化级 · 最大误差占量程 {e}%">
+  <canvas role="img" aria-label="浮点曲线与量化后的阶梯"></canvas>
+  <div class="quant-ctl">
+    <label>位宽 <input type="range" min="2" max="8" step="1" value="4"></label>
+    <span class="quant-readout" aria-live="polite"></span>
+  </div>
+  <p class="demo-note">蓝线是浮点输出，橙线是量化后的输出。我的工作，就是让橙线在芯片上尽量贴住蓝线。</p>
+</div>
+
+</section>
+
+
+<section class="kpis" aria-label="核心成果">
+  <div class="kpi"><span class="kpi-value">≈19</span><span class="kpi-label">个量产模型的量化与部署</span><span class="kpi-detail">行车 &#43; 泊车</span></div>
+  <div class="kpi"><span class="kpi-value">2 → 0.5</span><span class="kpi-label">个点的量化掉点</span><span class="kpi-detail">PTQ → QAT · 5 个感知模型</span></div>
+  <div class="kpi"><span class="kpi-value">≤ 2 LSB</span><span class="kpi-label">查表算子最大误差</span><span class="kpi-detail">600 个模块 · 表数 −85%</span></div>
+  <div class="kpi"><span class="kpi-value">0.7%</span><span class="kpi-label">板端耗时预测误差</span><span class="kpi-detail">预测 19.38 · 实测 19.25 ms</span></div>
+  <div class="kpi"><span class="kpi-value">4,273</span><span class="kpi-label">次量产模型转换</span><span class="kpi-detail">单次编译 30–60 → 5 分钟</span></div>
+  <div class="kpi"><span class="kpi-value">2 周 → 3–5 天</span><span class="kpi-label">单模型量化适配周期</span><span class="kpi-detail">三层解耦 &#43; AI 自动适配</span></div>
+</section>
+
+
+
+<section id="overview" class="cv-section no-print">
+  <h2>我负责的体系</h2>
+  <p class="section-intro">从训练到上车的一条链路，以及我在上面搭的四层。下面的每个项目，都能在这张图上找到位置。</p>
+  <figure class="figure" data-fig="system-map">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" class="fig fig-system-map" role="img" aria-label="pipeline and the four layers I own"><title>pipeline and the four layers I own</title><defs><marker id="system-map-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="24.0" y="34.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">部署链路</text><g class="stage" data-i="0"><rect x="190.0" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="204.0" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">浮点训练</text><text x="204.0" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">训练提速 · 共享 backbone</text></g><path d="M335.3,86.0 L351.3,86.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#system-map-ah-faint)"/><g class="stage" data-i="1"><rect x="354.3" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="368.3" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">量化</text><text x="368.3" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">PTQ · QAT · QAD</text></g><path d="M499.7,86.0 L515.7,86.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#system-map-ah-faint)"/><g class="stage" data-i="2"><rect x="518.7" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="532.7" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">导出 IR</text><text x="532.7" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">定点算子 · 查表</text></g><path d="M664.0,86.0 L680.0,86.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#system-map-ah-faint)"/><g class="stage" data-i="3"><rect x="683.0" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="697.0" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">多芯片编译</text><text x="697.0" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">一键转换服务</text></g><path d="M828.3,86.0 L844.3,86.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#system-map-ah-faint)"/><g class="stage" data-i="4"><rect x="847.3" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="861.3" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">逐跳对齐</text><text x="861.3" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">每一跳都可定位</text></g><path d="M992.7,86.0 L1008.7,86.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#system-map-ah-faint)"/><g class="stage" data-i="5"><rect x="1011.7" y="44.0" width="142.3" height="84.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1025.7" y="78.0" font-size="19.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">板端 · 实车</text><text x="1025.7" y="104.0" font-size="12.0" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">耗时 · 回归 · 路测</text></g><text x="24.0" y="162.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">我负责的四层体系</text><g class="lane" data-k="0"><text x="24.0" y="208.0" font-size="21" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">算法层</text><text x="24.0" y="230.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">在硬件预算内恢复精度</text><rect x="190.0" y="176.0" width="471.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><rect x="190.0" y="176.0" width="7.0" height="78.0" rx="3.5" fill="var(--f-orange,#eb6834)"/><text x="214.0" y="209.4" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">scale-search PTQ · LSQ AutoQuant · 蒸馏 QAT</text><text x="214.0" y="232.5" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">大规模 QAD · 自适应查表</text></g><g class="lane" data-k="1"><text x="24.0" y="300.0" font-size="21" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">一致性层</text><text x="24.0" y="322.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">每个不一致都可复现、可</text><text x="24.0" y="339.6" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">定位</text><rect x="354.3" y="268.0" width="799.7" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><rect x="354.3" y="268.0" width="7.0" height="78.0" rx="3.5" fill="var(--f-blue,#2a78d6)"/><text x="378.3" y="312.9" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">Float → QAT → 内部 IR → LibTorch → HBIR → HBM → 板端，逐阶段比对</text></g><g class="lane" data-k="2"><text x="24.0" y="392.0" font-size="21" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">平台层</text><text x="24.0" y="414.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">统一入口，各芯片稳定转</text><text x="24.0" y="431.6" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">换</text><rect x="518.7" y="360.0" width="635.3" height="78.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><rect x="518.7" y="360.0" width="7.0" height="78.0" rx="3.5" fill="var(--f-violet,#6250d6)"/><text x="542.7" y="393.4" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">QNN Web · 地平线 J5 / J6M / J6P · 英伟达 Orin · 高通 · 爱芯 M95 /</text><text x="542.7" y="416.5" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">M97</text></g><g class="lane" data-k="3"><text x="24.0" y="484.0" font-size="21" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">治理层</text><text x="24.0" y="506.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">未经验证的结果不上车</text><rect x="190.0" y="452.0" width="964.0" height="78.0" rx="10" fill="var(--f-aqua-soft,#def5ec)"/><rect x="190.0" y="452.0" width="7.0" height="78.0" rx="3.5" fill="var(--f-aqua,#1baf7a)"/><text x="214.0" y="496.9" font-size="16.5" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">证据分级门禁 · feature flag · 历史问题回归集 · 每个模型 owner + backup</text></g></svg></div>
+</figure>
+
 </section>
 
 
@@ -84,6 +117,7 @@
 <section id="news" class="cv-section">
   <h2>近期动态</h2>
   <ul class="news">
+    <li><span class="news-date">2026.11</span><span class="news-text">牵头完成 <strong>平台化量化部署框架</strong> 的目标架构设计（设计稿）：一个真值、一份契约、默认阻断。</span></li>
     <li><span class="news-date">2026.06</span><span class="news-text">担任城市 NOA 方案适配 <strong>爱芯 M95</strong>（350 TOPS）的技术负责人，v4 方案已在测试车上运行。</span></li>
     <li><span class="news-date">2026.04</span><span class="news-text">启动 AI 辅助的量化自动化：飞书机器人加编程 Agent Skill，自动完成新模型特性的量化适配。</span></li>
     <li><span class="news-date">2026</span><span class="news-text">以实线负责人身份带领模型量化与部署团队。</span></li>
@@ -102,34 +136,40 @@
       <h3><a href="https://www.qcraft.ai/">轻舟智航</a> <span class="org-zh">QCraft</span></h3>
       <span class="dates">2022.10 – 至今</span>
     </header>
-    <p class="job-role">模型量化与部署负责人（感知 ML-Infra）</p><p class="job-note">入职时为机器学习基础架构工程师；2024 年晋升 L5；2025 年起负责团队。</p><h4>团队管理与项目交付</h4>
+    <p class="job-role">模型量化与部署负责人（感知 ML-Infra）</p><p class="job-note">入职时为机器学习基础架构工程师；2024 年晋升 L5；2025 年起负责团队。</p><h4>与浮点模型逐 case 一致的量化：四代算法演进</h4>
     <ul class="bullets">
-      <li>带领 6 人量化部署团队（2025 年起虚线、2026 年起实线）：制定季度目标与 P0/P1 优先级，为约 19 个量产模型各设一名负责人和一名 backup，负责技术评审和一对一辅导。</li>
-      <li>2026 年 6 月起担任爱芯芯片项目技术负责人（先在 M97 700 TOPS 开发板验证，再到目标芯片 M95 350 TOPS）：分阶段适配、模型适配与量化、路测问题聚类分发。城市 NOA v4 方案已在测试车上运行，关键模型无掉帧。</li>
-      <li>推动 AI 提效（60 人天，2026 年 4–6 月）：飞书机器人加编程 Agent Skill 自动完成新模型特性的量化适配；同时在 5 个模型上推进训练提速，其中一个模型训练耗时降低约 50%。</li>
-      <li>建设团队梯队：帮助成员成长为可独立负责模型的工程师，组织月度量化分享会和公司级技术分享，维护 33 篇文档的知识库。模型 owner 已开始自行完成 auto-QAT 发版。</li>
-    </ul><h4>量化算法</h4>
+      <li><strong>问题</strong>：量产对回退近乎零容忍，AEB 目标晚一帧检出即失败；而只用任务损失的 QAT 会改变 precision/recall 工作点，交付的实际上是一个“重训模型”。</li>
+      <li><strong>Scale-search PTQ</strong>（2023，已申请专利）：以与浮点输出的 cosine 相似度为目标，分级搜索量化参数：校准方式 × 参数组合 → 逐层前/后向搜索 → 逐层量化。红绿灯检测模型上，默认校准的 mAP 为 0.747，逐层量化恢复到 <strong>0.803（浮点 0.800）</strong>。</li>
+      <li><strong>LSQ AutoQuant</strong>（2024）：面向 CNN + Transformer 混合结构（矢量地图、时序跟踪），学习量化步长，用 AdaRound 式取整约束权重漂移，并以浮点中间特征监督；训练前做跨层均衡（CLE）与 LayerNorm–Linear 融合。</li>
+      <li><strong>蒸馏 QAT → 大规模 QAD</strong>（2025–2026）：浮点模型做教师、PTQ 模型为起点，任务损失 + 特征/输出蒸馏。在端到端规划模型上以单变量对照实验（25 项关键指标、388 个公共标量）确认：场景边界重置时序状态、教师独立历史、训练后期权重锚定是必要条件。</li>
+      <li><strong>结果</strong>：5 个量产感知模型量化掉点由约 2 个点降至约 <strong>0.5 个点</strong>；端到端规划模型的量化版本进入实车测试；模型 owner 已开始自助完成 auto-QAT 发版。</li>
+    </ul><h4>预测规划模型的量化误差累积攻坚（QuestNet v3）</h4>
     <ul class="bullets">
-      <li>随模型演进持续迭代方案：scale search PTQ（2023 年，已申请专利）、面向 MapFormer 和 SparseTrack 的 LSQ AutoQuant（2024 年）、带蒸馏的 QAT（2025 年）、面向端到端轨迹输出的大规模量化感知蒸馏 QAD（2026 年）。</li>
-      <li>在 5 个量产感知模型上将量化掉点从 <strong>约 2 个点（PTQ）降到约 0.5 个点（QAT）</strong>。</li>
-      <li>将量产目标从“平均指标对齐”改为“逐 case 与浮点一致”（AEB 目标哪怕晚一帧检出也不接受），并为此推动逐层误差、累积误差和 W16A16 敏感度分析工具。</li>
-      <li>设计非线性算子的自适应查表方案：在 4 个量产计算图共 600 个查表模块上，平均误差 <strong>0.217 LSB</strong>（最大 2 LSB），表数量比固定 126 表方案 <strong>减少 85%</strong>。</li>
-      <li>以单变量对照实验完成端到端 World2Action 规划模型的量化（25 项关键指标、388 个公共标量），量化版本已进入实车测试。</li>
-    </ul><h4>工具链与部署平台</h4>
+      <li><strong>问题</strong>：模型量化后轨迹输出异常，PTQ 与常规 QAT 均失效，量产交付受阻。</li>
+      <li>用逐层误差与累积误差分析定位出误差在深层网络<strong>逐级累积</strong>的机制，对敏感层与鲁棒层做差异化处理；用实验否定“冻结部分层再微调”的折中方案，改为<strong>两段式量化 + 全量 QAT</strong>。</li>
+      <li>基于对芯片算子特性的理解，推动全链路 <strong>INT16</strong> 量化，为误差累积留出数值余量。</li>
+      <li><strong>结果</strong>：轨迹异常消除，方案合入主线并完成发版验证；“中融合模型量化必须全量训练”成为团队方法论。</li>
+    </ul><h4>定点数值一致性：自适应查表与分层对齐</h4>
     <ul class="bullets">
-      <li>开发 <strong>QNN Web</strong> 一键模型转换服务，支持英伟达 Orin 和地平线 J5/J6（gRPC 后端、根据 ONNX 自动生成配置、TensorRT timing cache）：累计 <strong>4,273</strong> 次量产转换，单次编译从 30–60 分钟降至约 5 分钟，人工耗时减少约 80%。后续增加任务数据库、任务队列和面向 AI Agent 的 MCP 接口。</li>
-      <li>制定量化框架的标准阶段接口（导出前处理、数据转换、地平线导出、后处理、分阶段单元测试）；主导地平线工具链升级，并与地平线协作解决工具链问题。</li>
-      <li>带领团队拓展新平台：高通（模型拆分与耗时优化）、TensorRT QDQ INT8，以及地平线 J6P 上的 VLM 量化。</li>
-    </ul><h4>数值一致性与发版质量</h4>
+      <li><strong>自适应查表</strong>：rsqrt、reciprocal、exp、sigmoid 等非线性算子在 NPU 上以定点分段查表实现。算法以芯片真实定点输出码（而非浮点近似）度量误差，保留原始 6 表边界，对误差最大的段递归二分，预算用尽仍超限则阻断导出。4 个量产计算图共 600 个查表模块：平均 <strong>0.217 LSB</strong>、最大 <strong>2 LSB</strong>（均匀 126 表方案最大 11,381 LSB），表数量减少 <strong>85%</strong>。</li>
+      <li><strong>分层对齐</strong>：Float → QAT → 内部 IR → LibTorch → HBIR → HBM → 板端后处理，每个阶段只与前一阶段在相同输入下比对，让每个不一致只可能来自一处；定位了归一化层 rsqrt 查表分段点、upsample align_corners 不一致、位姿精度等问题。</li>
+      <li><strong>发版门禁</strong>：结论按证据分级（源码 / 编译 / 仿真 / 板端 / 实车），新特性默认关闭（feature flag），历史量化问题回归集每次发版前重跑；在 3 个车企项目中把量化问题拦截在发版之前。</li>
+    </ul><h4>工具链与平台：从一键转换到平台化量化部署</h4>
     <ul class="bullets">
-      <li>建立分层一致性排查方法，逐阶段比对 Float、QAT、内部 IR、LibTorch、地平线 HBIR/HBM 和板端后处理；定位了 rsqrt 查表分段点、upsample align_corners 不一致和位姿精度等问题。</li>
-      <li>引入分级发版门禁（源码、编译、仿真、板端、实车）、新特性默认关闭的 feature flag，以及每次发版前运行的历史问题回归集。</li>
-    </ul><h4>耗时、训练基础设施与模型架构</h4>
+      <li><strong>QNN Web</strong> 一键多芯片模型转换服务（gRPC 前后端分离、按 ONNX 计算图自动生成配置、TensorRT timing cache；后续加入任务数据库、队列和面向 AI Agent 的 MCP 接口）：累计 <strong>4,273</strong> 次量产转换，单次编译 30–60 分钟 → 约 5 分钟，人工耗时减少约 80%。</li>
+      <li>把多平台量化拆为<strong>通用量化层 / AI 自动适配层 / 平台适配层</strong>：单模型量化适配周期由约 2 周缩短到 <strong>3–5 天</strong>。带领团队打通高通（模型拆分与耗时优化，推理耗时降低 50% 以上）、TensorRT QDQ INT8 和地平线 J6P 上的 VLM 量化链路。</li>
+      <li>2026.11 起牵头<strong>平台化量化部署框架</strong>的目标架构（设计稿，路线图至 2027 Q2）：以定点仿真结果为唯一真值，用七份带版本的契约（产物身份、IR 元信息、IO 契约、真实 IO 包、精度方案、平台能力、门限）连接训练、转换、车端三个代码库，逐跳门禁默认阻断，并以“敏感度 × 板端时延代价”的闭环自动规划混合精度。</li>
+    </ul><h4>耗时建模、模型架构与训练效率</h4>
     <ul class="bullets">
-      <li>建立结构级耗时模型，板端预测误差 <strong>0.7%</strong>（预测 19.38 ms，实测 19.25 ms），在写代码之前就判断出 Occupancy 扩大范围加 10 Hz 无法直接上线。</li>
-      <li>撰写 OneModel 二期方案：5 个感知模型、9 路相机共享一个图像 backbone 和 neck，预计每帧节省 5–9 ms；用已有 checkpoint 的 PCA 分析确定 backbone 规模。</li>
-      <li>BEV Occupancy 训练迁移到 PyTorch 2.x：单 iter <strong>提速 54%</strong>（V100、batch 16、AMP），显存降低 9%，完成最多 112 卡的扩展性压测。</li>
-      <li>设计并评审约 2.35 亿参数的 SparseDrive 风格端到端驾驶原型（10 路相机、点云和 SD 地图输入，输出检测、地图、Occupancy、红绿灯和规划）。</li>
+      <li><strong>结构级耗时模型</strong>：按模块结构预测板端耗时，Occupancy 模型预测 19.38 ms、实测 19.25 ms（误差 <strong>0.7%</strong>）；在写代码之前就否定了“扩大范围 + 10 Hz”直接上线的方案，并验证 MapFormer query 合并可节省 2.1–3.3 ms。</li>
+      <li><strong>OneModel 二期</strong>（进行中）：5 个感知任务、9 路相机共享图像 backbone 与 neck，按帧率折算预计每帧节省 5–9 ms；对 5 个任务 checkpoint 的特征做 PCA 冗余分析确定 backbone 结构，并以通道对齐 + 闭式线性求解合成预训练权重；采用 ReLU6 + 代理梯度的量化友好激活，修复 backbone 感受野中心偏移。</li>
+      <li>BEV Occupancy 训练迁移到 PyTorch 2.x：单 iter 1.56 s → 0.71 s（<strong>−54%</strong>，V100、batch 16、AMP），显存降低 9%，完成 1–112 卡扩展性压测。</li>
+      <li><strong>端到端驾驶模型架构设计</strong>（提案阶段，尚未训练）：camera-first 的 token 化方案，9 路相机经共享编码器 token 化，流式 Transformer + 位姿感知记忆，以曲率/加速度节点表示的多模态规划头，并从设计之初给出蒸馏 + INT8 量化的落地路径。</li>
+    </ul><h4>团队管理与项目交付</h4>
+    <ul class="bullets">
+      <li>带领 <strong>6 人</strong>量化部署团队（2025 年起虚线、2026 年起实线）：约 19 个量产模型各设 owner 与 backup，季度目标 + P0/P1 优先级，按“紧急度 × 技术难度”分配任务。2026 年 Q2 四个量产项目并行、约两周一版的节奏下，未发生因量化导致的发版延期。</li>
+      <li>2026.06 起任<strong>爱芯芯片项目技术负责人</strong>（先在 M97 700 TOPS 开发板验证，目标芯片 M95 350 TOPS）：分阶段适配计划、模型适配与量化、路测问题聚类分发；城市 NOA v4 方案已在测试车上运行，关键模型无掉帧。</li>
+      <li><strong>AI 提效</strong>：飞书机器人 + 编程 Agent Skill 自动完成新模型特性的量化适配（60 人天项目）；维护 33 篇文档的知识库，组织月度量化分享会，培养成员独立负责模型。</li>
     </ul>
   </article>
   <article class="job">
@@ -140,7 +180,7 @@
     <p class="job-role">算法工程师（CSIG 地图平台部）</p>
     <ul class="bullets">
       <li>搭建云端 GPU 模型的 TensorRT INT8 量化部署流程及量化转换工具：与浮点模型 cosine 相似度高于 0.999，推理耗时降低 20%，GPU 占用和显存各降低 10%，节省约 300 万元算力成本。</li>
-      <li>设计 AR 导航感知 SDK：多流程并行框架加自动 profile。四个月完成 12 项功能，CPU 占用低于 70%；在江铃 CX743 量产车型上线，回传数据辅助腾讯地图更新。</li>
+      <li>设计 AR 导航感知 SDK：多流程并行框架加自动 profile。四个月完成 12 项功能，CPU 占用低于 70%；在量产车型上线，回传数据辅助腾讯地图更新。</li>
       <li>开发 NBT 评测平台：支持模型与数据管理、算法评测和结果共享，并预留 badcase 分析和建图可视化接口。</li>
       <li>优化车端建图与数据采集流程，以及 ARM 板端 CPU 占用。</li>
     </ul>
@@ -152,7 +192,7 @@
     </header>
     <p class="job-role">算法工程师</p>
     <ul class="bullets">
-      <li>开发 C++ 人脸识别引擎，组合多个模型并优化组合策略，兼顾吞吐和识别率；应用于贵阳地铁刷脸等项目。</li>
+      <li>开发 C++ 人脸识别引擎，组合多个模型并优化组合策略，兼顾吞吐和识别率；应用于地铁刷脸通行等项目。</li>
       <li>负责机器翻译模型训练。</li>
       <li>在依图“求索”AI 芯片上进行模型量化与部署，开发量化工具、精度评测和 model zoo。</li>
     </ul>
@@ -201,6 +241,18 @@
   </article>
   <article class="project">
     <div class="project-visual">
+      <div class="metric"><span class="metric-value">7</span><span class="metric-label">份带版本的契约，10 个门禁</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/zh/projects/quant-deploy-platform/">平台化量化部署框架（设计稿）</a></h3>
+      <p class="project-where">轻舟智航 · 2026.11 起</p>
+      <p>目标架构：以定点模型为唯一真值，用带版本的契约连接训练、转换和车端，每一跳默认阻断，并用敏感度和板端时延代价自动规划混合精度。附门禁设计与迁移思路。</p>
+      <p class="project-actions"><a href="/zh/projects/quant-deploy-platform/">方法与细节 &rarr;</a>
+      </p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
       <div class="metric"><span class="metric-value">0.7%</span><span class="metric-label">板端预测误差</span></div>
     </div>
     <div class="project-body">
@@ -208,6 +260,18 @@
       <p class="project-where">轻舟智航 · 2025–2026</p>
       <p>分模块耗时模型预测 19.38 ms，实测 19.25 ms。它提前否定了 Occupancy 扩大范围加 10 Hz 的直接上线方案，对六种部署方案排序，并促成五个感知模型共享 backbone。</p>
       <p class="project-actions"><a href="/zh/projects/latency-modeling/">方法与细节 &rarr;</a>
+      </p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
+      <div class="metric"><span class="metric-value">5 → 1</span><span class="metric-label">套图像编码器，预计每帧省 5–9 ms</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/zh/projects/onemodel/">OneModel：五个感知任务共享一个视觉编码器</a></h3>
+      <p class="project-where">轻舟智航 · 2026 · 进行中</p>
+      <p>用已发版模型的 PCA 冗余分析确定 backbone 规模，用闭式线性求解合成预训练权重；附多任务训练的组织方式，以及再往前一步的端到端驾驶模型架构设计（提案）。</p>
+      <p class="project-actions"><a href="/zh/projects/onemodel/">方法与细节 &rarr;</a>
       </p>
     </div>
   </article>
@@ -254,7 +318,7 @@
     <div class="project-body">
       <h3><a href="/zh/projects/ar-navigation/">AR 导航感知 SDK</a></h3>
       <p class="project-where">腾讯地图 · 2021–2022</p>
-      <p>面向手机和车机的多流程并行感知框架，带自动 profile：道路场景检测、车位检测和 AR 引导。四个月完成 12 项功能，CPU 低于 70%，在江铃 CX743 量产车型上线。</p>
+      <p>面向手机和车机的多流程并行感知框架，带自动 profile：道路场景检测、车位检测和 AR 引导。四个月完成 12 项功能，CPU 低于 70%，在量产车型上线。</p>
       <p class="project-actions"><a href="/zh/projects/ar-navigation/">方法与细节 &rarr;</a>
       </p>
     </div>
@@ -323,10 +387,10 @@
 <section id="writing" class="cv-section no-print">
   <h2>文章</h2>
   <ul class="post-list">
-    <li><a href="/2022/06/06/house_price_analysis/">2011-2022中国房价走势分析</a> <span class="post-list-date">Jun 2022</span></li>
-    <li><a href="/2022/05/31/onnx-quantization-for-tensorRT/">onnx2trt-基于onnx的模型量化精度优化工具</a> <span class="post-list-date">May 2022</span></li>
-    <li><a href="/2022/05/29/welcome/">Welcome</a> <span class="post-list-date">May 2022</span></li>
-    <li><a href="/2022/05/29/how_to_build_your_blog/">如果构建一个个人博客</a> <span class="post-list-date">May 2022</span></li>
+    <li><a href="https://www.howellyang.com/2022/06/06/house_price_analysis/">2011-2022中国房价走势分析</a> <span class="post-list-date">Jun 2022</span></li>
+    <li><a href="https://www.howellyang.com/2022/05/31/onnx-quantization-for-tensorRT/">onnx2trt-基于onnx的模型量化精度优化工具</a> <span class="post-list-date">May 2022</span></li>
+    <li><a href="https://www.howellyang.com/2022/05/29/welcome/">Welcome</a> <span class="post-list-date">May 2022</span></li>
+    <li><a href="https://www.howellyang.com/2022/05/29/how_to_build_your_blog/">如果构建一个个人博客</a> <span class="post-list-date">May 2022</span></li>
   </ul>
   <p class="more"><a href="/archives/">全部文章 &rarr;</a></p>
 </section>
@@ -345,6 +409,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>非线性算子的自适应查表 · 杨豪</title>
   <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
@@ -71,142 +72,162 @@
   <details class="toc" open>
     <summary>本页目录</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#_1">问题</a></li>
-<li><a href="#_2">按芯片的实际计算来衡量误差</a></li>
-<li><a href="#_3">三种策略对比</a></li>
-<li><a href="#_4">自适应算法</a></li>
-<li><a href="#_5">结果</a></li>
-<li><a href="#_6">经验</a></li>
-</ul>
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#按芯片的实际计算来衡量误差">按芯片的实际计算来衡量误差</a></li>
+    <li><a href="#三种策略对比">三种策略对比</a></li>
+    <li><a href="#自适应算法">自适应算法</a>
+      <ul>
+        <li><a href="#在浏览器里试一试">在浏览器里试一试</a></li>
+      </ul>
+    </li>
+    <li><a href="#结果">结果</a></li>
+    <li><a href="#经验">经验</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
-    <h2 id="_1">问题</h2>
+    <h2 id="问题">问题</h2>
 <p>在车载 NPU 上，<code>rsqrt</code>、<code>reciprocal</code>、Softmax 中的 <code>exp</code>、<code>sigmoid</code> 等非线性算子是用定点查表实现的，而不是浮点运算。一张不好的表，就能让一个其他地方都正常的模型出问题。在一个量产模型中，精度差距的根因就是归一化层里一个 <code>rsqrt</code> 查表的分段点（见<a href="/zh/projects/numerical-consistency/">分层数值一致性</a>）。</p>
 <p>硬件的分段查表并不是全局最近邻查表：</p>
 <ol>
-<li><strong>分段点（dividing points）</strong>决定输入落在哪一段。</li>
+<li><strong>分段点</strong>（dividing points）决定输入落在哪一段。</li>
 <li><strong>段内</strong>读取定点表并插值。</li>
 <li><strong>有效区间之外</strong>由左右两侧的线性拟合接管。</li>
 </ol>
 <p>所以误差由四部分共同决定：输入有效域、分段点位置、段内采样密度，以及左右线性区的处理。</p>
-<h2 id="_2">按芯片的实际计算来衡量误差</h2>
+<h2 id="按芯片的实际计算来衡量误差">按芯片的实际计算来衡量误差</h2>
 <p>参考值是 IR 的 fake quant 输出，也就是模型训练和验证时所对齐的量化值；候选值是转换器实际生成的定点查表输出码。对每个有效整数输入码 <em>x<sub>i</sub></em>：</p>
-<pre><code class="language-text">e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          以输出 LSB 计的误差
-E_mean  = Σ_i e(x_i) / N                            按样本数加权
-E_max   = max_i e(x_i)                              所有算子、所有输入码中的最大值
-</code></pre>
-<ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          以输出 LSB 计的误差
+</span></span><span style="display:flex;"><span>E_mean  = Σ_i e(x_i) / N                            按样本数加权
+</span></span><span style="display:flex;"><span>E_max   = max_i e(x_i)                              所有算子、所有输入码中的最大值
+</span></span></code></pre></div><ul>
 <li><strong>平均 LSB</strong> 按所有表的所有有效输入码加权，而不是对每个算子的平均误差再简单平均。</li>
 <li><strong>最大 LSB</strong> 用来暴露少量但可能致命的局部失真，这类问题在整体指标里看不出来。</li>
 <li><strong>有效域</strong>来自校准：<code>rsqrt</code> 和 <code>reciprocal</code> 使用 IR 的校准范围；Softmax 的 <code>exp</code> 在减去最大值后输入不会为正，没有记录范围时默认取 [−12, 0]。</li>
 </ul>
-<h2 id="_3">三种策略对比</h2>
-<aside class="callout"><p>表更多能降低<strong>平均</strong>误差，但不能约束<strong>最坏</strong>误差。如果分段点不按函数形状和真实定点误差来分配，高曲率区域和线性区边界仍可能出现很大的误差。</p></aside>
+<h2 id="三种策略对比">三种策略对比</h2>
+<aside class="callout">表更多能降低<strong>平均</strong>误差，但不能约束<strong>最坏</strong>误差。如果分段点不按函数形状和真实定点误差来分配，高曲率区域和线性区边界仍可能出现很大的误差。</aside>
 
 <table>
-<thead>
-<tr>
-<th>策略</th>
-<th>分段点</th>
-<th>左右线性区</th>
-<th>每个算子的表数</th>
-<th>保证</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A. 原始 6 表</td>
-<td>各算子原生策略：大多按曲率，少数等距</td>
-<td>原始线性拟合</td>
-<td>6</td>
-<td>仅为基线，没有最大误差目标</td>
-</tr>
-<tr>
-<td>B. 均匀 126 表</td>
-<td>有效区间等宽切成 126 段</td>
-<td>不优化</td>
-<td>126</td>
-<td>只保证表数</td>
-</tr>
-<tr>
-<td>C. 自适应（本工作）</td>
-<td>保留 6 表边界，再递归二分</td>
-<td>只有实测收益足够时才提升</td>
-<td>每个算子 12–30 张</td>
-<td>边界保留、不回退、最大 2 LSB</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>策略</th>
+					<th>分段点</th>
+					<th>左右线性区</th>
+					<th>每个算子的表数</th>
+					<th>保证</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A. 原始 6 表</td>
+					<td>各算子原生策略：大多按曲率，少数等距</td>
+					<td>原始线性拟合</td>
+					<td>6</td>
+					<td>仅为基线，没有最大误差目标</td>
+			</tr>
+			<tr>
+					<td>B. 均匀 126 表</td>
+					<td>有效区间等宽切成 126 段</td>
+					<td>不优化</td>
+					<td>126</td>
+					<td>只保证表数</td>
+			</tr>
+			<tr>
+					<td>C. 自适应（本工作）</td>
+					<td>保留 6 表边界，再递归二分</td>
+					<td>只有实测收益足够时才提升</td>
+					<td>每个算子 12–30 张</td>
+					<td>边界保留、不回退、最大 2 LSB</td>
+			</tr>
+	</tbody>
 </table>
 <p>按曲率放置（A）会在函数弯曲处放更多分段点，比等距好，但对近奇异函数来说 6 张表太少。均匀 126 表（B）实现简单、平均误差低，但它不感知曲率、输出 scale 和真实定点误差。对 <code>rsqrt</code>，它把大量表浪费在平坦区域，同时在极端输入码附近留下很大的误差。</p>
-<h2 id="_4">自适应算法</h2>
+<h2 id="自适应算法">自适应算法</h2>
 <p>原始 6 表布局是下限：算法只增加分段点，从不移动或删除。反馈信号是真实的定点输出误差，而不是浮点近似。</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">6 表基线</span><span class="pipe-note">保留全部边界</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">实测误差</span><span class="pipe-note">每个输入码</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">二分最差的段</span><span class="pipe-note">取中点</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">检查线性区</span><span class="pipe-note">值得才提升</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">最大误差 ≤ 2 LSB？</span><span class="pipe-note">否则继续</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">向上取整为 6 的倍数</span><span class="pipe-note">硬件导出</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">6 表基线</span><span class="pipe-note">保留全部边界</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">实测误差</span><span class="pipe-note">每个输入码</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">二分最差的段</span><span class="pipe-note">取中点</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">检查线性区</span><span class="pipe-note">值得才提升</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">最大误差 ≤ 2 LSB？</span><span class="pipe-note">否则继续</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">向上取整为 6 的倍数</span><span class="pipe-note">硬件导出</span></div>
 </div>
 
-<pre><code class="language-text">对每个查表算子 f 及其有效域 D：
-    S ← 原始 6 表布局的分段                                  # 从不删除
-    循环：
-        E ← f 在 D 内每个输入码上的真实定点误差，按段统计
-        若 max(E) ≤ 2 LSB：结束
-        s* ← 误差最大的段
-        在 s* 的中点切分                                     # 嵌套细分
-        若左/右线性区主导了误差：
-            仅当实测收益足够时才提升该区域
-        若表数预算用尽且 max(E) &gt; 2 LSB：
-            硬失败并报告该算子                               # 绝不静默发布
-    把表数向上取整为 6 的倍数                                # 导出约束
-</code></pre>
-<p>由于新增分段点都是已有段的中点，细分是嵌套的。所有原始边界都保留下来，所以结果在任何一段上都不会比基线差。多数算子最终使用 12、18、24 或 30 张表。</p>
-<h2 id="_5">结果</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>对每个查表算子 f 及其有效域 D：
+</span></span><span style="display:flex;"><span>    S ← 原始 6 表布局的分段                                  # 从不删除
+</span></span><span style="display:flex;"><span>    循环：
+</span></span><span style="display:flex;"><span>        E ← f 在 D 内每个输入码上的真实定点误差，按段统计
+</span></span><span style="display:flex;"><span>        若 max(E) ≤ 2 LSB：结束
+</span></span><span style="display:flex;"><span>        s* ← 误差最大的段
+</span></span><span style="display:flex;"><span>        在 s* 的中点切分                                     # 嵌套细分
+</span></span><span style="display:flex;"><span>        若左/右线性区主导了误差：
+</span></span><span style="display:flex;"><span>            仅当实测收益足够时才提升该区域
+</span></span><span style="display:flex;"><span>        若表数预算用尽且 max(E) &gt; 2 LSB：
+</span></span><span style="display:flex;"><span>            硬失败并报告该算子                               # 绝不静默发布
+</span></span><span style="display:flex;"><span>    把表数向上取整为 6 的倍数                                # 导出约束
+</span></span></code></pre></div><p>由于新增分段点都是已有段的中点，细分是嵌套的。所有原始边界都保留下来，所以结果在任何一段上都不会比基线差。多数算子最终使用 12、18、24 或 30 张表。</p>
+<figure class="figure" data-fig="adaptive-lut">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" class="fig fig-adaptive-lut" role="img" aria-label="adaptive piecewise lookup tables"><title>adaptive piecewise lookup tables</title><defs><marker id="adaptive-lut-ah-orange" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-orange,#eb6834)"/></marker></defs><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">示意：同一个 rsqrt 算子，两种分段方式</text><rect x="30.0" y="52.0" width="700.0" height="478.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><line x1="70.0" y1="320.0" x2="690.0" y2="320.0" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round"/><line x1="70.0" y1="70.0" x2="70.0" y2="320.0" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round"/><text x="690.0" y="342.0" font-size="13.5" font-weight="600" fill="var(--f-muted,#5e6a79)" text-anchor="end">输入码 →</text><text x="80.0" y="82.0" font-size="14" font-weight="600" fill="var(--f-muted,#5e6a79)" text-anchor="start">rsqrt(x)</text><path d="M70.0,70.0 L73.1,91.8 L76.2,109.5 L79.3,124.2 L82.4,136.7 L85.5,147.5 L88.6,156.9 L91.7,165.3 L94.8,172.7 L97.9,179.4 L101.0,185.4 L104.1,191.0 L107.2,196.0 L110.3,200.7 L113.4,205.0 L116.5,209.0 L119.6,212.7 L122.7,216.2 L125.8,219.5 L128.9,222.5 L132.0,225.4 L135.1,228.1 L138.2,230.7 L141.3,233.2 L144.4,235.5 L147.5,237.7 L150.6,239.8 L153.7,241.8 L156.8,243.8 L159.9,245.6 L163.0,247.4 L166.1,249.0 L169.2,250.7 L172.3,252.2 L175.4,253.7 L178.5,255.2 L181.6,256.6 L184.7,257.9 L187.8,259.2 L190.9,260.5 L194.0,261.7 L197.1,262.9 L200.2,264.0 L203.3,265.1 L206.4,266.2 L209.5,267.3 L212.6,268.3 L215.7,269.3 L218.8,270.2 L221.9,271.1 L225.0,272.0 L228.1,272.9 L231.2,273.8 L234.3,274.6 L237.4,275.4 L240.5,276.2 L243.6,277.0 L246.7,277.8 L249.8,278.5 L252.9,279.2 L256.0,279.9 L259.1,280.6 L262.2,281.3 L265.3,282.0 L268.4,282.6 L271.5,283.2 L274.6,283.9 L277.7,284.5 L280.8,285.1 L283.9,285.6 L287.0,286.2 L290.1,286.8 L293.2,287.3 L296.3,287.9 L299.4,288.4 L302.5,288.9 L305.6,289.4 L308.7,289.9 L311.8,290.4 L314.9,290.9 L318.0,291.4 L321.1,291.8 L324.2,292.3 L327.3,292.7 L330.4,293.2 L333.5,293.6 L336.6,294.0 L339.7,294.5 L342.8,294.9 L345.9,295.3 L349.0,295.7 L352.1,296.1 L355.2,296.5 L358.3,296.9 L361.4,297.2 L364.5,297.6 L367.6,298.0 L370.7,298.3 L373.8,298.7 L376.9,299.0 L380.0,299.4 L383.1,299.7 L386.2,300.1 L389.3,300.4 L392.4,300.7 L395.5,301.1 L398.6,301.4 L401.7,301.7 L404.8,302.0 L407.9,302.3 L411.0,302.6 L414.1,302.9 L417.2,303.2 L420.3,303.5 L423.4,303.8 L426.5,304.1 L429.6,304.3 L432.7,304.6 L435.8,304.9 L438.9,305.2 L442.0,305.4 L445.1,305.7 L448.2,306.0 L451.3,306.2 L454.4,306.5 L457.5,306.7 L460.6,307.0 L463.7,307.2 L466.8,307.5 L469.9,307.7 L473.0,307.9 L476.1,308.2 L479.2,308.4 L482.3,308.6 L485.4,308.9 L488.5,309.1 L491.6,309.3 L494.7,309.5 L497.8,309.7 L500.9,310.0 L504.0,310.2 L507.1,310.4 L510.2,310.6 L513.3,310.8 L516.4,311.0 L519.5,311.2 L522.6,311.4 L525.7,311.6 L528.8,311.8 L531.9,312.0 L535.0,312.2 L538.1,312.4 L541.2,312.6 L544.3,312.8 L547.4,313.0 L550.5,313.1 L553.6,313.3 L556.7,313.5 L559.8,313.7 L562.9,313.9 L566.0,314.0 L569.1,314.2 L572.2,314.4 L575.3,314.6 L578.4,314.7 L581.5,314.9 L584.6,315.1 L587.7,315.2 L590.8,315.4 L593.9,315.6 L597.0,315.7 L600.1,315.9 L603.2,316.0 L606.3,316.2 L609.4,316.3 L612.5,316.5 L615.6,316.7 L618.7,316.8 L621.8,317.0 L624.9,317.1 L628.0,317.3 L631.1,317.4 L634.2,317.6 L637.3,317.7 L640.4,317.8 L643.5,318.0 L646.6,318.1 L649.7,318.3 L652.8,318.4 L655.9,318.5 L659.0,318.7 L662.1,318.8 L665.2,319.0 L668.3,319.1 L671.4,319.2 L674.5,319.4 L677.6,319.5 L680.7,319.6 L683.8,319.7 L686.9,319.9 L690.0,320.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="256.0" y="265.9" font-size="13.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">曲率集中在左端</text><line x1="71.4" y1="71.2" x2="71.4" y2="89.2" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="73.1" y1="82.8" x2="73.1" y2="100.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="75.5" y1="96.6" x2="75.5" y2="114.6" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="78.6" y1="111.9" x2="78.6" y2="129.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="82.7" y1="128.9" x2="82.7" y2="146.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="88.1" y1="146.5" x2="88.1" y2="164.5" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="95.2" y1="164.7" x2="95.2" y2="182.7" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="104.7" y1="182.9" x2="104.7" y2="200.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="117.1" y1="200.8" x2="117.1" y2="218.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="133.5" y1="217.7" x2="133.5" y2="235.7" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="155.2" y1="233.8" x2="155.2" y2="251.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="183.8" y1="248.5" x2="183.8" y2="266.5" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="221.5" y1="262.0" x2="221.5" y2="280.0" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="271.4" y1="274.2" x2="271.4" y2="292.2" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="337.2" y1="285.1" x2="337.2" y2="303.1" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="424.0" y1="294.8" x2="424.0" y2="312.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="538.7" y1="303.4" x2="538.7" y2="321.4" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><text x="70.0" y="362.0" font-size="14.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">均匀 126 表：等宽切分，不看曲率</text><rect x="70.0" y="372.0" width="620.0" height="26.0" rx="4" fill="var(--f-plane,#eef1f5)"/><line x1="74.9" y1="375.0" x2="74.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="79.8" y1="375.0" x2="79.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="84.8" y1="375.0" x2="84.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="89.7" y1="375.0" x2="89.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="94.6" y1="375.0" x2="94.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="99.5" y1="375.0" x2="99.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="104.4" y1="375.0" x2="104.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="109.4" y1="375.0" x2="109.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="114.3" y1="375.0" x2="114.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="119.2" y1="375.0" x2="119.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="124.1" y1="375.0" x2="124.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="129.0" y1="375.0" x2="129.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="134.0" y1="375.0" x2="134.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="138.9" y1="375.0" x2="138.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="143.8" y1="375.0" x2="143.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="148.7" y1="375.0" x2="148.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="153.7" y1="375.0" x2="153.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="158.6" y1="375.0" x2="158.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="163.5" y1="375.0" x2="163.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="168.4" y1="375.0" x2="168.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="173.3" y1="375.0" x2="173.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="178.3" y1="375.0" x2="178.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="183.2" y1="375.0" x2="183.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="188.1" y1="375.0" x2="188.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="193.0" y1="375.0" x2="193.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="197.9" y1="375.0" x2="197.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="202.9" y1="375.0" x2="202.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="207.8" y1="375.0" x2="207.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="212.7" y1="375.0" x2="212.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="217.6" y1="375.0" x2="217.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="222.5" y1="375.0" x2="222.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="227.5" y1="375.0" x2="227.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="232.4" y1="375.0" x2="232.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="237.3" y1="375.0" x2="237.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="242.2" y1="375.0" x2="242.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="247.1" y1="375.0" x2="247.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="252.1" y1="375.0" x2="252.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="257.0" y1="375.0" x2="257.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="261.9" y1="375.0" x2="261.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="266.8" y1="375.0" x2="266.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="271.7" y1="375.0" x2="271.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="276.7" y1="375.0" x2="276.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="281.6" y1="375.0" x2="281.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="286.5" y1="375.0" x2="286.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="291.4" y1="375.0" x2="291.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="296.3" y1="375.0" x2="296.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="301.3" y1="375.0" x2="301.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="306.2" y1="375.0" x2="306.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="311.1" y1="375.0" x2="311.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="316.0" y1="375.0" x2="316.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="321.0" y1="375.0" x2="321.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="325.9" y1="375.0" x2="325.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="330.8" y1="375.0" x2="330.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="335.7" y1="375.0" x2="335.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="340.6" y1="375.0" x2="340.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="345.6" y1="375.0" x2="345.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="350.5" y1="375.0" x2="350.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="355.4" y1="375.0" x2="355.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="360.3" y1="375.0" x2="360.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="365.2" y1="375.0" x2="365.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="370.2" y1="375.0" x2="370.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="375.1" y1="375.0" x2="375.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="380.0" y1="375.0" x2="380.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="384.9" y1="375.0" x2="384.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="389.8" y1="375.0" x2="389.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="394.8" y1="375.0" x2="394.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="399.7" y1="375.0" x2="399.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="404.6" y1="375.0" x2="404.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="409.5" y1="375.0" x2="409.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="414.4" y1="375.0" x2="414.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="419.4" y1="375.0" x2="419.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="424.3" y1="375.0" x2="424.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="429.2" y1="375.0" x2="429.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="434.1" y1="375.0" x2="434.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="439.0" y1="375.0" x2="439.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="444.0" y1="375.0" x2="444.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="448.9" y1="375.0" x2="448.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="453.8" y1="375.0" x2="453.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="458.7" y1="375.0" x2="458.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="463.7" y1="375.0" x2="463.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="468.6" y1="375.0" x2="468.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="473.5" y1="375.0" x2="473.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="478.4" y1="375.0" x2="478.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="483.3" y1="375.0" x2="483.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="488.3" y1="375.0" x2="488.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="493.2" y1="375.0" x2="493.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="498.1" y1="375.0" x2="498.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="503.0" y1="375.0" x2="503.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="507.9" y1="375.0" x2="507.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="512.9" y1="375.0" x2="512.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="517.8" y1="375.0" x2="517.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="522.7" y1="375.0" x2="522.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="527.6" y1="375.0" x2="527.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="532.5" y1="375.0" x2="532.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="537.5" y1="375.0" x2="537.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="542.4" y1="375.0" x2="542.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="547.3" y1="375.0" x2="547.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="552.2" y1="375.0" x2="552.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="557.1" y1="375.0" x2="557.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="562.1" y1="375.0" x2="562.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="567.0" y1="375.0" x2="567.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="571.9" y1="375.0" x2="571.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="576.8" y1="375.0" x2="576.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="581.7" y1="375.0" x2="581.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="586.7" y1="375.0" x2="586.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="591.6" y1="375.0" x2="591.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="596.5" y1="375.0" x2="596.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="601.4" y1="375.0" x2="601.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="606.3" y1="375.0" x2="606.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="611.3" y1="375.0" x2="611.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="616.2" y1="375.0" x2="616.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="621.1" y1="375.0" x2="621.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="626.0" y1="375.0" x2="626.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="631.0" y1="375.0" x2="631.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="635.9" y1="375.0" x2="635.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="640.8" y1="375.0" x2="640.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="645.7" y1="375.0" x2="645.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="650.6" y1="375.0" x2="650.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="655.6" y1="375.0" x2="655.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="660.5" y1="375.0" x2="660.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="665.4" y1="375.0" x2="665.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="670.3" y1="375.0" x2="670.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="675.2" y1="375.0" x2="675.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="680.2" y1="375.0" x2="680.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="685.1" y1="375.0" x2="685.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><rect x="70.0" y="372.0" width="31.0" height="26.0" rx="4" fill="var(--f-red,#d03b3b)" opacity="0.28"/><text x="698.0" y="390.0" font-size="15" font-weight="700" fill="var(--f-muted,#5e6a79)" text-anchor="start">126</text><text x="70.0" y="428.0" font-size="14.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">自适应：保留 6 表边界，只在误差大的段继续二分</text><rect x="70.0" y="438.0" width="620.0" height="26.0" rx="4" fill="var(--f-orange-soft,#fdebe2)"/><line x1="71.4" y1="441.0" x2="71.4" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="73.1" y1="441.0" x2="73.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="75.5" y1="441.0" x2="75.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="78.6" y1="441.0" x2="78.6" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="82.7" y1="441.0" x2="82.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="88.1" y1="441.0" x2="88.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="95.2" y1="441.0" x2="95.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="104.7" y1="441.0" x2="104.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="117.1" y1="441.0" x2="117.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="133.5" y1="441.0" x2="133.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="155.2" y1="441.0" x2="155.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="183.8" y1="441.0" x2="183.8" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="221.5" y1="441.0" x2="221.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="271.4" y1="441.0" x2="271.4" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="337.2" y1="441.0" x2="337.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="424.0" y1="441.0" x2="424.0" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="538.7" y1="441.0" x2="538.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><text x="698.0" y="456.0" font-size="15" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">18</text><text x="70.0" y="490.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">红色区域：均匀方案在极端输入码附近留下很大的定点误差</text><text x="760.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">误差驱动的细分循环</text><circle cx="774.0" cy="78.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="83.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="800.0" y="84.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">从 6 表基线出发，边界全部保留</text><circle cx="774.0" cy="118.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="123.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="800.0" y="124.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">按芯片真实定点输出码实测每个输入码的误差</text><circle cx="774.0" cy="158.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="163.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="800.0" y="164.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">在误差最大的段取中点二分</text><circle cx="774.0" cy="198.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="203.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="800.0" y="204.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">最大误差 ≤ 2 LSB 才导出；预算用尽则硬失败</text><path d="M759.0,198.0 L750.0,198.0 Q742.0,198.0 742.0,190.0 L742.0,166.0 Q742.0,158.0 750.0,158.0 L758.0,158.0" fill="none" stroke="var(--f-orange,#eb6834)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 5" marker-end="url(#adaptive-lut-ah-orange)"/><text x="760.0" y="300.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">600 个查表模块上的结果</text><rect x="760.0" y="318.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="359.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">0.217 LSB</text><text x="946.0" y="344.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">加权平均误差（均匀 126 表：</text><text x="946.0" y="363.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">0.270）</text><rect x="760.0" y="390.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="431.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">2 LSB</text><text x="946.0" y="416.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">最大误差（均匀 126 表：11,381</text><text x="946.0" y="435.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">LSB）</text><rect x="760.0" y="462.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="503.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">−85%</text><text x="946.0" y="488.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">表数量：平均 18.6 张，而不是</text><text x="946.0" y="507.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">126 张</text></svg></div>
+  <figcaption>示意：同一个 rsqrt 算子，均匀切分与自适应切分的分段点对比；右侧是细分循环和 600 个模块上的结果。</figcaption>
+</figure>
+
+<h3 id="在浏览器里试一试">在浏览器里试一试</h3>
+<div class="demo lut-demo" data-i18n="{&#34;code&#34;:&#34;输入码 →&#34;,&#34;curve&#34;:&#34;rsqrt(x)，12 位定点输出&#34;,&#34;err&#34;:&#34;每个输入码的误差（LSB）&#34;,&#34;fail&#34;:&#34;预算用尽仍超限：导出失败&#34;,&#34;over&#34;:&#34;最大误差超过 2 LSB&#34;,&#34;pass&#34;:&#34;最大误差 ≤ 2 LSB：可以导出&#34;,&#34;tip&#34;:&#34;输入码 {c}：{e} LSB&#34;}">
+  <div class="demo-bar">
+    <button type="button" class="btn btn-play">▶ 自适应细分</button>
+    <button type="button" class="btn btn-ghost btn-step">单步二分</button>
+    <button type="button" class="btn btn-ghost btn-u6">均匀 6 表</button>
+    <button type="button" class="btn btn-ghost btn-u126">均匀 126 表</button>
+  </div>
+  <canvas role="img" aria-label="rsqrt 查表的分段点与每个输入码的定点误差"></canvas>
+  <dl class="demo-readout">
+    <div><dt>表数</dt><dd class="lut-tables">–</dd></div>
+    <div><dt>最大误差</dt><dd class="lut-max">–</dd></div>
+    <div><dt>平均误差</dt><dd class="lut-mean">–</dd></div>
+    <div class="wide"><dt>结论</dt><dd class="lut-verdict">–</dd></div>
+  </dl>
+  <p class="demo-note">这是在浏览器里运行的简化仿真（12 位输出、每段线性插值、1024 个输入码），只用来说明机制：表数相同的预算，放在误差大的地方比均匀摊开更有效。数字与量产转换器不同，量产结果见下方表格。</p>
+</div>
+
+<h2 id="结果">结果</h2>
 <p>在一个时序跟踪模型的 4 个量产计算图上评测，每个图有 150 个查表模块（共 600 个）：</p>
 <table>
-<thead>
-<tr>
-<th>策略</th>
-<th>加权平均误差</th>
-<th>最大误差</th>
-<th>每个算子的表数</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>均匀 126 表</td>
-<td>0.270 LSB</td>
-<td>11,381 LSB</td>
-<td>126</td>
-</tr>
-<tr>
-<td>自适应</td>
-<td><strong>0.217 LSB</strong></td>
-<td><strong>2 LSB</strong></td>
-<td>12–30（平均 18.6）</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>策略</th>
+					<th>加权平均误差</th>
+					<th>最大误差</th>
+					<th>每个算子的表数</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>均匀 126 表</td>
+					<td>0.270 LSB</td>
+					<td>11,381 LSB</td>
+					<td>126</td>
+			</tr>
+			<tr>
+					<td>自适应</td>
+					<td><strong>0.217 LSB</strong></td>
+					<td><strong>2 LSB</strong></td>
+					<td>12–30（平均 18.6）</td>
+			</tr>
+	</tbody>
 </table>
-<aside class="callout callout-result"><p>自适应方案在平均误差和最大误差上<strong>都</strong>优于均匀 126 表，同时表数量减少约 85%。端到端回归指标的变化在 0.001 左右或更小：它的价值在于消除少见的局部失真，而不是提高平均值。</p></aside>
+<aside class="callout callout-result">自适应方案在平均误差和最大误差上<strong>都</strong>优于均匀 126 表，同时表数量减少约 85%。端到端回归指标的变化在 0.001 左右或更小：它的价值在于消除少见的局部失真，而不是提高平均值。</aside>
 
-<h2 id="_6">经验</h2>
+<h2 id="经验">经验</h2>
 <ul>
 <li><strong>按硬件实际计算的方式测量。</strong> 浮点近似恰恰会掩盖最关键的误差。</li>
 <li><strong>约束最坏情况，而不只是平均值。</strong> 一个坏的输入码就可能决定路上的一个极端场景。</li>
 <li><strong>在误差所在之处细分。</strong> 按曲率和实测误差分配预算，胜过更大的均匀预算。</li>
 <li><strong>失败要大声。</strong> 无法满足误差上限的算子应该阻止导出，而不是悄悄发布。</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
@@ -226,6 +247,7 @@ E_max   = max_i e(x_i)                              所有算子、所有输入�
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

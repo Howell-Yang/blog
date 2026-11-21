@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>Layered numerical consistency and release gates · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -70,145 +71,145 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-problem">The problem</a></li>
-<li><a href="#the-method-compare-neighbors-not-endpoints">The method: compare neighbors, not endpoints</a></li>
-<li><a href="#error-sources-at-each-checkpoint">Error sources at each checkpoint</a></li>
-<li><a href="#case-studies">Case studies</a></li>
-<li><a href="#release-gates-how-far-has-a-result-been-proven">Release gates: how far has a result been proven?</a></li>
-<li><a href="#lessons">Lessons</a></li>
-</ul>
+  <ul>
+    <li><a href="#the-problem">The problem</a></li>
+    <li><a href="#the-method-compare-neighbors-not-endpoints">The method: compare neighbors, not endpoints</a></li>
+    <li><a href="#error-sources-at-each-checkpoint">Error sources at each checkpoint</a></li>
+    <li><a href="#case-studies">Case studies</a></li>
+    <li><a href="#release-gates-how-far-has-a-result-been-proven">Release gates: how far has a result been proven?</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
     <h2 id="the-problem">The problem</h2>
-<p>"The on-board result differs from the float model" is the most common, and least useful, bug report in model deployment. Between a model in PyTorch and the same model on the vehicle there are a dozen transformations: data capture, preprocessing, export, fake quantization, an intermediate representation, two runtimes, a compiler, integer kernels and post-processing. Each can add error, and the errors compound. Without structure, debugging means guessing.</p>
+<p>&quot;The on-board result differs from the float model&quot; is the most common, and least useful, bug report in model deployment. Between a model in PyTorch and the same model on the vehicle there are a dozen transformations: data capture, preprocessing, export, fake quantization, an intermediate representation, two runtimes, a compiler, integer kernels and post-processing. Each can add error, and the errors compound. Without structure, debugging means guessing.</p>
 <h2 id="the-method-compare-neighbors-not-endpoints">The method: compare neighbors, not endpoints</h2>
 <p>Compare each stage only with the stage before it, on <strong>identical inputs</strong> and <strong>identical post-processing</strong>. Each comparison then has exactly one stage that can be responsible.</p>
 <p>The data side:</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle data</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">HIL</span><span class="pipe-note">hardware-in-the-loop</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">SIL</span><span class="pipe-note">software-in-the-loop</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Offline format</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Offline preprocessing</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">On-board preprocessing</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle data</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">HIL</span><span class="pipe-note">hardware-in-the-loop</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">SIL</span><span class="pipe-note">software-in-the-loop</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Offline format</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Offline preprocessing</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">On-board preprocessing</span></div>
 </div>
 
 <p>The model side:</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Float</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Chip-oriented export</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT, fake-quant off</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">IR → rebuilt QAT</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">LibTorch</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT HBIR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Quantized HBIR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">HBM</span><span class="pipe-note">on chip</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">On-board post-proc.</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Float</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Chip-oriented export</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT, fake-quant off</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">IR → rebuilt QAT</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">LibTorch</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT HBIR</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Quantized HBIR</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">HBM</span><span class="pipe-note">on chip</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">On-board post-proc.</span></div>
+</div>
+
+<p>The model-side chain, with the issues it pinned down:</p>
+<figure class="figure" data-fig="parity-chain">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-parity-chain" role="img" aria-label="stage-by-stage numerical alignment"><title>stage-by-stage numerical alignment</title><defs><marker id="parity-chain-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="30.0" y="40.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">EACH STAGE IS COMPARED ONLY WITH THE ONE BEFORE IT: SAME INPUT, SAME POST-PROCESSING (12 CHECKPOINTS INCLUDING THE DATA SIDE)</text><g class="pstage" data-i="0"><rect x="30.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="93.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Float</text><text x="93.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">training</text></g><g class="hop" data-i="0"><line x1="158.0" y1="117.0" x2="197.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="177.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M172.0,117.5 L176.0,122.0 L183.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M172.5,112.0 L182.5,122.0 M182.5,112.0 L172.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="1"><rect x="199.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="262.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">QAT</text><text x="262.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">fake-quant</text></g><g class="hop" data-i="1"><line x1="327.0" y1="117.0" x2="366.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="346.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M341.0,117.5 L345.0,122.0 L352.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M341.5,112.0 L351.5,122.0 M351.5,112.0 L341.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="2"><rect x="368.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="431.0" y="112.0" font-size="19.0" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">In-house IR</text><text x="431.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">export</text></g><g class="hop" data-i="2"><line x1="496.0" y1="117.0" x2="535.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="515.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M510.0,117.5 L514.0,122.0 L521.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M510.5,112.0 L520.5,122.0 M520.5,112.0 L510.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="3"><rect x="537.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="600.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">LibTorch</text><text x="600.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">rebuilt · x86</text></g><g class="hop" data-i="3"><line x1="665.0" y1="117.0" x2="704.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="684.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M679.0,117.5 L683.0,122.0 L690.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M679.5,112.0 L689.5,122.0 M689.5,112.0 L679.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="4"><rect x="706.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="769.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">HBIR</text><text x="769.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">chip toolchain</text></g><g class="hop" data-i="4"><line x1="834.0" y1="117.0" x2="873.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="853.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M848.0,117.5 L852.0,122.0 L859.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M848.5,112.0 L858.5,122.0 M858.5,112.0 L848.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="5"><rect x="875.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="938.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">HBM</text><text x="938.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">compiled</text></g><g class="hop" data-i="5"><line x1="1003.0" y1="117.0" x2="1042.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="1022.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M1017.0,117.5 L1021.0,122.0 L1028.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M1017.5,112.0 L1027.5,122.0 M1027.5,112.0 L1017.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="6"><rect x="1044.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="1107.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">On-board</text><text x="1107.0" y="136.0" font-size="12.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">device + post-proc</text></g><rect x="30.0" y="174.0" width="633.0" height="7.0" rx="3.5" fill="var(--f-blue,#2a78d6)"/><rect x="706.0" y="174.0" width="464.0" height="7.0" rx="3.5" fill="var(--f-orange,#eb6834)"/><text x="30.0" y="206.0" font-size="14.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">Training side: PyTorch and the in-house IR</text><text x="706.0" y="206.0" font-size="14.5" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">Target-chip toolchain and the device</text><text x="30.0" y="250.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">WHAT THIS CHAIN PINNED DOWN</text><rect x="30.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="51.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="64.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">rsqrt LUT split point</text><text x="46.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">LibTorch and the chip disagreed;</text><text x="46.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">layer-by-layer bisection traced it to one rsqrt</text><text x="46.0" y="367.3" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">LUT split point in a norm layer.</text><rect x="417.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="438.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="451.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Map-model coordinate error</text><text x="433.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">Three independent causes: an align_corners</text><text x="433.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">mismatch, a low-precision pose-delta tensor</text><text x="433.0" y="367.3" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">and a misplaced inverse op.</text><rect x="804.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="825.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="838.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Temporal models</text><text x="820.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">State carries across frames, so a tiny</text><text x="820.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">per-frame difference spreads: checks must</text><text x="820.0" y="367.3" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">cover whole sequences.</text><text x="30.0" y="438.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">RELEASE GATES: EVERY RESULT IS TAGGED WITH THE HIGHEST LEVEL IT HAS PASSED</text><rect x="30.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-plane,#eef1f5)"/><circle cx="56.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="56.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="80.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Source</text><path d="M182.0,478.0 L200.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="202.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="228.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="228.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="252.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Build</text><path d="M354.0,478.0 L372.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="374.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="400.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="400.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="424.0" y="484.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Simulation</text><path d="M526.0,478.0 L544.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="546.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="572.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="572.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="596.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Board</text><path d="M698.0,478.0 L716.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="718.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="744.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="744.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="768.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Vehicle</text><text x="894.0" y="472.0" font-size="14.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">New features ship default-off behind</text><text x="894.0" y="492.3" font-size="14.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">flags; a regression set of past failures</text><text x="894.0" y="512.6" font-size="14.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">re-runs before every release.</text></svg></div>
+</figure>
+
+<div class="demo parity-demo"
+     data-idle="All six checkpoints pass. Inject a mismatch to see how the chain narrows it down to one hop."
+     data-found="First divergence: {a} → {b}. Every checkpoint before it passes, so only this hop needs investigating; results after it are not trusted until it is fixed.">
+  <div class="demo-bar">
+    <button type="button" class="btn btn-inject">Inject a mismatch</button>
+    <button type="button" class="btn btn-ghost btn-reset">Reset</button>
+  </div>
+  <p class="demo-status" aria-live="polite"></p>
 </div>
 
 <h2 id="error-sources-at-each-checkpoint">Error sources at each checkpoint</h2>
 <table>
-<thead>
-<tr>
-<th>#</th>
-<th>Comparison</th>
-<th>Typical error source</th>
-<th>How it is checked</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Vehicle data vs HIL vs SIL</td>
-<td>NV12 frames used directly vs converted through RGB</td>
-<td>Dump SIL inputs into the offline format and diff</td>
-</tr>
-<tr>
-<td>2</td>
-<td>Offline preprocessing vs data conversion</td>
-<td>RGB vs NV12 paths; upsample–downsample round trips</td>
-<td>Tensor diff on the same frames</td>
-</tr>
-<tr>
-<td>3</td>
-<td>Offline vs on-board preprocessing</td>
-<td>Different implementations of the same transform</td>
-<td>Tensor diff on the same frames</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Float vs chip-oriented export</td>
-<td>YUV444 input instead of RGB; replaced upsampling</td>
-<td>Intermediate-feature and output diff</td>
-</tr>
-<tr>
-<td>5</td>
-<td>Export vs QAT with fake-quant disabled</td>
-<td>Conv–BN fusion; plugin ops whose fake-quant cannot be switched off</td>
-<td>Output diff, per-layer if needed</td>
-</tr>
-<tr>
-<td>6</td>
-<td>QAT vs float</td>
-<td>The quantization error itself</td>
-<td>Task metrics plus per-layer error</td>
-</tr>
-<tr>
-<td>7</td>
-<td>QAT → IR → rebuilt QAT</td>
-<td>Serialization and rebuild differences</td>
-<td>Bit-level output comparison</td>
-</tr>
-<tr>
-<td>8</td>
-<td>QAT model vs LibTorch (Python vs C++)</td>
-<td>GPU type, CUDA version, occasional run-specific outliers</td>
-<td>Off-board vs on-board consistency check</td>
-</tr>
-<tr>
-<td>9</td>
-<td>LibTorch vs QAT HBIR</td>
-<td>Lookup-table conversion happens here</td>
-<td>Per-operator comparison, LUT error check</td>
-</tr>
-<tr>
-<td>10</td>
-<td>QAT HBIR vs quantized HBIR</td>
-<td>Fake-quant replaced by true integer arithmetic</td>
-<td>Quantization-scale check</td>
-</tr>
-<tr>
-<td>11</td>
-<td>Quantized HBIR vs HBM</td>
-<td>Compiler</td>
-<td>Vendor verification tool</td>
-</tr>
-<tr>
-<td>12</td>
-<td>Off-board vs on-board post-processing, and vehicle vs offline end to end</td>
-<td>Implementation drift; frame sync</td>
-<td>On-board sync test</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>#</th>
+					<th>Comparison</th>
+					<th>Typical error source</th>
+					<th>How it is checked</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>Vehicle data vs HIL vs SIL</td>
+					<td>NV12 frames used directly vs converted through RGB</td>
+					<td>Dump SIL inputs into the offline format and diff</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>Offline preprocessing vs data conversion</td>
+					<td>RGB vs NV12 paths; upsample–downsample round trips</td>
+					<td>Tensor diff on the same frames</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>Offline vs on-board preprocessing</td>
+					<td>Different implementations of the same transform</td>
+					<td>Tensor diff on the same frames</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>Float vs chip-oriented export</td>
+					<td>YUV444 input instead of RGB; replaced upsampling</td>
+					<td>Intermediate-feature and output diff</td>
+			</tr>
+			<tr>
+					<td>5</td>
+					<td>Export vs QAT with fake-quant disabled</td>
+					<td>Conv–BN fusion; plugin ops whose fake-quant cannot be switched off</td>
+					<td>Output diff, per-layer if needed</td>
+			</tr>
+			<tr>
+					<td>6</td>
+					<td>QAT vs float</td>
+					<td>The quantization error itself</td>
+					<td>Task metrics plus per-layer error</td>
+			</tr>
+			<tr>
+					<td>7</td>
+					<td>QAT → IR → rebuilt QAT</td>
+					<td>Serialization and rebuild differences</td>
+					<td>Bit-level output comparison</td>
+			</tr>
+			<tr>
+					<td>8</td>
+					<td>QAT model vs LibTorch (Python vs C++)</td>
+					<td>GPU type, CUDA version, occasional run-specific outliers</td>
+					<td>Off-board vs on-board consistency check</td>
+			</tr>
+			<tr>
+					<td>9</td>
+					<td>LibTorch vs QAT HBIR</td>
+					<td>Lookup-table conversion happens here</td>
+					<td>Per-operator comparison, LUT error check</td>
+			</tr>
+			<tr>
+					<td>10</td>
+					<td>QAT HBIR vs quantized HBIR</td>
+					<td>Fake-quant replaced by true integer arithmetic</td>
+					<td>Quantization-scale check</td>
+			</tr>
+			<tr>
+					<td>11</td>
+					<td>Quantized HBIR vs HBM</td>
+					<td>Compiler</td>
+					<td>Vendor verification tool</td>
+			</tr>
+			<tr>
+					<td>12</td>
+					<td>Off-board vs on-board post-processing, and vehicle vs offline end to end</td>
+					<td>Implementation drift; frame sync</td>
+					<td>On-board sync test</td>
+			</tr>
+	</tbody>
 </table>
 <h2 id="case-studies">Case studies</h2>
 <p><strong>A lookup-table boundary in <code>rsqrt</code>.</strong> One production model showed a gap between LibTorch and the chip. We reproduced it off-board by comparing plain LibTorch with LibTorch using the chip's lookup tables, then bisected by layer. The error came from one table's split point in an <code>rsqrt</code> inside a normalization layer. The fix was local. The lasting change was to run lookup-table error checks early in conversion, which later became the <a href="/projects/adaptive-lut/">adaptive lookup-table algorithm</a>.</p>
@@ -217,15 +218,11 @@
 <h2 id="release-gates-how-far-has-a-result-been-proven">Release gates: how far has a result been proven?</h2>
 <p>Consistency tooling tells you where an error is. Release gates decide what may ship. Every claim about a quantized model is tagged with the highest level it has passed:</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Source</span><span class="pipe-note">code reviewed</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Build</span><span class="pipe-note">artifacts compile</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Simulation</span><span class="pipe-note">offline metrics</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Board</span><span class="pipe-note">runs on chip</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle</span><span class="pipe-note">road tests</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Source</span><span class="pipe-note">code reviewed</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Build</span><span class="pipe-note">artifacts compile</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Simulation</span><span class="pipe-note">offline metrics</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Board</span><span class="pipe-note">runs on chip</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Vehicle</span><span class="pipe-note">road tests</span></div>
 </div>
 
 <ul>
@@ -234,18 +231,19 @@
 <li><strong>A regression set of past quantization failures</strong> runs before every release, so a fixed problem cannot quietly return.</li>
 <li><strong>Quantization changes are written into the release notes</strong>, so downstream teams can link a behavior change to its cause.</li>
 </ul>
-<aside class="callout callout-result"><p>The method turned "results don't match" into a reproducible bug with a known location. The regression set caught quantization issues before release on three production programs.</p></aside>
+<aside class="callout callout-result">The method turned &quot;results don't match&quot; into a reproducible bug with a known location. The regression set caught quantization issues before release on three production programs.</aside>
 
 <h2 id="lessons">Lessons</h2>
 <ul>
 <li><strong>Isolate before you fix.</strong> Compare neighbors on identical inputs; never diff the two ends of a 12-stage chain.</li>
-<li><strong>Data and post-processing are part of the model.</strong> Several "quantization bugs" were preprocessing differences.</li>
+<li><strong>Data and post-processing are part of the model.</strong> Several &quot;quantization bugs&quot; were preprocessing differences.</li>
 <li><strong>Name the evidence level.</strong> Most release arguments disappear once everyone agrees how far a result has actually been proven.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="More projects"><a href="/projects/adaptive-lut/">&larr; Adaptive lookup tables for non-linear operators</a><a href="/projects/latency-modeling/">Predicting on-board latency before writing code &rarr;</a>
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/adaptive-lut/">&larr; Adaptive lookup tables for non-linear operators</a><a href="/projects/quant-deploy-platform/">A quantization-deployment platform: one truth, one contract, block by default &rarr;</a>
     </nav>
     <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
   </footer>
@@ -261,6 +259,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

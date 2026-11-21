@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>平台化量化部署框架：一个真值、一份契约、默认阻断 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="平台化量化部署框架：一个真值、一份契约、默认阻断 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/quant-deploy-platform/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/quant-deploy-platform/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/quant-deploy-platform/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/quant-deploy-platform/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/quant-deploy-platform/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">平台化量化部署框架：一个真值、一份契约、默认阻断</h1>
+    <p class="pp-summary">量化框架搭好之后，剩下的难点是精度靠手调、误差难定位、训练与部署对不齐。这是我牵头的目标架构设计：以定点模型为唯一真值，用带版本的契约连接训练、转换和车端，每一跳默认阻断。目前是设计稿。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026.11 起</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 架构设计牵头人</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">6</span><span class="metric-label">个环节组成一条主链路，身份清单贯穿始终</span></div>
+      <div class="pp-metric"><span class="metric-value">7</span><span class="metric-label">份带版本的契约，连接三个代码库</span></div>
+      <div class="pp-metric"><span class="metric-value">10</span><span class="metric-label">个门禁，从训练图一直到车端</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>架构设计</li><li>量化框架</li><li>数值对齐</li><li>混合精度</li><li>多平台部署</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#为什么要重新设计">为什么要重新设计</a></li>
+    <li><a href="#目标架构一条主链路">目标架构：一条主链路</a></li>
+    <li><a href="#七份契约">七份契约</a></li>
+    <li><a href="#逐跳门禁一个真值两个区">逐跳门禁：一个真值，两个区</a></li>
+    <li><a href="#精度规划闭环">精度规划闭环</a></li>
+    <li><a href="#一次量化多平台派生">一次量化，多平台派生</a></li>
+    <li><a href="#让规则不靠自觉">让规则不靠自觉</a></li>
+    <li><a href="#迁移思路">迁移思路</a></li>
+    <li><a href="#设计阶段的体会">设计阶段的体会</a></li>
+  </ul>
+</nav>
+  </details>
+
+  <div class="pp-content">
+    <aside class="callout callout-caveat"><strong>这是一份设计稿，不是已交付的系统。</strong> 设计基于对训练、中间表示、转换服务和车端四处代码的只读调研；文中描述的是目标架构，尚在规划中。调研和文档撰写使用了 AI 编程助手，结论由我评审和取舍。</aside>
+
+<h2 id="为什么要重新设计">为什么要重新设计</h2>
+<p>到 2026 年，量化框架已经能让模型 owner 自己完成新模型的量化和部署，不再需要量化团队逐个支持。但有三个难点，流程本身解决不了：</p>
+<ol>
+<li><strong>精度选择靠手调。</strong> 哪些层用 INT16，写在模型代码里，靠经验，也没有留下依据。</li>
+<li><strong>误差来源难定位。</strong> 出现一次不一致，要人工沿着链路<a href="/zh/projects/numerical-consistency/">逐段比对</a>。</li>
+<li><strong>训练和部署对不齐。</strong> 训练时看到的指标来自 fake-quant，车上跑的是定点运算。</li>
+</ol>
+<p>这些问题有一个共同的根源：同一件事在训练、转换和车端各写了一遍，靠约定保持一致。每一处单独看都能工作；合在一起，改一处就很难知道会影响哪里。</p>
+<h2 id="目标架构一条主链路">目标架构：一条主链路</h2>
+<figure class="figure" data-fig="platform">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" class="fig fig-platform" role="img" aria-label="target architecture of the quantization-deployment platform"><title>target architecture of the quantization-deployment platform</title><defs><marker id="platform-ah-violet" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-violet,#6250d6)"/></marker><marker id="platform-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><rect x="967.8" y="13.5" width="202.2" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1068.9" y="30.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">设计稿 · 路线图至 2027 Q2</text><text x="30.0" y="32.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">目标架构：一条主链路，身份贯穿始终，三条回路把部署侧的事实送回训练侧</text><path d="M1082.5,130.0 L1082.5,72.0 Q1082.5,62.0 1072.5,62.0 L513.5,62.0 Q503.5,62.0 503.5,72.0 L503.5,128.0" fill="none" stroke="var(--f-violet,#6250d6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" stroke-dasharray="5 5" marker-end="url(#platform-ah-violet)"/><rect x="873.0" y="56.2" width="188.5" height="16.5" rx="3" fill="var(--f-surface,#ffffff)"/><text x="967.2" y="66.5" font-size="12.5" font-weight="600" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">路测问题帧 → 加入真实 IO 包</text><path d="M917.5,130.0 L917.5,95.0 Q917.5,85.0 907.5,85.0 L320.5,85.0 Q310.5,85.0 310.5,95.0 L310.5,128.0" fill="none" stroke="var(--f-violet,#6250d6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" stroke-dasharray="5 5" marker-end="url(#platform-ah-violet)"/><rect x="743.4" y="79.2" width="153.1" height="16.5" rx="3" fill="var(--f-surface,#ffffff)"/><text x="820.0" y="89.5" font-size="12.5" font-weight="600" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">时延代价表 → 精度规划</text><path d="M861.5,130.0 L861.5,118.0 Q861.5,108.0 851.5,108.0 L464.5,108.0 Q454.5,108.0 454.5,118.0 L454.5,128.0" fill="none" stroke="var(--f-violet,#6250d6)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" stroke-dasharray="5 5" marker-end="url(#platform-ah-violet)"/><rect x="660.4" y="102.2" width="180.1" height="16.5" rx="3" fill="var(--f-surface,#ffffff)"/><text x="750.5" y="112.5" font-size="12.5" font-weight="600" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">首个分歧点 → 修图或修导出</text><g class="pl-stage" data-i="0"><rect x="30.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="52.0" cy="158.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="52.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="72.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">浮点训练</text><text x="44.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">模型组训练与评测</text><text x="44.0" y="220.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">交付权重、配置、提交号</text></g><path d="M207.0,203.0 L221.0,203.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#platform-ah-faint)"/><g class="pl-stage" data-i="1"><rect x="223.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="245.0" cy="158.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="245.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="265.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">量化</text><text x="237.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">PTQ 与 QAT 共用一套图</text><text x="237.0" y="214.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">构建</text><text x="237.0" y="238.4" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">逐层精度来自精度方案</text></g><path d="M400.0,203.0 L414.0,203.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#platform-ah-faint)"/><g class="pl-stage" data-i="2"><rect x="416.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="438.0" cy="158.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="438.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="458.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">导出 IR</text><text x="430.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">冻结量化状态</text><text x="430.0" y="220.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">附真实 IO 包与 IO 契约</text></g><path d="M593.0,203.0 L607.0,203.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#platform-ah-faint)"/><g class="pl-stage" data-i="3"><rect x="609.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="631.0" cy="158.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="631.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="651.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">编译</text><text x="623.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">IR 只重建一次</text><text x="623.0" y="220.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">按平台能力下沉并编译</text></g><path d="M786.0,203.0 L800.0,203.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#platform-ah-faint)"/><g class="pl-stage" data-i="4"><rect x="802.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="824.0" cy="158.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="824.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="844.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">验证</text><text x="816.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">真实 IO 逐跳对齐门禁</text><text x="816.0" y="220.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">定点真值上评测发版指标</text></g><path d="M979.0,203.0 L993.0,203.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#platform-ah-faint)"/><g class="pl-stage" data-i="5"><rect x="995.0" y="132.0" width="175.0" height="142.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="1017.0" cy="158.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="1017.0" y="163.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">6</text><text x="1037.0" y="164.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">部署</text><text x="1009.0" y="196.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">模型包入库</text><text x="1009.0" y="220.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">同源校验后上车</text></g><text x="30.0" y="296.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">带版本的契约产物</text><rect x="30.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="117.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">权重</text><rect x="30.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="117.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">配置 + 提交号</text><rect x="223.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="310.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">量化状态指纹</text><rect x="223.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="310.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">精度方案</text><rect x="416.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="503.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">IR + 元信息</text><rect x="416.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="503.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">真实 IO 包</text><rect x="416.0" y="372.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="503.5" y="390.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">IO 契约</text><rect x="609.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="696.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">各平台引擎</text><rect x="609.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="696.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">定点模型</text><rect x="802.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="889.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">对齐报告</text><rect x="802.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="889.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">时延代价表</text><rect x="995.0" y="308.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1082.5" y="326.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">模型包</text><rect x="995.0" y="340.0" width="175.0" height="26.0" rx="6" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1082.5" y="358.0" font-size="13.2" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="middle">平台参数（生成）</text><rect x="30.0" y="416.0" width="1140.0" height="40.0" rx="8" fill="var(--f-navy,#0f1b2d)"/><text x="48.0" y="442.0" font-size="15.5" font-weight="700" fill="#ffffff" text-anchor="start">身份清单 manifest</text><text x="1152.0" y="442.0" font-size="12.6" font-weight="400" fill="#d5deea" text-anchor="end">来源 · 环境 · 量化状态 · 图指纹 · 工具链 · 产物哈希 · 对齐与性能：逐环节续写，前段不可改</text><text x="30.0" y="482.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">六条设计原则</text><rect x="30.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="42.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">一个真值</text><text x="42.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">定点语义是评测、门禁、</text><text x="42.0" y="559.4" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">仿真的唯一依据</text><rect x="223.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="235.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">一份契约</text><text x="235.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">仓库之间只交接带版本的</text><text x="235.0" y="559.4" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">产物</text><rect x="416.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="428.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">一个内核</text><text x="428.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">模型、平台、精度的差异</text><text x="428.0" y="559.4" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">写成数据</text><rect x="609.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="621.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">一次实现</text><text x="621.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">IR 的导出与重建只写一遍</text><rect x="802.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="814.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">默认阻断</text><text x="814.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">超限即失败，并给出首个</text><text x="814.0" y="559.4" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">分歧点</text><rect x="995.0" y="494.0" width="175.0" height="106.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="1007.0" y="520.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">环境即代码</text><text x="1007.0" y="542.0" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">工具链版本入库并写进产</text><text x="1007.0" y="559.4" font-size="12.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">物身份</text></svg></div>
+  <figcaption>六个环节各有明确的输入、产物和归属；身份清单贯穿始终；三条虚线回路把部署侧的事实送回训练侧。</figcaption>
+</figure>
+
+<p>六条设计原则，每一条都对应上图的一部分：</p>
+<ul>
+<li><strong>一个真值。</strong> 定点语义是评测、门禁、仿真的唯一依据。fake-quant 只是训练时的代理，它的指标不作为发版指标。</li>
+<li><strong>一份契约。</strong> 代码库之间只交接带版本的契约产物，不靠文件名和口头约定。</li>
+<li><strong>一个内核，差异外置。</strong> 流程只有一份：模型差异进适配器，平台差异进平台能力文件，精度进精度方案。能写成数据的，不写成分支。</li>
+<li><strong>一次实现。</strong> 中间表示的导出与重建只写一遍，训练、转换、仿真共用。</li>
+<li><strong>默认阻断。</strong> 每一跳都有门禁，超限即失败，并给出首个分歧点；放行必须写进门限文件并带到期日。</li>
+<li><strong>环境即代码。</strong> 工具链版本、镜像、配置全部入库，并写进每个产物的身份信息。</li>
+</ul>
+<h2 id="七份契约">七份契约</h2>
+<p>契约把“约定俗成”变成可以校验的文件，每一份都带 schema 版本。</p>
+<table>
+	<thead>
+			<tr>
+					<th>契约</th>
+					<th>内容</th>
+					<th>谁写</th>
+					<th>谁读</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>身份清单（manifest）</td>
+					<td>来源、环境、量化状态、图指纹、工具链、产物哈希、对齐与性能</td>
+					<td>训练写前段，转换续写，发版封存</td>
+					<td>所有环节</td>
+			</tr>
+			<tr>
+					<td>IR 元信息</td>
+					<td>schema 版本、量化方式、取整规则、目标平台、图哈希</td>
+					<td>导出</td>
+					<td>每个消费端；版本不符即拒绝</td>
+			</tr>
+			<tr>
+					<td>IO 契约</td>
+					<td>每个输入输出的名字、顺序、shape、dtype、scale、语义和前后处理</td>
+					<td>模型适配器</td>
+					<td>转换、车端参数生成</td>
+			</tr>
+			<tr>
+					<td>真实 IO 包</td>
+					<td>若干帧部署域的真实输入，加各跳的参考输出</td>
+					<td>导出</td>
+					<td>对齐引擎、板端抽检、车端一致性测试</td>
+			</tr>
+			<tr>
+					<td>精度方案</td>
+					<td>默认精度，加按模块名的覆盖项；每个覆盖项带证据</td>
+					<td>精度规划</td>
+					<td>量化内核</td>
+			</tr>
+			<tr>
+					<td>平台能力</td>
+					<td>支持的 dtype、取整规则、不支持的算子、INT16 回退规则</td>
+					<td>平台负责人</td>
+					<td>精度合法化、编译路由</td>
+			</tr>
+			<tr>
+					<td>门限</td>
+					<td>每一跳、每个输出的误差门限，以及带到期日的豁免</td>
+					<td>模型负责人与量化负责人</td>
+					<td>对齐引擎</td>
+			</tr>
+	</tbody>
+</table>
+<h2 id="逐跳门禁一个真值两个区">逐跳门禁：一个真值，两个区</h2>
+<figure class="figure" data-fig="gates">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 522" class="fig fig-gates" role="img" aria-label="one truth, two zones, a gate at every hop"><title>one truth, two zones, a gate at every hop</title><rect x="897.3" y="17.5" width="272.7" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1033.6" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">目标设计：现状多数比对只记录、不阻断</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">以定点模型为真值：左侧每一跳有误差预算，右侧必须逐字节一致</text><rect x="20.0" y="72.0" width="749.3" height="196.0" rx="14" fill="var(--f-amber-soft,#fef3d6)"/><rect x="769.3" y="72.0" width="410.7" height="196.0" rx="14" fill="var(--f-green-soft,#e3f4e3)"/><text x="36.0" y="96.0" font-size="15" font-weight="700" fill="var(--f-amber-ink,#7a5600)" text-anchor="start">容差区：超出预算即阻断</text><text x="1164.0" y="96.0" font-size="15" font-weight="700" fill="var(--f-green-ink,#006300)" text-anchor="end">逐字节区：任何差异都是缺陷</text><rect x="30.0" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="92.0" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">训练图</text><text x="92.0" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">fake-quant</text><rect x="199.3" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="261.3" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">IR</text><text x="261.3" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">带元信息</text><rect x="368.7" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="430.7" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">重建模型</text><text x="430.7" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">一份实现</text><rect x="538.0" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="600.0" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">QAT HBIR</text><text x="600.0" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">芯片工具链</text><rect x="701.3" y="104.0" width="136.0" height="90.0" rx="12" fill="var(--f-navy,#0f1b2d)"/><text x="769.3" y="143.8" font-size="16" font-weight="700" fill="#ffffff" text-anchor="middle">定点模型</text><text x="769.3" y="176.0" font-size="13.5" font-weight="700" fill="#ffd27a" text-anchor="middle">★ 真值</text><rect x="876.7" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="938.7" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">HBM</text><text x="938.7" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">编译产物</text><rect x="1046.0" y="110.0" width="124.0" height="78.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1108.0" y="144.0" font-size="17.5" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">板端</text><text x="1108.0" y="167.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">真机</text><g class="gate" data-i="0"><line x1="156.0" y1="149.0" x2="197.3" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="157.7" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="176.7" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G1</text><text x="176.7" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">状态指纹不变</text></g><g class="gate" data-i="1"><line x1="325.3" y1="149.0" x2="366.7" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="327.0" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="346.0" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G2</text><text x="346.0" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">scale 全等</text></g><g class="gate" data-i="2"><line x1="494.7" y1="149.0" x2="536.0" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="496.3" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="515.3" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G3</text><text x="515.3" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">整数码误差 ≤ 门限</text></g><g class="gate" data-i="3"><line x1="664.0" y1="149.0" x2="705.3" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="665.7" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="684.7" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G4</text><text x="684.7" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">定点化预算</text></g><g class="gate" data-i="4"><line x1="833.3" y1="149.0" x2="874.7" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="835.0" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="854.0" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G5</text><text x="854.0" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">逐字节</text></g><g class="gate" data-i="5"><line x1="1002.7" y1="149.0" x2="1044.0" y2="149.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round"/><rect x="1004.3" y="136.0" width="38.0" height="26.0" rx="13" fill="var(--f-ink,#141c27)" stroke="var(--f-surface,#ffffff)" stroke-width="2.5"/><text x="1023.3" y="154.5" font-size="13.5" font-weight="700" fill="#ffffff" text-anchor="middle">G6</text><text x="1023.3" y="230.5" font-size="12.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">逐字节抽检</text></g><rect x="30.0" y="296.0" width="270.0" height="150.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="46.0" y="312.0" width="42.0" height="28.0" rx="14" fill="var(--f-ink,#141c27)"/><text x="67.0" y="331.5" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">G7</text><text x="98.0" y="332.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">定点仿真 = 定点模型</text><text x="46.0" y="366.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">x86 回放与评测用的仿真后端，输出必</text><text x="46.0" y="385.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">须与定点模型逐字节一致。</text><rect x="320.0" y="296.0" width="270.0" height="150.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="336.0" y="312.0" width="42.0" height="28.0" rx="14" fill="var(--f-ink,#141c27)"/><text x="357.0" y="331.5" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">M</text><text x="388.0" y="332.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">发版指标看定点真值</text><text x="336.0" y="366.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">fake-quant 指标只是训练时的代理；</text><text x="336.0" y="385.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">发版报告同时列出两个数，差值受预算</text><text x="336.0" y="405.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">约束。</text><rect x="610.0" y="296.0" width="270.0" height="150.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="626.0" y="312.0" width="42.0" height="28.0" rx="14" fill="var(--f-ink,#141c27)"/><text x="647.0" y="331.5" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">G8</text><text x="678.0" y="332.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">车端整链路同帧一致</text><text x="626.0" y="366.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">同一帧原始输入，从 C++ 前处理到后</text><text x="626.0" y="385.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">处理整体比对，把量化边界也纳入。</text><rect x="900.0" y="296.0" width="270.0" height="150.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="916.0" y="312.0" width="42.0" height="28.0" rx="14" fill="var(--f-ink,#141c27)"/><text x="937.0" y="331.5" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">↩</text><text x="968.0" y="332.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">首个分歧点</text><text x="916.0" y="366.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">任何门禁失败时，沿图从输入向输出逐</text><text x="916.0" y="385.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">个量化边界比对，报告第一个超限节点</text><text x="916.0" y="405.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">及其训练模块名。</text><text x="30.0" y="478.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">豁免要留痕：确需放行时写入门限文件，注明模型、哪一跳、原因、负责人和到期日；到期自动失效，发版报告列出所有生效中的豁免。</text></svg></div>
+  <figcaption>定点模型是真值：它左边的每一跳有误差预算，右边必须逐字节一致。</figcaption>
+</figure>
+
+<table>
+	<thead>
+			<tr>
+					<th>门禁</th>
+					<th>比什么</th>
+					<th>判据</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>G1 训练图 → IR</td>
+					<td>导出前后的量化状态指纹</td>
+					<td>完全一致</td>
+			</tr>
+			<tr>
+					<td>G2 IR → 重建模型</td>
+					<td>全部 scale 与 dtype；固定计算顺序下的输出</td>
+					<td>scale 全等</td>
+			</tr>
+			<tr>
+					<td>G3 重建模型 → QAT HBIR</td>
+					<td>各输出的整数码误差</td>
+					<td>不超过门限</td>
+			</tr>
+			<tr>
+					<td>G4 QAT HBIR → 定点模型</td>
+					<td>定点化带来的误差</td>
+					<td>逐输出的预算</td>
+			</tr>
+			<tr>
+					<td>G5 定点模型 → HBM</td>
+					<td>输出字节</td>
+					<td>逐字节</td>
+			</tr>
+			<tr>
+					<td>G6 HBM → 板端</td>
+					<td>输出字节</td>
+					<td>逐字节，发版时抽检</td>
+			</tr>
+			<tr>
+					<td>G7 定点模型 → 定点仿真</td>
+					<td>输出字节</td>
+					<td>逐字节</td>
+			</tr>
+			<tr>
+					<td>G8 定点仿真 ↔ 车端</td>
+					<td>同一帧原始输入下的最终输出</td>
+					<td>一致</td>
+			</tr>
+			<tr>
+					<td>M 发版指标</td>
+					<td>fake-quant 指标与定点真值指标</td>
+					<td>差值不超过预算</td>
+			</tr>
+	</tbody>
+</table>
+<p>多数比对工具今天已经存在。设计要做的，是把“记录”变成“阻断”，并在失败时自动沿图给出第一个超限的节点。</p>
+<h2 id="精度规划闭环">精度规划闭环</h2>
+<figure class="figure" data-fig="precision-loop">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 446" class="fig fig-precision-loop" role="img" aria-label="precision planning loop"><title>precision planning loop</title><defs><marker id="precision-loop-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker><marker id="precision-loop-ah-red" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-red,#d03b3b)"/></marker></defs><rect x="1107.9" y="17.5" width="62.1" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1138.9" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">设计稿</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">把“在模型代码里手调逐层精度”换成一个有输入、有证据、可重跑的流程</text><g class="pstep" data-i="0"><rect x="30.0" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="30.0" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="54.0" cy="102.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="54.0" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="76.0" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">合法化</text><text x="44.0" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">用平台能力筛掉目标芯片</text><text x="44.0" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">不支持的精度组合，在构</text><text x="44.0" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">图之前就报错。</text></g><path d="M207.7,102.0 L221.7,102.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#precision-loop-ah-faint)"/><g class="pstep" data-i="1"><rect x="222.7" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="222.7" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="222.7" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="246.7" cy="102.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="246.7" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="268.7" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">敏感度</text><text x="236.7" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">按模块组做两种试验：只</text><text x="236.7" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">量化这一组；只把这一组</text><text x="236.7" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">升到 INT16。</text></g><path d="M400.3,102.0 L414.3,102.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#precision-loop-ah-faint)"/><g class="pstep" data-i="2"><rect x="415.3" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="415.3" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="415.3" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="439.3" cy="102.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="439.3" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="461.3" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">代价</text><text x="429.3" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">从转换服务取板端时延代</text><text x="429.3" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">价表：模块 → 位宽 →</text><text x="429.3" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">耗时、是否回退 CPU。</text></g><path d="M593.0,102.0 L607.0,102.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#precision-loop-ah-faint)"/><g class="pstep" data-i="3"><rect x="608.0" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="608.0" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="608.0" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="632.0" cy="102.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="632.0" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="654.0" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">选择</text><text x="622.0" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">在时延预算内，按“每毫</text><text x="622.0" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">秒换来的指标”贪心选</text><text x="622.0" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">择，输出权衡曲线。</text></g><path d="M785.7,102.0 L799.7,102.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#precision-loop-ah-faint)"/><g class="pstep" data-i="4"><rect x="800.7" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="800.7" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="800.7" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="824.7" cy="102.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="824.7" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="846.7" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">验证</text><text x="814.7" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">用方案跑 PTQ 或</text><text x="814.7" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">QAT，过逐跳门禁，看</text><text x="814.7" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">定点真值指标与板端实测</text><text x="814.7" y="212.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">耗时。</text></g><path d="M978.3,102.0 L992.3,102.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#precision-loop-ah-faint)"/><g class="pstep" data-i="5"><rect x="993.3" y="78.0" width="176.7" height="168.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="993.3" y="78.0" width="176.7" height="48.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="993.3" y="106.0" width="176.7" height="20.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="1017.3" cy="102.0" r="13" fill="var(--f-blue,#2a78d6)"/><text x="1017.3" y="107.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">6</text><text x="1039.3" y="109.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">入库</text><text x="1007.3" y="154.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">方案、证据、结果写进身</text><text x="1007.3" y="173.6" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">份清单，人审后合入；任</text><text x="1007.3" y="193.2" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">何人都能重跑。</text></g><path d="M889.0,248.0 L889.0,264.0 Q889.0,274.0 879.0,274.0 L706.3,274.0 Q696.3,274.0 696.3,264.0 L696.3,250.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow" stroke-dasharray="5 5" marker-end="url(#precision-loop-ah-red)"/><text x="792.7" y="294.0" font-size="13" font-weight="600" fill="var(--f-red-ink,#9a2323)" text-anchor="middle">不达标：收紧或放宽候选后重选</text><rect x="30.0" y="322.0" width="555.0" height="96.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><text x="50.0" y="352.0" font-size="15" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="start">输入</text><text x="50.0" y="378.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">浮点模型 · 校准集 · 小评测集 · 平台能力 · 时延预算</text><rect x="615.0" y="322.0" width="555.0" height="96.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><text x="635.0" y="352.0" font-size="15" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">输出</text><text x="635.0" y="378.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">一份精度方案，外加每个覆盖项的依据：为什么升精度、多花了多少时延</text></svg></div>
+</figure>
+
+<p>今天的逐层精度是写在模型代码里手调的。设计把它换成一个有输入、有证据、可以重跑的流程：先用平台能力筛掉目标芯片不支持的组合，再按模块组做敏感度试验，结合板端的时延代价表，在时延预算内按“每毫秒换来的指标”做贪心选择。产出是一份精度方案，加上每个覆盖项的依据：为什么升精度，多花了多少时延。模型代码不再包含精度配置。</p>
+<h2 id="一次量化多平台派生">一次量化，多平台派生</h2>
+<figure class="figure" data-fig="multi-target">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="fig fig-multi-target" role="img" aria-label="one quantization result, derived for every chip"><title>one quantization result, derived for every chip</title><defs><marker id="multi-target-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><rect x="1107.9" y="17.5" width="62.1" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1138.9" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">设计稿</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化训练的成果只做一次，各平台从它派生；平台差异只允许出现在三处，而且都是数据</text><rect x="30.0" y="66.0" width="230.0" height="330.0" rx="14" fill="var(--f-blue-soft,#e3eefb)"/><text x="50.0" y="100.0" font-size="19" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="start">共享资产</text><text x="50.0" y="124.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">只做一次</text><rect x="46.0" y="146.0" width="198.0" height="44.0" rx="8" fill="var(--f-surface,#ffffff)"/><text x="145.0" y="174.0" font-size="15.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">浮点权重</text><rect x="46.0" y="204.0" width="198.0" height="44.0" rx="8" fill="var(--f-surface,#ffffff)"/><text x="145.0" y="232.0" font-size="15.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">模型适配器</text><rect x="46.0" y="262.0" width="198.0" height="44.0" rx="8" fill="var(--f-surface,#ffffff)"/><text x="145.0" y="290.0" font-size="15.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">精度意图</text><rect x="46.0" y="320.0" width="198.0" height="44.0" rx="8" fill="var(--f-surface,#ffffff)"/><text x="145.0" y="348.0" font-size="15.5" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">QAT 主干权重</text><text x="308.0" y="84.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">平台</text><text x="448.0" y="84.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">合法化后的精度方案</text><text x="728.0" y="84.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">迁移级别</text><text x="868.0" y="84.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">编译与验证</text><path d="M262.0,231.0 L296.0,122.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#multi-target-ah-faint)"/><rect x="300.0" y="98.0" width="870.0" height="48.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="300.0" y="98.0" width="124.0" height="48.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="362.0" y="128.0" font-size="17" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">J6M</text><text x="448.0" y="128.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">INT8 + INT16 白名单</text><rect x="728.0" y="109.0" width="44.2" height="26.0" rx="13.0" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="750.1" y="127.0" font-size="14" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">L0</text><text x="868.0" y="128.0" font-size="15" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">基准平台 · 逐跳门禁</text><path d="M262.0,231.0 L296.0,182.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#multi-target-ah-faint)"/><rect x="300.0" y="158.0" width="870.0" height="48.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="300.0" y="158.0" width="124.0" height="48.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="362.0" y="188.0" font-size="17" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">J6P</text><text x="448.0" y="188.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">同一方案，取整规则不同</text><rect x="728.0" y="169.0" width="79.3" height="26.0" rx="13.0" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="767.7" y="187.0" font-size="14" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">L0 / L1</text><text x="868.0" y="188.0" font-size="15" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">同一套编译代码</text><path d="M262.0,231.0 L296.0,242.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#multi-target-ah-faint)"/><rect x="300.0" y="218.0" width="870.0" height="48.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="300.0" y="218.0" width="124.0" height="48.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="362.0" y="248.0" font-size="17" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">高通</text><text x="448.0" y="248.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">非对称 uint8 / uint16</text><rect x="728.0" y="229.0" width="79.3" height="26.0" rx="13.0" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="767.7" y="247.0" font-size="14" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">L1 / L2</text><text x="868.0" y="248.0" font-size="15" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">重校准或短微调</text><path d="M262.0,231.0 L296.0,302.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#multi-target-ah-faint)"/><rect x="300.0" y="278.0" width="870.0" height="48.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="300.0" y="278.0" width="124.0" height="48.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="362.0" y="308.0" font-size="17" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">爱芯</text><text x="448.0" y="308.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">可量化子图 + FP16</text><rect x="728.0" y="289.0" width="54.2" height="26.0" rx="13.0" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="755.1" y="307.0" font-size="14" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">按需</text><text x="868.0" y="308.0" font-size="15" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">先出误差报告</text><path d="M262.0,231.0 L296.0,362.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#multi-target-ah-faint)"/><rect x="300.0" y="338.0" width="870.0" height="48.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="300.0" y="338.0" width="124.0" height="48.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="362.0" y="368.0" font-size="17" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">TensorRT</text><text x="448.0" y="368.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">INT8 + 浮点层表</text><rect x="728.0" y="349.0" width="79.3" height="26.0" rx="13.0" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="767.7" y="367.0" font-size="14" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">L0 / L1</text><text x="868.0" y="368.0" font-size="15" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">FP32 图检查</text><rect x="30.0" y="420.0" width="1140.0" height="76.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><circle cx="60.0" cy="458.0" r="17" fill="var(--f-ink,#141c27)"/><text x="60.0" y="462.7" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">L0</text><text x="86.0" y="462.8" font-size="13.4" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">直出：共享权重，合法化后直接导出</text><circle cx="345.0" cy="458.0" r="17" fill="var(--f-ink,#141c27)"/><text x="345.0" y="462.7" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">L1</text><text x="371.0" y="462.8" font-size="13.4" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">重校准：只重算激活 scale</text><circle cx="630.0" cy="458.0" r="17" fill="var(--f-ink,#141c27)"/><text x="630.0" y="462.7" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">L2</text><text x="656.0" y="462.8" font-size="13.4" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">短微调：在共享权重上少量 QAT</text><circle cx="915.0" cy="458.0" r="17" fill="var(--f-ink,#141c27)"/><text x="915.0" y="462.7" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">L3</text><text x="941.0" y="462.8" font-size="13.4" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">独立 QAT：兜底，等于现状</text></svg></div>
+</figure>
+
+<p>量化训练的成果只做一次，各平台从共享的权重和精度意图派生。平台差异只允许出现在三处，而且都是数据：平台能力、合法化之后的精度方案、声明式的图改写配置。迁移分四级，从直接导出到独立 QAT；先量出“直接导出”和“独立 QAT”之间的差距，再决定每个平台默认用哪一级。接入一个新平台的工作量，变成一份平台能力文件、一个编译后端和一个车端运行时后端。</p>
+<h2 id="让规则不靠自觉">让规则不靠自觉</h2>
+<ul>
+<li><strong>每条依赖规则都对应一个会失败的检查。</strong> 量化内核不引用具体模型；只有一个目录可以引用芯片厂商的量化库；平台名只出现在平台目录和平台能力文件里；逐层精度只来自精度方案。</li>
+<li><strong>测试分七层，越往上越慢、越接近真机。</strong> 单元测试（秒级，不需要 GPU）→ 契约测试（每次合入）→ GPU 冒烟 → 跨环境对齐 → 编译与仿真回归（每日）→ 板端抽检 → 发版门禁。</li>
+<li><strong>存量只减不增。</strong> 手写精度、平台分支、环境变量开关各有一份白名单，CI 只允许条目减少。</li>
+</ul>
+<h2 id="迁移思路">迁移思路</h2>
+<p>先建立度量和门禁，再迁移代码：先能量、能拦，再能选，最后才是用新流水线发版。试点模型先行，试点之外的模型在整个过程中保持现有流程；每一步都以“行为不变”为验收。</p>
+<h2 id="设计阶段的体会">设计阶段的体会</h2>
+<ul>
+<li><strong>先量，再改。</strong> 把“感觉很乱”换成具体的数字之后，优先级自己就排出来了。</li>
+<li><strong>从已有的东西出发。</strong> 每个门禁都先盘点今天已经有什么、缺什么，设计才不会变成另起炉灶。</li>
+<li><strong>把约定变成文件。</strong> 只要一件事靠口头约定，它迟早会在某次工具链升级里悄悄失效。</li>
+</ul>
+
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/numerical-consistency/">&larr; 分层数值一致性与发版门禁</a><a href="/zh/projects/latency-modeling/">写代码之前，先预测板端耗时 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
+

@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>TensorRT INT8 for cloud GPU models, and onnx2trt · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -57,7 +58,7 @@
 
   <header class="pp-header">
     <h1 class="pp-title">TensorRT INT8 for cloud GPU models, and onnx2trt</h1>
-    <p class="pp-summary">An INT8 quantization and deployment pipeline for Tencent Maps&#39; cloud GPU models: cosine similarity above 0.999 to float, latency −20%, GPU utilization and memory −10%, and roughly ¥3M saved in compute. The calibration tooling became the open-source onnx2trt.</p>
+    <p class="pp-summary">An INT8 quantization and deployment pipeline for Tencent Maps' cloud GPU models: cosine similarity above 0.999 to float, latency −20%, GPU utilization and memory −10%, and roughly ¥3M saved in compute. The calibration tooling became the open-source onnx2trt.</p>
     <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> Tencent Maps</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2021 – 2022</span><span><i class="fa fa-user-o" aria-hidden="true"></i> Owner of quantization, deployment and testing for cloud models</span>
     </p>
     <div class="pp-metrics">
@@ -73,15 +74,14 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-problem">The problem</a></li>
-<li><a href="#the-pipeline">The pipeline</a></li>
-<li><a href="#results">Results</a></li>
-<li><a href="#onnx2trt">onnx2trt</a></li>
-<li><a href="#lessons">Lessons</a></li>
-</ul>
+  <ul>
+    <li><a href="#the-problem">The problem</a></li>
+    <li><a href="#the-pipeline">The pipeline</a></li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#onnx2trt">onnx2trt</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
@@ -89,17 +89,12 @@
 <p>Tencent Maps' cloud models used more GPU capacity than the budget allowed. INT8 inference was the obvious lever. The obstacle was accuracy: quantized models lost precision, and converting and testing each model by hand did not scale.</p>
 <h2 id="the-pipeline">The pipeline</h2>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">PyTorch model</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">ONNX export</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Calibration</span><span class="pipe-note">several algorithms</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Accuracy check</span><span class="pipe-note">cosine vs float</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">TensorRT INT8 engine</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Serving + tests</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">PyTorch model</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">ONNX export</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Calibration</span><span class="pipe-note">several algorithms</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Accuracy check</span><span class="pipe-note">cosine vs float</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">TensorRT INT8 engine</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Serving &#43; tests</span></div>
 </div>
 
 <ol>
@@ -109,7 +104,7 @@
 <li><strong>Build and test the engine automatically</strong>: latency, GPU utilization, memory and accuracy, so every model went through the same gate.</li>
 </ol>
 <h2 id="results">Results</h2>
-<aside class="callout callout-result"><p>Quantized outputs kept cosine similarity above 0.999 with the float models. Inference latency fell by about 20%, and GPU utilization and memory each by about 10%, saving roughly ¥3M in compute cost.</p></aside>
+<aside class="callout callout-result">Quantized outputs kept cosine similarity above 0.999 with the float models. Inference latency fell by about 20%, and GPU utilization and memory each by about 10%, saving roughly ¥3M in compute cost.</aside>
 
 <h2 id="onnx2trt">onnx2trt</h2>
 <p>I released the calibration tooling as <a href="https://github.com/Howell-Yang/onnx2trt">onnx2trt</a>, an open-source tool for ONNX → TensorRT INT8 quantization that:</p>
@@ -123,6 +118,7 @@
 <li><strong>Judge quantization by output similarity to the float model</strong>, not by the calibrator's own statistic.</li>
 <li><strong>Automate the test, not just the conversion.</strong> A conversion that is not measured the same way every time cannot be compared.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
@@ -142,6 +138,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

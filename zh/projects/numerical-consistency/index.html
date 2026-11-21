@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>分层数值一致性与发版门禁 · 杨豪</title>
   <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
@@ -70,162 +71,158 @@
   <details class="toc" open>
     <summary>本页目录</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#_1">问题</a></li>
-<li><a href="#_2">方法：比较相邻阶段，而不是两端</a></li>
-<li><a href="#_3">各检查点的误差来源</a></li>
-<li><a href="#_4">案例</a></li>
-<li><a href="#_5">发版门禁：结论被验证到了哪一级？</a></li>
-<li><a href="#_6">经验</a></li>
-</ul>
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#方法比较相邻阶段而不是两端">方法：比较相邻阶段，而不是两端</a></li>
+    <li><a href="#各检查点的误差来源">各检查点的误差来源</a></li>
+    <li><a href="#案例">案例</a></li>
+    <li><a href="#发版门禁结论被验证到了哪一级">发版门禁：结论被验证到了哪一级？</a></li>
+    <li><a href="#经验">经验</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
-    <h2 id="_1">问题</h2>
+    <h2 id="问题">问题</h2>
 <p>“板端结果和浮点模型不一样”是模型部署中最常见、也最没用的问题描述。从 PyTorch 里的模型到车上运行的同一个模型，中间有十几次变换：数据采集、预处理、导出、fake quant、中间表示、两套运行时、编译器、整数 kernel 和后处理。每一步都可能引入误差，误差还会叠加。没有方法，排查就只能靠猜。</p>
-<h2 id="_2">方法：比较相邻阶段，而不是两端</h2>
+<h2 id="方法比较相邻阶段而不是两端">方法：比较相邻阶段，而不是两端</h2>
 <p>每个阶段只和它的前一个阶段比较，并且使用<strong>完全相同的输入</strong>和<strong>完全相同的后处理</strong>。这样，每次比较只有一个阶段可能是原因。</p>
 <p>数据侧：</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">实车数据</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">HIL</span><span class="pipe-note">硬件在环</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">SIL</span><span class="pipe-note">软件在环</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">离线格式</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">离线预处理</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">板端预处理</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">实车数据</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">HIL</span><span class="pipe-note">硬件在环</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">SIL</span><span class="pipe-note">软件在环</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">离线格式</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">离线预处理</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">板端预处理</span></div>
 </div>
 
 <p>模型侧：</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Float</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">面向芯片的导出</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT（关闭 fake quant）</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">IR → 重建 QAT</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">LibTorch</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">QAT HBIR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">量化 HBIR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">HBM</span><span class="pipe-note">芯片上</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">板端后处理</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Float</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">面向芯片的导出</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT（关闭 fake quant）</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">IR → 重建 QAT</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">LibTorch</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">QAT HBIR</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">量化 HBIR</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">HBM</span><span class="pipe-note">芯片上</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">板端后处理</span></div>
 </div>
 
-<h2 id="_3">各检查点的误差来源</h2>
+<p>把模型侧的链路画出来，并标上用它定位到的问题：</p>
+<figure class="figure" data-fig="parity-chain">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-parity-chain" role="img" aria-label="stage-by-stage numerical alignment"><title>stage-by-stage numerical alignment</title><defs><marker id="parity-chain-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="30.0" y="40.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">每个阶段只和前一个阶段比较：同一输入、同一后处理（含数据侧共 12 个检查点）</text><g class="pstage" data-i="0"><rect x="30.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="93.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Float</text><text x="93.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">训练框架</text></g><g class="hop" data-i="0"><line x1="158.0" y1="117.0" x2="197.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="177.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M172.0,117.5 L176.0,122.0 L183.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M172.5,112.0 L182.5,122.0 M182.5,112.0 L172.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="1"><rect x="199.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="262.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">QAT</text><text x="262.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">fake-quant</text></g><g class="hop" data-i="1"><line x1="327.0" y1="117.0" x2="366.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="346.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M341.0,117.5 L345.0,122.0 L352.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M341.5,112.0 L351.5,122.0 M351.5,112.0 L341.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="2"><rect x="368.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="431.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">内部 IR</text><text x="431.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">导出</text></g><g class="hop" data-i="2"><line x1="496.0" y1="117.0" x2="535.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="515.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M510.0,117.5 L514.0,122.0 L521.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M510.5,112.0 L520.5,122.0 M520.5,112.0 L510.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="3"><rect x="537.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-blue-soft,#e3eefb)" class="pbox"/><text x="600.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">LibTorch</text><text x="600.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">重建 · x86</text></g><g class="hop" data-i="3"><line x1="665.0" y1="117.0" x2="704.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="684.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M679.0,117.5 L683.0,122.0 L690.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M679.5,112.0 L689.5,122.0 M689.5,112.0 L679.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="4"><rect x="706.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="769.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">HBIR</text><text x="769.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">芯片工具链</text></g><g class="hop" data-i="4"><line x1="834.0" y1="117.0" x2="873.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="853.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M848.0,117.5 L852.0,122.0 L859.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M848.5,112.0 L858.5,122.0 M858.5,112.0 L848.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="5"><rect x="875.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="938.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">HBM</text><text x="938.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">编译产物</text></g><g class="hop" data-i="5"><line x1="1003.0" y1="117.0" x2="1042.0" y2="117.0" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" class="hopline"/><circle cx="1022.5" cy="117.0" r="13" fill="var(--f-green-soft,#e3f4e3)" stroke="var(--f-green,#0ca30c)" stroke-width="2" class="gate"/><path d="M1017.0,117.5 L1021.0,122.0 L1028.5,112.5" fill="none" stroke="var(--f-green-ink,#006300)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="tick"/><path class="cross" visibility="hidden" d="M1017.5,112.0 L1027.5,122.0 M1027.5,112.0 L1017.5,122.0" fill="none" stroke="var(--f-red,#d03b3b)" stroke-width="2.6" stroke-linecap="round"/></g><g class="pstage" data-i="6"><rect x="1044.0" y="78.0" width="126.0" height="78.0" rx="10" fill="var(--f-orange-soft,#fdebe2)" class="pbox"/><text x="1107.0" y="112.0" font-size="20" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">板端</text><text x="1107.0" y="136.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">真机 + 后处理</text></g><rect x="30.0" y="174.0" width="633.0" height="7.0" rx="3.5" fill="var(--f-blue,#2a78d6)"/><rect x="706.0" y="174.0" width="464.0" height="7.0" rx="3.5" fill="var(--f-orange,#eb6834)"/><text x="30.0" y="206.0" font-size="14.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">训练侧：PyTorch 与自研 IR</text><text x="706.0" y="206.0" font-size="14.5" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">目标芯片工具链与真机</text><text x="30.0" y="250.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">用这条链路定位到的问题</text><rect x="30.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="51.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="64.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">rsqrt 查表分段点</text><text x="46.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">LibTorch 与芯片结果不一致；逐层二分后定位到归</text><text x="46.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">一化层里一个 rsqrt 查表的分段点。</text><rect x="417.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="438.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="451.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">地图模型坐标误差</text><text x="433.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">分阶段隔离出三个独立问题：align_corners 不一</text><text x="433.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">致、位姿增量张量精度不足、求逆运算位置不对。</text><rect x="804.0" y="266.0" width="366.0" height="128.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="825.0" cy="291.0" r="5" fill="var(--f-red,#d03b3b)"/><text x="838.0" y="296.8" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">时序模型</text><text x="820.0" y="326.2" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">帧间传递状态，一帧的微小差异会传到后面很多帧：</text><text x="820.0" y="346.7" font-size="14.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">检查必须覆盖完整序列。</text><text x="30.0" y="438.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">发版门禁：结论标注已通过的最高验证级别</text><rect x="30.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-plane,#eef1f5)"/><circle cx="56.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="56.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="80.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">源码</text><path d="M182.0,478.0 L200.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="202.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="228.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="228.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="252.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">编译</text><path d="M354.0,478.0 L372.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="374.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-blue-soft,#e3eefb)"/><circle cx="400.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="400.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="424.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">仿真</text><path d="M526.0,478.0 L544.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="546.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="572.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="572.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="596.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">板端</text><path d="M698.0,478.0 L716.0,478.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#parity-chain-ah-faint)"/><rect x="718.0" y="454.0" width="150.0" height="48.0" rx="24" fill="var(--f-orange-soft,#fdebe2)"/><circle cx="744.0" cy="478.0" r="13" fill="var(--f-ink,#141c27)"/><text x="744.0" y="483.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="768.0" y="484.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">实车</text><text x="894.0" y="472.0" font-size="14.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">新特性默认关闭（feature flag）；历史量</text><text x="894.0" y="492.3" font-size="14.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">化问题回归集在每次发版前重跑。</text></svg></div>
+</figure>
+
+<div class="demo parity-demo"
+     data-idle="六个检查点全部通过。点“注入一处不一致”，看链路如何把问题收窄到一跳。"
+     data-found="首个分歧点：{a} → {b}。它之前的检查点都通过，所以只需要查这一跳；它之后的结果在修复前不可信。">
+  <div class="demo-bar">
+    <button type="button" class="btn btn-inject">注入一处不一致</button>
+    <button type="button" class="btn btn-ghost btn-reset">重置</button>
+  </div>
+  <p class="demo-status" aria-live="polite"></p>
+</div>
+
+<h2 id="各检查点的误差来源">各检查点的误差来源</h2>
 <table>
-<thead>
-<tr>
-<th>#</th>
-<th>比较</th>
-<th>典型误差来源</th>
-<th>检查方式</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>实车数据 vs HIL vs SIL</td>
-<td>NV12 直出 vs 经 RGB 中转</td>
-<td>把 SIL 输入 dump 成离线格式后比对</td>
-</tr>
-<tr>
-<td>2</td>
-<td>离线预处理 vs 数据转换</td>
-<td>RGB 与 NV12 两条通路；upsample–downsample 往返</td>
-<td>同一帧上比对张量</td>
-</tr>
-<tr>
-<td>3</td>
-<td>离线预处理 vs 板端预处理</td>
-<td>同一变换的不同实现</td>
-<td>同一帧上比对张量</td>
-</tr>
-<tr>
-<td>4</td>
-<td>Float vs 面向芯片的导出</td>
-<td>输入改为 YUV444；upsample 被替换</td>
-<td>中间特征和输出比对</td>
-</tr>
-<tr>
-<td>5</td>
-<td>导出 vs 关闭 fake quant 的 QAT</td>
-<td>conv–BN 融合；plugin 中无法关闭 fake quant 的算子</td>
-<td>输出比对，必要时逐层</td>
-</tr>
-<tr>
-<td>6</td>
-<td>QAT vs Float</td>
-<td>量化误差本身</td>
-<td>任务指标加逐层误差</td>
-</tr>
-<tr>
-<td>7</td>
-<td>QAT → IR → 重建 QAT</td>
-<td>序列化与重建差异</td>
-<td>逐 bit 输出比对</td>
-</tr>
-<tr>
-<td>8</td>
-<td>QAT 模型 vs LibTorch（Python vs C++）</td>
-<td>GPU 型号、CUDA 版本、个别 run 的异常</td>
-<td>offboard 与 onboard 一致性验证</td>
-</tr>
-<tr>
-<td>9</td>
-<td>LibTorch vs QAT HBIR</td>
-<td>查表转换在这一步完成</td>
-<td>逐算子比对，查表误差检查</td>
-</tr>
-<tr>
-<td>10</td>
-<td>QAT HBIR vs 量化 HBIR</td>
-<td>fake quant 替换为真正的整数运算</td>
-<td>量化 scale 检查</td>
-</tr>
-<tr>
-<td>11</td>
-<td>量化 HBIR vs HBM</td>
-<td>编译器</td>
-<td>厂商提供的校验工具</td>
-</tr>
-<tr>
-<td>12</td>
-<td>offboard vs onboard 后处理，以及实车 vs 离线全链路</td>
-<td>实现差异；帧同步</td>
-<td>板端同步测试</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>#</th>
+					<th>比较</th>
+					<th>典型误差来源</th>
+					<th>检查方式</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>实车数据 vs HIL vs SIL</td>
+					<td>NV12 直出 vs 经 RGB 中转</td>
+					<td>把 SIL 输入 dump 成离线格式后比对</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>离线预处理 vs 数据转换</td>
+					<td>RGB 与 NV12 两条通路；upsample–downsample 往返</td>
+					<td>同一帧上比对张量</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>离线预处理 vs 板端预处理</td>
+					<td>同一变换的不同实现</td>
+					<td>同一帧上比对张量</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>Float vs 面向芯片的导出</td>
+					<td>输入改为 YUV444；upsample 被替换</td>
+					<td>中间特征和输出比对</td>
+			</tr>
+			<tr>
+					<td>5</td>
+					<td>导出 vs 关闭 fake quant 的 QAT</td>
+					<td>conv–BN 融合；plugin 中无法关闭 fake quant 的算子</td>
+					<td>输出比对，必要时逐层</td>
+			</tr>
+			<tr>
+					<td>6</td>
+					<td>QAT vs Float</td>
+					<td>量化误差本身</td>
+					<td>任务指标加逐层误差</td>
+			</tr>
+			<tr>
+					<td>7</td>
+					<td>QAT → IR → 重建 QAT</td>
+					<td>序列化与重建差异</td>
+					<td>逐 bit 输出比对</td>
+			</tr>
+			<tr>
+					<td>8</td>
+					<td>QAT 模型 vs LibTorch（Python vs C++）</td>
+					<td>GPU 型号、CUDA 版本、个别 run 的异常</td>
+					<td>offboard 与 onboard 一致性验证</td>
+			</tr>
+			<tr>
+					<td>9</td>
+					<td>LibTorch vs QAT HBIR</td>
+					<td>查表转换在这一步完成</td>
+					<td>逐算子比对，查表误差检查</td>
+			</tr>
+			<tr>
+					<td>10</td>
+					<td>QAT HBIR vs 量化 HBIR</td>
+					<td>fake quant 替换为真正的整数运算</td>
+					<td>量化 scale 检查</td>
+			</tr>
+			<tr>
+					<td>11</td>
+					<td>量化 HBIR vs HBM</td>
+					<td>编译器</td>
+					<td>厂商提供的校验工具</td>
+			</tr>
+			<tr>
+					<td>12</td>
+					<td>offboard vs onboard 后处理，以及实车 vs 离线全链路</td>
+					<td>实现差异；帧同步</td>
+					<td>板端同步测试</td>
+			</tr>
+	</tbody>
 </table>
-<h2 id="_4">案例</h2>
+<h2 id="案例">案例</h2>
 <p><strong><code>rsqrt</code> 中的一个查表分段点。</strong> 某个量产模型在 LibTorch 和芯片之间存在差异。我们在离线复现：对比普通 LibTorch 和使用芯片查表的 LibTorch，再逐层二分。误差来自归一化层中一个 <code>rsqrt</code> 查表的分段点。修复本身是局部的；更长远的改变是把查表误差检查提前到转换流程中，这后来发展成了<a href="/zh/projects/adaptive-lut/">自适应查表算法</a>。</p>
 <p><strong>地图模型的坐标误差。</strong> 对一个矢量地图模型，分阶段隔离找出了三个独立的问题：不同后端之间 upsample 的 <code>align_corners</code> 不一致、一个位姿增量张量精度不足，以及一个求逆运算在计算图中的执行位置不对。</p>
 <p><strong>时序模型。</strong> 跟踪模型在帧之间传递状态，一帧中极小的数值差异会传播到后面很多帧。所以这类模型的检查必须覆盖完整序列，而不是单帧。</p>
-<h2 id="_5">发版门禁：结论被验证到了哪一级？</h2>
+<h2 id="发版门禁结论被验证到了哪一级">发版门禁：结论被验证到了哪一级？</h2>
 <p>一致性工具告诉你误差在哪里，发版门禁决定什么可以发布。关于量化模型的每个结论，都标注它已通过的最高级别：</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">源码</span><span class="pipe-note">代码已评审</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">编译</span><span class="pipe-note">产物可编译</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">仿真</span><span class="pipe-note">离线指标</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">板端</span><span class="pipe-note">在芯片上运行</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">实车</span><span class="pipe-note">路测</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">源码</span><span class="pipe-note">代码已评审</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">编译</span><span class="pipe-note">产物可编译</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">仿真</span><span class="pipe-note">离线指标</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">板端</span><span class="pipe-note">在芯片上运行</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">实车</span><span class="pipe-note">路测</span></div>
 </div>
 
 <ul>
@@ -234,18 +231,19 @@
 <li><strong>历史量化问题回归集</strong>在每次发版前运行，修好的问题不会悄悄复发。</li>
 <li><strong>量化改动写进发版文档</strong>，下游可以把行为变化和原因对应起来。</li>
 </ul>
-<aside class="callout callout-result"><p>这套方法把“结果对不上”变成了一个可复现、位置明确的 bug。回归集在三个量产项目中把量化问题拦截在了发版之前。</p></aside>
+<aside class="callout callout-result">这套方法把“结果对不上”变成了一个可复现、位置明确的 bug。回归集在三个量产项目中把量化问题拦截在了发版之前。</aside>
 
-<h2 id="_6">经验</h2>
+<h2 id="经验">经验</h2>
 <ul>
 <li><strong>先隔离，再修复。</strong> 在相同输入下比较相邻阶段，不要直接比一条 12 段链路的两端。</li>
 <li><strong>数据和后处理也是模型的一部分。</strong> 好几个“量化 bug”其实是预处理差异。</li>
 <li><strong>说清楚证据等级。</strong> 一旦大家对结论被验证到哪一级达成一致，大多数发版争论就消失了。</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/adaptive-lut/">&larr; 非线性算子的自适应查表</a><a href="/zh/projects/latency-modeling/">写代码之前，先预测板端耗时 &rarr;</a>
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/adaptive-lut/">&larr; 非线性算子的自适应查表</a><a href="/zh/projects/quant-deploy-platform/">平台化量化部署框架：一个真值、一份契约、默认阻断 &rarr;</a>
     </nav>
     <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
   </footer>
@@ -261,6 +259,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

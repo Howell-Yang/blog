@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>Adaptive lookup tables for non-linear operators · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -71,16 +72,19 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-problem">The problem</a></li>
-<li><a href="#measuring-error-the-way-the-chip-sees-it">Measuring error the way the chip sees it</a></li>
-<li><a href="#three-strategies-compared">Three strategies compared</a></li>
-<li><a href="#the-adaptive-algorithm">The adaptive algorithm</a></li>
-<li><a href="#results">Results</a></li>
-<li><a href="#lessons">Lessons</a></li>
-</ul>
+  <ul>
+    <li><a href="#the-problem">The problem</a></li>
+    <li><a href="#measuring-error-the-way-the-chip-sees-it">Measuring error the way the chip sees it</a></li>
+    <li><a href="#three-strategies-compared">Three strategies compared</a></li>
+    <li><a href="#the-adaptive-algorithm">The adaptive algorithm</a>
+      <ul>
+        <li><a href="#try-it-in-your-browser">Try it in your browser</a></li>
+      </ul>
+    </li>
+    <li><a href="#results">Results</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
@@ -95,110 +99,126 @@
 <p>So the error comes from four things: the valid input domain, where the dividing points sit, how densely each segment is sampled, and how the left and right linear regions are handled.</p>
 <h2 id="measuring-error-the-way-the-chip-sees-it">Measuring error the way the chip sees it</h2>
 <p>The reference is the IR's fake-quant output: the quantized value the model was trained and validated against. The candidate is the converter's real fixed-point lookup-table output code. For every valid integer input code <em>x<sub>i</sub></em>:</p>
-<pre><code class="language-text">e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          error in output LSB
-E_mean  = Σ_i e(x_i) / N                            weighted by sample count
-E_max   = max_i e(x_i)                              over all operators and codes
-</code></pre>
-<ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>e(x_i)  = | q_LUT(x_i) − q_FQ( f(x_i) ) |          error in output LSB
+</span></span><span style="display:flex;"><span>E_mean  = Σ_i e(x_i) / N                            weighted by sample count
+</span></span><span style="display:flex;"><span>E_max   = max_i e(x_i)                              over all operators and codes
+</span></span></code></pre></div><ul>
 <li><strong>Mean LSB</strong> is weighted over every valid input code of every table, not a simple average of per-operator averages.</li>
 <li><strong>Max LSB</strong> exposes rare but potentially fatal local distortions, the kind that slip through aggregate metrics.</li>
 <li><strong>Valid domains</strong> come from calibration: <code>rsqrt</code> and <code>reciprocal</code> use the IR's calibrated range; the Softmax <code>exp</code> input is never positive after the max-subtraction, so it defaults to [−12, 0] when no range is recorded.</li>
 </ul>
 <h2 id="three-strategies-compared">Three strategies compared</h2>
-<aside class="callout"><p>More tables lower the <strong>average</strong> error, but they do not bound the <strong>worst-case</strong> error. If dividing points are not placed according to the function's shape and the true fixed-point error, high-curvature regions and linear-region boundaries can still be badly wrong.</p></aside>
+<aside class="callout">More tables lower the <strong>average</strong> error, but they do not bound the <strong>worst-case</strong> error. If dividing points are not placed according to the function's shape and the true fixed-point error, high-curvature regions and linear-region boundaries can still be badly wrong.</aside>
 
 <table>
-<thead>
-<tr>
-<th>Strategy</th>
-<th>Dividing points</th>
-<th>Left/right linear regions</th>
-<th>Tables per op</th>
-<th>Guarantee</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A. Original 6-table</td>
-<td>Native per op: mostly curvature-based, some evenly spaced</td>
-<td>Original linear fits</td>
-<td>6</td>
-<td>Baseline only; no max-error target</td>
-</tr>
-<tr>
-<td>B. Uniform 126-table</td>
-<td>Valid range split into 126 equal-width segments</td>
-<td>Not optimized</td>
-<td>126</td>
-<td>Table count only</td>
-</tr>
-<tr>
-<td>C. Adaptive (this work)</td>
-<td>Keep the 6-table boundaries, then recursively bisect</td>
-<td>Upgraded only when the measured gain justifies it</td>
-<td>12–30, chosen per op</td>
-<td>Boundaries kept, never worse than baseline, max 2 LSB</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>Strategy</th>
+					<th>Dividing points</th>
+					<th>Left/right linear regions</th>
+					<th>Tables per op</th>
+					<th>Guarantee</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A. Original 6-table</td>
+					<td>Native per op: mostly curvature-based, some evenly spaced</td>
+					<td>Original linear fits</td>
+					<td>6</td>
+					<td>Baseline only; no max-error target</td>
+			</tr>
+			<tr>
+					<td>B. Uniform 126-table</td>
+					<td>Valid range split into 126 equal-width segments</td>
+					<td>Not optimized</td>
+					<td>126</td>
+					<td>Table count only</td>
+			</tr>
+			<tr>
+					<td>C. Adaptive (this work)</td>
+					<td>Keep the 6-table boundaries, then recursively bisect</td>
+					<td>Upgraded only when the measured gain justifies it</td>
+					<td>12–30, chosen per op</td>
+					<td>Boundaries kept, never worse than baseline, max 2 LSB</td>
+			</tr>
+	</tbody>
 </table>
 <p>Curvature-based placement (A) puts more boundaries where the function bends, which beats equal spacing, but six tables are too few for near-singular functions. Uniform 126 tables (B) is simple and lowers the mean, but it ignores curvature, output scale and the real fixed-point error. On <code>rsqrt</code> it wastes tables on flat regions and still leaves huge errors near extreme input codes.</p>
 <h2 id="the-adaptive-algorithm">The adaptive algorithm</h2>
 <p>The original 6-table layout is the floor: the algorithm only adds boundaries, never moves or removes them. The feedback signal is the real fixed-point output error, not a floating-point approximation.</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">6-table baseline</span><span class="pipe-note">keep all boundaries</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Measure real error</span><span class="pipe-note">every input code</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Bisect worst segment</span><span class="pipe-note">midpoint</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Check linear regions</span><span class="pipe-note">upgrade if it pays</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Max ≤ 2 LSB?</span><span class="pipe-note">else repeat</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Round up to ×6</span><span class="pipe-note">hardware export</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">6-table baseline</span><span class="pipe-note">keep all boundaries</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Measure real error</span><span class="pipe-note">every input code</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Bisect worst segment</span><span class="pipe-note">midpoint</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Check linear regions</span><span class="pipe-note">upgrade if it pays</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Max ≤ 2 LSB?</span><span class="pipe-note">else repeat</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Round up to ×6</span><span class="pipe-note">hardware export</span></div>
 </div>
 
-<pre><code class="language-text">for each LUT operator f with valid domain D:
-    S ← segments from the original 6-table layout          # never removed
-    loop:
-        E ← real fixed-point error of f over every code in D, per segment
-        if max(E) ≤ 2 LSB: break
-        s* ← segment with the largest error
-        split s* at its midpoint                            # nested refinement
-        if a left/right linear region dominates the error:
-            upgrade that region only if the measured gain justifies it
-        if table budget exhausted and max(E) &gt; 2 LSB:
-            fail hard and report the operator               # never ship silently
-    round the table count up to a multiple of 6             # export constraint
-</code></pre>
-<p>Because new boundaries are midpoints of existing segments, the refinement is nested. Every original boundary survives, so the result can never be worse than the baseline on any segment. Most operators settle at 12, 18, 24 or 30 tables.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>for each LUT operator f with valid domain D:
+</span></span><span style="display:flex;"><span>    S ← segments from the original 6-table layout          # never removed
+</span></span><span style="display:flex;"><span>    loop:
+</span></span><span style="display:flex;"><span>        E ← real fixed-point error of f over every code in D, per segment
+</span></span><span style="display:flex;"><span>        if max(E) ≤ 2 LSB: break
+</span></span><span style="display:flex;"><span>        s* ← segment with the largest error
+</span></span><span style="display:flex;"><span>        split s* at its midpoint                            # nested refinement
+</span></span><span style="display:flex;"><span>        if a left/right linear region dominates the error:
+</span></span><span style="display:flex;"><span>            upgrade that region only if the measured gain justifies it
+</span></span><span style="display:flex;"><span>        if table budget exhausted and max(E) &gt; 2 LSB:
+</span></span><span style="display:flex;"><span>            fail hard and report the operator               # never ship silently
+</span></span><span style="display:flex;"><span>    round the table count up to a multiple of 6             # export constraint
+</span></span></code></pre></div><p>Because new boundaries are midpoints of existing segments, the refinement is nested. Every original boundary survives, so the result can never be worse than the baseline on any segment. Most operators settle at 12, 18, 24 or 30 tables.</p>
+<figure class="figure" data-fig="adaptive-lut">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" class="fig fig-adaptive-lut" role="img" aria-label="adaptive piecewise lookup tables"><title>adaptive piecewise lookup tables</title><defs><marker id="adaptive-lut-ah-orange" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-orange,#eb6834)"/></marker></defs><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">SCHEMATIC: ONE RSQRT OPERATOR, TWO WAYS TO PLACE THE TABLES</text><rect x="30.0" y="52.0" width="700.0" height="478.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><line x1="70.0" y1="320.0" x2="690.0" y2="320.0" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round"/><line x1="70.0" y1="70.0" x2="70.0" y2="320.0" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round"/><text x="690.0" y="342.0" font-size="13.5" font-weight="600" fill="var(--f-muted,#5e6a79)" text-anchor="end">input code →</text><text x="80.0" y="82.0" font-size="14" font-weight="600" fill="var(--f-muted,#5e6a79)" text-anchor="start">rsqrt(x)</text><path d="M70.0,70.0 L73.1,91.8 L76.2,109.5 L79.3,124.2 L82.4,136.7 L85.5,147.5 L88.6,156.9 L91.7,165.3 L94.8,172.7 L97.9,179.4 L101.0,185.4 L104.1,191.0 L107.2,196.0 L110.3,200.7 L113.4,205.0 L116.5,209.0 L119.6,212.7 L122.7,216.2 L125.8,219.5 L128.9,222.5 L132.0,225.4 L135.1,228.1 L138.2,230.7 L141.3,233.2 L144.4,235.5 L147.5,237.7 L150.6,239.8 L153.7,241.8 L156.8,243.8 L159.9,245.6 L163.0,247.4 L166.1,249.0 L169.2,250.7 L172.3,252.2 L175.4,253.7 L178.5,255.2 L181.6,256.6 L184.7,257.9 L187.8,259.2 L190.9,260.5 L194.0,261.7 L197.1,262.9 L200.2,264.0 L203.3,265.1 L206.4,266.2 L209.5,267.3 L212.6,268.3 L215.7,269.3 L218.8,270.2 L221.9,271.1 L225.0,272.0 L228.1,272.9 L231.2,273.8 L234.3,274.6 L237.4,275.4 L240.5,276.2 L243.6,277.0 L246.7,277.8 L249.8,278.5 L252.9,279.2 L256.0,279.9 L259.1,280.6 L262.2,281.3 L265.3,282.0 L268.4,282.6 L271.5,283.2 L274.6,283.9 L277.7,284.5 L280.8,285.1 L283.9,285.6 L287.0,286.2 L290.1,286.8 L293.2,287.3 L296.3,287.9 L299.4,288.4 L302.5,288.9 L305.6,289.4 L308.7,289.9 L311.8,290.4 L314.9,290.9 L318.0,291.4 L321.1,291.8 L324.2,292.3 L327.3,292.7 L330.4,293.2 L333.5,293.6 L336.6,294.0 L339.7,294.5 L342.8,294.9 L345.9,295.3 L349.0,295.7 L352.1,296.1 L355.2,296.5 L358.3,296.9 L361.4,297.2 L364.5,297.6 L367.6,298.0 L370.7,298.3 L373.8,298.7 L376.9,299.0 L380.0,299.4 L383.1,299.7 L386.2,300.1 L389.3,300.4 L392.4,300.7 L395.5,301.1 L398.6,301.4 L401.7,301.7 L404.8,302.0 L407.9,302.3 L411.0,302.6 L414.1,302.9 L417.2,303.2 L420.3,303.5 L423.4,303.8 L426.5,304.1 L429.6,304.3 L432.7,304.6 L435.8,304.9 L438.9,305.2 L442.0,305.4 L445.1,305.7 L448.2,306.0 L451.3,306.2 L454.4,306.5 L457.5,306.7 L460.6,307.0 L463.7,307.2 L466.8,307.5 L469.9,307.7 L473.0,307.9 L476.1,308.2 L479.2,308.4 L482.3,308.6 L485.4,308.9 L488.5,309.1 L491.6,309.3 L494.7,309.5 L497.8,309.7 L500.9,310.0 L504.0,310.2 L507.1,310.4 L510.2,310.6 L513.3,310.8 L516.4,311.0 L519.5,311.2 L522.6,311.4 L525.7,311.6 L528.8,311.8 L531.9,312.0 L535.0,312.2 L538.1,312.4 L541.2,312.6 L544.3,312.8 L547.4,313.0 L550.5,313.1 L553.6,313.3 L556.7,313.5 L559.8,313.7 L562.9,313.9 L566.0,314.0 L569.1,314.2 L572.2,314.4 L575.3,314.6 L578.4,314.7 L581.5,314.9 L584.6,315.1 L587.7,315.2 L590.8,315.4 L593.9,315.6 L597.0,315.7 L600.1,315.9 L603.2,316.0 L606.3,316.2 L609.4,316.3 L612.5,316.5 L615.6,316.7 L618.7,316.8 L621.8,317.0 L624.9,317.1 L628.0,317.3 L631.1,317.4 L634.2,317.6 L637.3,317.7 L640.4,317.8 L643.5,318.0 L646.6,318.1 L649.7,318.3 L652.8,318.4 L655.9,318.5 L659.0,318.7 L662.1,318.8 L665.2,319.0 L668.3,319.1 L671.4,319.2 L674.5,319.4 L677.6,319.5 L680.7,319.6 L683.8,319.7 L686.9,319.9 L690.0,320.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="256.0" y="265.9" font-size="13.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="start">curvature concentrates at the left</text><line x1="71.4" y1="71.2" x2="71.4" y2="89.2" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="73.1" y1="82.8" x2="73.1" y2="100.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="75.5" y1="96.6" x2="75.5" y2="114.6" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="78.6" y1="111.9" x2="78.6" y2="129.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="82.7" y1="128.9" x2="82.7" y2="146.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="88.1" y1="146.5" x2="88.1" y2="164.5" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="95.2" y1="164.7" x2="95.2" y2="182.7" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="104.7" y1="182.9" x2="104.7" y2="200.9" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="117.1" y1="200.8" x2="117.1" y2="218.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="133.5" y1="217.7" x2="133.5" y2="235.7" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="155.2" y1="233.8" x2="155.2" y2="251.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="183.8" y1="248.5" x2="183.8" y2="266.5" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="221.5" y1="262.0" x2="221.5" y2="280.0" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="271.4" y1="274.2" x2="271.4" y2="292.2" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="337.2" y1="285.1" x2="337.2" y2="303.1" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="424.0" y1="294.8" x2="424.0" y2="312.8" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><line x1="538.7" y1="303.4" x2="538.7" y2="321.4" stroke="var(--f-orange,#eb6834)" stroke-width="2.2" stroke-linecap="round"/><text x="70.0" y="362.0" font-size="14.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Uniform 126 tables: equal width, blind to curvature</text><rect x="70.0" y="372.0" width="620.0" height="26.0" rx="4" fill="var(--f-plane,#eef1f5)"/><line x1="74.9" y1="375.0" x2="74.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="79.8" y1="375.0" x2="79.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="84.8" y1="375.0" x2="84.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="89.7" y1="375.0" x2="89.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="94.6" y1="375.0" x2="94.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="99.5" y1="375.0" x2="99.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="104.4" y1="375.0" x2="104.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="109.4" y1="375.0" x2="109.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="114.3" y1="375.0" x2="114.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="119.2" y1="375.0" x2="119.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="124.1" y1="375.0" x2="124.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="129.0" y1="375.0" x2="129.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="134.0" y1="375.0" x2="134.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="138.9" y1="375.0" x2="138.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="143.8" y1="375.0" x2="143.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="148.7" y1="375.0" x2="148.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="153.7" y1="375.0" x2="153.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="158.6" y1="375.0" x2="158.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="163.5" y1="375.0" x2="163.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="168.4" y1="375.0" x2="168.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="173.3" y1="375.0" x2="173.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="178.3" y1="375.0" x2="178.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="183.2" y1="375.0" x2="183.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="188.1" y1="375.0" x2="188.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="193.0" y1="375.0" x2="193.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="197.9" y1="375.0" x2="197.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="202.9" y1="375.0" x2="202.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="207.8" y1="375.0" x2="207.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="212.7" y1="375.0" x2="212.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="217.6" y1="375.0" x2="217.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="222.5" y1="375.0" x2="222.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="227.5" y1="375.0" x2="227.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="232.4" y1="375.0" x2="232.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="237.3" y1="375.0" x2="237.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="242.2" y1="375.0" x2="242.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="247.1" y1="375.0" x2="247.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="252.1" y1="375.0" x2="252.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="257.0" y1="375.0" x2="257.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="261.9" y1="375.0" x2="261.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="266.8" y1="375.0" x2="266.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="271.7" y1="375.0" x2="271.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="276.7" y1="375.0" x2="276.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="281.6" y1="375.0" x2="281.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="286.5" y1="375.0" x2="286.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="291.4" y1="375.0" x2="291.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="296.3" y1="375.0" x2="296.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="301.3" y1="375.0" x2="301.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="306.2" y1="375.0" x2="306.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="311.1" y1="375.0" x2="311.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="316.0" y1="375.0" x2="316.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="321.0" y1="375.0" x2="321.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="325.9" y1="375.0" x2="325.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="330.8" y1="375.0" x2="330.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="335.7" y1="375.0" x2="335.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="340.6" y1="375.0" x2="340.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="345.6" y1="375.0" x2="345.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="350.5" y1="375.0" x2="350.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="355.4" y1="375.0" x2="355.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="360.3" y1="375.0" x2="360.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="365.2" y1="375.0" x2="365.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="370.2" y1="375.0" x2="370.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="375.1" y1="375.0" x2="375.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="380.0" y1="375.0" x2="380.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="384.9" y1="375.0" x2="384.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="389.8" y1="375.0" x2="389.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="394.8" y1="375.0" x2="394.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="399.7" y1="375.0" x2="399.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="404.6" y1="375.0" x2="404.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="409.5" y1="375.0" x2="409.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="414.4" y1="375.0" x2="414.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="419.4" y1="375.0" x2="419.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="424.3" y1="375.0" x2="424.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="429.2" y1="375.0" x2="429.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="434.1" y1="375.0" x2="434.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="439.0" y1="375.0" x2="439.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="444.0" y1="375.0" x2="444.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="448.9" y1="375.0" x2="448.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="453.8" y1="375.0" x2="453.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="458.7" y1="375.0" x2="458.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="463.7" y1="375.0" x2="463.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="468.6" y1="375.0" x2="468.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="473.5" y1="375.0" x2="473.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="478.4" y1="375.0" x2="478.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="483.3" y1="375.0" x2="483.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="488.3" y1="375.0" x2="488.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="493.2" y1="375.0" x2="493.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="498.1" y1="375.0" x2="498.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="503.0" y1="375.0" x2="503.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="507.9" y1="375.0" x2="507.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="512.9" y1="375.0" x2="512.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="517.8" y1="375.0" x2="517.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="522.7" y1="375.0" x2="522.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="527.6" y1="375.0" x2="527.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="532.5" y1="375.0" x2="532.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="537.5" y1="375.0" x2="537.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="542.4" y1="375.0" x2="542.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="547.3" y1="375.0" x2="547.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="552.2" y1="375.0" x2="552.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="557.1" y1="375.0" x2="557.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="562.1" y1="375.0" x2="562.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="567.0" y1="375.0" x2="567.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="571.9" y1="375.0" x2="571.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="576.8" y1="375.0" x2="576.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="581.7" y1="375.0" x2="581.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="586.7" y1="375.0" x2="586.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="591.6" y1="375.0" x2="591.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="596.5" y1="375.0" x2="596.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="601.4" y1="375.0" x2="601.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="606.3" y1="375.0" x2="606.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="611.3" y1="375.0" x2="611.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="616.2" y1="375.0" x2="616.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="621.1" y1="375.0" x2="621.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="626.0" y1="375.0" x2="626.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="631.0" y1="375.0" x2="631.0" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="635.9" y1="375.0" x2="635.9" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="640.8" y1="375.0" x2="640.8" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="645.7" y1="375.0" x2="645.7" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="650.6" y1="375.0" x2="650.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="655.6" y1="375.0" x2="655.6" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="660.5" y1="375.0" x2="660.5" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="665.4" y1="375.0" x2="665.4" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="670.3" y1="375.0" x2="670.3" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="675.2" y1="375.0" x2="675.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="680.2" y1="375.0" x2="680.2" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><line x1="685.1" y1="375.0" x2="685.1" y2="395.0" stroke="var(--f-faint,#8a94a3)" stroke-width="0.9" stroke-linecap="butt"/><rect x="70.0" y="372.0" width="31.0" height="26.0" rx="4" fill="var(--f-red,#d03b3b)" opacity="0.28"/><text x="698.0" y="390.0" font-size="15" font-weight="700" fill="var(--f-muted,#5e6a79)" text-anchor="start">126</text><text x="70.0" y="428.0" font-size="14.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Adaptive: keep the 6-table boundaries, bisect only where the error is high</text><rect x="70.0" y="438.0" width="620.0" height="26.0" rx="4" fill="var(--f-orange-soft,#fdebe2)"/><line x1="71.4" y1="441.0" x2="71.4" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="73.1" y1="441.0" x2="73.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="75.5" y1="441.0" x2="75.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="78.6" y1="441.0" x2="78.6" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="82.7" y1="441.0" x2="82.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="88.1" y1="441.0" x2="88.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="95.2" y1="441.0" x2="95.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="104.7" y1="441.0" x2="104.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="117.1" y1="441.0" x2="117.1" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="133.5" y1="441.0" x2="133.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="155.2" y1="441.0" x2="155.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="183.8" y1="441.0" x2="183.8" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="221.5" y1="441.0" x2="221.5" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="271.4" y1="441.0" x2="271.4" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="337.2" y1="441.0" x2="337.2" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="424.0" y1="441.0" x2="424.0" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><line x1="538.7" y1="441.0" x2="538.7" y2="461.0" stroke="var(--f-orange,#eb6834)" stroke-width="2" stroke-linecap="butt"/><text x="698.0" y="456.0" font-size="15" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">18</text><text x="70.0" y="490.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">Red zone: the uniform layout leaves a large fixed-point error near the extreme input codes</text><text x="760.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">ERROR-DRIVEN REFINEMENT LOOP</text><circle cx="774.0" cy="78.0" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="83.4" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="800.0" y="84.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">start from the 6-table baseline, keep every</text><text x="800.0" y="104.7" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">boundary</text><circle cx="774.0" cy="131.4" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="136.8" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="800.0" y="137.4" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">measure every input code on the chip's real</text><text x="800.0" y="158.1" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">fixed-point output</text><circle cx="774.0" cy="184.8" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="190.2" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="800.0" y="190.8" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">bisect the worst segment at its midpoint</text><circle cx="774.0" cy="224.8" r="13" fill="var(--f-orange,#eb6834)"/><text x="774.0" y="230.2" font-size="14.95" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="800.0" y="230.8" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">export only when max error ≤ 2 LSB; hard-fail</text><text x="800.0" y="251.5" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">if the budget runs out</text><path d="M759.0,224.8 L750.0,224.8 Q742.0,224.8 742.0,216.8 L742.0,192.8 Q742.0,184.8 750.0,184.8 L758.0,184.8" fill="none" stroke="var(--f-orange,#eb6834)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 5" marker-end="url(#adaptive-lut-ah-orange)"/><text x="760.0" y="300.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">RESULTS ON 600 LUT MODULES</text><rect x="760.0" y="318.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="359.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">0.217 LSB</text><text x="946.0" y="344.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">weighted mean error (uniform</text><text x="946.0" y="363.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">126: 0.270)</text><rect x="760.0" y="390.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="431.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">2 LSB</text><text x="946.0" y="416.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">max error (uniform 126: 11,381</text><text x="946.0" y="435.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">LSB)</text><rect x="760.0" y="462.0" width="410.0" height="62.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><text x="778.0" y="503.0" font-size="28" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">−85%</text><text x="946.0" y="488.7" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">tables: 18.6 on average instead</text><text x="946.0" y="507.0" font-size="13.5" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">of 126</text></svg></div>
+  <figcaption>Schematic: split points for one rsqrt operator under uniform and adaptive placement; on the right, the refinement loop and the results on 600 modules.</figcaption>
+</figure>
+
+<h3 id="try-it-in-your-browser">Try it in your browser</h3>
+<div class="demo lut-demo" data-i18n="{&#34;code&#34;:&#34;input code →&#34;,&#34;curve&#34;:&#34;rsqrt(x), 12-bit fixed-point output&#34;,&#34;err&#34;:&#34;error per input code (LSB)&#34;,&#34;fail&#34;:&#34;budget exhausted, still above 2 LSB: export fails&#34;,&#34;over&#34;:&#34;max error above 2 LSB&#34;,&#34;pass&#34;:&#34;max error ≤ 2 LSB: export allowed&#34;,&#34;tip&#34;:&#34;code {c}: {e} LSB&#34;}">
+  <div class="demo-bar">
+    <button type="button" class="btn btn-play">▶ Adaptive refinement</button>
+    <button type="button" class="btn btn-ghost btn-step">One bisection</button>
+    <button type="button" class="btn btn-ghost btn-u6">Uniform 6</button>
+    <button type="button" class="btn btn-ghost btn-u126">Uniform 126</button>
+  </div>
+  <canvas role="img" aria-label="rsqrt lookup-table split points and fixed-point error per input code"></canvas>
+  <dl class="demo-readout">
+    <div><dt>Tables</dt><dd class="lut-tables">–</dd></div>
+    <div><dt>Max error</dt><dd class="lut-max">–</dd></div>
+    <div><dt>Mean error</dt><dd class="lut-mean">–</dd></div>
+    <div class="wide"><dt>Verdict</dt><dd class="lut-verdict">–</dd></div>
+  </dl>
+  <p class="demo-note">This is a simplified simulation running in your browser (12-bit output, linear interpolation per segment, 1,024 input codes). It only illustrates the mechanism: the same table budget does more where the error is than spread evenly. The numbers differ from the production converter; production results are in the table below.</p>
+</div>
+
 <h2 id="results">Results</h2>
 <p>Evaluated on four production graphs of a temporal tracking model, each with 150 lookup-table modules (600 in total):</p>
 <table>
-<thead>
-<tr>
-<th>Strategy</th>
-<th>Weighted mean error</th>
-<th>Worst-case error</th>
-<th>Tables per operator</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Uniform 126-table</td>
-<td>0.270 LSB</td>
-<td>11,381 LSB</td>
-<td>126</td>
-</tr>
-<tr>
-<td>Adaptive</td>
-<td><strong>0.217 LSB</strong></td>
-<td><strong>2 LSB</strong></td>
-<td>12–30 (avg 18.6)</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>Strategy</th>
+					<th>Weighted mean error</th>
+					<th>Worst-case error</th>
+					<th>Tables per operator</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Uniform 126-table</td>
+					<td>0.270 LSB</td>
+					<td>11,381 LSB</td>
+					<td>126</td>
+			</tr>
+			<tr>
+					<td>Adaptive</td>
+					<td><strong>0.217 LSB</strong></td>
+					<td><strong>2 LSB</strong></td>
+					<td>12–30 (avg 18.6)</td>
+			</tr>
+	</tbody>
 </table>
-<aside class="callout callout-result"><p>The adaptive scheme beats uniform 126 tables on <strong>both</strong> mean and worst-case error while using about 85% fewer tables. End-to-end regression metrics moved by about 0.001 or less. The value is in removing rare local distortions, not in raising averages.</p></aside>
+<aside class="callout callout-result">The adaptive scheme beats uniform 126 tables on <strong>both</strong> mean and worst-case error while using about 85% fewer tables. End-to-end regression metrics moved by about 0.001 or less. The value is in removing rare local distortions, not in raising averages.</aside>
 
 <h2 id="lessons">Lessons</h2>
 <ul>
@@ -207,6 +227,7 @@ E_max   = max_i e(x_i)                              over all operators and codes
 <li><strong>Refine where the error is.</strong> A budget spent by curvature and measured error beats a bigger uniform budget.</li>
 <li><strong>Fail loudly.</strong> An operator that cannot meet the bound should stop the export, not ship.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
@@ -226,6 +247,7 @@ E_max   = max_i e(x_i)                              over all operators and codes
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

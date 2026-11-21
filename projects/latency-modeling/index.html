@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>Predicting on-board latency before writing code · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -71,16 +72,15 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-question">The question</a></li>
-<li><a href="#step-1-profile-by-block-on-the-board">Step 1: profile by block, on the board</a></li>
-<li><a href="#step-2-decide-how-each-block-scales">Step 2: decide how each block scales</a></li>
-<li><a href="#step-3-rank-the-deployment-options">Step 3: rank the deployment options</a></li>
-<li><a href="#step-4-onemodel-one-backbone-for-five-perception-models">Step 4: OneModel, one backbone for five perception models</a></li>
-<li><a href="#lessons">Lessons</a></li>
-</ul>
+  <ul>
+    <li><a href="#the-question">The question</a></li>
+    <li><a href="#step-1-profile-by-block-on-the-board">Step 1: profile by block, on the board</a></li>
+    <li><a href="#step-2-decide-how-each-block-scales">Step 2: decide how each block scales</a></li>
+    <li><a href="#step-3-rank-the-deployment-options">Step 3: rank the deployment options</a></li>
+    <li><a href="#step-4-onemodel-one-backbone-for-five-perception-models">Step 4: OneModel, one backbone for five perception models</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
@@ -95,131 +95,125 @@
 <h2 id="step-2-decide-how-each-block-scales">Step 2: decide how each block scales</h2>
 <p>Keeping the 0.3 m output resolution, the output grid grows from 96 × 288 to 160 × 448 cells, about <strong>2.6×</strong>. Each block was then classified by how its cost depends on that grid:</p>
 <table>
-<thead>
-<tr>
-<th>Block</th>
-<th>Depends on output grid?</th>
-<th>Board measurement</th>
-<th>Estimate for larger range</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Image backbone + neck (5 cameras)</td>
-<td>No: works in image space</td>
-<td>3.92 ms</td>
-<td>3.92 ms</td>
-</tr>
-<tr>
-<td>View transform (image → BEV)</td>
-<td>Yes, proportional</td>
-<td>0.92 ms</td>
-<td>2.39 ms</td>
-</tr>
-<tr>
-<td>Point-cloud branch</td>
-<td>Partly (neck scales)</td>
-<td>0.48 ms</td>
-<td>1.33 ms</td>
-</tr>
-<tr>
-<td>Temporal fusion</td>
-<td>Yes</td>
-<td>0.69 ms</td>
-<td>1.79 ms</td>
-</tr>
-<tr>
-<td>BEV encoder (backbone + neck)</td>
-<td>Yes</td>
-<td>1.88 ms</td>
-<td>4.90 ms</td>
-</tr>
-<tr>
-<td>Near-field high-resolution head</td>
-<td>No: fixed region</td>
-<td>0.45 ms</td>
-<td>0.45 ms</td>
-</tr>
-<tr>
-<td>Main occupancy head</td>
-<td>Yes</td>
-<td>1.77 ms</td>
-<td>4.61 ms</td>
-</tr>
-<tr>
-<td><strong>Whole model</strong></td>
-<td></td>
-<td><strong>≈ 10.0 ms</strong></td>
-<td><strong>19.38 ms</strong></td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>Block</th>
+					<th>Depends on output grid?</th>
+					<th>Board measurement</th>
+					<th>Estimate for larger range</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Image backbone + neck (5 cameras)</td>
+					<td>No: works in image space</td>
+					<td>3.92 ms</td>
+					<td>3.92 ms</td>
+			</tr>
+			<tr>
+					<td>View transform (image → BEV)</td>
+					<td>Yes, proportional</td>
+					<td>0.92 ms</td>
+					<td>2.39 ms</td>
+			</tr>
+			<tr>
+					<td>Point-cloud branch</td>
+					<td>Partly (neck scales)</td>
+					<td>0.48 ms</td>
+					<td>1.33 ms</td>
+			</tr>
+			<tr>
+					<td>Temporal fusion</td>
+					<td>Yes</td>
+					<td>0.69 ms</td>
+					<td>1.79 ms</td>
+			</tr>
+			<tr>
+					<td>BEV encoder (backbone + neck)</td>
+					<td>Yes</td>
+					<td>1.88 ms</td>
+					<td>4.90 ms</td>
+			</tr>
+			<tr>
+					<td>Near-field high-resolution head</td>
+					<td>No: fixed region</td>
+					<td>0.45 ms</td>
+					<td>0.45 ms</td>
+			</tr>
+			<tr>
+					<td>Main occupancy head</td>
+					<td>Yes</td>
+					<td>1.77 ms</td>
+					<td>4.61 ms</td>
+			</tr>
+			<tr>
+					<td><strong>Whole model</strong></td>
+					<td></td>
+					<td><strong>≈ 10.0 ms</strong></td>
+					<td><strong>19.38 ms</strong></td>
+			</tr>
+	</tbody>
 </table>
-<aside class="callout callout-result"><p><strong>Measured after implementation: 19.25 ms</strong>, against 19.38 ms predicted, a 0.7% error. The image encoder is the only large block unaffected by the range change, which made it the obvious thing to share.</p></aside>
+<aside class="callout callout-result"><strong>Measured after implementation: 19.25 ms</strong>, against 19.38 ms predicted, a 0.7% error. The image encoder is the only large block unaffected by the range change, which made it the obvious thing to share.</aside>
 
-<aside class="callout callout-caveat"><p>The 0.7% holds for this model. A similar estimate for a different view-transform design missed by more. The value is the loop of predict, measure and correct, not one number.</p></aside>
+<aside class="callout callout-caveat">The 0.7% holds for this model. A similar estimate for a different view-transform design missed by more. The value is the loop of predict, measure and correct, not one number.</aside>
+
+<figure class="figure" data-fig="latency">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="fig fig-latency" role="img" aria-label="structural latency model: predicted vs measured"><title>structural latency model: predicted vs measured</title><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">ON-BOARD LATENCY PER MODULE WHEN THE OUTPUT GRID GROWS 2.6× (MILLISECONDS)</text><line x1="250.0" y1="64.0" x2="250.0" y2="406.0" stroke="var(--f-rule,#d8dde4)" stroke-width="1.4" stroke-linecap="round"/><g class="lrow" data-i="0"><text x="30.0" y="91.0" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Image backbone + neck</text><rect x="250.0" y="70.0" width="301.5" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="86.0" width="301.5" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="558.5" y="82.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">3.92</text><text x="558.5" y="98.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">3.92</text><rect x="603.5" y="74.0" width="114.8" height="22.0" rx="11.0" fill="var(--f-aqua-soft,#def5ec)"/><text x="660.9" y="89.5" font-size="12.5" font-weight="600" fill="var(--f-aqua-ink,#0b6b49)" text-anchor="middle">does not scale</text></g><g class="lrow" data-i="1"><text x="30.0" y="141.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">View transform</text><rect x="250.0" y="120.0" width="70.8" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="136.0" width="183.8" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="327.8" y="132.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.92</text><text x="440.8" y="148.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">2.39</text></g><g class="lrow" data-i="2"><text x="30.0" y="191.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">LiDAR branch</text><rect x="250.0" y="170.0" width="36.9" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="186.0" width="102.3" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="293.9" y="182.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.48</text><text x="359.3" y="198.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">1.33</text></g><g class="lrow" data-i="3"><text x="30.0" y="241.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">Temporal fusion</text><rect x="250.0" y="220.0" width="53.1" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="236.0" width="137.7" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="310.1" y="232.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.69</text><text x="394.7" y="248.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">1.79</text></g><g class="lrow" data-i="4"><text x="30.0" y="291.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">BEV encoder</text><rect x="250.0" y="270.0" width="144.6" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="286.0" width="376.9" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="401.6" y="282.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">1.88</text><text x="633.9" y="298.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">4.90</text></g><g class="lrow" data-i="5"><text x="30.0" y="341.0" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Near-range head</text><rect x="250.0" y="320.0" width="34.6" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="336.0" width="34.6" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="291.6" y="332.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.45</text><text x="291.6" y="348.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">0.45</text><rect x="336.6" y="324.0" width="114.8" height="22.0" rx="11.0" fill="var(--f-aqua-soft,#def5ec)"/><text x="394.0" y="339.5" font-size="12.5" font-weight="600" fill="var(--f-aqua-ink,#0b6b49)" text-anchor="middle">does not scale</text></g><g class="lrow" data-i="6"><text x="30.0" y="391.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">Main occupancy head</text><rect x="250.0" y="370.0" width="136.2" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="386.0" width="354.6" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="393.2" y="382.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">1.77</text><text x="611.6" y="398.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">4.61</text></g><rect x="250.0" y="430.0" width="26.0" height="12.0" rx="3" fill="#9ec5f4"/><text x="284.0" y="441.0" font-size="13" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">measured on board (96×288 grid)</text><rect x="526.5" y="430.0" width="26.0" height="12.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="560.5" y="441.0" font-size="13" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">predicted (160×448 grid)</text><text x="250.0" y="468.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">The two marked modules do not scale with the grid, so their prediction</text><text x="250.0" y="486.2" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">equals the measurement.</text><rect x="760.0" y="62.0" width="410.0" height="196.0" rx="14" fill="var(--f-soft,#f3f6fa)"/><text x="784.0" y="98.0" font-size="15" font-weight="700" fill="var(--f-muted,#5e6a79)" text-anchor="start">Whole model</text><text x="784.0" y="152.0" font-size="40" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="start">19.38 ms</text><text x="992.0" y="152.0" font-size="16" font-weight="500" fill="var(--f-body,#2a3441)" text-anchor="start">predicted</text><text x="784.0" y="204.0" font-size="40" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">19.25 ms</text><text x="992.0" y="204.0" font-size="16" font-weight="500" fill="var(--f-body,#2a3441)" text-anchor="start">measured on board</text><rect x="784.0" y="222.5" width="106.5" height="27.0" rx="13.5" fill="var(--f-orange-soft,#fdebe2)"/><text x="837.3" y="241.4" font-size="15" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">0.7% error</text><rect x="760.0" y="276.0" width="410.0" height="226.0" rx="14" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="784.0" y="310.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">The decision it enabled</text><circle cx="790.0" cy="335.0" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="340.0" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">A wider range plus 10 Hz would not fit, known</text><text x="804.0" y="360.2" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">before any code was written.</text><circle cx="790.0" cy="384.3" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="389.3" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">The image encoder is the one large module that</text><text x="804.0" y="409.5" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">does not scale with range, so it is the part to</text><text x="804.0" y="429.7" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">share.</text><circle cx="790.0" cy="453.8" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="458.8" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">Six deployment options ranked by frame-budget</text><text x="804.0" y="479.0" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">share: 40.1% → 54.5% → 42.3% with sharing.</text></svg></div>
+  <figcaption>Light bars are measured on the board, dark bars are predicted; the two marked modules do not scale with the output grid.</figcaption>
+</figure>
 
 <h2 id="step-3-rank-the-deployment-options">Step 3: rank the deployment options</h2>
 <p>With per-block costs known, combinations of models, frame rates and sharing could be priced as frame-budget share (at 10 Hz) without building any of them:</p>
 <table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Change</th>
-<th>Share of 10 Hz budget</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>Today: three models deployed separately</td>
-<td>40.1%</td>
-</tr>
-<tr>
-<td>2</td>
-<td>+ larger occupancy range</td>
-<td>44.8%</td>
-</tr>
-<tr>
-<td>3</td>
-<td>+ occupancy at 10 Hz</td>
-<td>54.5%</td>
-</tr>
-<tr>
-<td>4</td>
-<td>+ occupancy reuses the image backbone and neck</td>
-<td>50.6%</td>
-</tr>
-<tr>
-<td>5</td>
-<td>+ map model reuses them too</td>
-<td>46.2%</td>
-</tr>
-<tr>
-<td>6</td>
-<td>+ map model at 3.3 Hz</td>
-<td>42.3%</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>Option</th>
+					<th>Change</th>
+					<th>Share of 10 Hz budget</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>Today: three models deployed separately</td>
+					<td>40.1%</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>+ larger occupancy range</td>
+					<td>44.8%</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>+ occupancy at 10 Hz</td>
+					<td>54.5%</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>+ occupancy reuses the image backbone and neck</td>
+					<td>50.6%</td>
+			</tr>
+			<tr>
+					<td>5</td>
+					<td>+ map model reuses them too</td>
+					<td>46.2%</td>
+			</tr>
+			<tr>
+					<td>6</td>
+					<td>+ map model at 3.3 Hz</td>
+					<td>42.3%</td>
+			</tr>
+	</tbody>
 </table>
 <p>The conclusion was clear before any code: <strong>a larger range plus 10 Hz only fits if the image backbone and neck are shared</strong>. Deployment becomes two-stage. One backbone model produces feature maps, and the detection, map and occupancy heads consume them. Lowering the map model's frame rate gives further headroom if needed.</p>
 <h2 id="step-4-onemodel-one-backbone-for-five-perception-models">Step 4: OneModel, one backbone for five perception models</h2>
 <p>This led to the OneModel phase-2 plan I wrote: a single image backbone and neck shared by five perception models across 9 cameras at 512 × 1024. The goal was to buy latency now and capacity later.</p>
-<div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">9 cameras</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Shared backbone + neck</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Detection &amp; tracking</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Map</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Occupancy</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Front-view perception</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Traffic lights</span></div>
-</div>
+<figure class="figure" data-fig="onemodel">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-onemodel" role="img" aria-label="OneModel: one shared image encoder for five perception tasks"><title>OneModel: one shared image encoder for five perception tasks</title><defs><marker id="onemodel-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker><marker id="onemodel-ah-blue" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-blue,#2a78d6)"/></marker></defs><rect x="749.8" y="17.5" width="420.2" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="959.9" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">in progress: joint training runs, metrics still below release</text><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">FIVE PERCEPTION TASKS AND 9 CAMERAS SHARE ONE IMAGE BACKBONE AND NECK</text><text x="30.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Today: every task encodes on its own</text><rect x="30.0" y="98.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="119.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,114.0 L206.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Detection + tracking</text><rect x="30.0" y="138.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="159.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,154.0 L206.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Vector map</text><rect x="30.0" y="178.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="199.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,194.0 L206.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><rect x="30.0" y="218.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="239.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,234.0 L206.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Front-view perception</text><rect x="30.0" y="258.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="279.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,274.0 L206.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Traffic lights</text><text x="470.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">OneModel: shared up to the neck, task heads read from it</text><rect x="470.0" y="98.0" width="90.0" height="192.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="515.0" y="189.2" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 cameras</text><text x="515.0" y="208.8" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">512×1024</text><path d="M562.0,194.0 L586.0,194.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-blue)"/><rect x="590.0" y="98.0" width="150.0" height="192.0" rx="10" fill="var(--f-orange,#eb6834)"/><text x="665.0" y="177.2" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">shared</text><text x="665.0" y="200.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">backbone</text><text x="665.0" y="223.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">+ neck</text><path d="M742.0,194.0 L770.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Detection + tracking</text><path d="M742.0,194.0 L770.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Vector map</text><path d="M742.0,194.0 L770.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><path d="M742.0,194.0 L770.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Front-view perception</text><path d="M742.0,194.0 L770.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Traffic lights</text><rect x="1000.0" y="98.0" width="170.0" height="192.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="1085.0" y="160.0" font-size="30" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">5–9 ms</text><text x="1085.0" y="208.3" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">estimated saving per</text><text x="1085.0" y="226.8" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">frame</text><text x="1085.0" y="245.2" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">(rate-weighted)</text><text x="30.0" y="330.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">NOT FROM SCRATCH: RELEASED MODELS SIZE THE BACKBONE AND SEED ITS WEIGHTS</text><rect x="30.0" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="52.0" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="52.0" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="72.0" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Extract</text><text x="44.0" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">features from the five tasks'</text><text x="44.0" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">float checkpoints, stage by</text><text x="44.0" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">stage</text><path d="M246.2,408.0 L260.2,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="261.2" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="283.2" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="283.2" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="303.2" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">PCA redundancy</text><text x="275.2" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">shrink redundant</text><text x="275.2" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">dimensions, keep the</text><text x="275.2" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">information-dense ones</text><path d="M477.4,408.0 L491.4,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="492.4" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="514.4" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="514.4" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="534.4" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Align channels</text><text x="506.4" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">align each checkpoint's</text><text x="506.4" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">channels to a common basis</text><path d="M708.6,408.0 L722.6,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="723.6" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="745.6" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="745.6" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="765.6" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Closed-form solve</text><text x="737.6" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">a linear solve yields the</text><text x="737.6" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">neck and per-task</text><text x="737.6" y="445.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">projections</text><path d="M939.8,408.0 L953.8,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="954.8" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="976.8" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="976.8" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="996.8" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Check error</text><text x="968.8" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">verify reconstruction error</text><text x="968.8" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">on held-out clips</text><text x="30.0" y="496.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">Two quantization-friendly fixes ride along: ReLU6 with a surrogate gradient (ReLU6 forward, a smooth surrogate's derivative backward) and a corrected</text><text x="30.0" y="516.3" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">receptive-field center offset.</text></svg></div>
+</figure>
 
+<p>The full plan (how the backbone was sized, how its pretraining weights were synthesized, how multi-task training is organized) is on the <a href="/projects/onemodel/">OneModel page</a>.</p>
 <ul>
 <li><strong>Latency budget.</strong> Sharing saves an estimated 5–9 ms per frame. That saving is the budget for a larger backbone, so the plan first evaluated a backbone of about twice the capacity.</li>
 <li><strong>Sizing the backbone from existing models.</strong> Features from each task's released float checkpoint were extracted, and PCA measured how redundant each stage's channels were. Redundant dimensions could shrink; information-dense ones had to stay.</li>
@@ -233,10 +227,11 @@
 <li><strong>Measure on the device.</strong> Compiler profiles and board timings disagree in exactly the places that matter.</li>
 <li><strong>Find the invariant.</strong> The part whose cost does not change with the requirement (the image encoder) was the part worth sharing.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="More projects"><a href="/projects/numerical-consistency/">&larr; Layered numerical consistency and release gates</a><a href="/projects/qnn-web/">QNN Web, one-click model conversion for every chip &rarr;</a>
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/quant-deploy-platform/">&larr; A quantization-deployment platform: one truth, one contract, block by default</a><a href="/projects/onemodel/">OneModel: five perception tasks on one shared vision encoder &rarr;</a>
     </nav>
     <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
   </footer>
@@ -252,6 +247,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

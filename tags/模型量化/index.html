@@ -1,76 +1,55 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us"><head>
-  <link href="http://gmpg.org/xfn/11" rel="profile">
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>模型量化 · Yang Hao</title>
+  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="author" content="Yang Hao">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
 
   
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-
-  <title>模型量化 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。</title>
-
-  
-  <meta name="author" content="Howell Yang">
-  <meta property="og:site_name" content="杨豪-博客">
-  
-  <meta property="og:description" content="模型量化 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
-  <meta property="og:title" content="模型量化 - Howell Yang&#39;s Weblog - 我是杨豪，专注于深度学习模型的训练、剪枝、量化、部署以及工程效率优化。欢迎来到我的博客。">
-  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="模型量化 · Yang Hao">
+  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
   <meta property="og:type" content="article">
-  <meta name="keywords" content="Cloud, Containers, Kubernetes, K8s, Docker, CNI, CRI-O, OCI, Linux, CLI, Networking, AWS, Security, DevOps">
+  <meta property="og:url" content="https://www.howellyang.com/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
 
-  
-  <link rel="stylesheet" href="/css/poole.css">
-  <link rel="stylesheet" href="/css/syntax.css">
-  <link rel="stylesheet" href="/css/lanyon.css">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
-  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
-
-  
   <link rel="canonical" href="https://www.howellyang.com/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/">
+  <meta property="og:locale" content="en_US">
 
   
-  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/assets/apple-touch-icon-144-precomposed.png">
-  <link rel="shortcut icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
 
-  
-  <link rel="alternate" type="application/rss+xml" href="https://www.howellyang.com/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/feed.xml" title="杨豪-博客" />
-    <link rel="feed" type="application/rss+xml" href="https://www.howellyang.com/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/feed.xml" title="杨豪-博客" />
-  </head>
-<body class="theme-base-0d">
-<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
 
+  <link rel="alternate" type="application/rss+xml" href="https://www.howellyang.com/tags/%E6%A8%A1%E5%9E%8B%E9%87%8F%E5%8C%96/feed.xml" title="Yang Hao (杨豪)">
 
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-item">
-    <p><img src="/public/img/avatar.jpg" alt="Orbits" width="128" height="128" /></p>
-    <p>利用计算机视觉算法，进行自动驾驶、三维见图、视觉动作捕捉等研究。</p>
+</head>
+
+<body class="is-page lang-en">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/">Yang Hao<span class="site-name-zh">杨豪</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/">CV</a>
+      <a href="/projects/">Projects</a>
+      <a href="/archives/">Blog</a>
+      <a class="lang-switch" href="/zh/" lang="zh" title="中文版">中文</a>
+    </nav>
   </div>
+</header>
 
-  <nav class="sidebar-nav">
-    <a class="sidebar-nav-item " href="/">主页</a>
-    <a class="sidebar-nav-item" href="/archives/">按时间查看</a>
-    <a class="sidebar-nav-item" href="/categories/">按类别查看</a>
-    <a class="sidebar-nav-item" href="/tags/">按标签查看</a>
-    <a class="sidebar-nav-item" href="/about/">关于我</a>
-  </nav>
-
-  <div style="vertical-align:bottom;align-items: flex-end;">
-    <div class="sidebar-item">
-      <p>
-        <a href="https://github.com/Howell-Yang"><i class="fa fa-github fa-3x"></i></a>
-      </p>
-    </div>
-
-    <div class="sidebar-item">
-      <p>&copy; 2005-2022. All rights reserved.</p>
-    </div>
- </div>
-</div>
-
-    <div class="wrap">
-      
-
-      <div class="container content">
+<main id="main" class="container">
 
 
 <div class="post">
@@ -78,17 +57,23 @@
   <span class="post-date"><i class="fa fa-arrow-circle-left" aria-hidden="true"></i> Back to <a href="/tags/">Content Tags</a> &middot; <i class="fa fa-rss" aria-hidden="true"></i> <a href="/tags/%e6%a8%a1%e5%9e%8b%e9%87%8f%e5%8c%96/feed.xml">RSS Feed</a> for this tag</span>
   <ul id="list">
     
-      <li>Tue, May 31, 2022 - <a href="https://www.howellyang.com/2022/05/31/onnx-quantization-for-tensorRT/">onnx2trt-基于onnx的模型量化精度优化工具</a></li>
+      <li>May 31, 2022 - <a href="https://www.howellyang.com/2022/05/31/onnx-quantization-for-tensorRT/">onnx2trt-基于onnx的模型量化精度优化工具</a></li>
 
     
   </ul>
 </div>
 
-      </div>
-    </div>
-
-    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
-
-  </body>
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Yang Hao (杨豪)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> Email</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
 </html>
 

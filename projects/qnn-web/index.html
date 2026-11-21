@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>QNN Web, one-click model conversion for every chip · Yang Hao</title>
   <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
@@ -71,15 +72,14 @@
   <details class="toc" open>
     <summary>On this page</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#the-problem">The problem</a></li>
-<li><a href="#version-1-one-upload-every-target">Version 1: one upload, every target</a></li>
-<li><a href="#version-2-rebuilt-for-reliability-2026">Version 2: rebuilt for reliability (2026)</a></li>
-<li><a href="#an-mcp-layer-for-ai-agents">An MCP layer for AI agents</a></li>
-<li><a href="#lessons">Lessons</a></li>
-</ul>
+  <ul>
+    <li><a href="#the-problem">The problem</a></li>
+    <li><a href="#version-1-one-upload-every-target">Version 1: one upload, every target</a></li>
+    <li><a href="#version-2-rebuilt-for-reliability-2026">Version 2: rebuilt for reliability (2026)</a></li>
+    <li><a href="#an-mcp-layer-for-ai-agents">An MCP layer for AI agents</a></li>
+    <li><a href="#lessons">Lessons</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
@@ -92,17 +92,9 @@
 </ol>
 <p>That was during production releases roughly every two weeks, across many models.</p>
 <h2 id="version-1-one-upload-every-target">Version 1: one upload, every target</h2>
-<div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Web front end</span><span class="pipe-note">upload ONNX / IR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Config generator</span><span class="pipe-note">from the graph</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">gRPC dispatch</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Conversion servers</span><span class="pipe-note">Orin · J5 · J6</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Engines + logs</span><span class="pipe-note">download</span></div>
-</div>
+<figure class="figure" data-fig="qnn-web">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 452" class="fig fig-qnn-web" role="img" aria-label="QNN Web: one upload, engines for every target chip"><title>QNN Web: one upload, engines for every target chip</title><defs><marker id="qnn-web-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">UPLOAD A MODEL ONCE, GET ARTIFACTS FOR EVERY TARGET CHIP</text><rect x="30.0" y="66.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="99.0" font-size="16.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Web front end</text><path d="M232,93 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><rect x="30.0" y="136.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="169.0" font-size="16.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">CLI and scripts</text><path d="M232,163 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><rect x="30.0" y="206.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="239.0" font-size="16.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">AI agents (MCP)</text><path d="M232,233 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><path d="M262.0,163.0 L286.0,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="290.0" y="60.0" width="560.0" height="206.0" rx="14" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="312.0" y="94.0" font-size="19" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">QNN Web conversion service</text><text x="828.0" y="94.0" font-size="14" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="end">gRPC front / back end</text><rect x="310.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="332.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="332.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="352.0" y="144.0" font-size="13.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Read the graph</text><text x="324.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">configs generated</text><text x="324.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">from the ONNX</text><text x="324.0" y="213.2" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">graph; no</text><text x="324.0" y="232.8" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">hand-edited JSON</text><path d="M474.0,181.0 L487.0,181.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="489.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="511.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="511.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="531.0" y="144.0" font-size="13.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Job store, queue</text><text x="503.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">job state persisted,</text><text x="503.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">retryable and</text><text x="503.0" y="213.2" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">traceable</text><path d="M653.0,181.0 L666.0,181.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="668.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="690.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="690.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="710.0" y="144.0" font-size="13.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Build and cache</text><text x="682.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">TensorRT timing</text><text x="682.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">cache skips</text><text x="682.0" y="213.2" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">repeated kernel</text><text x="682.0" y="232.8" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">tuning</text><rect x="910.0" y="62.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="89.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">NVIDIA Orin · TensorRT</text><path d="M854.0,163.0 L906.0,83.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="114.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="141.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">Horizon J5 / J6</text><path d="M854.0,163.0 L906.0,135.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="166.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="193.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">Qualcomm</text><path d="M854.0,163.0 L906.0,187.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="218.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="245.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">AXERA</text><path d="M854.0,163.0 L906.0,239.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="30.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="54.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">4,273</text><text x="54.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">production model conversions</text><rect x="417.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="441.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">30–60 → 5 min</text><text x="441.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">per build</text><rect x="804.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="828.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">−80%</text><text x="828.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">manual effort per conversion</text></svg></div>
+</figure>
 
 <ul>
 <li><strong>Front and back end separated, talking over gRPC</strong>, including file transfer. A user uploads once and gets engines for every target.</li>
@@ -110,57 +102,53 @@
 <li><strong>TensorRT timing cache</strong>: kernel-selection results are reused across builds of similar models, cutting a typical build from 30–60 minutes to about 5.</li>
 <li><strong>New hardware at almost no cost</strong>: adding Orin and later J6 targets meant adding a conversion server, not changing every user's workflow.</li>
 </ul>
-<aside class="callout callout-result"><p>4,273 production conversions across several automaker programs, with about 80% less manual effort per conversion. Model owners could convert their own models during fast production iteration.</p></aside>
+<aside class="callout callout-result">4,273 production conversions across several automaker programs, with about 80% less manual effort per conversion. Model owners could convert their own models during fast production iteration.</aside>
 
 <h2 id="version-2-rebuilt-for-reliability-2026">Version 2: rebuilt for reliability (2026)</h2>
 <p>As production work grew, three problems appeared: conversions failed intermittently, users could not tell what state a job was in, and submitting several jobs at once blocked the service.</p>
 <table>
-<thead>
-<tr>
-<th>Problem</th>
-<th>Change</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Unknown job state</td>
-<td>Every job's state is stored in a database and updated as it moves, including a new "transferring" state. The page shows a status column and a restart button.</td>
-</tr>
-<tr>
-<td>Chatty front end</td>
-<td>The page queries status only when it is refreshed, instead of polling constantly.</td>
-</tr>
-<tr>
-<td>Blocking on concurrent submissions</td>
-<td>A task queue; a job already queued or already converted is not submitted again.</td>
-</tr>
-<tr>
-<td>Wasted conversions</td>
-<td>LibTorch conversions are split by type, so only the requested variants are built.</td>
-</tr>
-<tr>
-<td>Disk filling up</td>
-<td>Artifacts stay on the conversion machines, not the front end. Periodic cleanup backs up IR files first and marks cleaned jobs as such. The database stores paths, not model files.</td>
-</tr>
-<tr>
-<td>Fragile front/back-end communication</td>
-<td>The front end hands each request to a conversion server and returns that server's address. Each server keeps its own record of finished work. Heartbeat, status and file-transfer services were added.</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>Problem</th>
+					<th>Change</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Unknown job state</td>
+					<td>Every job's state is stored in a database and updated as it moves, including a new &quot;transferring&quot; state. The page shows a status column and a restart button.</td>
+			</tr>
+			<tr>
+					<td>Chatty front end</td>
+					<td>The page queries status only when it is refreshed, instead of polling constantly.</td>
+			</tr>
+			<tr>
+					<td>Blocking on concurrent submissions</td>
+					<td>A task queue; a job already queued or already converted is not submitted again.</td>
+			</tr>
+			<tr>
+					<td>Wasted conversions</td>
+					<td>LibTorch conversions are split by type, so only the requested variants are built.</td>
+			</tr>
+			<tr>
+					<td>Disk filling up</td>
+					<td>Artifacts stay on the conversion machines, not the front end. Periodic cleanup backs up IR files first and marks cleaned jobs as such. The database stores paths, not model files.</td>
+			</tr>
+			<tr>
+					<td>Fragile front/back-end communication</td>
+					<td>The front end hands each request to a conversion server and returns that server's address. Each server keeps its own record of finished work. Heartbeat, status and file-transfer services were added.</td>
+			</tr>
+	</tbody>
 </table>
 <p>Qualcomm and Orin conversion paths were added in the same rebuild.</p>
 <h2 id="an-mcp-layer-for-ai-agents">An MCP layer for AI agents</h2>
 <p>In 2026 I wrapped the service in a Model Context Protocol (MCP) server, so coding agents such as Cursor can drive conversions as tools instead of through a web page.</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor or script</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">MCP server</span><span class="pipe-note">protocol only</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Task scheduler</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Conversion server</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Result</span><span class="pipe-note">direct link or stream</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor or script</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">MCP server</span><span class="pipe-note">protocol only</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Task scheduler</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Conversion server</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Result</span><span class="pipe-note">direct link or stream</span></div>
 </div>
 
 <p>The MCP layer does <strong>no conversion work itself</strong>. It exposes four tools:</p>
@@ -177,10 +165,11 @@
 <li><strong>State belongs in a database.</strong> Most reliability problems came from job state that lived only in memory or in a browser tab.</li>
 <li><strong>Keep protocol layers thin.</strong> The MCP server only translates; one conversion path means one place to fix bugs.</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="More projects"><a href="/projects/latency-modeling/">&larr; Predicting on-board latency before writing code</a><a href="/projects/axera-m95/">Urban NOA on a new chip (AXERA M95) &rarr;</a>
+    <nav class="post-nav" aria-label="More projects"><a href="/projects/onemodel/">&larr; OneModel: five perception tasks on one shared vision encoder</a><a href="/projects/axera-m95/">Urban NOA on a new chip (AXERA M95) &rarr;</a>
     </nav>
     <p class="back-links"><a href="/projects/">All projects</a> &middot; <a href="/">Back to CV</a></p>
   </footer>
@@ -196,6 +185,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

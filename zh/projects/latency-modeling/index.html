@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>写代码之前，先预测板端耗时 · 杨豪</title>
   <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
@@ -71,155 +72,148 @@
   <details class="toc" open>
     <summary>本页目录</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#_1">问题</a></li>
-<li><a href="#profile">第一步：在板端分模块 profile</a></li>
-<li><a href="#_2">第二步：判断每个模块如何缩放</a></li>
-<li><a href="#_3">第三步：给部署方案排序</a></li>
-<li><a href="#onemodel-backbone">第四步：OneModel，五个感知模型共用一个 backbone</a></li>
-<li><a href="#_4">经验</a></li>
-</ul>
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#第一步在板端分模块-profile">第一步：在板端分模块 profile</a></li>
+    <li><a href="#第二步判断每个模块如何缩放">第二步：判断每个模块如何缩放</a></li>
+    <li><a href="#第三步给部署方案排序">第三步：给部署方案排序</a></li>
+    <li><a href="#第四步onemodel五个感知模型共用一个-backbone">第四步：OneModel，五个感知模型共用一个 backbone</a></li>
+    <li><a href="#经验">经验</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
-    <h2 id="_1">问题</h2>
+    <h2 id="问题">问题</h2>
 <p>产品同时提出了 Occupancy 网络的两项升级：大幅扩大输出范围（从 28.8 m × 86.4 m 扩大到约 48 m × 136 m），以及帧率从 5 Hz 提升到 10 Hz。任何一项单独上线，Occupancy 模型的开销都大约翻倍。芯片上同时还跑着检测跟踪和地图模型，所以真正的问题是：</p>
 <blockquote>
 <p>两项升级能一起上线吗？如果不能，其他地方要做什么改变来腾出空间？</p>
 </blockquote>
 <p>把每个方案都实现一遍再测，需要几周。我用一个模型来回答这个问题。</p>
-<h2 id="profile">第一步：在板端分模块 profile</h2>
+<h2 id="第一步在板端分模块-profile">第一步：在板端分模块 profile</h2>
 <p>把网络拆成若干模块，每个模块的耗时都在板端实测，而不只是读编译器给出的估计。板端耗时和编译器 profile 并不一致（整模型约 8.8 ms profile 对 10.0 ms 实测），而且各模块的差异也不均匀。</p>
-<h2 id="_2">第二步：判断每个模块如何缩放</h2>
+<h2 id="第二步判断每个模块如何缩放">第二步：判断每个模块如何缩放</h2>
 <p>保持 0.3 m 的输出分辨率，输出网格从 96 × 288 增大到 160 × 448，约 <strong>2.6 倍</strong>。再按开销是否依赖这个网格，对每个模块分类：</p>
 <table>
-<thead>
-<tr>
-<th>模块</th>
-<th>是否依赖输出网格？</th>
-<th>板端实测</th>
-<th>扩大范围后的估计</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>图像 backbone + neck（5 路相机）</td>
-<td>否：在图像空间计算</td>
-<td>3.92 ms</td>
-<td>3.92 ms</td>
-</tr>
-<tr>
-<td>View transform（图像 → BEV）</td>
-<td>是，按比例</td>
-<td>0.92 ms</td>
-<td>2.39 ms</td>
-</tr>
-<tr>
-<td>点云分支</td>
-<td>部分（neck 会缩放）</td>
-<td>0.48 ms</td>
-<td>1.33 ms</td>
-</tr>
-<tr>
-<td>时序融合</td>
-<td>是</td>
-<td>0.69 ms</td>
-<td>1.79 ms</td>
-</tr>
-<tr>
-<td>BEV encoder（backbone + neck）</td>
-<td>是</td>
-<td>1.88 ms</td>
-<td>4.90 ms</td>
-</tr>
-<tr>
-<td>近处高分辨率 head</td>
-<td>否：区域固定</td>
-<td>0.45 ms</td>
-<td>0.45 ms</td>
-</tr>
-<tr>
-<td>主 Occupancy head</td>
-<td>是</td>
-<td>1.77 ms</td>
-<td>4.61 ms</td>
-</tr>
-<tr>
-<td><strong>整模型</strong></td>
-<td></td>
-<td><strong>≈ 10.0 ms</strong></td>
-<td><strong>19.38 ms</strong></td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>模块</th>
+					<th>是否依赖输出网格？</th>
+					<th>板端实测</th>
+					<th>扩大范围后的估计</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>图像 backbone + neck（5 路相机）</td>
+					<td>否：在图像空间计算</td>
+					<td>3.92 ms</td>
+					<td>3.92 ms</td>
+			</tr>
+			<tr>
+					<td>View transform（图像 → BEV）</td>
+					<td>是，按比例</td>
+					<td>0.92 ms</td>
+					<td>2.39 ms</td>
+			</tr>
+			<tr>
+					<td>点云分支</td>
+					<td>部分（neck 会缩放）</td>
+					<td>0.48 ms</td>
+					<td>1.33 ms</td>
+			</tr>
+			<tr>
+					<td>时序融合</td>
+					<td>是</td>
+					<td>0.69 ms</td>
+					<td>1.79 ms</td>
+			</tr>
+			<tr>
+					<td>BEV encoder（backbone + neck）</td>
+					<td>是</td>
+					<td>1.88 ms</td>
+					<td>4.90 ms</td>
+			</tr>
+			<tr>
+					<td>近处高分辨率 head</td>
+					<td>否：区域固定</td>
+					<td>0.45 ms</td>
+					<td>0.45 ms</td>
+			</tr>
+			<tr>
+					<td>主 Occupancy head</td>
+					<td>是</td>
+					<td>1.77 ms</td>
+					<td>4.61 ms</td>
+			</tr>
+			<tr>
+					<td><strong>整模型</strong></td>
+					<td></td>
+					<td><strong>≈ 10.0 ms</strong></td>
+					<td><strong>19.38 ms</strong></td>
+			</tr>
+	</tbody>
 </table>
-<aside class="callout callout-result"><p><strong>实现后实测：19.25 ms</strong>，预测为 19.38 ms，误差 0.7%。图像编码器是唯一不受范围变化影响的大模块，因此它显然就是应该共享的部分。</p></aside>
+<aside class="callout callout-result"><strong>实现后实测：19.25 ms</strong>，预测为 19.38 ms，误差 0.7%。图像编码器是唯一不受范围变化影响的大模块，因此它显然就是应该共享的部分。</aside>
 
-<aside class="callout callout-caveat"><p>0.7% 只针对这个模型。对另一种 view transform 结构做的类似估计，误差更大。价值在于“预测、测量、修正”的闭环，而不是某一个数字。</p></aside>
+<aside class="callout callout-caveat">0.7% 只针对这个模型。对另一种 view transform 结构做的类似估计，误差更大。价值在于“预测、测量、修正”的闭环，而不是某一个数字。</aside>
 
-<h2 id="_3">第三步：给部署方案排序</h2>
+<figure class="figure" data-fig="latency">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" class="fig fig-latency" role="img" aria-label="structural latency model: predicted vs measured"><title>structural latency model: predicted vs measured</title><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">输出网格扩大 2.6 倍后，每个模块的板端耗时如何变化（毫秒）</text><line x1="250.0" y1="64.0" x2="250.0" y2="406.0" stroke="var(--f-rule,#d8dde4)" stroke-width="1.4" stroke-linecap="round"/><g class="lrow" data-i="0"><text x="30.0" y="91.0" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">图像 backbone + neck</text><rect x="250.0" y="70.0" width="301.5" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="86.0" width="301.5" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="558.5" y="82.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">3.92</text><text x="558.5" y="98.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">3.92</text><rect x="603.5" y="74.0" width="99.0" height="22.0" rx="11.0" fill="var(--f-aqua-soft,#def5ec)"/><text x="653.0" y="89.5" font-size="12.5" font-weight="600" fill="var(--f-aqua-ink,#0b6b49)" text-anchor="middle">不随网格变化</text></g><g class="lrow" data-i="1"><text x="30.0" y="141.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">View transform</text><rect x="250.0" y="120.0" width="70.8" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="136.0" width="183.8" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="327.8" y="132.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.92</text><text x="440.8" y="148.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">2.39</text></g><g class="lrow" data-i="2"><text x="30.0" y="191.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">点云分支</text><rect x="250.0" y="170.0" width="36.9" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="186.0" width="102.3" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="293.9" y="182.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.48</text><text x="359.3" y="198.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">1.33</text></g><g class="lrow" data-i="3"><text x="30.0" y="241.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">时序融合</text><rect x="250.0" y="220.0" width="53.1" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="236.0" width="137.7" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="310.1" y="232.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.69</text><text x="394.7" y="248.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">1.79</text></g><g class="lrow" data-i="4"><text x="30.0" y="291.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">BEV encoder</text><rect x="250.0" y="270.0" width="144.6" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="286.0" width="376.9" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="401.6" y="282.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">1.88</text><text x="633.9" y="298.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">4.90</text></g><g class="lrow" data-i="5"><text x="30.0" y="341.0" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">近处高分辨率 head</text><rect x="250.0" y="320.0" width="34.6" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="336.0" width="34.6" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="291.6" y="332.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">0.45</text><text x="291.6" y="348.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">0.45</text><rect x="336.6" y="324.0" width="99.0" height="22.0" rx="11.0" fill="var(--f-aqua-soft,#def5ec)"/><text x="386.1" y="339.5" font-size="12.5" font-weight="600" fill="var(--f-aqua-ink,#0b6b49)" text-anchor="middle">不随网格变化</text></g><g class="lrow" data-i="6"><text x="30.0" y="391.0" font-size="15" font-weight="500" fill="var(--f-ink,#141c27)" text-anchor="start">主 Occupancy head</text><rect x="250.0" y="370.0" width="136.2" height="14.0" rx="3" fill="#9ec5f4"/><rect x="250.0" y="386.0" width="354.6" height="14.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="393.2" y="382.0" font-size="12.5" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="start">1.77</text><text x="611.6" y="398.0" font-size="12.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">4.61</text></g><rect x="250.0" y="430.0" width="26.0" height="12.0" rx="3" fill="#9ec5f4"/><text x="284.0" y="441.0" font-size="13" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">板端实测（96×288 网格）</text><rect x="470.5" y="430.0" width="26.0" height="12.0" rx="3" fill="var(--f-blue,#2a78d6)"/><text x="504.5" y="441.0" font-size="13" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">模型预测（160×448 网格）</text><text x="250.0" y="468.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">两个标注的模块不随输出网格变化，预测值等于实测值。</text><rect x="760.0" y="62.0" width="410.0" height="196.0" rx="14" fill="var(--f-soft,#f3f6fa)"/><text x="784.0" y="98.0" font-size="15" font-weight="700" fill="var(--f-muted,#5e6a79)" text-anchor="start">整模型</text><text x="784.0" y="152.0" font-size="40" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="start">19.38 ms</text><text x="992.0" y="152.0" font-size="16" font-weight="500" fill="var(--f-body,#2a3441)" text-anchor="start">预测</text><text x="784.0" y="204.0" font-size="40" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">19.25 ms</text><text x="992.0" y="204.0" font-size="16" font-weight="500" fill="var(--f-body,#2a3441)" text-anchor="start">实现后板端实测</text><rect x="784.0" y="222.5" width="101.1" height="27.0" rx="13.5" fill="var(--f-orange-soft,#fdebe2)"/><text x="834.6" y="241.4" font-size="15" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">误差 0.7%</text><rect x="760.0" y="276.0" width="410.0" height="226.0" rx="14" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="784.0" y="310.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">它支撑的决策</text><circle cx="790.0" cy="335.0" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="340.0" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">扩大范围再加 10 Hz，在写代码之前就知道放不下。</text><circle cx="790.0" cy="364.2" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="369.2" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">图像编码器是唯一不随范围变化的大模块，所以它就</text><text x="804.0" y="389.3" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">是该共享的部分。</text><circle cx="790.0" cy="413.5" r="3.5" fill="var(--f-orange,#eb6834)"/><text x="804.0" y="418.5" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">六种部署方案按帧预算占比排序：40.1% → 54.5%</text><text x="804.0" y="438.7" font-size="14.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">→ 共享后 42.3%。</text></svg></div>
+  <figcaption>浅色是板端实测，深色是模型预测；标出的两个模块不随输出网格变化。</figcaption>
+</figure>
+
+<h2 id="第三步给部署方案排序">第三步：给部署方案排序</h2>
 <p>有了各模块的开销，不需要实现任何方案，就能把模型、帧率和共享方式的组合换算成 10 Hz 下的帧预算占比：</p>
 <table>
-<thead>
-<tr>
-<th>方案</th>
-<th>变化</th>
-<th>占 10 Hz 帧预算</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td>现状：三个模型分别部署</td>
-<td>40.1%</td>
-</tr>
-<tr>
-<td>2</td>
-<td>+ Occupancy 扩大范围</td>
-<td>44.8%</td>
-</tr>
-<tr>
-<td>3</td>
-<td>+ Occupancy 提升到 10 Hz</td>
-<td>54.5%</td>
-</tr>
-<tr>
-<td>4</td>
-<td>+ Occupancy 复用图像 backbone 和 neck</td>
-<td>50.6%</td>
-</tr>
-<tr>
-<td>5</td>
-<td>+ 地图模型也复用</td>
-<td>46.2%</td>
-</tr>
-<tr>
-<td>6</td>
-<td>+ 地图模型降到 3.3 Hz</td>
-<td>42.3%</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>方案</th>
+					<th>变化</th>
+					<th>占 10 Hz 帧预算</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>1</td>
+					<td>现状：三个模型分别部署</td>
+					<td>40.1%</td>
+			</tr>
+			<tr>
+					<td>2</td>
+					<td>+ Occupancy 扩大范围</td>
+					<td>44.8%</td>
+			</tr>
+			<tr>
+					<td>3</td>
+					<td>+ Occupancy 提升到 10 Hz</td>
+					<td>54.5%</td>
+			</tr>
+			<tr>
+					<td>4</td>
+					<td>+ Occupancy 复用图像 backbone 和 neck</td>
+					<td>50.6%</td>
+			</tr>
+			<tr>
+					<td>5</td>
+					<td>+ 地图模型也复用</td>
+					<td>46.2%</td>
+			</tr>
+			<tr>
+					<td>6</td>
+					<td>+ 地图模型降到 3.3 Hz</td>
+					<td>42.3%</td>
+			</tr>
+	</tbody>
 </table>
 <p>结论在写代码之前就很清楚：<strong>扩大范围加 10 Hz，只有在共享图像 backbone 和 neck 时才放得下</strong>。部署改为两阶段：一个 backbone 模型输出特征图，检测、地图和 Occupancy 的 head 读取这些特征。如有需要，降低地图模型帧率还能再腾出空间。</p>
-<h2 id="onemodel-backbone">第四步：OneModel，五个感知模型共用一个 backbone</h2>
+<h2 id="第四步onemodel五个感知模型共用一个-backbone">第四步：OneModel，五个感知模型共用一个 backbone</h2>
 <p>由此我写了 OneModel 二期方案：五个感知模型、9 路 512 × 1024 相机共享一个图像 backbone 和 neck。目标是现在省出耗时，以后换来容量。</p>
-<div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">9 路相机</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">共享 backbone + neck</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">检测与跟踪</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">地图</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Occupancy</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">前视感知</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">红绿灯</span></div>
-</div>
+<figure class="figure" data-fig="onemodel">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-onemodel" role="img" aria-label="OneModel: one shared image encoder for five perception tasks"><title>OneModel: one shared image encoder for five perception tasks</title><defs><marker id="onemodel-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker><marker id="onemodel-ah-blue" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-blue,#2a78d6)"/></marker></defs><rect x="855.2" y="17.5" width="314.8" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1012.6" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">进行中：联合训练已跑通，指标尚低于发版模型</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">五个感知任务、9 路相机共享一个图像 backbone 与 neck</text><text x="30.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">现状：每个任务各自编码</text><rect x="30.0" y="98.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="119.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,114.0 L206.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">检测与跟踪</text><rect x="30.0" y="138.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="159.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,154.0 L206.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">矢量地图</text><rect x="30.0" y="178.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="199.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,194.0 L206.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><rect x="30.0" y="218.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="239.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,234.0 L206.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">前视感知</text><rect x="30.0" y="258.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="279.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,274.0 L206.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">红绿灯</text><text x="470.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">OneModel：共享到 neck，任务头各自读取</text><rect x="470.0" y="98.0" width="90.0" height="192.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="515.0" y="189.2" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 路相机</text><text x="515.0" y="208.8" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">512×1024</text><path d="M562.0,194.0 L586.0,194.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-blue)"/><rect x="590.0" y="98.0" width="150.0" height="192.0" rx="10" fill="var(--f-orange,#eb6834)"/><text x="665.0" y="177.2" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">共享</text><text x="665.0" y="200.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">backbone</text><text x="665.0" y="223.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">+ neck</text><path d="M742.0,194.0 L770.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">检测与跟踪</text><path d="M742.0,194.0 L770.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">矢量地图</text><path d="M742.0,194.0 L770.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><path d="M742.0,194.0 L770.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">前视感知</text><path d="M742.0,194.0 L770.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">红绿灯</text><rect x="1000.0" y="98.0" width="170.0" height="192.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="1085.0" y="160.0" font-size="30" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">5–9 ms</text><text x="1085.0" y="217.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">预计每帧节省</text><text x="1085.0" y="236.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">（按帧率折算的估计）</text><text x="30.0" y="330.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">不从零开始：用已发版模型确定 backbone 规模并合成初始权重</text><rect x="30.0" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="52.0" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="52.0" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="72.0" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">提特征</text><text x="44.0" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">用 5 个任务的浮点 checkpoint</text><text x="44.0" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">分别提取各阶段特征</text><path d="M246.2,408.0 L260.2,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="261.2" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="283.2" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="283.2" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="303.2" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">PCA 冗余分析</text><text x="275.2" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">冗余的维度缩减，信息密集的维</text><text x="275.2" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">度保留</text><path d="M477.4,408.0 L491.4,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="492.4" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="514.4" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="514.4" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="534.4" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">通道对齐</text><text x="506.4" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">把各 checkpoint 的通道对齐到</text><text x="506.4" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">同一组基</text><path d="M708.6,408.0 L722.6,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="723.6" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="745.6" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="745.6" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="765.6" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">闭式求解</text><text x="737.6" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">线性求解得到 neck 与各任务的</text><text x="737.6" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">投影层</text><path d="M939.8,408.0 L953.8,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="954.8" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="976.8" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="976.8" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="996.8" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">检查重建误差</text><text x="968.8" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">在独立片段上验证合成权重的重</text><text x="968.8" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">建误差</text><text x="30.0" y="496.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">同时做两项量化友好的修正：ReLU6 + 代理梯度（前向用 ReLU6，反向用平滑代理函数的导数）；修正 backbone 感受野中心偏移。</text></svg></div>
+</figure>
 
+<p>完整的方案（backbone 规模怎么定、预训练权重怎么合成、多任务训练怎么组织）见 <a href="/zh/projects/onemodel/">OneModel 页面</a>。</p>
 <ul>
 <li><strong>耗时预算。</strong> 共享预计每帧节省 5–9 ms。这部分节省就是更大 backbone 的预算，所以方案先评估了容量约为两倍的 backbone。</li>
 <li><strong>用已有模型确定 backbone 规模。</strong> 用各任务已发版的浮点 checkpoint 提取特征，用 PCA 衡量每个阶段通道的冗余度：冗余的维度可以缩减，信息密集的维度必须保留。</li>
@@ -227,16 +221,17 @@
 <li><strong>训练方式。</strong> 每个 step 所有 GPU 都训练同一个任务的数据，按计划的训练曝光量在任务间轮转。这样可以复用各任务的数据加载，也让分布式训练保持一致。</li>
 <li><strong>上线路径。</strong> 先把每个模型改成共享架构并单独发版；再两两合并，从跟踪 + Occupancy 开始；最后五个一起合并。只有所有任务都不回退，合并才能发版。</li>
 </ul>
-<h2 id="_4">经验</h2>
+<h2 id="经验">经验</h2>
 <ul>
 <li><strong>先建模，再动手。</strong> 一个分模块的耗时模型，回答了一个原本需要几周实现才能回答的问题。</li>
 <li><strong>在设备上测量。</strong> 编译器 profile 和板端耗时恰恰在关键的地方不一致。</li>
 <li><strong>找到不变的部分。</strong> 开销不随需求变化的部分（图像编码器），正是值得共享的部分。</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/numerical-consistency/">&larr; 分层数值一致性与发版门禁</a><a href="/zh/projects/qnn-web/">QNN Web：面向所有芯片的一键模型转换 &rarr;</a>
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/quant-deploy-platform/">&larr; 平台化量化部署框架：一个真值、一份契约、默认阻断</a><a href="/zh/projects/onemodel/">OneModel：五个感知任务共享一个视觉编码器 &rarr;</a>
     </nav>
     <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
   </footer>
@@ -252,6 +247,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

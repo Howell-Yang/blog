@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>Projects · Yang Hao</title>
-  <meta name="description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta name="description" content="Detailed write-ups of Yang Hao&#39;s work on model quantization, numerical consistency, latency modeling and deployment platforms for autonomous driving.">
   <meta name="author" content="Yang Hao">
   <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
 
   
   <meta property="og:site_name" content="Yang Hao (杨豪)">
   <meta property="og:title" content="Projects · Yang Hao">
-  <meta property="og:description" content="Yang Hao (杨豪): model quantization and deployment lead for autonomous driving at QCraft. PTQ, QAT and quantization-aware distillation; on-device inference on Horizon, NVIDIA, Qualcomm and AXERA chips; ML infrastructure.">
+  <meta property="og:description" content="Detailed write-ups of Yang Hao&#39;s work on model quantization, numerical consistency, latency modeling and deployment platforms for autonomous driving.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.howellyang.com/projects/">
   <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
@@ -53,7 +54,13 @@
 <div class="projects-index">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/">CV</a><span aria-hidden="true">/</span>Projects</nav>
   <h1 class="page-title">Projects</h1>
-  <p>…</p>
+  <p>Each page covers one project: the problem, the method step by step, the results, and what I learned. Numbers are from internal measurements; where a result holds only for a specific model or configuration, the page says so.</p>
+<figure class="figure" data-fig="model-portfolio">
+  <div class="fig-scroll" title="Click to enlarge; click again or press Esc to close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 592" class="fig fig-model-portfolio" role="img" aria-label="model families and their quantization difficulties"><title>model families and their quantization difficulties</title><text x="30.0" y="36.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">ABOUT 19 PRODUCTION MODELS FALL INTO 8 FAMILIES, EACH WITH ITS OWN QUANTIZATION DIFFICULTY</text><g class="fam" data-i="0"><rect x="30.0" y="60.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="60.0" width="271.5" height="96.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="30.0" y="134.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="46.0" y="92.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Monocular 3D detection</text><text x="46.0" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">all-conv backbone, keypoint heads</text><text x="46.0" y="182.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="46.0" y="206.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">INT8 is nearly lossless; watch</text><text x="46.0" y="225.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">output bit-widths and underflow in</text><text x="46.0" y="245.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">mixed-precision training</text></g><g class="fam" data-i="1"><rect x="319.5" y="60.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="319.5" y="60.0" width="271.5" height="96.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="319.5" y="134.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="335.5" y="92.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Front-view multi-task 2D</text><text x="335.5" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">conv backbone, query-based heads</text><text x="335.5" y="182.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="335.5" y="206.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">TopK, deformable sampling,</text><text x="335.5" y="225.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">LayerNorm, Softmax: mixed</text><text x="335.5" y="245.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">INT8/INT16 plus two-stage</text><text x="335.5" y="265.2" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">distillation</text></g><g class="fam" data-i="2"><rect x="609.0" y="60.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="609.0" y="60.0" width="271.5" height="96.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="609.0" y="134.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="625.0" y="92.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">LiDAR detection, segmentation</text><text x="625.0" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">pillar encoding, BEV convolutions</text><text x="625.0" y="182.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="625.0" y="206.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">scatter cannot run in fixed point, so</text><text x="625.0" y="225.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">it is rewritten as a gather; a 1-LSB</text><text x="625.0" y="245.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">input change flips outputs</text></g><g class="fam" data-i="3"><rect x="898.5" y="60.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="898.5" y="60.0" width="271.5" height="96.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="898.5" y="134.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="914.5" y="92.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Driving occupancy</text><text x="914.5" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">cameras and LiDAR, grid projection,</text><text x="914.5" y="133.6" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">temporal memory</text><text x="914.5" y="182.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="914.5" y="206.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">sampling grids need INT16; feeding</text><text x="914.5" y="225.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">the hidden state back requires</text><text x="914.5" y="245.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">equal input and output scales</text></g><g class="fam" data-i="4"><rect x="30.0" y="326.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="326.0" width="271.5" height="96.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="30.0" y="400.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="46.0" y="358.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Vector map</text><text x="46.0" y="383.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">BEV features, several query polyline</text><text x="46.0" y="399.6" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">decoders</text><text x="46.0" y="448.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="46.0" y="472.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">INT16 activations in the decoders;</text><text x="46.0" y="491.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">softmax rewritten as piecewise</text><text x="46.0" y="511.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">LUTs; latency driven by node</text><text x="46.0" y="531.2" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">count, not FLOPs</text></g><g class="fam" data-i="5"><rect x="319.5" y="326.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="319.5" y="326.0" width="271.5" height="96.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="319.5" y="400.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="335.5" y="358.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Sparse 4D detection, tracking</text><text x="335.5" y="383.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">instance queries, deformable</text><text x="335.5" y="399.6" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">sampling, cross-frame instances</text><text x="335.5" y="448.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="335.5" y="472.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">all-INT16 decoder; fixed scale on</text><text x="335.5" y="491.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">the projection divide; many LUT</text><text x="335.5" y="511.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">operators</text></g><g class="fam" data-i="6"><rect x="609.0" y="326.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="609.0" y="326.0" width="271.5" height="96.0" rx="12" fill="var(--f-violet-soft,#ebe8fb)"/><rect x="609.0" y="400.0" width="271.5" height="22.0" rx="0" fill="var(--f-violet-soft,#ebe8fb)"/><text x="625.0" y="358.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">Prediction and planning</text><text x="625.0" y="383.0" font-size="12.6" font-weight="500" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="start">structured inputs, multi-step</text><text x="625.0" y="399.6" font-size="12.6" font-weight="500" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="start">trajectory generation</text><text x="625.0" y="448.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="625.0" y="472.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">whole-graph INT16; error</text><text x="625.0" y="491.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">compounds through depth and</text><text x="625.0" y="511.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">iterations, so full QAT is required</text></g><g class="fam" data-i="7"><rect x="898.5" y="326.0" width="271.5" height="248.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="898.5" y="326.0" width="271.5" height="96.0" rx="12" fill="var(--f-violet-soft,#ebe8fb)"/><rect x="898.5" y="400.0" width="271.5" height="22.0" rx="0" fill="var(--f-violet-soft,#ebe8fb)"/><text x="914.5" y="358.0" font-size="14.0" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">End-to-end planning</text><text x="914.5" y="383.0" font-size="12.6" font-weight="500" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="start">perception to planning in one model</text><text x="914.5" y="448.0" font-size="12" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.9">DIFFICULTY</text><text x="914.5" y="472.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">small numeric differences grow</text><text x="914.5" y="491.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">over time: large-scale</text><text x="914.5" y="511.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">quantization-aware distillation</text><text x="914.5" y="531.2" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">against float</text></g></svg></div>
+  <figcaption>About 19 production models fall into 8 families, each with its own quantization difficulty: quantization is not the same job done 19 times.</figcaption>
+</figure>
+
+
   <article class="project">
     <div class="project-visual">
       <div class="metric"><span class="metric-value">2 → 0.5</span><span class="metric-label">points of quantization loss, PTQ → QAT, on five perception models</span></div>
@@ -89,6 +96,17 @@
   </article>
   <article class="project">
     <div class="project-visual">
+      <div class="metric"><span class="metric-value">6</span><span class="metric-label">stages in one pipeline, with an identity manifest running through it</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/projects/quant-deploy-platform/">A quantization-deployment platform: one truth, one contract, block by default</a></h3>
+      <p class="project-where">QCraft &middot; Nov 2026 onward</p>
+      <p>Once the quantization framework worked, what remained was precision chosen by hand, errors that were hard to locate, and training that did not line up with deployment. This is the target architecture I led: the fixed-point model as the single source of truth, versioned contracts between training, conversion and the vehicle, and a blocking gate at every hop. It is a design draft.</p>
+      <p class="read-more"><a href="/projects/quant-deploy-platform/">Read the details &rarr;</a></p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
       <div class="metric"><span class="metric-value">0.7%</span><span class="metric-label">error, 19.38 ms predicted vs 19.25 ms measured</span></div>
     </div>
     <div class="project-body">
@@ -96,6 +114,17 @@
       <p class="project-where">QCraft &middot; 2025 – 2026</p>
       <p>A block-level latency model, calibrated on the board, that predicted an enlarged occupancy model within 0.7%. It ranked six deployment options before any code was written and led to a backbone shared by five perception models.</p>
       <p class="read-more"><a href="/projects/latency-modeling/">Read the details &rarr;</a></p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
+      <div class="metric"><span class="metric-value">5 → 1</span><span class="metric-label">image encoders (backbone &#43; neck)</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/projects/onemodel/">OneModel: five perception tasks on one shared vision encoder</a></h3>
+      <p class="project-where">QCraft &middot; 2026</p>
+      <p>Merging the image backbone and neck of five perception models into one: how the latency budget works out, how the new backbone was sized, how its pretraining weights were synthesized from released models, and the end-to-end design that follows. Work in progress.</p>
+      <p class="read-more"><a href="/projects/onemodel/">Read the details &rarr;</a></p>
     </div>
   </article>
   <article class="project">
@@ -116,7 +145,7 @@
     <div class="project-body">
       <h3><a href="/projects/axera-m95/">Urban NOA on a new chip (AXERA M95)</a></h3>
       <p class="project-where">QCraft &middot; 2026</p>
-      <p>Technical lead for porting QCraft&#39;s urban navigate-on-autopilot stack to a new chip family: a staged bring-up from a 700-TOPS demo board to the 350-TOPS M95, model adaptation and quantization, and road-test issue clustering. The v4 stack runs on test vehicles.</p>
+      <p>Technical lead for porting QCraft's urban navigate-on-autopilot stack to a new chip family: a staged bring-up from a 700-TOPS demo board to the 350-TOPS M95, model adaptation and quantization, and road-test issue clustering. The v4 stack runs on test vehicles.</p>
       <p class="read-more"><a href="/projects/axera-m95/">Read the details &rarr;</a></p>
     </div>
   </article>
@@ -127,7 +156,7 @@
     <div class="project-body">
       <h3><a href="/projects/tensorrt-int8/">TensorRT INT8 for cloud GPU models, and onnx2trt</a></h3>
       <p class="project-where">Tencent Maps &middot; 2021 – 2022</p>
-      <p>An INT8 quantization and deployment pipeline for Tencent Maps&#39; cloud GPU models: cosine similarity above 0.999 to float, latency −20%, GPU utilization and memory −10%, and roughly ¥3M saved in compute. The calibration tooling became the open-source onnx2trt.</p>
+      <p>An INT8 quantization and deployment pipeline for Tencent Maps' cloud GPU models: cosine similarity above 0.999 to float, latency −20%, GPU utilization and memory −10%, and roughly ¥3M saved in compute. The calibration tooling became the open-source onnx2trt.</p>
       <p class="read-more"><a href="/projects/tensorrt-int8/">Read the details &rarr;</a></p>
     </div>
   </article>
@@ -165,6 +194,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

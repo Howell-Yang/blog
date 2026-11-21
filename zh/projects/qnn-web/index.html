@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
   <title>QNN Web：面向所有芯片的一键模型转换 · 杨豪</title>
   <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
@@ -71,19 +72,18 @@
   <details class="toc" open>
     <summary>本页目录</summary>
     <nav id="TableOfContents">
-<ul>
-<li><a href="#_1">问题</a></li>
-<li><a href="#_2">第一版：上传一次，覆盖所有平台</a></li>
-<li><a href="#2026">第二版：为可靠性重构（2026）</a></li>
-<li><a href="#ai-agent-mcp">面向 AI Agent 的 MCP 层</a></li>
-<li><a href="#_3">经验</a></li>
-</ul>
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#第一版上传一次覆盖所有平台">第一版：上传一次，覆盖所有平台</a></li>
+    <li><a href="#第二版为可靠性重构2026">第二版：为可靠性重构（2026）</a></li>
+    <li><a href="#面向-ai-agent-的-mcp-层">面向 AI Agent 的 MCP 层</a></li>
+    <li><a href="#经验">经验</a></li>
+  </ul>
 </nav>
-
   </details>
 
   <div class="pp-content">
-    <h2 id="_1">问题</h2>
+    <h2 id="问题">问题</h2>
 <p>智驾项目覆盖多个价位的芯片，每个模型都要为每个芯片单独编译。有 QNN Web 之前，工程师需要：</p>
 <ol>
 <li>逐台登录硬件；</li>
@@ -91,18 +91,10 @@
 <li>每个 TensorRT engine 等 30–60 分钟编译。</li>
 </ol>
 <p>而量产发版大约两周一次，涉及很多模型。</p>
-<h2 id="_2">第一版：上传一次，覆盖所有平台</h2>
-<div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Web 前端</span><span class="pipe-note">上传 ONNX / IR</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">配置生成器</span><span class="pipe-note">根据计算图</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">gRPC 分发</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">转换服务器</span><span class="pipe-note">Orin · J5 · J6</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Engine + 日志</span><span class="pipe-note">下载</span></div>
-</div>
+<h2 id="第一版上传一次覆盖所有平台">第一版：上传一次，覆盖所有平台</h2>
+<figure class="figure" data-fig="qnn-web">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 452" class="fig fig-qnn-web" role="img" aria-label="QNN Web: one upload, engines for every target chip"><title>QNN Web: one upload, engines for every target chip</title><defs><marker id="qnn-web-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">上传一次模型，得到所有目标芯片的产物</text><rect x="30.0" y="66.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="99.0" font-size="16.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">Web 前端</text><path d="M232,93 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><rect x="30.0" y="136.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="169.0" font-size="16.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">命令行与脚本</text><path d="M232,163 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><rect x="30.0" y="206.0" width="200.0" height="54.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="130.0" y="239.0" font-size="15.5" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">AI Agent（MCP 接口）</text><path d="M232,233 L262,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="flow"/><path d="M262.0,163.0 L286.0,163.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="290.0" y="60.0" width="560.0" height="206.0" rx="14" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="312.0" y="94.0" font-size="19" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">QNN Web 转换服务</text><text x="828.0" y="94.0" font-size="14" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="end">gRPC 前后端分离</text><rect x="310.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="332.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="332.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="352.0" y="144.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">读取计算图</text><text x="324.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">根据 ONNX 自动生成</text><text x="324.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">配置，不再手填</text><text x="324.0" y="213.2" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">JSON</text><path d="M474.0,181.0 L487.0,181.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="489.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="511.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="511.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="531.0" y="144.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">任务库与队列</text><text x="503.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">任务状态入库，可重</text><text x="503.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">试、可追踪</text><path d="M653.0,181.0 L666.0,181.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#qnn-web-ah-faint)"/><rect x="668.0" y="114.0" width="162.0" height="134.0" rx="10" fill="var(--f-soft,#f3f6fa)"/><circle cx="690.0" cy="138.0" r="12" fill="var(--f-orange,#eb6834)"/><text x="690.0" y="143.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="710.0" y="144.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">编译与缓存</text><text x="682.0" y="174.0" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">TensorRT timing</text><text x="682.0" y="193.6" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">cache 跳过重复的</text><text x="682.0" y="213.2" font-size="13.8" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">kernel 调优</text><rect x="910.0" y="62.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="89.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">英伟达 Orin · TensorRT</text><path d="M854.0,163.0 L906.0,83.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="114.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="141.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">地平线 J5 / J6</text><path d="M854.0,163.0 L906.0,135.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="166.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="193.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">高通</text><path d="M854.0,163.0 L906.0,187.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="910.0" y="218.0" width="260.0" height="42.0" rx="10" fill="var(--f-orange-soft,#fdebe2)"/><text x="1040.0" y="245.0" font-size="16" font-weight="600" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">爱芯</text><path d="M854.0,163.0 L906.0,239.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#qnn-web-ah-faint)"/><rect x="30.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="54.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">4,273</text><text x="54.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">次量产模型转换</text><rect x="417.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="441.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">30–60 → 5 分钟</text><text x="441.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">单次编译耗时</text><rect x="804.0" y="300.0" width="366.0" height="122.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="828.0" y="358.0" font-size="40" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">−80%</text><text x="828.0" y="396.0" font-size="16" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">每次转换的人工耗时</text></svg></div>
+</figure>
 
 <ul>
 <li><strong>前后端分离，通过 gRPC 通信</strong>，包括文件传输。用户上传一次，就能得到所有目标平台的 engine。</li>
@@ -110,57 +102,53 @@
 <li><strong>TensorRT timing cache</strong>：在相似模型的编译之间复用 kernel 选择结果，把典型编译时间从 30–60 分钟降到约 5 分钟。</li>
 <li><strong>接入新硬件几乎零成本</strong>：后来接入 Orin 和 J6，只需增加一台转换服务器，不需要改变每个用户的使用方式。</li>
 </ul>
-<aside class="callout callout-result"><p>在多个车企项目中累计完成 4,273 次量产转换，每次转换的人工耗时减少约 80%。在量产快速迭代期间，模型 owner 可以自己完成模型转换。</p></aside>
+<aside class="callout callout-result">在多个车企项目中累计完成 4,273 次量产转换，每次转换的人工耗时减少约 80%。在量产快速迭代期间，模型 owner 可以自己完成模型转换。</aside>
 
-<h2 id="2026">第二版：为可靠性重构（2026）</h2>
+<h2 id="第二版为可靠性重构2026">第二版：为可靠性重构（2026）</h2>
 <p>随着量产工作增加，出现了三个问题：转换偶发失败；用户不知道任务处于什么状态；同时提交多个任务会阻塞服务。</p>
 <table>
-<thead>
-<tr>
-<th>问题</th>
-<th>改动</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>任务状态未知</td>
-<td>每个任务的状态都记录在数据库中并随进度更新，包括新增的“传输中”状态。页面显示状态栏和重新启动按钮。</td>
-</tr>
-<tr>
-<td>前端频繁请求</td>
-<td>只在刷新页面时查询状态，而不是持续轮询。</td>
-</tr>
-<tr>
-<td>并发提交会阻塞</td>
-<td>增加任务队列；已在队列中或已完成转换的任务不再重复提交。</td>
-</tr>
-<tr>
-<td>重复转换浪费</td>
-<td>LibTorch 转换按类型拆分，只编译请求的类型。</td>
-</tr>
-<tr>
-<td>磁盘被占满</td>
-<td>产物保存在转换机器上，不放前端机器。定期清理前先备份 IR 文件，并把已清理的任务标记出来。数据库只保存路径，不保存模型文件。</td>
-</tr>
-<tr>
-<td>前后端通信脆弱</td>
-<td>前端把请求交给某台转换服务器，并返回该服务器的地址；每台服务器独立记录已完成的任务。增加了心跳、状态查询和文件传输服务。</td>
-</tr>
-</tbody>
+	<thead>
+			<tr>
+					<th>问题</th>
+					<th>改动</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>任务状态未知</td>
+					<td>每个任务的状态都记录在数据库中并随进度更新，包括新增的“传输中”状态。页面显示状态栏和重新启动按钮。</td>
+			</tr>
+			<tr>
+					<td>前端频繁请求</td>
+					<td>只在刷新页面时查询状态，而不是持续轮询。</td>
+			</tr>
+			<tr>
+					<td>并发提交会阻塞</td>
+					<td>增加任务队列；已在队列中或已完成转换的任务不再重复提交。</td>
+			</tr>
+			<tr>
+					<td>重复转换浪费</td>
+					<td>LibTorch 转换按类型拆分，只编译请求的类型。</td>
+			</tr>
+			<tr>
+					<td>磁盘被占满</td>
+					<td>产物保存在转换机器上，不放前端机器。定期清理前先备份 IR 文件，并把已清理的任务标记出来。数据库只保存路径，不保存模型文件。</td>
+			</tr>
+			<tr>
+					<td>前后端通信脆弱</td>
+					<td>前端把请求交给某台转换服务器，并返回该服务器的地址；每台服务器独立记录已完成的任务。增加了心跳、状态查询和文件传输服务。</td>
+			</tr>
+	</tbody>
 </table>
 <p>这次重构同时增加了高通和 Orin 的转换通路。</p>
-<h2 id="ai-agent-mcp">面向 AI Agent 的 MCP 层</h2>
+<h2 id="面向-ai-agent-的-mcp-层">面向 AI Agent 的 MCP 层</h2>
 <p>2026 年，我为服务封装了一个 Model Context Protocol（MCP）服务器，让 Cursor 等编程 Agent 能以工具的方式执行转换，而不必通过网页。</p>
 <div class="pipeline" role="list">
-<div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor 或脚本</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">MCP 服务器</span><span class="pipe-note">只做协议层</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">任务调度器</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">转换服务器</span></div>
-<span class="pipe-arrow" aria-hidden="true">&rarr;</span>
-<div class="pipe-stage" role="listitem"><span class="pipe-name">结果</span><span class="pipe-note">直链或数据流</span></div>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">Agent</span><span class="pipe-note">Cursor 或脚本</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">MCP 服务器</span><span class="pipe-note">只做协议层</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">任务调度器</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">转换服务器</span></div><span class="pipe-arrow" aria-hidden="true">&rarr;</span>
+  <div class="pipe-stage" role="listitem"><span class="pipe-name">结果</span><span class="pipe-note">直链或数据流</span></div>
 </div>
 
 <p>MCP 层<strong>本身不做任何转换计算</strong>，只提供四个工具：</p>
@@ -171,16 +159,17 @@
 <li><strong>获取结果</strong>：返回下载链接，或以数据流返回文件。</li>
 </ol>
 <p>真正的工作仍由原有的调度器和转换服务器完成，所以 Agent 和网页走的是同一套实现。工程师现在可以让 Agent 把某个文件转换为指定目标，并返回结果的本地路径；也可以在流水线中用 Python 客户端调用同样的工具。</p>
-<h2 id="_3">经验</h2>
+<h2 id="经验">经验</h2>
 <ul>
 <li><strong>去掉步骤，而不只是防止笔误。</strong> 根据计算图生成配置，好过校验手写的配置。</li>
 <li><strong>状态应该放在数据库里。</strong> 大多数可靠性问题，都来自只存在于内存或浏览器标签页里的任务状态。</li>
 <li><strong>协议层要薄。</strong> MCP 服务器只做转换翻译；只有一条转换通路，修 bug 也只需修一处。</li>
 </ul>
+
   </div>
 
   <footer class="post-meta">
-    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/latency-modeling/">&larr; 写代码之前，先预测板端耗时</a><a href="/zh/projects/axera-m95/">新芯片上的城市 NOA（爱芯 M95） &rarr;</a>
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/onemodel/">&larr; OneModel：五个感知任务共享一个视觉编码器</a><a href="/zh/projects/axera-m95/">新芯片上的城市 NOA（爱芯 M95） &rarr;</a>
     </nav>
     <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
   </footer>
@@ -196,6 +185,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 

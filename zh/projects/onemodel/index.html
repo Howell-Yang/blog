@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
+
+  <title>OneModel：五个感知任务共享一个视觉编码器 · 杨豪</title>
+  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta name="author" content="杨豪">
+  <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
+
+  
+  <meta property="og:site_name" content="Yang Hao (杨豪)">
+  <meta property="og:title" content="OneModel：五个感知任务共享一个视觉编码器 · 杨豪">
+  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.howellyang.com/zh/projects/onemodel/">
+  <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="canonical" href="https://www.howellyang.com/zh/projects/onemodel/">
+  <link rel="alternate" hreflang="zh-CN" href="https://www.howellyang.com/zh/projects/onemodel/">
+  <link rel="alternate" hreflang="en" href="https://www.howellyang.com/projects/onemodel/">
+  <meta property="og:locale" content="zh_CN">
+
+  
+  <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/syntax.css">
+  <link rel="stylesheet" href="/css/site.css">
+
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
+
+  
+</head>
+
+<body class="is-page lang-zh">
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-name" href="/zh/">杨豪<span class="site-name-zh">Yang Hao</span></a>
+    <nav class="site-nav" aria-label="Main">
+      <a href="/zh/">简历</a>
+      <a href="/zh/projects/">项目</a>
+      <a href="/archives/">博客</a>
+      <a class="lang-switch" href="/projects/onemodel/" lang="en" title="English version">EN</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="container">
+<article class="project-page">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="/zh/">简历</a><span aria-hidden="true">/</span><a href="/zh/projects/">项目</a>
+  </nav>
+
+  <header class="pp-header">
+    <h1 class="pp-title">OneModel：五个感知任务共享一个视觉编码器</h1>
+    <p class="pp-summary">把五个感知模型的图像 backbone 和 neck 合成一个：耗时账怎么算，新 backbone 的规模怎么定，预训练权重怎么从已发版模型合成，以及再往前一步的端到端架构设计。项目进行中。</p>
+    <p class="pp-meta"><span><i class="fa fa-building-o" aria-hidden="true"></i> 轻舟智航</span><span><i class="fa fa-calendar-o" aria-hidden="true"></i> 2026</span><span><i class="fa fa-user-o" aria-hidden="true"></i> 方案设计与训练框架设计</span>
+    </p>
+    <div class="pp-metrics">
+      <div class="pp-metric"><span class="metric-value">5 → 1</span><span class="metric-label">套图像编码器（backbone &#43; neck）</span></div>
+      <div class="pp-metric"><span class="metric-value">5–9 ms</span><span class="metric-label">预计每帧节省，按帧率折算的估计值</span></div>
+      <div class="pp-metric"><span class="metric-value">9</span><span class="metric-label">路相机统一为 512 × 1024 输入</span></div>
+    </div>
+    <ul class="tags" aria-label="Topics"><li>多任务学习</li><li>共享 backbone</li><li>PCA</li><li>模型架构</li><li>端到端</li>
+    </ul>
+  </header>
+  <details class="toc" open>
+    <summary>本页目录</summary>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#问题">问题</a></li>
+    <li><a href="#结构">结构</a></li>
+    <li><a href="#用已发版的模型确定-backbone-规模">用已发版的模型确定 backbone 规模</a></li>
+    <li><a href="#两个量化友好的修正">两个量化友好的修正</a></li>
+    <li><a href="#多任务训练怎么组织">多任务训练怎么组织</a></li>
+    <li><a href="#上线路径">上线路径</a></li>
+    <li><a href="#再往前端到端驾驶模型的架构设计">再往前：端到端驾驶模型的架构设计</a></li>
+    <li><a href="#经验">经验</a></li>
+  </ul>
+</nav>
+  </details>
+
+  <div class="pp-content">
+    <aside class="callout callout-caveat"><strong>项目进行中。</strong> 小数据集上的联合训练流程已经跑通，loss 正常收敛，但数据量和迭代数都还小，指标低于已发版的单任务模型。文中的耗时节省是估计值。</aside>
+
+<h2 id="问题">问题</h2>
+<p>车端耗时限制了模型的容量和帧率。<a href="/zh/projects/latency-modeling/">耗时模型</a>的结论是：图像编码器是唯一不随感知范围变化的大模块，所以它就是应该共享的部分。</p>
+<p>一期直接复用检测模型的 backbone，其他任务出现了不同程度的掉点，Occupancy 最明显。二期要解决的就是“合并之后指标不及预期”。</p>
+<h2 id="结构">结构</h2>
+<figure class="figure" data-fig="onemodel">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 540" class="fig fig-onemodel" role="img" aria-label="OneModel: one shared image encoder for five perception tasks"><title>OneModel: one shared image encoder for five perception tasks</title><defs><marker id="onemodel-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker><marker id="onemodel-ah-blue" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-blue,#2a78d6)"/></marker></defs><rect x="855.2" y="17.5" width="314.8" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1012.6" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">进行中：联合训练已跑通，指标尚低于发版模型</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">五个感知任务、9 路相机共享一个图像 backbone 与 neck</text><text x="30.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">现状：每个任务各自编码</text><rect x="30.0" y="98.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="119.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,114.0 L206.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">检测与跟踪</text><rect x="30.0" y="138.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="159.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,154.0 L206.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">矢量地图</text><rect x="30.0" y="178.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="199.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,194.0 L206.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><rect x="30.0" y="218.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="239.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,234.0 L206.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">前视感知</text><rect x="30.0" y="258.0" width="150.0" height="32.0" rx="8" fill="var(--f-plane,#eef1f5)"/><text x="105.0" y="279.0" font-size="13" font-weight="500" fill="var(--f-muted,#5e6a79)" text-anchor="middle">backbone + neck</text><path d="M182.0,274.0 L206.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="210.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="305.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">红绿灯</text><text x="470.0" y="82.0" font-size="16" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">OneModel：共享到 neck，任务头各自读取</text><rect x="470.0" y="98.0" width="90.0" height="192.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="515.0" y="189.2" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 路相机</text><text x="515.0" y="208.8" font-size="14" font-weight="600" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">512×1024</text><path d="M562.0,194.0 L586.0,194.0" fill="none" stroke="var(--f-blue,#2a78d6)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-blue)"/><rect x="590.0" y="98.0" width="150.0" height="192.0" rx="10" fill="var(--f-orange,#eb6834)"/><text x="665.0" y="177.2" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">共享</text><text x="665.0" y="200.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">backbone</text><text x="665.0" y="223.1" font-size="17" font-weight="700" fill="#ffffff" text-anchor="middle">+ neck</text><path d="M742.0,194.0 L770.0,114.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="98.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="119.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">检测与跟踪</text><path d="M742.0,194.0 L770.0,154.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="138.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="159.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">矢量地图</text><path d="M742.0,194.0 L770.0,194.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="178.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="199.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">Occupancy</text><path d="M742.0,194.0 L770.0,234.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="218.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="239.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">前视感知</text><path d="M742.0,194.0 L770.0,274.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="flow" marker-end="url(#onemodel-ah-faint)"/><rect x="774.0" y="258.0" width="190.0" height="32.0" rx="8" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="869.0" y="279.0" font-size="14" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">红绿灯</text><rect x="1000.0" y="98.0" width="170.0" height="192.0" rx="12" fill="var(--f-soft,#f3f6fa)"/><text x="1085.0" y="160.0" font-size="30" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="middle">5–9 ms</text><text x="1085.0" y="217.5" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">预计每帧节省</text><text x="1085.0" y="236.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="middle">（按帧率折算的估计）</text><text x="30.0" y="330.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">不从零开始：用已发版模型确定 backbone 规模并合成初始权重</text><rect x="30.0" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="52.0" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="52.0" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">1</text><text x="72.0" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">提特征</text><text x="44.0" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">用 5 个任务的浮点 checkpoint</text><text x="44.0" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">分别提取各阶段特征</text><path d="M246.2,408.0 L260.2,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="261.2" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="283.2" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="283.2" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">2</text><text x="303.2" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">PCA 冗余分析</text><text x="275.2" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">冗余的维度缩减，信息密集的维</text><text x="275.2" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">度保留</text><path d="M477.4,408.0 L491.4,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="492.4" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="514.4" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="514.4" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">3</text><text x="534.4" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">通道对齐</text><text x="506.4" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">把各 checkpoint 的通道对齐到</text><text x="506.4" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">同一组基</text><path d="M708.6,408.0 L722.6,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="723.6" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="745.6" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="745.6" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">4</text><text x="765.6" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">闭式求解</text><text x="737.6" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">线性求解得到 neck 与各任务的</text><text x="737.6" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">投影层</text><path d="M939.8,408.0 L953.8,408.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#onemodel-ah-faint)"/><rect x="954.8" y="348.0" width="215.2" height="120.0" rx="10" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><circle cx="976.8" cy="372.0" r="12" fill="var(--f-blue,#2a78d6)"/><text x="976.8" y="377.0" font-size="13.799999999999999" font-weight="700" fill="#ffffff" text-anchor="middle">5</text><text x="996.8" y="378.0" font-size="15.5" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">检查重建误差</text><text x="968.8" y="408.0" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">在独立片段上验证合成权重的重</text><text x="968.8" y="426.7" font-size="13.2" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">建误差</text><text x="30.0" y="496.0" font-size="14" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="start">同时做两项量化友好的修正：ReLU6 + 代理梯度（前向用 ReLU6，反向用平滑代理函数的导数）；修正 backbone 感受野中心偏移。</text></svg></div>
+</figure>
+
+<ul>
+<li><strong>共享到 image neck 为止，暂不延伸到 BEV 空间。</strong> 各任务的 BEV 范围和分辨率不同；要共享 BEV 特征，就得统一范围和分辨率，算力会成倍增长。</li>
+<li><strong>9 路相机统一为 512 × 1024 输入</strong>，不再区分主 backbone 和辅助 backbone。鱼眼和两路后视相机暂不共享。</li>
+<li><strong>耗时账按帧率折算。</strong> 以 10 Hz 的一帧为单位，5 Hz 的任务算一半：只共享 backbone，每帧节省约 5 ms；neck 也全部共享，约 9 ms。前视的两个任务是否共享 neck，决定其中约 4 ms。这部分节省，就是给更大 backbone 的预算。</li>
+</ul>
+<h2 id="用已发版的模型确定-backbone-规模">用已发版的模型确定 backbone 规模</h2>
+<p>新 backbone 的宽度不是凭感觉定的。</p>
+<ol>
+<li>用五个任务已发版的浮点 checkpoint，分别提取各阶段的特征。</li>
+<li>对特征做 PCA，衡量每个阶段通道的冗余度：冗余的维度可以缩减，信息密集的维度必须保留。</li>
+<li>先把各 checkpoint 的通道对齐，再用 PCA 选出保留的维度。</li>
+<li>用闭式线性求解得到 neck 和各任务的投影层，合成一份预训练权重。</li>
+<li>在独立的片段上检查重建误差。</li>
+</ol>
+<p>这样得到的初始权重，已经包含五个任务学到的大部分特征，联合训练不必从零开始。</p>
+<h2 id="两个量化友好的修正">两个量化友好的修正</h2>
+<ul>
+<li><strong>ReLU6 加代理梯度。</strong> 从量化的角度，激活函数应该尽量用 ReLU6；但直接换会影响训练的平滑度。做法是前向用正常的 ReLU6，反向不用它在饱和区为零的导数，而是用一个平滑代理函数的导数。</li>
+<li><strong>感受野中心偏移。</strong> 原 backbone 的下采样方式会让感受野中心发生偏移。改为步长 2 加 2 × 2 卷积的常见结构，并保证 FPN 不加重偏移；视角变换里的采样网格也做同样的修正。</li>
+</ul>
+<h2 id="多任务训练怎么组织">多任务训练怎么组织</h2>
+<p>五个任务的数据并不同源，标注也不在同一批帧上。我比较了四种组织方式：</p>
+<table>
+	<thead>
+			<tr>
+					<th>组织方式</th>
+					<th>数据与梯度的行为</th>
+					<th>判断</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>按任务轮转 batch，所有 GPU 同步任务</td>
+					<td>每个 step 所有 GPU 选同一个任务的数据；共享编码器和对应任务头反传</td>
+					<td><strong>首版采用。</strong> 复用各任务的数据加载和采样；按计划的训练曝光量配比</td>
+			</tr>
+			<tr>
+					<td>同源样本，多任务监督</td>
+					<td>同一组相机有多个任务标签时，公共特征只前向一次，多个 loss 求和</td>
+					<td>作为增强；前提是不同任务的标注对齐到同一帧、同一坐标和同一增强结果</td>
+			</tr>
+			<tr>
+					<td>一个 batch 混合不同任务的样本</td>
+					<td>每个样本带任务有效位，按样本选择 loss</td>
+					<td>后续扩展；需要同时改任务启用条件和跨卡归一化，只加 mask 不算支持</td>
+			</tr>
+			<tr>
+					<td>按 GPU 固定任务</td>
+					<td>不同任务占用固定的卡组，共享参数跨组同步</td>
+					<td>暂不作为主线；通信、优化器和恢复训练都更复杂</td>
+			</tr>
+	</tbody>
+</table>
+<p>一条贯穿始终的规则：<strong>缺标不得视为负样本。</strong> 任务 mask 只表示监督是否有效。</p>
+<h2 id="上线路径">上线路径</h2>
+<ol>
+<li><strong>单任务架构调整。</strong> 每个任务先改成联合训练时的模型结构，各自发版。</li>
+<li><strong>部分任务合并。</strong> 跟踪加 Occupancy；前视感知加红绿灯（这两个是图像级特征，不涉及 BEV 转换，合并难度较小）。</li>
+<li><strong>五任务合并。</strong> 联合训练 backbone，各任务基于冻结的共享编码器单独发版；如果更新了共享参数、归一化统计或量化边界，就必须生成新的共享版本，并回归所有使用它的任务。</li>
+<li><strong>感知与规划联合训练。</strong></li>
+</ol>
+<p>主要风险在发版：量产对指标回退的容忍度很低。如果部分合并时指标做到了 90，五个任务联合只有 85，发版就会卡住。所以每一步都以“所有任务都不回退”为合并条件。</p>
+<h2 id="再往前端到端驾驶模型的架构设计">再往前：端到端驾驶模型的架构设计</h2>
+<aside class="callout callout-caveat"><strong>这是设计提案，尚未训练。</strong> 图中和文中的数字都是设计值，不是测量结果。</aside>
+
+<figure class="figure" data-fig="e2e-arch">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" class="fig fig-e2e-arch" role="img" aria-label="end-to-end driving model: design proposal"><title>end-to-end driving model: design proposal</title><defs><marker id="e2e-arch-ah-faint" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1,1.2 L9,5 L1,8.8 Z" fill="var(--f-faint,#8a94a3)"/></marker></defs><rect x="850.7" y="17.5" width="319.3" height="25.0" rx="12.5" fill="var(--f-amber-soft,#fef3d6)"/><text x="1010.4" y="34.7" font-size="13" font-weight="600" fill="var(--f-amber-ink,#7a5600)" text-anchor="middle">设计提案 · 尚未训练 · 约 1.4 亿参数（估计）</text><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">端到端驾驶模型架构设计：从像素到规划的一条可微路径</text><rect x="30.0" y="78.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="118.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">9 路相机</text><text x="105.0" y="142.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">512×1024</text><rect x="30.0" y="198.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="238.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">运动学</text><text x="105.0" y="262.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">1 s 窗口</text><rect x="30.0" y="318.0" width="150.0" height="90.0" rx="10" fill="var(--f-blue-soft,#e3eefb)"/><text x="105.0" y="358.0" font-size="17" font-weight="700" fill="var(--f-blue-ink,#174a87)" text-anchor="middle">导航</text><text x="105.0" y="382.0" font-size="13.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">SD 路网 + 路线</text><rect x="214.0" y="78.0" width="150.0" height="90.0" rx="10" fill="var(--f-plane,#eef1f5)"/><text x="289.0" y="121.4" font-size="15" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="middle">共享图像编码器</text><text x="289.0" y="152.0" font-size="12.5" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">复用，不改动</text><path d="M182.0,123.0 L210.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="398.0" y="78.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="118.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">场景 token</text><text x="483.0" y="142.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">射线 + 相机 ID · 672</text><rect x="398.0" y="198.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="238.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">运动学 token</text><text x="483.0" y="262.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">8</text><rect x="398.0" y="318.0" width="170.0" height="90.0" rx="10" fill="var(--f-violet-soft,#ebe8fb)"/><text x="483.0" y="358.0" font-size="16" font-weight="700" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="middle">导航前缀</text><text x="483.0" y="382.0" font-size="13" font-weight="400" fill="var(--f-muted,#5e6a79)" text-anchor="middle">64 · 可缓存</text><path d="M366.0,123.0 L394.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M182.0,243.0 L394.0,243.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M182.0,363.0 L394.0,363.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="606.0" y="78.0" width="230.0" height="330.0" rx="14" fill="var(--f-navy,#0f1b2d)"/><text x="721.0" y="122.0" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">流式 Transformer</text><text x="721.0" y="148.0" font-size="14" font-weight="400" fill="#c9d6e6" text-anchor="middle">12 层 · d = 768</text><rect x="626.0" y="176.0" width="190.0" height="96.0" rx="10" fill="#1d3352"/><text x="721.0" y="208.0" font-size="15.5" font-weight="700" fill="#ffffff" text-anchor="middle">位姿感知记忆</text><text x="721.0" y="246.7" font-size="13" font-weight="400" fill="#c9d6e6" text-anchor="middle">8 槽 × 48 token ≈ 3.2 s</text><text x="721.0" y="329.6" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">每个 tick 读缓存的记忆；键按相对</text><text x="721.0" y="347.5" font-size="12.6" font-weight="400" fill="#c9d6e6" text-anchor="middle">位姿与时间调制，不做特征 warp</text><path d="M570.0,123.0 L602.0,123.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M570.0,243.0 L602.0,243.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M570.0,363.0 L602.0,363.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="874.0" y="78.0" width="296.0" height="140.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><text x="894.0" y="110.0" font-size="18" font-weight="700" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">规划头</text><text x="894.0" y="136.0" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">16 个整体方案模态；路径用曲率节点（按弧</text><text x="894.0" y="154.2" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">长）、速度用加速度节点（按时间）表示，可</text><text x="894.0" y="172.4" font-size="13" font-weight="400" fill="var(--f-ink,#141c27)" text-anchor="start">微 rollout 到 8 s</text><rect x="874.0" y="230.0" width="296.0" height="178.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="894.0" y="260.0" font-size="18" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">辅助头</text><rect x="894.0" y="275.5" width="111.7" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="949.9" y="292.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">占据与未来占据</text><rect x="1011.7" y="275.5" width="85.0" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1054.2" y="292.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">目标与预测</text><rect x="894.0" y="305.5" width="58.2" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="923.1" y="322.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">车道图</text><rect x="958.2" y="305.5" width="58.2" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="987.3" y="322.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">红绿灯</text><rect x="1022.4" y="305.5" width="106.4" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="1075.5" y="322.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">深度 · 仅训练</text><rect x="894.0" y="335.5" width="133.2" height="25.0" rx="12.5" fill="var(--f-soft,#f3f6fa)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><text x="960.6" y="352.5" font-size="12.4" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">世界模型 · 仅训练</text><path d="M838.0,148.0 L870.0,148.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><path d="M838.0,319.0 L870.0,319.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><text x="30.0" y="440.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">从设计之初就给出落地路径</text><rect x="30.0" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="119.2" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">感知预训练</text><path d="M209.3,485.0 L221.3,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="222.3" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="311.5" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">时序与未来预测</text><path d="M401.7,485.0 L413.7,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="414.7" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="503.8" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">模仿学习</text><path d="M594.0,485.0 L606.0,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="607.0" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-soft,#f3f6fa)"/><text x="696.2" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">闭环评测</text><path d="M786.3,485.0 L798.3,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="799.3" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-orange-soft,#fdebe2)"/><text x="888.5" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">蒸馏到车端模型</text><path d="M978.7,485.0 L990.7,485.0" fill="none" stroke="var(--f-faint,#8a94a3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#e2e-arch-ah-faint)"/><rect x="991.7" y="458.0" width="178.3" height="54.0" rx="27" fill="var(--f-orange-soft,#fdebe2)"/><text x="1080.8" y="489.9" font-size="13.6" font-weight="600" fill="var(--f-ink,#141c27)" text-anchor="middle">INT8 QAT 与导出</text></svg></div>
+  <figcaption>从像素到规划只有一条可微路径；共享图像编码器原样复用。</figcaption>
+</figure>
+
+<p>在共享编码器之上，我写了一份端到端驾驶模型的架构设计。几个关键取舍：</p>
+<ul>
+<li><strong>共享编码器原样复用。</strong> 它的权重、导出流程和已经测过的耗时都继续有效。</li>
+<li><strong>主路径用 token，而不是 BEV 栅格。</strong> 去掉每个任务私有的视角变换，让包括规划在内的每个 loss，都有一条路径回到编码器。</li>
+<li><strong>纯视觉输入。</strong> LiDAR 只用来生成标签和监督深度，不作为模型输入。</li>
+<li><strong>规划头输出控制量。</strong> 路径用按弧长排列的曲率节点表示，速度用按时间排列的加速度节点表示，再可微地 rollout 成轨迹，所以位置损失可以直接训练这些节点。</li>
+<li><strong>导航以 token 进入</strong>，由 SD 路网和路线构造，不使用未来的自车轨迹，避免标签泄漏。</li>
+<li><strong>从设计之初就考虑落地。</strong> 固定形状的计算图；先蒸馏到车端模型，再做 INT8 量化感知训练；是否接受量化后的模型，由闭环指标决定，而不只看开环损失。</li>
+</ul>
+<h2 id="经验">经验</h2>
+<ul>
+<li><strong>共享不变的部分。</strong> 开销不随需求变化的模块，才值得共享。</li>
+<li><strong>用已有的模型回答新模型的问题。</strong> 已发版的 checkpoint 里，已经有“该留多宽”的答案。</li>
+<li><strong>合并的条件是不回退。</strong> 多任务的平均分没有意义，每个任务都要守住自己的指标。</li>
+</ul>
+
+  </div>
+
+  <footer class="post-meta">
+    <nav class="post-nav" aria-label="更多项目"><a href="/zh/projects/latency-modeling/">&larr; 写代码之前，先预测板端耗时</a><a href="/zh/projects/qnn-web/">QNN Web：面向所有芯片的一键模型转换 &rarr;</a>
+    </nav>
+    <p class="back-links"><a href="/zh/projects/">全部项目</a> &middot; <a href="/zh/">返回简历</a></p>
+  </footer>
+</article>
+
+</main>
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 杨豪 (Yang Hao)</span>
+    <span class="footer-links">
+      <a href="mailto:howellyang@buaa.edu.cn" title="Email"><i class="fa fa-envelope" aria-hidden="true"></i> 邮箱</a>
+      <a href="https://github.com/Howell-Yang" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i> GitHub</a>
+    </span>
+  </div>
+</footer>
+<script src="/js/site.js" defer></script>
+</body>
+</html>
+

@@ -4,16 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <script>document.documentElement.classList.add("js");</script>
 
-  <title>Projects · 杨豪</title>
-  <meta name="description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <title>项目 · 杨豪</title>
+  <meta name="description" content="杨豪在自动驾驶模型量化、数值一致性、耗时建模和部署平台方面的项目详解。">
   <meta name="author" content="杨豪">
   <meta name="keywords" content="Yang Hao, 杨豪, model quantization, QAT, PTQ, QAD, model deployment, TensorRT, Horizon J6, autonomous driving, ML infrastructure, edge AI">
 
   
   <meta property="og:site_name" content="Yang Hao (杨豪)">
-  <meta property="og:title" content="Projects · 杨豪">
-  <meta property="og:description" content="杨豪，轻舟智航模型量化与部署负责人：PTQ、QAT 与量化感知蒸馏，地平线、英伟达、高通与爱芯芯片上的端侧推理，机器学习基础设施。">
+  <meta property="og:title" content="项目 · 杨豪">
+  <meta property="og:description" content="杨豪在自动驾驶模型量化、数值一致性、耗时建模和部署平台方面的项目详解。">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://www.howellyang.com/zh/projects/">
   <meta property="og:image" content="https://www.howellyang.com/public/img/avatar.jpg">
@@ -52,8 +53,14 @@
 <main id="main" class="container">
 <div class="projects-index">
   <nav class="crumbs" aria-label="Breadcrumb"><a href="/zh/">简历</a><span aria-hidden="true">/</span>项目</nav>
-  <h1 class="page-title">Projects</h1>
-  <p>…</p>
+  <h1 class="page-title">项目</h1>
+  <p>每个页面介绍一个项目：要解决的问题、分步的方法、结果和经验。数字来自内部实测；如果某个结果只适用于特定模型或配置，页面中会注明。</p>
+<figure class="figure" data-fig="model-portfolio">
+  <div class="fig-scroll" title="点击放大，再点一次或按 Esc 还原"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" class="fig fig-model-portfolio" role="img" aria-label="model families and their quantization difficulties"><title>model families and their quantization difficulties</title><text x="30.0" y="36.0" font-size="14" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">约 19 个量产模型可以归为 8 类，每一类有自己的量化难点</text><g class="fam" data-i="0"><rect x="30.0" y="60.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="60.0" width="271.5" height="78.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="30.0" y="116.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="46.0" y="92.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">单目 3D 检测</text><text x="46.0" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">纯卷积主干 + 关键点头</text><text x="46.0" y="164.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="46.0" y="188.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">INT8 基本无损；要盯输出位宽，以及</text><text x="46.0" y="207.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">混合精度训练的下溢</text></g><g class="fam" data-i="1"><rect x="319.5" y="60.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="319.5" y="60.0" width="271.5" height="78.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="319.5" y="116.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="335.5" y="92.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">前视多任务 2D</text><text x="335.5" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">卷积主干 + query 检测头</text><text x="335.5" y="164.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="335.5" y="188.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">TopK、可变形采样、LayerNorm、</text><text x="335.5" y="207.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">Softmax：INT8/INT16 混合精度 + 两</text><text x="335.5" y="227.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">阶段蒸馏</text></g><g class="fam" data-i="2"><rect x="609.0" y="60.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="609.0" y="60.0" width="271.5" height="78.0" rx="12" fill="var(--f-blue-soft,#e3eefb)"/><rect x="609.0" y="116.0" width="271.5" height="22.0" rx="0" fill="var(--f-blue-soft,#e3eefb)"/><text x="625.0" y="92.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">LiDAR 检测与分割</text><text x="625.0" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-blue-ink,#174a87)" text-anchor="start">Pillar 编码 + BEV 卷积</text><text x="625.0" y="164.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="625.0" y="188.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">scatter 无法定点执行，改写成</text><text x="625.0" y="207.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">gather；输入 1 LSB 的扰动就会改变</text><text x="625.0" y="227.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">输出</text></g><g class="fam" data-i="3"><rect x="898.5" y="60.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="898.5" y="60.0" width="271.5" height="78.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="898.5" y="116.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="914.5" y="92.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">行车 Occupancy</text><text x="914.5" y="117.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">多相机 + LiDAR，网格投影 + 时序记忆</text><text x="914.5" y="164.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="914.5" y="188.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">采样网格需要 INT16；时序隐状态回灌</text><text x="914.5" y="207.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">要求输入输出 scale 相等</text></g><g class="fam" data-i="4"><rect x="30.0" y="280.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="30.0" y="280.0" width="271.5" height="78.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="30.0" y="336.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="46.0" y="312.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">矢量地图</text><text x="46.0" y="337.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">BEV 特征 + 多个 query 折线解码器</text><text x="46.0" y="384.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="46.0" y="408.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">解码器用 INT16 激活；softmax 改写</text><text x="46.0" y="427.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">成分段查表；耗时由节点数而非算力主</text><text x="46.0" y="447.4" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">导</text></g><g class="fam" data-i="5"><rect x="319.5" y="280.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="319.5" y="280.0" width="271.5" height="78.0" rx="12" fill="var(--f-orange-soft,#fdebe2)"/><rect x="319.5" y="336.0" width="271.5" height="22.0" rx="0" fill="var(--f-orange-soft,#fdebe2)"/><text x="335.5" y="312.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">稀疏 4D 检测与跟踪</text><text x="335.5" y="337.0" font-size="12.6" font-weight="500" fill="var(--f-orange-ink,#a8431a)" text-anchor="start">实例 query + 可变形采样 + 跨帧实例</text><text x="335.5" y="384.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="335.5" y="408.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">解码器全 INT16；投影除法固定</text><text x="335.5" y="427.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">scale；大量查表算子</text></g><g class="fam" data-i="6"><rect x="609.0" y="280.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="609.0" y="280.0" width="271.5" height="78.0" rx="12" fill="var(--f-violet-soft,#ebe8fb)"/><rect x="609.0" y="336.0" width="271.5" height="22.0" rx="0" fill="var(--f-violet-soft,#ebe8fb)"/><text x="625.0" y="312.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">预测 + 规划</text><text x="625.0" y="337.0" font-size="12.6" font-weight="500" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="start">结构化输入 + 多步迭代生成轨迹</text><text x="625.0" y="384.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="625.0" y="408.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">整图 INT16；误差沿深度与迭代步累</text><text x="625.0" y="427.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">积，必须全量 QAT</text></g><g class="fam" data-i="7"><rect x="898.5" y="280.0" width="271.5" height="202.0" rx="12" fill="var(--f-surface,#ffffff)" stroke="var(--f-rule,#d8dde4)" stroke-width="1.2"/><rect x="898.5" y="280.0" width="271.5" height="78.0" rx="12" fill="var(--f-violet-soft,#ebe8fb)"/><rect x="898.5" y="336.0" width="271.5" height="22.0" rx="0" fill="var(--f-violet-soft,#ebe8fb)"/><text x="914.5" y="312.0" font-size="17" font-weight="700" fill="var(--f-ink,#141c27)" text-anchor="start">端到端规划</text><text x="914.5" y="337.0" font-size="12.6" font-weight="500" fill="var(--f-violet-ink,#3d2fa0)" text-anchor="start">感知到规划一体，直接输出轨迹</text><text x="914.5" y="384.0" font-size="13" font-weight="700" fill="var(--f-faint,#8a94a3)" text-anchor="start" letter-spacing="0.5">量化难点</text><text x="914.5" y="408.0" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">微小数值差异随时间放大：用大规模量</text><text x="914.5" y="427.7" font-size="13.6" font-weight="400" fill="var(--f-body,#2a3441)" text-anchor="start">化感知蒸馏对齐浮点</text></g></svg></div>
+  <figcaption>约 19 个量产模型可以归为 8 类，每一类有自己的量化难点：量化不是把同一件事重复 19 次。</figcaption>
+</figure>
+
+
   <article class="project">
     <div class="project-visual">
       <div class="metric"><span class="metric-value">2 → 0.5</span><span class="metric-label">个点的量化掉点（PTQ → QAT，5 个感知模型）</span></div>
@@ -89,6 +96,17 @@
   </article>
   <article class="project">
     <div class="project-visual">
+      <div class="metric"><span class="metric-value">6</span><span class="metric-label">个环节组成一条主链路，身份清单贯穿始终</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/zh/projects/quant-deploy-platform/">平台化量化部署框架：一个真值、一份契约、默认阻断</a></h3>
+      <p class="project-where">轻舟智航 &middot; 2026.11 起</p>
+      <p>量化框架搭好之后，剩下的难点是精度靠手调、误差难定位、训练与部署对不齐。这是我牵头的目标架构设计：以定点模型为唯一真值，用带版本的契约连接训练、转换和车端，每一跳默认阻断。目前是设计稿。</p>
+      <p class="read-more"><a href="/zh/projects/quant-deploy-platform/">查看详情 &rarr;</a></p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
       <div class="metric"><span class="metric-value">0.7%</span><span class="metric-label">误差，预测 19.38 ms，实测 19.25 ms</span></div>
     </div>
     <div class="project-body">
@@ -96,6 +114,17 @@
       <p class="project-where">轻舟智航 &middot; 2025 – 2026</p>
       <p>一个用板端数据校准的分模块耗时模型，对扩大后的 Occupancy 模型预测误差仅 0.7%。它在写代码之前就对六种部署方案排了序，并促成五个感知模型共享 backbone。</p>
       <p class="read-more"><a href="/zh/projects/latency-modeling/">查看详情 &rarr;</a></p>
+    </div>
+  </article>
+  <article class="project">
+    <div class="project-visual">
+      <div class="metric"><span class="metric-value">5 → 1</span><span class="metric-label">套图像编码器（backbone &#43; neck）</span></div>
+    </div>
+    <div class="project-body">
+      <h3><a href="/zh/projects/onemodel/">OneModel：五个感知任务共享一个视觉编码器</a></h3>
+      <p class="project-where">轻舟智航 &middot; 2026</p>
+      <p>把五个感知模型的图像 backbone 和 neck 合成一个：耗时账怎么算，新 backbone 的规模怎么定，预训练权重怎么从已发版模型合成，以及再往前一步的端到端架构设计。项目进行中。</p>
+      <p class="read-more"><a href="/zh/projects/onemodel/">查看详情 &rarr;</a></p>
     </div>
   </article>
   <article class="project">
@@ -165,6 +194,7 @@
     </span>
   </div>
 </footer>
+<script src="/js/site.js" defer></script>
 </body>
 </html>
 
