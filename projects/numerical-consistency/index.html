@@ -28,7 +28,7 @@
   
   <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/syntax.css">
-  <link rel="stylesheet" href="/css/site.css?v=083eb46492">
+  <link rel="stylesheet" href="/css/site.css?v=7a0901f193">
 
   <link rel="icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
@@ -87,6 +87,20 @@
   </details>
 
   <div class="pp-content">
+    <aside class="star-box" data-unit="2b" aria-label="Context / Challenge / Action / Result">
+      <p class="star-box-head"><span class="star-tag">Tech 2b</span>Parity checking: stage by stage from quantization training to the board</p>
+      <p class="star-metric"><strong>≤ 2 LSB</strong>worst-case LUT error (600 modules) · 2023 – 2026</p>
+      <dl class="star">
+        <div><dt>Context</dt><dd>A model passes through a dozen transformations between quantization training and the vehicle (export, IR, compiler, runtime, post-processing), and each can change the numbers.</dd></div>
+        <div><dt>Challenge</dt><dd>“The board output differs from float” is hard to localize, and x86 simulation replay has to stand in for the board.</dd></div>
+        <div><dt>Action</dt><dd><ul>
+            <li><strong>Layered alignment</strong>: adjacent stages are compared on identical inputs (12 checkpoints) to find the stage where a deviation first appears.</li>
+            <li><strong>Adaptive lookup tables</strong>: non-linear operator error is measured on the actual output of the fixed-point implementation, only the worst segments are refined, and export is blocked if the bound is not met.</li>
+            <li><strong>Release gates</strong>: results are graded by evidence level (source / build / simulation / board / vehicle), and a regression set of past quantization failures runs before every release.</li>
+          </ul></dd></div>
+        <div class="star-r"><dt>Result</dt><dd>On 600 LUT modules from four production graphs the worst-case error is at most <strong>2 LSB</strong>, with 85% fewer tables than a uniform 126-table scheme. The regression set caught quantization issues before release on three production programs.</dd></div>
+      </dl>
+    </aside>
     <h2 id="the-problem">The problem</h2>
 <p>&quot;The on-board result differs from the float model&quot; is the most common, and least useful, bug report in model deployment. Between a model in PyTorch and the same model on the vehicle there are a dozen transformations: data capture, preprocessing, export, fake quantization, an intermediate representation, two runtimes, a compiler, integer kernels and post-processing. Each can add error, and the errors compound. Without structure, debugging means guessing.</p>
 <h2 id="the-method-compare-neighbors-not-endpoints">The method: compare neighbors, not endpoints</h2>

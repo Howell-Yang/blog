@@ -28,7 +28,7 @@
   
   <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/syntax.css">
-  <link rel="stylesheet" href="/css/site.css?v=083eb46492">
+  <link rel="stylesheet" href="/css/site.css?v=7a0901f193">
 
   <link rel="icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
@@ -90,6 +90,20 @@
   </details>
 
   <div class="pp-content">
+    <aside class="star-box" data-unit="3a" aria-label="背景 / 问题 / 行动 / 结果">
+      <p class="star-box-head"><span class="star-tag">技术 3a</span>端到端模型训练和优化：训练提速与共享 backbone</p>
+      <p class="star-metric"><strong>−54%</strong>单次迭代训练耗时 · 2025 – 2026</p>
+      <dl class="star">
+        <div><dt>背景</dt><dd>模型结构正从分任务感知走向感知到规划一体的端到端；每个感知任务各带一套图像编码器，车端时延限制了模型规模和帧率。</dd></div>
+        <div><dt>问题</dt><dd>训练要更快，模型要在车端预算内做大：让多个任务共用一套图像编码器，同时保住各任务的指标。</dd></div>
+        <div><dt>行动</dt><dd><ul>
+            <li><strong>训练提速</strong>：把训练迁移到 PyTorch 2.x，并在 5 个模型上推进训练提速。</li>
+            <li><strong>共享 backbone</strong>（牵头设计，进行中）：让 5 个感知任务、9 路相机共用端到端模型的图像编码器；用 PCA 冗余分析确定规模，用闭式线性求解合成预训练权重。</li>
+            <li><strong>架构设计</strong>（提案）：撰写端到端驾驶模型的架构设计，从设计之初就给出蒸馏与 INT8 量化的落地路径。</li>
+          </ul></dd></div>
+        <div class="star-r"><dt>结果</dt><dd>所测 Occupancy 配置下（V100、batch 16、AMP），单次迭代耗时由 1.56 s 降到 0.71 s（<strong>−54%</strong>）；共享方案已完成三个任务的小规模对照，列举指标的降幅均不到 2 个点；小数据集上的联合训练流程已跑通，全量联合训练与发版验证尚未完成。</dd></div>
+      </dl>
+    </aside>
     <aside class="callout callout-caveat"><strong>项目进行中。</strong> 小数据集上的联合训练流程已经跑通，loss 正常收敛，但数据量和迭代数都还小，指标低于已发版的单任务模型。文中的耗时节省是估计值。</aside>
 
 <h2 id="问题">问题</h2>

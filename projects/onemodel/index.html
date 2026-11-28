@@ -28,7 +28,7 @@
   
   <link rel="stylesheet" href="/public/font-awesome/css/font-awesome.min.css">
   <link rel="stylesheet" href="/css/syntax.css">
-  <link rel="stylesheet" href="/css/site.css?v=083eb46492">
+  <link rel="stylesheet" href="/css/site.css?v=7a0901f193">
 
   <link rel="icon" href="/assets/favicon.ico">
   <link rel="apple-touch-icon" href="/public/img/avatar.jpg">
@@ -90,6 +90,20 @@
   </details>
 
   <div class="pp-content">
+    <aside class="star-box" data-unit="3a" aria-label="Context / Challenge / Action / Result">
+      <p class="star-box-head"><span class="star-tag">Tech 3a</span>End-to-end model training and optimization: faster training and a shared backbone</p>
+      <p class="star-metric"><strong>−54%</strong>training time per iteration · 2025 – 2026</p>
+      <dl class="star">
+        <div><dt>Context</dt><dd>Models are moving toward one end-to-end network. Each perception task still carries its own image encoder, and on-vehicle latency caps model size.</dd></div>
+        <div><dt>Challenge</dt><dd>Train faster, and grow the model within the on-vehicle budget: let the tasks share one image encoder while holding each task's metrics.</dd></div>
+        <div><dt>Action</dt><dd><ul>
+            <li><strong>Faster training</strong>: migrated training to PyTorch 2.x and pushed training speed-ups on five models.</li>
+            <li><strong>Shared backbone</strong> (design lead, in progress): five perception tasks and 9 cameras are to share the end-to-end model's image encoder, sized by PCA redundancy analysis, with pretraining weights from a closed-form linear solve.</li>
+            <li><strong>Architecture</strong> (proposal): wrote an end-to-end driving model design with a distill-then-INT8 path built in from the start.</li>
+          </ul></dd></div>
+        <div class="star-r"><dt>Result</dt><dd>In the measured occupancy setup (V100, batch 16, AMP), time per iteration went from 1.56 s to 0.71 s (<strong>−54%</strong>). For the shared design, small-scale comparisons on three tasks are done, each listed metric dropping by less than 2 points. The joint-training flow runs on a small dataset; full joint training and release validation are still to come.</dd></div>
+      </dl>
+    </aside>
     <aside class="callout callout-caveat"><strong>Work in progress.</strong> Joint training runs on a small dataset and the losses converge, but the data and the iteration count are still small, and the metrics are below the released single-task models. The latency saving is an estimate.</aside>
 
 <h2 id="the-problem">The problem</h2>
